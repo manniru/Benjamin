@@ -1,5 +1,5 @@
 #!/bin/bash
-#Create Corpus and Text
+#Create corpus.txt and text file
 
 AUDIO_DIR="$1"
 DATA_DIR="$2"
@@ -11,7 +11,7 @@ CORPUS_FILE="${DATA_DIR}/local/corpus.txt"
 function convert2word()
 {
 	INDEX=$(($1+1))
-	sed "${INDEX}q;d" bijan/train/word_list
+	sed "${INDEX}q;d" word_list
 }
 
 find "$AUDIO_DIR" -type d > list_dir
