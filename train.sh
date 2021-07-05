@@ -8,14 +8,13 @@ function update_data()
 	echo "$1 utt2spk generated"
 	$TS/spk2g.sh "$AUDIO_DIR/$1" "${DATA_DIR}/$1/spk2gender"
 	echo "$1 spk2gender generated"
-	$TS/text.sh "$AUDIO_DIR/$1" "${DATA_DIR}/$1/text"
-	echo "$1 text generated"
-	$TS/corpus.sh "$AUDIO_DIR/$1" "${DATA_DIR}/local/corpus.txt"
-	echo "$1 corpus generated"
+	$TS/ct.sh "$AUDIO_DIR/$1" "${DATA_DIR}" "$1"
+	echo "$1 text and corpus generated"
 	
 	$SC/sort.sh "$DATA_DIR/$1/text"
 	$SC/sort.sh "$DATA_DIR/$1/wav.scp"
 	$SC/sort.sh "$DATA_DIR/$1/utt2spk"
+	$SC/sort.sh "$DATA_DIR/$1/spk2gender"
 	echo "--------- $1 finished ----------"
 }
 
