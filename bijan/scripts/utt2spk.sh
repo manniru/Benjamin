@@ -4,10 +4,6 @@
 
 AUDIO_DIR="$1"
 OUTPUT="$2/utt2spk"
-
-if [ -f "$OUTPUT" ]; then
-	rm "$OUTPUT"
-fi
 	
 if [ -f list_file ]; then
 	rm list_file

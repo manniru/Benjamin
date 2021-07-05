@@ -4,16 +4,14 @@ import time
 import sys
 
 AUDIO_DIR = sys.argv[1]
+SPEAKER = sys.argv[2]
+REC_NUMBER = int(sys.argv[3])
 print(AUDIO_DIR)
 
- 
-N = int(input("Enter number of iteration for record: "))
-hw = int(input("Enter destination [home(0), work(1)]: "))
-speakerId = "home" if hw == 0 else "work"
-file_name_prefix = AUDIO_DIR + "/train/" + str(speakerId)
+file_name_prefix = AUDIO_DIR + "/train/" + str(SPEAKER)
 print(file_name_prefix)
 
-for i in range(N):
+for i in range(REC_NUMBER):
 	digit1 = random.randint(0,9)
 	digit2 = random.randint(0,9)
 	digit3 = random.randint(0,9)
@@ -28,8 +26,8 @@ for i in range(N):
 		i -=1
 		continue
 
-	print(i+1, ": ", digit1, " ", digit2, " ", digit3)
+	print(i+1, ": ", digit1, " ", digit2, " ", digit3, file_path)
 	time.sleep(1)
 	# start Recording
-	script = "bijan/scripts/record.sh " + file_name_prefix + " 3"
+	script = "bijan/scripts/record.sh " + file_path + " 3"
 	os.system(script)

@@ -5,10 +5,6 @@
 AUDIO_DIR="$1"
 OUTPUT="$2/wav.scp"
 
-if [ -f "$OUTPUT" ]; then
-	rm "$OUTPUT"
-fi
-
 if [ -f list_dir ]; then
 	rm list_dir
 fi

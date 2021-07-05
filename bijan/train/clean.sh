@@ -1,38 +1,17 @@
 #!/bin/bash
 
-OUT_DIR="$1"
 DATA_DIR="data"
 
 if [ -f "${DATA_DIR}/train/spk2gender" ]; then
-	rm "${DATA_DIR}/train/spk2gender"
+	rm -r ${DATA_DIR}/train/*
 fi
 
 if [ -f "${DATA_DIR}/test/spk2gender" ]; then
-	rm "${DATA_DIR}/test/spk2gender"
-fi
-
-if [ -f "${DATA_DIR}/train/text" ]; then
-	rm "${DATA_DIR}/train/text"
-fi
-
-if [ -f "${DATA_DIR}/test/text" ]; then
-	rm "${DATA_DIR}/test/text"
+	rm -r ${DATA_DIR}/test/*
 fi
 
 if [ -f "${DATA_DIR}/local/corpus.txt" ]; then
 	rm "${DATA_DIR}/local/corpus.txt"
-fi
-
-if [ -f "$DATA_DIR/train/wav.scp" ]; then
-	rm "$DATA_DIR/train/wav.scp"
-fi
-
-if [ -f "$DATA_DIR/test/wav.scp" ]; then
-	rm "$DATA_DIR/test/wav.scp"
-fi
-
-if [ -f "$DATA_DIR/train/utt2spk" ]; then
-	rm "$DATA_DIR/train/utt2spk"
 fi
 
 if [ -f list_dir ]; then
