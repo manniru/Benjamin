@@ -1,17 +1,17 @@
 #!/bin/bash
 
-WAV_DIR="decode/wav"
 REC_TIME=5 #second
 REC_NAME="rec1.wav"
 
 DECODE_PATH="decode"
+WAV_DIR="$DECODE_PATH/wav"
 AUDIO_PATH="$DECODE_PATH/audio"
 RESULT_PATH="$DECODE_PATH/result"
 
 source path.sh
 
 while true; do
-	$SD/clean.sh "$OUT_DIR" "$WAV_DIR" "$REC_NAME"
+	$SD/clean.sh "$AUDIO_PATH" "$WAV_DIR" "$DECODE_PATH"
 	
 	$SD/record.sh "$WAV_DIR/$REC_NAME" $REC_TIME
 

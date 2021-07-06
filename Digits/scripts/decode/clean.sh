@@ -1,17 +1,12 @@
 #!/bin/bash
 
-OUT_DIR="$1"
+AUDIO_DIR="$1"
 WAV_DIR="$2"
-REC_NAME="$3"
+DECODE_PATH="$3"
 
-if [ -f "$OUT_DIR/wav.scp" ]; then
-	rm "$OUT_DIR/wav.scp"
-fi
+LOG_DIR="$DECODE_PATH/log"
+RESULT_PATH="$DECODE_PATH/result"
 
-if [ -f "$OUT_DIR/utt2spk" ]; then
-	rm "$OUT_DIR/utt2spk"
-fi
+rm -rf $AUDIO_DIR/* $WAV_DIR/*
+rm -rf $LOG_DIR/* $RESULT_PATH/*
 
-if [ -f "$WAV_DIR/$REC_NAME" ]; then
-	rm "$WAV_DIR/$REC_NAME"
-fi

@@ -28,6 +28,6 @@ for i in range(REC_NUMBER):
 
 	print(i+1, ": ", digit1, " ", digit2, " ", digit3, file_path)
 	time.sleep(1)
+	script = "scripts/decode/record.sh " + file_path + " 3"
 	# start Recording
-	script = "bijan/scripts/record.sh " + file_path + " 3"
 	os.system(script)

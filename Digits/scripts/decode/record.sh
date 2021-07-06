@@ -6,7 +6,7 @@ pacmd set-source-volume alsa_input.usb-Sennheiser_Communications_Sennheiser_USB_
 FILE_NAME="$1"
 REC_TIME="$2" #second
 
-python3 bijan/scripts/recorder.py "$FILE_NAME" $REC_TIME 2>/dev/null &
+python3 scripts/decode/recorder.py "$FILE_NAME" $REC_TIME 2>/dev/null &
 
 I_VAL=0
 REC_TIME_MS=$(($REC_TIME * 1000))
@@ -25,4 +25,4 @@ done
 
 echo #echo newline
 
-sleep 0.1
+wait #wait for record to finish

@@ -5,16 +5,12 @@
 AUDIO_DIR="$1"
 OUTPUT="$2/wav.scp"
 
-if [ -f list_dir ]; then
-	rm list_dir
-fi
-
 find "$AUDIO_DIR" -type f > list_file
 
 while read f; do
 
 	WAV_NAME=$(echo "$f" | awk -F '/' '{print "bijan_"$NF}' | awk -F '.' '{print $1}' )
-	printf "$WAV_NAME $f\n" >> "$OUTPUT"
+	echo "$WAV_NAME $f" >> "$OUTPUT"
 
 done <list_file
 
