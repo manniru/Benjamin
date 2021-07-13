@@ -23,6 +23,13 @@ while [[ "$I_VAL" -lt "$REC_TIME_MS" ]]; do
 	
 done
 
-echo #echo newline
+#echo #echo newline
 
 wait #wait for record to finish
+
+BUFF=$(sox "$FILE_NAME" -n stat 2>&1 | grep "Maximum amp")
+AMP_MAX=$(echo "$BUFF" | awk '{print $3}')
+#Convert to log
+AMP_MAX=$(echo "20*l($AMP_MAX)/l(10)" | bc -l)
+
+printf "\rMax Amp=%.2fdB\n" $AMP_MAX

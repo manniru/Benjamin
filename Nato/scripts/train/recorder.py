@@ -29,6 +29,7 @@ for i in range(REC_NUMBER):
 	#print utterance
 	script  = "scripts/train/putterance.sh "
 	script +=  str(digit1) + " " + str(digit2) + " " + str(digit3)
+	script +=  " " + str(i+1) + " " + str(REC_NUMBER)
 	os.system(script)
 	
 	time.sleep(1)

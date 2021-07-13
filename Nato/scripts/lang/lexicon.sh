@@ -15,13 +15,16 @@ echo "<UNK> spn" >> "$LEXICON_DIR/lexicon.txt"
 while read WORD; do
 	
 	PRN_LINE=$(cat $DICT | grep "^$WORD ")
+	
+	if [[ -z "$PRN_LINE" ]]; then
+		
+		echo "Error: $WORD"
+		
+	fi
 	# to lower case
-	PRN_LINE=$(cat $DICT | | tr '[:upper:]' '[:lower:]')
+	PRN_LINE=$(echo "$PRN_LINE" | tr '[:upper:]' '[:lower:]')
 	echo "$PRN_LINE" >> "$LEXICON_DIR/lexicon.txt"
 		
 done <$WORD_LIST
 
 $SD/sort.sh "$LEXICON_DIR/lexicon.txt"
-
-#convert to lower case
-sed -i -e 's/\(.*\)/\L\1/' "$LEXICON_DIR/lexicon.txt"

@@ -16,9 +16,12 @@ else
 
 fi
 
-WORD_TABLE="exp/mono/graph/words.txt"
-FINAL_MDL="exp/mono/final.mdl"
-HCLG_FST="exp/mono/graph/HCLG.fst"
+MODE="tri1"
+# MODE="mono"
+
+WORD_TABLE="exp/$MODE/graph/words.txt"
+HCLG_FST="exp/$MODE/graph/HCLG.fst"
+FINAL_MDL="exp/$MODE/final.mdl"
 
 WAV_SCP="$AUDIO_PATH/wav.scp"
 UTT2SPK="$AUDIO_PATH/utt2spk"
