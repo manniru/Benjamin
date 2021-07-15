@@ -12,9 +12,9 @@ apt-cyg install pulseaudio
 Bijan ASR Engine Based-on KalD
 
 # Installation
-Build Kaldi, snippets on Arch Linux 
-Use Intel MKL for faster kaldi performance
-OpenBLAS is so slower
+Build Kaldi, Use Intel MKL for faster kaldi performance but OpenBLAS is a decent choice
+
+To control the PC this project connect with *Rebound* and uses Linux uInput module.
 
 ### Arch Linux
 ```
@@ -26,7 +26,6 @@ make
 ./install_srilm.sh
 cd ../src
 ./configure --mathlib=OPENBLAS
-
 ```
 
 ### Windows Cygwin

@@ -42,7 +42,4 @@ utils/utt2spk_to_spk2utt.pl $UTT2SPK > $SPK2UTT
 steps/make_mfcc.sh --nj 1 $AUDIO_PATH $LOG_DIR $MFCC_DIR > /dev/null
 steps/compute_cmvn_stats.sh $AUDIO_PATH $LOG_DIR $MFCC_DIR > /dev/null
 
-BUF=$(gmm-latgen-faster $LATGEN_OPTIONS "$LATGEN_CMD" $LATTICE_FILE 2>&1 | grep ^bijan)
-echo $BUF
-
-dbus-send --session --dest=com.binaee.rebound  / com.binaee.rebound.speex string:"$BUF"
+gmm-latgen-faster $LATGEN_OPTIONS "$LATGEN_CMD" $LATTICE_FILE 2>&1 | grep ^bijan

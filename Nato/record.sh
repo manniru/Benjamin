@@ -21,7 +21,9 @@ while true; do
 	$SD/sort.sh "$AUDIO_PATH/wav.scp"
 	$SD/sort.sh "$AUDIO_PATH/utt2spk"
 
-	./decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH"
+	WORDS=$(./decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH")
+	
+	$SI/main.sh "$WORDS"
 	
 	#exit 0
 done
