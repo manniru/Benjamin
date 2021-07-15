@@ -1,7 +1,13 @@
 #!/bin/bash
 
-pacmd set-default-source alsa_input.usb-Sennheiser_Communications_Sennheiser_USB_headset-00.mono-fallback #set source to Sennheier
-pacmd set-source-volume alsa_input.usb-Sennheiser_Communications_Sennheiser_USB_headset-00.mono-fallback 52430 #set volume to 80% 
+#MIC_NAME="Sennheiser_Communications_Sennheiser_USB_headset-00.mono-fallback"
+#VOLUME="52430" #set volume to 80% 
+
+MIC_NAME="Focusrite_iTrack_Solo-00.analog-stereo"
+VOLUME="118000" #set volume to 180% 
+
+pacmd set-default-source alsa_input.usb-$MIC_NAME #set source to Sennheier
+pacmd set-source-volume alsa_input.usb-$MIC_NAME $VOLUME
 
 FILE_NAME="$1"
 REC_TIME="$2" #second

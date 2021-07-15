@@ -8,91 +8,91 @@ OUTPUT=""
 
 if [[ "$WORD" == "arch" ]]; then
 
-    OUTPUT="a"
+    OUTPUT="30"
 
 elif [[ "$WORD" == "bravo" ]]; then
     
-    OUTPUT="b"
+    OUTPUT="48"
 
 elif [[ "$WORD" == "catalina" ]]; then
     
-    OUTPUT="c"
+    OUTPUT="46"
 
 elif [[ "$WORD" == "charlie" ]]; then
     
-    OUTPUT="c"
+    OUTPUT="46"
 
 elif [[ "$WORD" == "delta" ]]; then
     
-    OUTPUT="d"
+    OUTPUT="32"
 
 elif [[ "$WORD" == "echo" ]]; then
     
-    OUTPUT="e"
+    OUTPUT="18"
 
 elif [[ "$WORD" == "fish" ]]; then
     
-    OUTPUT="f"
+    OUTPUT="33"
 
 elif [[ "$WORD" == "golf" ]]; then
     
-    OUTPUT="g"
+    OUTPUT="34"
 
 elif [[ "$WORD" == "hotel" ]]; then
     
-    OUTPUT="h"
+    OUTPUT="35"
     
 elif [[ "$WORD" == "india" ]]; then
     
-    OUTPUT="i"
+    OUTPUT="23"
     
 elif [[ "$WORD" == "jordan" ]]; then
     
-    OUTPUT="j"
+    OUTPUT="36"
     
 elif [[ "$WORD" == "kilo" ]]; then
     
-    OUTPUT="k"
+    OUTPUT="37"
     
 elif [[ "$WORD" == "limo" ]]; then
     
-    OUTPUT="l"
+    OUTPUT="38"
     
 elif [[ "$WORD" == "mike" ]]; then
     
-    OUTPUT="m"
+    OUTPUT="50"
    
 elif [[ "$WORD" == "november" ]]; then
     
-    OUTPUT="n"
+    OUTPUT="49"
 
 elif [[ "$WORD" == "oscar" ]]; then
     
-    OUTPUT="o"
+    OUTPUT="24"
 
 elif [[ "$WORD" == "papa" ]]; then
     
-    OUTPUT="p"
+    OUTPUT="25"
 
 elif [[ "$WORD" == "quebec" ]]; then
     
-    OUTPUT="q"
+    OUTPUT="16"
 
 elif [[ "$WORD" == "romeo" ]]; then
     
-    OUTPUT="r"
+    OUTPUT="19"
 
 elif [[ "$WORD" == "sierra" ]]; then
     
-    OUTPUT="s"
+    OUTPUT="31"
 
 elif [[ "$WORD" == "tango" ]]; then
     
-    OUTPUT="t"
+    OUTPUT="20"
 
 elif [[ "$WORD" == "uniform" ]]; then
     
-    OUTPUT="u"
+    OUTPUT="22"
 
 elif [[ "$WORD" == "u" ]]; then
     
@@ -100,15 +100,23 @@ elif [[ "$WORD" == "u" ]]; then
 
 elif [[ "$WORD" == "eggs" ]]; then
     
-    OUTPUT="x"
+    OUTPUT="45"
+
+elif [[ "$WORD" == "vpn" ]]; then
+    
+    OUTPUT="47"
+
+elif [[ "$WORD" == "wake" ]]; then
+    
+    OUTPUT="17"
 
 elif [[ "$WORD" == "yankee" ]]; then
     
-    OUTPUT="y"
+    OUTPUT="21"
 
 elif [[ "$WORD" == "zed" ]]; then
     
-    OUTPUT="z"
+    OUTPUT="44"
 
 fi
 

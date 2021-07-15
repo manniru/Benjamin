@@ -36,3 +36,11 @@ Nato/data/local/dict/lexiconp.txt
 Nato/data/local/tmp/
 
 Nato/local/score.sh
+
+Nato/decode/audio/
+
+Nato/decode/log/
+
+Nato/decode/result/
+
+Nato/decode/wav/
