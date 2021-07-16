@@ -36,5 +36,7 @@ update_data "test"
 
 $SD/sort.sh "$DATA_DIR/local/corpus.txt"
 
+$ST/check_audio.sh $LEXICON_COUNT
+
 #./run.sh
 	

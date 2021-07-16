@@ -4,7 +4,7 @@
 #VOLUME="52430" #set volume to 80% 
 
 MIC_NAME="Focusrite_iTrack_Solo-00.analog-stereo"
-VOLUME="118000" #set volume to 180% 
+VOLUME="78500" #set volume to 110% 
 
 pacmd set-default-source alsa_input.usb-$MIC_NAME #set source to Sennheier
 pacmd set-source-volume alsa_input.usb-$MIC_NAME $VOLUME
