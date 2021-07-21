@@ -76,7 +76,6 @@ arpa2fst --disambig-symbol=#0 --read-symbol-table=$lang/words.txt $local/tmp/lm.
 echo
 echo "===== MONO TRAINING ====="
 echo
-echo BIJ IS HERE
 
 steps/train_mono.sh --nj $nj --cmd "$train_cmd" data/train data/lang exp/mono
 

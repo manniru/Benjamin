@@ -46,6 +46,34 @@ elif [[ "$WORD" == "slap" ]]; then
     
     OUTPUT="28"
 
+elif [[ "$WORD" == "period" ]]; then
+    
+    OUTPUT="52"
+
+elif [[ "$WORD" == "comma" ]]; then
+    
+    OUTPUT="51"
+
+elif [[ "$WORD" == "dash" ]]; then
+    
+    OUTPUT="12"
+    
+elif [[ "$WORD" == "equal" ]]; then
+    
+    OUTPUT="13"
+
+elif [[ "$WORD" == "plus" ]]; then
+    
+    OUTPUT="78"
+
+elif [[ "$WORD" == "super" ]]; then
+    
+    OUTPUT="125"
+
+elif [[ "$WORD" == "tab" ]]; then
+    
+    OUTPUT="15"
+
 fi
 
 if [[ "$OUTPUT" ]]; then

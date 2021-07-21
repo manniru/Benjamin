@@ -2,7 +2,7 @@
 
 I_VAL="0"
 M_VAL="0"
-MAX_VAL="92"
+MAX_VAL="$1"
 MEAN_VAL="0"
 VAR_VAL="0"
 AUD_PATH="audio"
@@ -68,3 +68,17 @@ while [[ "$I_VAL" -lt "$MAX_VAL" ]]; do
 done
 
 echo Mean = $MEAN_VAL VAR_VAL = $VAR_VAL
+
+
+find "$AUD_PATH/train" -type d > list_dir
+sed -i '1d' list_dir #remove first line
+
+while read DIR_NAME; do
+	
+	COUNT=$(find "$DIR_NAME" -type f | wc -l)
+	printf "%20s: %4s" $DIR_NAME $COUNT
+	echo 
+		
+done <list_dir
+
+rm list_dir

@@ -11,6 +11,7 @@ for WORD in $BUF; do
 
     $SI/digits.sh $WORD "$DBUS_PATH"
     $SI/nato.sh $WORD "$DBUS_PATH"
+    $SI/meta.sh $WORD "$DBUS_PATH"
     $SI/commands.sh $WORD "$DBUS_PATH"
     $SI/modifiers.sh $WORD "$DBUS_PATH"
     

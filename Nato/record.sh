@@ -25,5 +25,7 @@ while true; do
 	
 	$SI/main.sh "$WORDS"
 	
-	#exit 0
+	$SD/get_conf.sh decode 0.03 0.027
+	
+	exit 0
 done
