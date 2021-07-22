@@ -52,3 +52,7 @@ Tools/Build/
 *.stash
 
 Tools/BaTool
+
+*.debug
+
+Tools/Makefile

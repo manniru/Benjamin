@@ -3,7 +3,7 @@
 #Remove spuroius prefix (first word)
 BUF=$( echo "$1" | cut -d " " -f2-)
 OUTPUT=""
-SI="scripts/interpreter"
+SI="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 DBUS_PATH="--dest=com.binaee.rebound / com.binaee.rebound"
 

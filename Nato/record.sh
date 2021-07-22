@@ -8,6 +8,8 @@ WAV_DIR="$DECODE_PATH/wav"
 AUDIO_PATH="$DECODE_PATH/audio"
 RESULT_PATH="$DECODE_PATH/result"
 
+DBUS_PATH="--dest=com.binaee.batool / com.binaee.batool"
+
 source path.sh
 
 $SD/clean.sh "$AUDIO_PATH" "$WAV_DIR" "$DECODE_PATH"
@@ -25,10 +27,11 @@ while true; do
 	$SD/record.sh "$WAV_DIR/$REC_NAME" $REC_TIME
 	WORDS=$($SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH")
 	
-	$SI/main.sh "$WORDS"
+	#$SI/main.sh "$WORDS"
 	
 	$SD/create_conf.sh decode 0.05 0.027
-	$SD/print_words.sh decode 0.9
+	#$SD/print_words.sh decode 0.9
+	dbus-send --session $DBUS_PATH.exec string:"$WORDS"
 	
 	if [[ "$#" -gt "0" ]];then 
 		exit 0

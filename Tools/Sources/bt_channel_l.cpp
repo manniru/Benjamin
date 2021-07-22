@@ -4,6 +4,7 @@
 ReChannelL::ReChannelL(QObject *parent) : QObject(parent)
 {
     ConnectDBus();
+    conf = new BtConfidence;
 }
 
 ReChannelL::~ReChannelL()
@@ -21,8 +22,8 @@ void ReChannelL::ConnectDBus()
         return;
     }
 
-    session.connect("", "/", DBUS_NAME, "nato" , this, SLOT(nato (const QString &)));
-    session.connect("", "/", DBUS_NAME, "exec"  , this, SLOT(execute()));
+    session.connect("", "/", DBUS_NAME, "nato", this, SLOT(nato   (const QString &)));
+    session.connect("", "/", DBUS_NAME, "exec", this, SLOT(execute(const QString &)));
 
     if(!session.registerService(DBUS_NAME))
     {
@@ -33,9 +34,17 @@ void ReChannelL::ConnectDBus()
     }
 }
 
-void ReChannelL::execute()
+void ReChannelL::execute(const QString &words)
 {
-    ;
+    conf->parseConfidence();
+
+    if( conf->isValidUtterance() )
+    {
+        QString cmd = KAL_SI_DIR"main.sh \"";
+        cmd += words + "\"";
+
+        system(cmd.toStdString().c_str());
+    }
 }
 
 void ReChannelL::nato(const QString &text)

@@ -3,6 +3,7 @@
 
 #include "backend.h"
 #include "bt_config.h"
+#include "bt_confidence.h"
 
 #include <QObject>
 #include <QtCore/QObject>
@@ -21,12 +22,12 @@ public:
 
 public slots:
     void nato (const QString &text);
-    void execute();
+    void execute(const QString &text);
 
 private:
     void ConnectDBus();
+
+    BtConfidence *conf;
 };
-
-
 
 #endif // CHANNEL_H_L

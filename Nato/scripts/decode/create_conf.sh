@@ -31,8 +31,3 @@ gmm-latgen-faster $LATGEN_OPTIONS ark:$LAT_DELTA ark:$LAT_CONF  2>/dev/null
 lattice-align-words $WORD_BOUNDARY $FINAL_MDL ark:$LAT_CONF ark:$LAT_ALIGN 2>/dev/null
 lattice-to-ctm-conf $CONF_OPT ark:$LAT_ALIGN $CONF_FILE 2>/dev/null
 
-if [[ "$#" -gt 3 ]]; then
-	cat $CONF_FILE
-	scripts/decode/print_words.sh decode 0.9
-fi
-# scripts/decode/print_words.sh decode 0.9
