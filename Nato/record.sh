@@ -21,11 +21,14 @@ while true; do
 	$SD/sort.sh "$AUDIO_PATH/wav.scp"
 	$SD/sort.sh "$AUDIO_PATH/utt2spk"
 
-	WORDS=$(./decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH")
+	WORDS=$($SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH")
 	
-	$SI/main.sh "$WORDS"
+	# $SI/main.sh "$WORDS"
 	
-	$SD/get_conf.sh decode 0.03 0.027
+	$SD/create_conf.sh decode 0.03 0.027
+	$SD/print_words.sh decode 0.9
 	
-	exit 0
+	if [[ "$#" -gt "0" ]];then 
+		exit 0
+	fi
 done

@@ -15,8 +15,8 @@ RECORD_SECONDS = int(sys.argv[2])
 # start Recording
 audio = pyaudio.PyAudio()
 stream = audio.open(format=FORMAT, channels=CHANNELS,
-	            rate=RATE, input=True,
-	            frames_per_buffer=CHUNK)
+	                rate=RATE, input=True,
+	                frames_per_buffer=CHUNK)
 frames = []
  
 for j in range(0, int(RATE / CHUNK * RECORD_SECONDS)):

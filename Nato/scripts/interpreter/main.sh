@@ -5,7 +5,7 @@ BUF=$( echo "$1" | cut -d " " -f2-)
 OUTPUT=""
 SI="scripts/interpreter"
 
-DBUS_PATH="--dest=com.binaee.rebound  / com.binaee.rebound"
+DBUS_PATH="--dest=com.binaee.rebound / com.binaee.rebound"
 
 for WORD in $BUF; do
 
