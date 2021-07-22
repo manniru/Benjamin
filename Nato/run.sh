@@ -1,9 +1,10 @@
 #!/bin/bash
 . ./path.sh || exit 1
-. ./cmd.sh || exit 1
-nj=1       # number of parallel jobs - 1 is perfect for such a small dataset
-lm_order=1 # language model order (n-gram quantity) - 1 is enough for digits grammar
-# Safety mechanism (possible running this script with modified arguments)
+. ./scripts/kaldi/cmd.sh || exit 1
+
+nj=1       # number of parallel jobs
+lm_order=1 # language model order (n-gram quantity)
+
 . utils/parse_options.sh || exit 1
 [[ $# -ge 1 ]] && { echo "Wrong arguments!"; exit 1; }
 # Removing previously created data (from last run.sh execution)

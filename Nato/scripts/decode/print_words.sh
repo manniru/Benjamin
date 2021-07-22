@@ -28,23 +28,23 @@ while read line; do
 
 	CONF=$(echo $line | awk '{print $6}')
 	IS_GT=$(comp_f $CONF $THRESHOLD)
+	CONF_SUM=$(bc <<< "scale=3; $CONF+$CONF_SUM")
 	
-	if [[ -n "$IS_GT" ]]; then
+	if [[ -z "$IS_GT" ]]; then
 	
 		LOST_SUM=$(($LOST_SUM + 1))
-		CONF_SUM=$(bc <<< "scale=2; $CONF+$CONF_SUM")
 	
 	fi
 
 done <$CONF_FILE
 
 UTT_CONF=$(bc <<< "scale=2; $LOST_SUM/$SUM")
-IS_GT=$(comp_f $UTT_CONF "0.5")
+IS_GT=$(comp_f "0.5" "$UTT_CONF")
 
 if [[ -z "$IS_GT" ]]; then
 	
-	UTT_MEAN=$(bc <<< "scale=2; $CONF_SUM/$SUM")
-	echo "LOW UTT_CONF $UTT_CONF $UTT_MEAN"
+	UTT_MEAN=$(bc <<< "scale=3; $CONF_SUM/$SUM")
+	echo "LOW UTT_CONF $LOST_SUM $UTT_MEAN"
 	#exit 0
 	
 fi

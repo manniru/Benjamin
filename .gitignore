@@ -44,3 +44,11 @@ Nato/decode/log/
 Nato/decode/result/
 
 Nato/decode/wav/
+
+Tools/Build/
+
+*.user
+
+*.stash
+
+Tools/BaTool
