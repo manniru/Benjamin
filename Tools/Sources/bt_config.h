@@ -13,6 +13,7 @@
 #define BT_CONF_PATH      KAL_RESULT_DIR"confidence"
 
 #define KAL_CONF_TRESHOLD 0.9
-#define KAL_UTT_TRESHOLD  0.5
+#define KAL_UTT_TRESHOLD  0.7
+#define KAL_HARD_TRESHOLD 0.5 //word will be removed
 
 #endif // BT_CONFIG_H

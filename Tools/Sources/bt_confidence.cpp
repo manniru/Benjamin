@@ -4,6 +4,7 @@
 BtConfidence::BtConfidence(QObject *parent) : QObject(parent)
 {
     parseWords(BT_WORDS_PATH);
+    setbuf(stdout,NULL);
 }
 
 void BtConfidence::parseWords(QString filename)
@@ -16,13 +17,13 @@ void BtConfidence::parseWords(QString filename)
         return;
     }
 
-    words.clear();
+    lexicon.clear();
 
     while (!words_file.atEnd())
     {
         QString line = QString(words_file.readLine());
         QStringList line_list = line.split(" ");
-        words.append(line_list[0]);
+        lexicon.append(line_list[0]);
     }
 
     words_file.close();
@@ -41,10 +42,12 @@ void BtConfidence::parseConfidence()
 
     sum_conf = 0;
     sum_det  = 0;
+    utterance = "";
 
     while (!conf_file.atEnd())
     {
         QString line = QString(conf_file.readLine());
+        line.remove('\n');
         QString p_line = processLine(line);
         out_lines.append(p_line);
     }
@@ -61,6 +64,7 @@ void BtConfidence::parseConfidence()
     }
 
     conf_file.close();
+    printf("\n");
 
     writeConfidence(out_lines);
 }
@@ -80,9 +84,20 @@ QString BtConfidence::processLine(QString line)
         sum_conf += conf;
 
         int index = line_list[4].toInt();
-        line_list[4] = words[index];
+        line_list[4] = lexicon[index];
+
+        if( conf>KAL_HARD_TRESHOLD )
+        {
+            if( !utterance.isEmpty() )
+            {
+                utterance += " ";
+            }
+            utterance += line_list[4];
+        }
+
         out = line_list.join(" ");
-        qDebug() << line_list[4] << line_list[5];
+        printf("%s(%s) ", line_list[4].toStdString().c_str(),
+               line_list[5].toStdString().c_str());
     }
     else
     {
@@ -124,4 +139,20 @@ bool BtConfidence::isValidUtterance()
     }
 
     return true;
+}
+
+void BtConfidence::printWords(QString words)
+{
+    QStringList word_list = words.split(" ");
+
+    for( int i=1 ; i<word_list.size() ; i++ )
+    {
+        printf("%-10s ", word_list[i].toStdString().c_str());
+    }
+    printf("\n");
+}
+
+QString BtConfidence::getUtterance()
+{
+    return utterance;
 }

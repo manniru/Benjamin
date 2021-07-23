@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#Remove spuroius prefix (first word)
-BUF=$( echo "$1" | cut -d " " -f2-)
+BUF="$1"
 OUTPUT=""
 SI="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
@@ -17,6 +16,4 @@ for WORD in $BUF; do
     
 done
 
-echo $BUF
 dbus-send --session $DBUS_PATH.exec
-

@@ -50,7 +50,7 @@ function printVals
 }
 
 I_VAL="0"
-VAR_VAL=$(($VAR_VAL / $MAX_VAL / 2 ))
+VAR_VAL=$(($VAR_VAL / $MAX_VAL ))
 VAR_VAL=$(echo "scale=0; sqrt($VAR_VAL)" | bc)
 
 while [[ "$I_VAL" -lt "$MAX_VAL" ]]; do

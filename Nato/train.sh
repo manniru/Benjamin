@@ -27,9 +27,9 @@ source path.sh
 LEXICON_COUNT=$(wc -l word_list | awk '{ print $1 }')
 LEXICON_COUNT=$(($LEXICON_COUNT-1))
 
-$ST/clean.sh
-
 python3 $ST/recorder.py "$AUDIO_DIR" $SPEAKER $REC_NUM $LEXICON_COUNT
+
+$ST/clean.sh
 
 update_data "train"
 update_data "test"

@@ -96,7 +96,7 @@ elif [[ "$WORD" == "uniform" ]]; then
 
 elif [[ "$WORD" == "u" ]]; then
     
-    OUTPUT="u"
+    OUTPUT="22"
 
 elif [[ "$WORD" == "eggs" ]]; then
     

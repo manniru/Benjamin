@@ -74,6 +74,10 @@ elif [[ "$WORD" == "tab" ]]; then
     
     OUTPUT="15"
 
+elif [[ "$WORD" == "delete" ]]; then
+    
+    OUTPUT="111"
+
 fi
 
 if [[ "$OUTPUT" ]]; then

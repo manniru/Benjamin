@@ -15,13 +15,16 @@ public:
     explicit BtConfidence(QObject *parent = nullptr);
     void parseConfidence();
     bool isValidUtterance();
+    void printWords(QString words);
+    QString getUtterance();
 
 private:
     QString processLine(QString line);
     void parseWords(QString filename);
     void writeConfidence(QVector<QString> lines);
 
-    QVector<QString> words;
+    QVector<QString> lexicon;
+    QString utterance;
 
     double sum_conf;
     double sum_det;
