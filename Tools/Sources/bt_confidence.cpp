@@ -59,12 +59,12 @@ void BtConfidence::parseConfidence()
     }
     else
     {
+        printf("\n");
         avg_det  = sum_det/out_lines.size();
         avg_conf = sum_conf/out_lines.size();
     }
 
     conf_file.close();
-    printf("\n");
 
     writeConfidence(out_lines);
 }

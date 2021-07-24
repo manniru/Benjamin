@@ -33,7 +33,8 @@ for i in range(REC_NUMBER):
 	digit1 = random.randint(0,WORD_COUNT)
 	digit2 = random.randint(0,WORD_COUNT)
 	#biased digit
-	digit3 = random.randint(0,WORD_COUNT-68) + 68
+	#digit3 = random.randint(0,WORD_COUNT-67) + 67
+	digit3 = random.randint(0,WORD_COUNT)
 	file_name = getRandomFileName(digit1, digit2, digit3)
 	file_path = str(directory) + "/" + file_name
 	script = "find " + directory + " -name \"" + file_name + "\" > files"

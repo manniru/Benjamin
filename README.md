@@ -2,9 +2,9 @@
 Bijan ASR Engine Based-on KalD
 
 # Installation
-Build Kaldi, Use Intel MKL for faster kaldi performance but OpenBLAS is a decent choice
 
-To control the PC this project connect with *Rebound* and uses Linux uInput module.
+## Step 1: Build Kakdi
+Use Intel MKL for faster kaldi performance but OpenBLAS is also a decent choice
 
 ### Arch Linux
 ```
@@ -25,4 +25,10 @@ Use autotools instead of CMake. Kaldi CMake is deprecated
 apt-cyg install pulseaudio
 ```
 
+## Step 2: Import Neccesary Tools
 
+1. From `kaldi/egs/wsj/s5` copy `utils` and `steps` into Nato Project. 
+
+2. Copy `kaldi/egs/voxforge/s5/local/score.sh` to `Nato/local` 
+
+To control the PC this project connect with *Rebound* and uses Linux uInput module.
