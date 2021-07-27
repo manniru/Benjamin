@@ -28,7 +28,15 @@ apt-cyg install pulseaudio
 ## Step 2: Import Neccesary Tools
 
 1. From `kaldi/egs/wsj/s5` copy `utils` and `steps` into Nato Project. 
-
 2. Copy `kaldi/egs/voxforge/s5/local/score.sh` to `Nato/local` 
 
-To control the PC this project connect with *Rebound* and uses Linux uInput module.
+
+# Project Strurcture
+
+- **Digits**: Example project implementing zero to nine recognition
+- **Nato**: This directory contain scripts to implement any low vacabulary ASR system
+- **Tools**: Any nessasry tool to assist the detection process. 
+
+----------------------
+To control the PC this project connect with [Rebound](https://github.com/bijanbina/RAIIS) and uses Linux uInput module.
+
