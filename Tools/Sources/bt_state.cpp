@@ -1,16 +1,16 @@
 #include "bt_state.h"
 
-ReState::ReState(QObject *parent) : QObject(parent)
+BtState::BtState(QObject *parent) : QObject(parent)
 {
 
 }
 
-void ReState::setMode(int mode)
+void BtState::setMode(int mode)
 {
     i_mode = mode;
 }
 
-int ReState::getMode()
+int BtState::getMode()
 {
     return i_mode;
 }

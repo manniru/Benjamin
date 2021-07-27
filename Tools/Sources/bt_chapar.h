@@ -1,11 +1,12 @@
-#ifndef RECHAPAR_H
-#define RECHAPAR_H
+#ifndef BT_CHAPAR_H
+#define BT_CHAPAR_H
 
 #include <QObject>
 #include <thread>         // std::thread
 #include <QTimer>
-#include "bt_channel_l.h"
 
+#include "bt_channel_l.h"
+#include "bt_online.h"
 #include "bt_state.h"
 
 class ReChapar : public QObject
@@ -15,13 +16,13 @@ public:
     explicit ReChapar(QObject *parent = nullptr);
 
 private slots:
-    void updateMode();
     void switchWindow(int index);
     void requstSuspend();
 
 private:
-    ReState    *state;
+    BtOnline   *online;
+    BtState    *state;
     ReChannelL *channel;
 };
 
-#endif // RECHAPAR_H
+#endif // BT_CHAPAR_H

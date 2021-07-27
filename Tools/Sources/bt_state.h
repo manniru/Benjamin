@@ -1,5 +1,5 @@
-﻿#ifndef RESTATE_H
-#define RESTATE_H
+﻿#ifndef BT_STATE_H
+#define BT_STATE_H
 
 #include <QObject>
 #include <QString>
@@ -11,11 +11,11 @@ typedef struct ReWindow
     QString pname;
 }ReWindow;
 
-class ReState : public QObject
+class BtState : public QObject
 {
     Q_OBJECT
 public:
-    explicit ReState(QObject *parent = 0);
+    explicit BtState(QObject *parent = 0);
     void setMode(int mode);
     int getMode();
 
@@ -28,4 +28,4 @@ private:
     int i_mode;
 };
 
-#endif // RESTATE_H
+#endif // BT_STATE_H

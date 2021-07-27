@@ -1,5 +1,5 @@
-#ifndef BTCONFIDENE_H
-#define BTCONFIDENE_H
+#ifndef BT_CONFIDENE_H
+#define BT_CONFIDENE_H
 
 #include <QObject>
 #include <QFile>
@@ -32,4 +32,4 @@ private:
     double avg_det;
 };
 
-#endif // BTCONFIDENE_H
+#endif // BT_CONFIDENE_H

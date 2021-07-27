@@ -1,5 +1,5 @@
-#ifndef CHANNEL_H_L
-#define CHANNEL_H_L
+#ifndef BT_CHANNEL_L_H
+#define BT_CHANNEL_L_H
 
 #include "backend.h"
 #include "bt_config.h"
@@ -30,4 +30,4 @@ private:
     BtConfidence *conf;
 };
 
-#endif // CHANNEL_H_L
+#endif // BT_CHANNEL_L_H
