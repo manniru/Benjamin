@@ -1,20 +1,12 @@
 #include "bt_recorder.h"
 #include <QDebug>
 
-BtRecoder::BtRecoder(QObject *parent) : QObject(parent)
+BtRecoder::BtRecoder(QThread *thread, QObject *parent) : QObject(parent)
 {
-    recorder = new QAudioRecorder(this);
 
-    QAudioEncoderSettings audioSettings;
-    audioSettings.setCodec("audio/pcm");
-//    audioSettings.setQuality(QMultimedia::HighQuality);
-    audioSettings.setChannelCount(1);
-    audioSettings.setSampleRate(BT_REC_RATE);
-
-    recorder->setAudioInput(BT_REC_INPUT);
-    recorder->setEncodingSettings(audioSettings);
 
     record_timer = new QTimer;
+    record_timer->moveToThread(thread);
 
     connect(record_timer, SIGNAL(timeout()), this, SLOT(recordTimeout()));
 
@@ -31,7 +23,18 @@ BtRecoder::BtRecoder(QObject *parent) : QObject(parent)
 
 void BtRecoder::start()
 {
-    recorder->setOutputLocation(QUrl::fromLocalFile("test.wav"));
+    recorder = new QAudioRecorder(this);
+
+    QAudioEncoderSettings audioSettings;
+    audioSettings.setCodec("audio/mpeg, mpegversion=(int)4");
+//    audioSettings.setQuality(QMultimedia::HighQuality);
+    audioSettings.setChannelCount(2);
+    audioSettings.setSampleRate(BT_REC_RATE);
+
+//    recorder->setAudioInput(BT_REC_INPUT);
+    recorder->setEncodingSettings(audioSettings);
+
+    recorder->setOutputLocation(QUrl::fromLocalFile("test.mp4"));
     recorder->record();
 
     record_timer->start(5000);

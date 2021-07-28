@@ -6,7 +6,7 @@ BtOnline::BtOnline(QObject *parent) : QObject(parent)
     thread_data = new RecordPipe;
     record_thread = new QThread;
 
-    BtRecoder *recorder = new BtRecoder;
+    BtRecoder *recorder = new BtRecoder(record_thread);
     recorder->moveToThread(record_thread);
 
     connect(this, SIGNAL(startRecord()), recorder, SLOT(start()));

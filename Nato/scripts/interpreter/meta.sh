@@ -31,6 +31,14 @@ elif [[ "$WORD" == "page" ]]; then
 elif [[ "$WORD" == "go" ]]; then
     
     OUTPUT="7"
+
+elif [[ "$WORD" == "sky" ]]; then
+    
+    OUTPUT="8"
+
+elif [[ "$WORD" == "dive" ]]; then
+    
+    OUTPUT="9"
 fi
 
 if [[ "$OUTPUT" ]]; then

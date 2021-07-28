@@ -30,11 +30,14 @@ linux:HEADERS += \
 
 
 linux:INCLUDEPATH += /usr/include/glib-2.0 \
-                     /usr/lib/glib-2.0/include
+                     /usr/lib/glib-2.0/include \
+                     /usr/include/gstreamer-1.0
 
 linux:LIBS += -lgio-2.0 \
               -lgobject-2.0 \
-              -lglib-2.0
+              -lglib-2.0 \
+              -pthread \
+              -lgstreamer-1.0
 
 
 MOC_DIR = Build/.moc

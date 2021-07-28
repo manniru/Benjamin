@@ -1,10 +1,11 @@
 #ifndef BT_RECORDER_H
 #define BT_RECORDER_H
 
-#include <QObject>
-#include <QAudioRecorder>
 #include <QUrl>
 #include <QTimer>
+#include <QThread>
+#include <QAudioRecorder>
+#include <QObject>
 
 #include "bt_config.h"
 
@@ -12,7 +13,7 @@ class BtRecoder : public QObject
 {
     Q_OBJECT
 public:
-    explicit BtRecoder(QObject *parent = nullptr);
+    explicit BtRecoder(QThread *thread, QObject *parent = nullptr);
 
 public slots:
     void start();
