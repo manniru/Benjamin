@@ -1,13 +1,14 @@
 #ifndef BT_RECORDER_H
 #define BT_RECORDER_H
 
-#include <QUrl>
 #include <QTimer>
 #include <QThread>
-#include <QAudioRecorder>
 #include <QObject>
+#include <gst/gst.h>
 
 #include "bt_config.h"
+
+#define BT_REC_PIPELINE "playbin uri=https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm"
 
 class BtRecoder : public QObject
 {
@@ -15,6 +16,7 @@ class BtRecoder : public QObject
 public:
     explicit BtRecoder(QThread *thread, QObject *parent = nullptr);
 
+    ~BtRecoder();
 public slots:
     void start();
 
@@ -25,8 +27,13 @@ private slots:
     void recordTimeout();
 
 private:
-    QAudioRecorder *recorder;
     QTimer *record_timer;
+
+    GstElement *pipeline;
+    GstElement *source, *sink, *encoder;
+    GstBus *bus;
+    GstMessage *msg;
+    GstStateChangeReturn ret;
 };
 
 #endif // BT_RECORDER_H
