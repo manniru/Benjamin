@@ -7,6 +7,7 @@ BtRecoder::BtRecoder(QThread *thread, QObject *parent) : QObject(parent)
     char **argv;
     record_timer = new QTimer;
     record_timer->moveToThread(thread);
+    system(KAL_SD_DIR"init.sh"); //init decode dir
 
     connect(record_timer, SIGNAL(timeout()), this, SLOT(recordTimeout()));
 
@@ -14,6 +15,7 @@ BtRecoder::BtRecoder(QThread *thread, QObject *parent) : QObject(parent)
 
     /* Create the elements */
     source = gst_element_factory_make("pulsesrc", "source");
+    filter = gst_element_factory_make ("capsfilter", "filter");
     encoder = gst_element_factory_make("wavenc", "encoder");
     sink = gst_element_factory_make("filesink", "sink");
 
@@ -24,6 +26,21 @@ BtRecoder::BtRecoder(QThread *thread, QObject *parent) : QObject(parent)
     {
         g_printerr ("Not all elements could be created.\n");
     }
+
+    /* Build the pipeline */
+    gst_bin_add_many (GST_BIN(pipeline), source, filter, encoder, sink, NULL);
+
+    gst_element_link(source, filter);
+    gst_element_link(filter, encoder);
+    gst_element_link(encoder, sink);
+
+    caps = gst_caps_new_simple ("audio/x-raw",
+                                "format", G_TYPE_STRING, "S16LE",
+                                "rate",  G_TYPE_INT, 16000,
+                                "channels",G_TYPE_INT, 1, NULL);
+
+    /* we set the input filename to the source element */
+    g_object_set(G_OBJECT(filter), "caps", caps, NULL);
 }
 
 BtRecoder::~BtRecoder()
@@ -40,14 +57,17 @@ BtRecoder::~BtRecoder()
 
 void BtRecoder::start()
 {
-    /* Build the pipeline */
-    gst_bin_add_many (GST_BIN(pipeline), source, encoder, sink, NULL);
-
-    gst_element_link(source, encoder);
-    gst_element_link(encoder, sink);
+    if( wav_filename.contains("buf2.wav") )
+    {
+        wav_filename = KAL_WAV_DIR"buf1.wav";
+    }
+    else
+    {
+        wav_filename = KAL_WAV_DIR"buf2.wav";
+    }
 
     /* Modify the source's properties */
-    g_object_set (sink, "location", "test.wav", NULL);
+    g_object_set (sink, "location", wav_filename.toStdString().c_str(), NULL);
 
     /* Start playing */
     ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
@@ -57,13 +77,6 @@ void BtRecoder::start()
         gst_object_unref(pipeline);
         return;
     }
-    /* Wait until error or EOS */
-    bus = gst_element_get_bus (pipeline);
-    int msg_type = (GstMessageType)GST_MESSAGE_ERROR | (GstMessageType)GST_MESSAGE_EOS;
-
-    msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, (GstMessageType)msg_type);
-
-    qDebug() << "finished";
 
     record_timer->start(5000);
 }
@@ -72,6 +85,13 @@ void BtRecoder::start()
 
 void BtRecoder::recordTimeout()
 {
-    record_timer->stop();
-    emit resultReady();
+    gst_element_set_state(pipeline, GST_STATE_NULL);
+
+//    bus = gst_element_get_bus(pipeline);
+//    int msg_type = GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS;
+//    msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, (GstMessageType)msg_type);
+
+    qDebug() << "finished" << wav_filename;
+    emit resultReady(wav_filename);
+    start();
 }

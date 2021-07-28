@@ -21,17 +21,19 @@ public slots:
     void start();
 
 signals:
-    void resultReady();
+    void resultReady(QString filename);
 
 private slots:
     void recordTimeout();
 
 private:
     QTimer *record_timer;
+    QString wav_filename;
 
     GstElement *pipeline;
-    GstElement *source, *sink, *encoder;
+    GstElement *source, *filter, *sink, *encoder;
     GstBus *bus;
+    GstCaps *caps;
     GstMessage *msg;
     GstStateChangeReturn ret;
 };

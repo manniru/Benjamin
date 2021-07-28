@@ -26,7 +26,7 @@ public:
     explicit BtOnline(QObject *parent = nullptr);
 
 private slots:
-    void switchWindow(int index);
+    void startDecode(QString filename);
 
 signals:
     void startRecord();

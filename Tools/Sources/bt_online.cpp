@@ -10,12 +10,17 @@ BtOnline::BtOnline(QObject *parent) : QObject(parent)
     recorder->moveToThread(record_thread);
 
     connect(this, SIGNAL(startRecord()), recorder, SLOT(start()));
+    connect(recorder, SIGNAL(resultReady(QString)), this, SLOT(startDecode(QString)));
 
     record_thread->start();
     emit startRecord();
 }
 
-void BtOnline::switchWindow(int index)
+void BtOnline::startDecode(QString filename)
 {
-    //state->setMode(bt_MODE_HIDDEN);
+    QString cmd = KAL_NATO_DIR"decode2.sh ";
+    cmd += filename.split('/').last();
+    qDebug() << cmd;
+
+    system(cmd.toStdString().c_str()); //init decode dir
 }

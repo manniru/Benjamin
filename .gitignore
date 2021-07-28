@@ -56,3 +56,5 @@ Tools/BaTool
 *.debug
 
 Tools/Makefile
+
+*.wav
