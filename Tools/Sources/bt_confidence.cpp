@@ -84,6 +84,7 @@ QString BtConfidence::processLine(QString line)
         sum_conf += conf;
 
         int index = line_list[4].toInt();
+        double end = line_list[2].toDouble() + line_list[3].toDouble();
         line_list[4] = lexicon[index];
 
         if( conf>KAL_HARD_TRESHOLD )
@@ -96,8 +97,8 @@ QString BtConfidence::processLine(QString line)
         }
 
         out = line_list.join(" ");
-        printf("%s(%s) ", line_list[4].toStdString().c_str(),
-               line_list[5].toStdString().c_str());
+        printf("%s(%s->%.2f) ", line_list[4].toStdString().c_str(),
+               line_list[5].toStdString().c_str(), end);
     }
     else
     {

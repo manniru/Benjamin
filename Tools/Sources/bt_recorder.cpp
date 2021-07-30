@@ -81,8 +81,6 @@ void BtRecoder::start()
     record_timer->start(5000);
 }
 
-
-
 void BtRecoder::recordTimeout()
 {
     gst_element_set_state(pipeline, GST_STATE_NULL);
@@ -91,7 +89,7 @@ void BtRecoder::recordTimeout()
 //    int msg_type = GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_ERROR | GST_MESSAGE_EOS;
 //    msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, (GstMessageType)msg_type);
 
-    qDebug() << "finished" << wav_filename;
+//    qDebug() << "finished" << wav_filename;
     emit resultReady(wav_filename);
     start();
 }

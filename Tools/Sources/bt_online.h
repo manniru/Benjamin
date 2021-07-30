@@ -7,17 +7,8 @@
 #include "bt_channel_l.h"
 
 #include "bt_state.h"
-
-// A packet for communicating with
-// the record thread
-typedef struct RecordPipe
-{
-    QString  message;
-    BtState *state;
-    QStringList *wins_title;
-    QStringList *elems_name;
-    QVector<ReWindow> windows;
-}RecordPipe;
+#include "bt_recorder.h"
+#include "bt_encoder.h"
 
 class BtOnline : public QObject
 {
@@ -33,8 +24,9 @@ signals:
 
 private:
     QThread *record_thread;
-    RecordPipe *thread_data;
-    std::thread *api_thread;
+    QThread *encoder_thread;
+    BtRecoder *recorder;
+    BtEncoder *encoder;
 };
 
 void btRecordRun(void *thread_struct_void);

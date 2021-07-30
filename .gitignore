@@ -58,3 +58,5 @@ Tools/BaTool
 Tools/Makefile
 
 *.wav
+
+*.autosave
