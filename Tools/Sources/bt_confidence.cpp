@@ -77,15 +77,22 @@ QString BtConfidence::processLine(QString line)
     if( line_list.size()==6 )
     {
         double conf = line_list[5].toDouble();
+        int index = line_list[4].toInt();
+        double end = line_list[2].toDouble() + line_list[3].toDouble();
+        line_list[4] = lexicon[index];
+
         if( conf>KAL_CONF_TRESHOLD )
         {
             sum_det++;
         }
+        else if( line_list[4]=="up" || line_list[4]=="two" )
+        {
+            if( conf>KAL_HARD_TRESHOLD )
+            {
+                sum_det++;
+            }
+        }
         sum_conf += conf;
-
-        int index = line_list[4].toInt();
-        double end = line_list[2].toDouble() + line_list[3].toDouble();
-        line_list[4] = lexicon[index];
 
         if( conf>KAL_HARD_TRESHOLD )
         {
@@ -130,7 +137,7 @@ void BtConfidence::writeConfidence(QVector<QString> lines)
 
 bool BtConfidence::isValidUtterance()
 {
-    if( avg_det<KAL_UTT_TRESHOLD )
+    if( avg_det<KAL_UDET_TRESHOLD && avg_conf<KAL_UCON_TRESHOLD )
     {
         if( avg_conf!=0 )
         {

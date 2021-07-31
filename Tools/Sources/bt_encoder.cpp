@@ -74,8 +74,7 @@ void BtEncoder::start()
     /* Start playing the pipeline */
     gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-    /* Create a new empty buffer */
-//    buffer = gst_buffer_new_and_alloc (CHUNK_SIZE);
+    ///FIXME: Implement GstBufferPool
     for( int i=0 ; i<500 ; i++ )
     {
         if( pushChunk()==false )
@@ -96,15 +95,15 @@ bool BtEncoder::pushChunk()
     int16_t *raw;
 
     int i;
-    gint num_samples = CHUNK_SIZE / 2; /* Because each sample is 16 bits */
+    gint sample_count = CHUNK_SIZE / 2; /* Because each sample is 16 bits */
     gfloat freq;
     GstFlowReturn ret;
     buffer = gst_buffer_new_and_alloc (CHUNK_SIZE);
 
 
     /* Set its timestamp and duration */
-    GST_BUFFER_TIMESTAMP (buffer) = gst_util_uint64_scale (data.num_samples, GST_SECOND, SAMPLE_RATE);
-    GST_BUFFER_DURATION (buffer) = gst_util_uint64_scale (num_samples, GST_SECOND, SAMPLE_RATE);
+    GST_BUFFER_TIMESTAMP (buffer) = gst_util_uint64_scale (sample_index, GST_SECOND, SAMPLE_RATE);
+    GST_BUFFER_DURATION (buffer) = gst_util_uint64_scale (sample_count, GST_SECOND, SAMPLE_RATE);
 
     /* Generate some psychodelic waveforms */
     GstMapInfo map;
@@ -115,7 +114,7 @@ bool BtEncoder::pushChunk()
     data.d -= data.c / 1000;
     freq = 1100 + 1000 * data.d;
 
-    for ( i=0 ; i<num_samples ; i++ )
+    for ( i=0 ; i<sample_count ; i++ )
     {
         data.a += data.b;
         data.b -= data.a / freq;
@@ -123,7 +122,7 @@ bool BtEncoder::pushChunk()
     }
 
     gst_buffer_unmap (buffer, &map);
-    data.num_samples += num_samples;
+    sample_index += sample_count;
 
     /* Push the buffer into the appsrc */
     g_signal_emit_by_name(source, "push-buffer", buffer, &ret);

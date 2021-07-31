@@ -13,10 +13,7 @@
 
 typedef struct _CustomData
 {
-    guint64 num_samples;   /* Number of samples generated so far (for timestamp generation) */
     gfloat a, b, c, d;     /* For waveform generation */
-
-    guint sourceid;        /* To control the GSource */
 } CustomData;
 
 class BtEncoder : public QObject
@@ -51,6 +48,7 @@ private:
 
     CustomData data;
     GstCaps *audio_caps;
+    long sample_index;   /* Number of samples generated so far (for timestamp generation) */
 };
 
 
