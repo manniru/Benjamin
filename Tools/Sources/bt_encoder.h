@@ -13,8 +13,6 @@
 
 typedef struct _CustomData
 {
-    GstElement *app_source;
-
     guint64 num_samples;   /* Number of samples generated so far (for timestamp generation) */
     gfloat a, b, c, d;     /* For waveform generation */
 
@@ -38,6 +36,8 @@ private slots:
     void recordTimeout();
 
 private:
+    bool pushChunk();
+
     QTimer *record_timer;
     QString wav_filename;
 
@@ -46,17 +46,12 @@ private:
     GstBus *bus;
     GstCaps *caps;
     GstMessage *msg;
-    GstStateChangeReturn ret;
+    GstBuffer *buffer;
 
 
     CustomData data;
     GstCaps *audio_caps;
 };
-
-static gboolean push_data (CustomData *data);
-static void start_feed (GstElement *source, guint size, CustomData *data);
-static void stop_feed (GstElement *source, CustomData *data);
-static void error_cb (GstBus *bus, GstMessage *msg, CustomData *data);
 
 
 #endif // BT_ENCORDER_H

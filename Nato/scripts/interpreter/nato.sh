@@ -122,6 +122,7 @@ fi
 
 if [[ "$OUTPUT" ]]; then
 
+    dbus-send --session $DBUS_PATH.debug string:"$WORD"
     dbus-send --session $DBUS_PATH.nato string:"$OUTPUT"
     
 fi

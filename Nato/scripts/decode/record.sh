@@ -25,7 +25,7 @@ while [[ "$I_VAL" -lt "$REC_TIME_MS" ]]; do
 	sleep 0.1
 	T_VAL=$(($I_VAL / 1000))
 	MS_VAL=$(($I_VAL % 1000))
-	printf "\rTime = $T_VAL:$MS_VAL"
+	printf "\r                            Time = $T_VAL:$MS_VAL"
 	
 done
 

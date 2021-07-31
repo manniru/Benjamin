@@ -18,10 +18,15 @@ elif [[ "$WORD" == "shift" ]]; then
     
     OUTPUT="42"
 
+elif [[ "$WORD" == "super" ]]; then
+    
+    OUTPUT="125"
+
 fi
 
 if [[ "$OUTPUT" ]]; then
 
+    dbus-send --session $DBUS_PATH.debug string:"$WORD"
     dbus-send --session $DBUS_PATH.modifier string:"$OUTPUT"
     
 fi

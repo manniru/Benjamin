@@ -22,7 +22,7 @@ BtRecoder::BtRecoder(QThread *thread, QObject *parent) : QObject(parent)
     /* Create the empty pipeline */
     pipeline = gst_pipeline_new ("test-pipeline");
 
-    if (!pipeline || !source || !sink)
+    if( !pipeline || !source || !sink )
     {
         g_printerr ("Not all elements could be created.\n");
     }

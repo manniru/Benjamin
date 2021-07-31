@@ -66,10 +66,6 @@ elif [[ "$WORD" == "plus" ]]; then
     
     OUTPUT="78"
 
-elif [[ "$WORD" == "super" ]]; then
-    
-    OUTPUT="125"
-
 elif [[ "$WORD" == "tab" ]]; then
     
     OUTPUT="15"
@@ -86,6 +82,7 @@ fi
 
 if [[ "$OUTPUT" ]]; then
 
+    dbus-send --session $DBUS_PATH.debug string:"$WORD"
     dbus-send --session $DBUS_PATH.speex string:"$OUTPUT"
     
 fi

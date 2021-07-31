@@ -39,10 +39,24 @@ elif [[ "$WORD" == "sky" ]]; then
 elif [[ "$WORD" == "dive" ]]; then
     
     OUTPUT="9"
+
+elif [[ "$WORD" == "music" ]]; then
+    
+    OUTPUT="10"
+    
+elif [[ "$WORD" == "close" ]]; then
+    
+    OUTPUT="11"
+    
+elif [[ "$WORD" == "switch" ]]; then
+    
+    OUTPUT="12"
+    
 fi
 
 if [[ "$OUTPUT" ]]; then
 
+    dbus-send --session $DBUS_PATH.debug string:"$WORD"
     dbus-send --session $DBUS_PATH.meta string:"$OUTPUT"
     
 fi
