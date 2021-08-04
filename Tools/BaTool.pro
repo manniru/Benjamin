@@ -43,7 +43,6 @@ linux:LIBS += -lgio-2.0 \
               -pthread \
               -lgstreamer-1.0
 
-
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc
 OBJECTS_DIR = Build/.obj

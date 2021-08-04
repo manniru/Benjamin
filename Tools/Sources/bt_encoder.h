@@ -7,33 +7,26 @@
 #include <gst/gst.h>
 
 #include "bt_config.h"
+#include "bt_cyclic.h"
 
-#define CHUNK_SIZE  1024   /* Amount of bytes we are sending in each buffer */
-#define SAMPLE_RATE 16000 /* Samples per second we are sending */
-
-typedef struct _CustomData
-{
-    gfloat a, b, c, d;     /* For waveform generation */
-} CustomData;
+#define CHUNK_SIZE  1000   /* Amount of sample we are sending in each buffer */
 
 class BtEncoder : public QObject
 {
     Q_OBJECT
 public:
-    explicit BtEncoder(QThread *thread, QObject *parent = nullptr);
+    explicit BtEncoder(QThread *thread, BtCyclic *buffer, QObject *parent = nullptr);
 
     ~BtEncoder();
 public slots:
-    void start();
+    void recordTimeout();
+    void startEncode();
 
 signals:
     void resultReady(QString filename);
 
-private slots:
-    void recordTimeout();
-
 private:
-    bool pushChunk();
+    bool pushChunk(int sample_count);
 
     QTimer *record_timer;
     QString wav_filename;
@@ -43,11 +36,10 @@ private:
     GstBus *bus;
     GstCaps *caps;
     GstMessage *msg;
-    GstBuffer *buffer;
+    BtCyclic   *cyclic;
 
-
-    CustomData data;
     GstCaps *audio_caps;
+    int wav_num = 0;
     long sample_index;   /* Number of samples generated so far (for timestamp generation) */
 };
 

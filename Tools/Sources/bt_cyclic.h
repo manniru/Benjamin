@@ -16,6 +16,8 @@ public:
 
     void raad(int16_t *data, int size);
     void write(int16_t *data, int size);
+    void constWrite(int16_t data, int size);
+    void rewind(int count);
 
 private:
     int16_t *buffer;
@@ -23,6 +25,8 @@ private:
     int read_p;
     int write_p;
     int buff_size;
+
+    double buff_data_size;
 };
 
 #endif // BT_CYCLIC_H

@@ -27,6 +27,7 @@ private:
     QThread *encoder_thread;
     BtRecoder *recorder;
     BtEncoder *encoder;
+    BtCyclic  *cyclic;
 };
 
 void btRecordRun(void *thread_struct_void);

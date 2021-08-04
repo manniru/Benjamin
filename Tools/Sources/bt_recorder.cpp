@@ -1,17 +1,16 @@
 #include "bt_recorder.h"
 #include <QDebug>
 
-BtRecoder::BtRecoder(QThread *thread, QObject *parent) : QObject(parent)
+BtRecoder::BtRecoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObject(parent)
 {
     int argc = 0;
     char **argv;
-    record_timer = new QTimer;
-    record_timer->moveToThread(thread);
     system(KAL_SD_DIR"init.sh"); //init decode dir
 
-    connect(record_timer, SIGNAL(timeout()), this, SLOT(recordTimeout()));
-
     gst_init(&argc, &argv);
+    sample_count = 0;
+    cy_buffer = buffer;
+//    cy_buffer->constWrite(0, (BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
 
     /* Create the elements */
     source = gst_element_factory_make("pulsesrc", "source");
@@ -39,7 +38,7 @@ BtRecoder::BtRecoder(QThread *thread, QObject *parent) : QObject(parent)
                                 "channels",G_TYPE_INT, 1, NULL);
 
     g_object_set (sink, "emit-signals", TRUE, "caps", caps, NULL);
-    g_signal_connect (sink, "new-sample", G_CALLBACK (new_sample), NULL);
+    g_signal_connect (sink, "new-sample", G_CALLBACK (new_sample), this);
 
     /* we set the input filename to the source element */
     g_object_set(G_OBJECT(filter), "caps", caps, NULL);
@@ -68,23 +67,28 @@ void BtRecoder::start()
         return;
     }
 
-    record_timer->start(5000);
+//    record_timer->start(BT_DEC_TIMEOUT*1000);
 }
 
-void BtRecoder::recordTimeout()
+void BtRecoder::bufferReady()
 {
-    gst_element_set_state(pipeline, GST_STATE_NULL);
+    sample_count = 0;
+    emit resultReady();
+}
 
-    emit resultReady(wav_filename);
-    start();
+long BtRecoder::addSample(int16_t *data, int count)
+{
+    cy_buffer->write(data, count);
+    sample_count += count;
+
+    return sample_count;
 }
 
 /* The appsink has received a buffer */
-GstFlowReturn new_sample(GstElement *sink)
+GstFlowReturn new_sample(GstElement *sink, BtRecoder *recorder)
 {
     GstSample *sample;
     int16_t *raw;
-    int16_t  raw_max = 0;
 
     /* Retrieve the buffer */
     g_signal_emit_by_name (sink, "pull-sample", &sample);
@@ -92,22 +96,19 @@ GstFlowReturn new_sample(GstElement *sink)
     {
         GstBuffer *buffer = gst_sample_get_buffer(sample);
 
-        /* Generate some psychodelic waveforms */
         GstMapInfo map;
-        gst_buffer_map (buffer, &map, GST_MAP_READ);
+        gst_buffer_map(buffer, &map, GST_MAP_READ);
         raw = (int16_t *)map.data;
-        /* The only thing we do in this example is print a * to indicate a received buffer */
+        // Size half because of 16bit data.
+        long sample_index = recorder->addSample(raw, map.size/2);
 
-        for( int i=0 ; i<map.size ; i++ )
+        gst_sample_unref (sample);
+
+        if( sample_index>BT_DEC_TIMEOUT*BT_REC_RATE )
         {
-            if( qAbs(raw[i])>raw_max )
-            {
-                raw_max = qAbs(raw[i]);
-            }
+            recorder->bufferReady();
         }
 
-        qDebug() << map.size << raw_max << raw[0] << raw[1] << raw[2];
-        gst_sample_unref (sample);
         return GST_FLOW_OK;
     }
 

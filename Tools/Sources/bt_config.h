@@ -20,6 +20,9 @@
 #define KAL_HARD_TRESHOLD  0.5 //word will be removed
 
 #define BT_REC_RATE       16000 //Recording Sample Rate
+#define BT_BUF_SIZE       10    //Buffer Size Second
+#define BT_REC_SIZE       5     //Record Size Second
+#define BT_DEC_TIMEOUT    1     //Decode Timeout in Second
 #define BT_REC_INPUT      "alsa:usbstream:CARD=Solo" //Microphone Input
 
 #endif // BT_CONFIG_H
