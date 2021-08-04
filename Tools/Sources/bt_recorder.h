@@ -31,11 +31,14 @@ private:
     QString wav_filename;
 
     GstElement *pipeline;
-    GstElement *source, *filter, *sink, *encoder;
+    GstElement *source, *filter, *sink;
     GstBus *bus;
     GstCaps *caps;
     GstMessage *msg;
     GstStateChangeReturn ret;
 };
+
+GstFlowReturn new_sample(GstElement *sink);
+
 
 #endif // BT_RECORDER_H

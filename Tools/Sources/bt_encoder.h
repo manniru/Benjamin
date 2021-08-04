@@ -51,5 +51,4 @@ private:
     long sample_index;   /* Number of samples generated so far (for timestamp generation) */
 };
 
-
 #endif // BT_ENCORDER_H

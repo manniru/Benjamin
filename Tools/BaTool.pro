@@ -9,6 +9,7 @@ SOURCES += Sources/main.cpp \
            Sources/backend.cpp \
            Sources/bt_chapar.cpp \
            Sources/bt_confidence.cpp \
+           Sources/bt_cyclic.cpp \
            Sources/bt_encoder.cpp \
            Sources/bt_online.cpp \
            Sources/bt_recorder.cpp \
@@ -21,6 +22,7 @@ HEADERS += Sources/backend.h \
            Sources/bt_config.h \
            Sources/bt_chapar.h \
            Sources/bt_confidence.h \
+           Sources/bt_cyclic.h \
            Sources/bt_encoder.h \
            Sources/bt_online.h \
            Sources/bt_recorder.h \

@@ -18,9 +18,9 @@ BtEncoder::BtEncoder(QThread *thread, QObject *parent) : QObject(parent)
     source  = gst_element_factory_make ("appsrc", "source");
     queue   = gst_element_factory_make ("queue", "queue");
     encoder = gst_element_factory_make("wavenc", "encoder");
-    sink    = gst_element_factory_make ("filesink", "sink");
+    sink    = gst_element_factory_make ("appsink", "sink");
 
-    g_object_set (sink, "location", "test.wav", NULL);
+//    g_object_set (sink, "location", "test.wav", NULL);
 
     /* Create the empty pipeline */
     pipeline = gst_pipeline_new ("test-pipeline");
@@ -39,9 +39,6 @@ BtEncoder::BtEncoder(QThread *thread, QObject *parent) : QObject(parent)
                                       "channels",G_TYPE_INT, 1, NULL);
 
     g_object_set (source, "caps", audio_caps, "format", GST_FORMAT_TIME, NULL);
-//    g_signal_connect (data.app_source, "need-data", G_CALLBACK (start_feed), &data);
-//    g_signal_connect (data.app_source, "enough-data", G_CALLBACK (stop_feed), &data);
-
     gst_caps_unref (audio_caps);
 
     /* Link all elements that can be automatically linked because they have "Always" pads */
@@ -83,10 +80,6 @@ void BtEncoder::start()
             break;
         }
     }
-
-    /* Free the buffer now that we are done with it */
-//    gst_buffer_unref (buffer);
-
     record_timer->start(500);
 }
 
@@ -99,7 +92,6 @@ bool BtEncoder::pushChunk()
     gfloat freq;
     GstFlowReturn ret;
     buffer = gst_buffer_new_and_alloc (CHUNK_SIZE);
-
 
     /* Set its timestamp and duration */
     GST_BUFFER_TIMESTAMP (buffer) = gst_util_uint64_scale (sample_index, GST_SECOND, SAMPLE_RATE);
@@ -142,5 +134,4 @@ void BtEncoder::recordTimeout()
 
     qDebug() << "finished" << wav_filename;
     emit resultReady(wav_filename);
-//    start();
 }
