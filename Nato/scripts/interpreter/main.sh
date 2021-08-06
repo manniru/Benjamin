@@ -16,5 +16,3 @@ for WORD in $BUF; do
     $SI/modifiers.sh $WORD "$DBUS_PATH"
     
 done
-
-dbus-send --session $DBUS_PATH.exec

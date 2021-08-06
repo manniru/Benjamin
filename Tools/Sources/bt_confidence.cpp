@@ -76,36 +76,13 @@ QString BtConfidence::processLine(QString line)
 
     if( line_list.size()==6 )
     {
-        double conf = line_list[5].toDouble();
         int index = line_list[4].toInt();
         double end = line_list[2].toDouble() + line_list[3].toDouble();
         line_list[4] = lexicon[index];
 
-        if( conf>KAL_CONF_TRESHOLD )
-        {
-            sum_det++;
-        }
-        else if( line_list[4]=="up" || line_list[4]=="two" )
-        {
-            if( conf>KAL_HARD_TRESHOLD )
-            {
-                sum_det++;
-            }
-        }
-        sum_conf += conf;
-
-        if( conf>KAL_HARD_TRESHOLD )
-        {
-            if( !utterance.isEmpty() )
-            {
-                utterance += " ";
-            }
-            utterance += line_list[4];
-        }
+        isValidWord(line_list[4], line_list[2].toDouble(), end, line_list[5].toDouble());
 
         out = line_list.join(" ");
-        printf("%s(%s->%.2f) ", line_list[4].toStdString().c_str(),
-               line_list[5].toStdString().c_str(), end);
     }
     else
     {
@@ -137,12 +114,16 @@ void BtConfidence::writeConfidence(QVector<QString> lines)
 
 bool BtConfidence::isValidUtterance()
 {
-    if( avg_det<KAL_UDET_TRESHOLD && avg_conf<KAL_UCON_TRESHOLD )
+//    if( avg_det<KAL_UDET_TRESHOLD && avg_conf<KAL_UCON_TRESHOLD )
+//    {
+//        if( avg_conf!=0 )
+//        {
+//            qDebug() << "Unvalid Utterance" << avg_det << avg_conf;
+//        }
+//        return false;
+//    }
+    if( utterance.isEmpty() )
     {
-        if( avg_conf!=0 )
-        {
-            qDebug() << "Unvalid Utterance" << avg_det << avg_conf;
-        }
         return false;
     }
 
@@ -163,4 +144,42 @@ void BtConfidence::printWords(QString words)
 QString BtConfidence::getUtterance()
 {
     return utterance;
+}
+
+void BtConfidence::isValidWord(QString word, double start, double end, double conf)
+{
+    if( (start<BT_REC_SIZE-0.5-BT_DEC_TIMEOUT) ||
+        (start>=BT_REC_SIZE-0.5) )
+    {
+        return;
+    }
+
+    if( end>BT_REC_SIZE-0.1 )
+    {
+        return;
+    }
+
+    if( conf>KAL_CONF_TRESHOLD )
+    {
+        sum_det++;
+    }
+    else if( word=="up" || word=="two" )
+    {
+        if( conf>KAL_HARD_TRESHOLD )
+        {
+            sum_det++;
+        }
+    }
+    sum_conf += conf;
+
+    if( conf>KAL_HARD_TRESHOLD )
+    {
+        if( !utterance.isEmpty() )
+        {
+            utterance += " ";
+        }
+        utterance += word;
+    }
+
+    printf("%s-%.2f(%.2f->%.2f) ", word.toStdString().c_str(), conf, start, end);
 }

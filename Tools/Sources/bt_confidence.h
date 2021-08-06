@@ -22,6 +22,7 @@ private:
     QString processLine(QString line);
     void parseWords(QString filename);
     void writeConfidence(QVector<QString> lines);
+    void isValidWord(QString word, double start, double end, double conf);
 
     QVector<QString> lexicon;
     QString utterance;
