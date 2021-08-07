@@ -45,7 +45,7 @@ void ReChannelL::execute(const QString &words)
         QString cmd = KAL_SI_DIR"main.sh \"";
         cmd += conf->getUtterance() + "\"";
 
-        qDebug() << cmd;
+//        qDebug() << cmd;
 
         system(cmd.toStdString().c_str());
     }

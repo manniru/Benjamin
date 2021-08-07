@@ -15,16 +15,20 @@ BtOnline::BtOnline(QObject *parent) : QObject(parent)
     encoder->moveToThread(encoder_thread);
     encoder_thread->start();
 
-    connect(recorder, SIGNAL(resultReady()), encoder, SLOT(startEncode()));
-    connect(this, SIGNAL(startRecord()), recorder, SLOT(start()));
-    connect(encoder, SIGNAL(resultReady(QString)), this, SLOT(startDecode(QString)));
+    connect(recorder, SIGNAL(resultReady(QString)), encoder, SLOT(startEncode(QString)));
+    connect(this,     SIGNAL(startRecord()), recorder, SLOT(start()));
+    connect(encoder,  SIGNAL(resultReady(QString)), this, SLOT(startDecode(QString)));
     emit startRecord();
 }
 
-void BtOnline::startDecode(QString filename)
+void BtOnline::startDecode(QString msg)
 {
+    QString filename = msg.split(" ")[0];
+//    QString cmd = "time "KAL_NATO_DIR"decode2.sh ";
     QString cmd = KAL_NATO_DIR"decode2.sh ";
     cmd += filename.split('/').last();
+    cmd += " &";
 
     system(cmd.toStdString().c_str()); //init decode dir
+//    qDebug() << "online" << msg;
 }

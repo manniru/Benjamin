@@ -13,9 +13,9 @@ BtRecoder::BtRecoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
 //    cy_buffer->constWrite(0, (BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
 
     /* Create the elements */
-    source = gst_element_factory_make("pulsesrc", "source");
-    filter = gst_element_factory_make ("capsfilter", "filter");
-    sink = gst_element_factory_make("appsink", "sink");
+    source = gst_element_factory_make("pulsesrc"  , "source");
+    filter = gst_element_factory_make("capsfilter", "filter");
+    sink   = gst_element_factory_make("appsink"   , "sink");
 
     /* Create the empty pipeline */
     pipeline = gst_pipeline_new ("test-pipeline");
@@ -32,13 +32,15 @@ BtRecoder::BtRecoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
     gst_element_link(filter, sink);
 
     caps = gst_caps_new_simple ("audio/x-raw",
-                                "format", G_TYPE_STRING, "S16LE",
-                                "rate",  G_TYPE_INT, 16000,
-                                "layout", G_TYPE_STRING, "interleaved",
-                                "channels",G_TYPE_INT, 1, NULL);
+                                "format" , G_TYPE_STRING, "S16LE",
+                                "rate"   , G_TYPE_INT,    BT_REC_RATE,
+                                "layout" , G_TYPE_STRING, "interleaved",
+                                "channels",G_TYPE_INT,    1, NULL);
 
     g_object_set (sink, "emit-signals", TRUE, "caps", caps, NULL);
     g_signal_connect (sink, "new-sample", G_CALLBACK (new_sample), this);
+
+    g_object_set (source, "buffer-time", 10000, NULL);
 
     /* we set the input filename to the source element */
     g_object_set(G_OBJECT(filter), "caps", caps, NULL);
@@ -70,10 +72,10 @@ void BtRecoder::start()
 //    record_timer->start(BT_DEC_TIMEOUT*1000);
 }
 
-void BtRecoder::bufferReady()
+void BtRecoder::bufferReady(QString message)
 {
     sample_count = 0;
-    emit resultReady();
+    emit resultReady(message);
 }
 
 long BtRecoder::addSample(int16_t *data, int count)
@@ -102,11 +104,22 @@ GstFlowReturn new_sample(GstElement *sink, BtRecoder *recorder)
         // Size half because of 16bit data.
         long sample_index = recorder->addSample(raw, map.size/2);
 
+        for( int i=0 ; i<map.size ; i++ )
+        {
+            recorder->sum_avg += qAbs(raw[i]);
+        }
+
         gst_sample_unref (sample);
 
-        if( sample_index>BT_DEC_TIMEOUT*BT_REC_RATE )
+        if( sample_index>=BT_DEC_TIMEOUT*BT_REC_RATE )
         {
-            recorder->bufferReady();
+            QString message = QTime::currentTime().toString("mm:ss:zzz") + " ";
+            double max_amp = 20*qLn(recorder->sum_avg/sample_index)/qLn(10);
+            message += QString::number(max_amp);
+
+//            qDebug() << "recorder" << message << sample_index;;
+            recorder->bufferReady(message);
+            recorder->sum_avg = 0;
         }
 
         return GST_FLOW_OK;

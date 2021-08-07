@@ -31,6 +31,17 @@ void BtConfidence::parseWords(QString filename)
 
 void BtConfidence::parseConfidence()
 {
+    if( words.length() )
+    {
+        lastword = words.last();
+    }
+    else
+    {
+        lastword.time = 1;
+        lastword.word = "";
+    }
+    words.clear();
+
     QFile conf_file(BT_CONF_PATH);
     QVector<QString> out_lines;
 
@@ -148,14 +159,26 @@ QString BtConfidence::getUtterance()
 
 void BtConfidence::isValidWord(QString word, double start, double end, double conf)
 {
-    if( (start<BT_REC_SIZE-0.5-BT_DEC_TIMEOUT) ||
-        (start>=BT_REC_SIZE-0.5) )
+    double middle = (start+end)/2;
+
+    if( (middle<lastword.time) )
     {
         return;
     }
 
-    if( end>BT_REC_SIZE-0.1 )
+    if( (middle>=BT_REC_SIZE-0.5) )
     {
+        return;
+    }
+
+    if( end>BT_REC_SIZE-0.2 )
+    {
+        return;
+    }
+
+    if( isLastWord(word, middle) )
+    {
+        qDebug() << "last word are the same" << word << lastword.time << middle;
         return;
     }
 
@@ -179,7 +202,27 @@ void BtConfidence::isValidWord(QString word, double start, double end, double co
             utterance += " ";
         }
         utterance += word;
+
+        BtWord word_buf;
+        word_buf.word = word;
+        word_buf.time = middle-1;
+        words.append(word_buf);
     }
 
     printf("%s-%.2f(%.2f->%.2f) ", word.toStdString().c_str(), conf, start, end);
+}
+
+// Return true if supplied word is the same as last word
+int BtConfidence::isLastWord(QString word, double middle)
+{
+    double acc_margin = 0.2;
+    if ( word==lastword.word )
+    {
+        if ( qAbs(middle-lastword.time)<acc_margin )
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

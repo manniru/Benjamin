@@ -26,14 +26,14 @@ BtEncoder::BtEncoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
     }
 
     /* Configure appsrc */
-    audio_caps = gst_caps_new_simple ("audio/x-raw",
+    caps = gst_caps_new_simple ("audio/x-raw",
                                       "format", G_TYPE_STRING, "S16LE",
                                       "rate",  G_TYPE_INT, BT_REC_RATE,
                                       "layout", G_TYPE_STRING, "interleaved",
                                       "channels",G_TYPE_INT, 1, NULL);
 
-    g_object_set (source, "caps", audio_caps, "format", GST_FORMAT_TIME, NULL);
-    gst_caps_unref (audio_caps);
+    g_object_set (source, "caps", caps, "format", GST_FORMAT_TIME, NULL);
+    gst_caps_unref (caps);
 
     /* Link all elements that can be automatically linked because they have "Always" pads */
     gst_bin_add_many (GST_BIN(pipeline), source, queue, encoder, sink, NULL);
@@ -48,11 +48,6 @@ BtEncoder::BtEncoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
 
 BtEncoder::~BtEncoder()
 {
-    if (msg != NULL)
-    {
-        gst_message_unref (msg);
-    }
-
     gst_object_unref(bus);
 
     /* Free resources */
@@ -60,7 +55,7 @@ BtEncoder::~BtEncoder()
     gst_object_unref (pipeline);
 }
 
-void BtEncoder::startEncode()
+void BtEncoder::startEncode(QString message)
 {
     if( wav_filename.contains("buf2.wav") )
     {
@@ -92,7 +87,9 @@ void BtEncoder::startEncode()
         }
     }
 
-    record_timer->start(500);
+    record_timer->start(50);
+
+    msg = message;
 }
 
 bool BtEncoder::pushChunk(int sample_count)
@@ -130,6 +127,12 @@ void BtEncoder::recordTimeout()
 {
     gst_element_set_state(pipeline, GST_STATE_NULL);
 
-//    qDebug() << "finished" << wav_filename;
-    emit resultReady(wav_filename);
+    uint q_buf_count = 0;
+    uint s_buf_count = 0;
+    g_object_get(queue, "current-level-bytes", &q_buf_count, NULL);
+    g_object_get(source, "current-level-bytes", &s_buf_count, NULL);
+
+//    qDebug() << "done" << msg << q_buf_count << s_buf_count;
+
+    emit resultReady(wav_filename + " " + msg);
 }

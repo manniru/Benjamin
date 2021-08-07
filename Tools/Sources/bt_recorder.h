@@ -1,6 +1,8 @@
 #ifndef BT_RECORDER_H
 #define BT_RECORDER_H
 
+#include <QTime>
+#include <QtMath>
 #include <QTimer>
 #include <QThread>
 #include <QObject>
@@ -18,14 +20,15 @@ public:
     explicit BtRecoder(QThread *thread, BtCyclic *buffer, QObject *parent = nullptr);
 
     long addSample(int16_t *data, int count);
-    void bufferReady();
+    void bufferReady(QString message);
 
+    long sum_avg;
     ~BtRecoder();
 public slots:
     void start();
 
 signals:
-    void resultReady();
+    void resultReady(QString message);
 
 
 private:

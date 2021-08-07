@@ -20,7 +20,7 @@ public:
     ~BtEncoder();
 public slots:
     void recordTimeout();
-    void startEncode();
+    void startEncode(QString message);
 
 signals:
     void resultReady(QString filename);
@@ -33,12 +33,11 @@ private:
 
     GstElement *pipeline;
     GstElement *source, *queue, *sink, *encoder;
-    GstBus *bus;
-    GstCaps *caps;
-    GstMessage *msg;
-    BtCyclic   *cyclic;
+    GstBus   *bus;
+    GstCaps  *caps;
+    BtCyclic *cyclic;
+    QString   msg;
 
-    GstCaps *audio_caps;
     int wav_num = 0;
     long sample_index;   /* Number of samples generated so far (for timestamp generation) */
 };
