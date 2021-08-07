@@ -8,10 +8,13 @@
 
 #include "bt_config.h"
 
+#define  BT_CONF_TIMEOUT 5000
+
 typedef struct BtWord
 {
     QString word;
     double  time;
+    double  conf;
 }BtWord;
 
 class BtConfidence : public QObject
@@ -26,20 +29,19 @@ public:
 
 private:
     QString processLine(QString line);
+    double  getAvgConfidence();
+    double  getAvgDetection();
     void parseWords(QString filename);
     void writeConfidence(QVector<QString> lines);
-    void isValidWord(QString word, double start, double end, double conf);
+    bool isValidTime(QString word, double start, double end);
     int  isLastWord(QString word, double middle);
+    void shiftHistory();
 
     QVector<QString> lexicon;
+    QVector<BtWord>  history;
     QVector<BtWord>  words;
     QString utterance;
     BtWord  lastword;
-
-    double sum_conf;
-    double sum_det;
-    double avg_conf;
-    double avg_det;
 };
 
 #endif // BT_CONFIDENE_H

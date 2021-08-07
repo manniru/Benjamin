@@ -5,6 +5,13 @@ BtConfidence::BtConfidence(QObject *parent) : QObject(parent)
 {
     parseWords(BT_WORDS_PATH);
     setbuf(stdout,NULL);
+
+    timer = new QTimer;
+
+    connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeOut()));
+
+    timer->start(BT_CONF_TIMEOUT);
+
 }
 
 void BtConfidence::parseWords(QString filename)
@@ -41,6 +48,7 @@ void BtConfidence::parseConfidence()
         lastword.word = "";
     }
     words.clear();
+    shiftHistory();
 
     QFile conf_file(BT_CONF_PATH);
     QVector<QString> out_lines;
@@ -91,7 +99,11 @@ QString BtConfidence::processLine(QString line)
         double end = line_list[2].toDouble() + line_list[3].toDouble();
         line_list[4] = lexicon[index];
 
-        isValidWord(line_list[4], line_list[2].toDouble(), end, line_list[5].toDouble());
+        if( isValidTime(line_list[4], line_list[2].toDouble(), end) );
+        {
+            double middle = line_list[2].toDouble() + line_list[3].toDouble()/2;
+            addWord(line_list[4], middle, line_list[5].toDouble());
+        }
 
         out = line_list.join(" ");
     }
@@ -125,18 +137,19 @@ void BtConfidence::writeConfidence(QVector<QString> lines)
 
 bool BtConfidence::isValidUtterance()
 {
-//    if( avg_det<KAL_UDET_TRESHOLD && avg_conf<KAL_UCON_TRESHOLD )
-//    {
-//        if( avg_conf!=0 )
-//        {
-//            qDebug() << "Unvalid Utterance" << avg_det << avg_conf;
-//        }
-//        return false;
-//    }
+    if( getAvgDetection()<KAL_UDET_TRESHOLD && getAvgConfidence()<KAL_UCON_TRESHOLD )
+    {
+        if( avg_conf!=0 )
+        {
+            qDebug() << "Unvalid Utterance" << getAvgDetection() << getAvgConfidence();
+        }
+        return false;
+    }
     if( utterance.isEmpty() )
     {
         return false;
     }
+    timer->start(BT_CONF_TIMEOUT);
 
     return true;
 }
@@ -157,44 +170,36 @@ QString BtConfidence::getUtterance()
     return utterance;
 }
 
-void BtConfidence::isValidWord(QString word, double start, double end, double conf)
+bool BtConfidence::isValidTime(QString word, double start, double end)
 {
     double middle = (start+end)/2;
 
     if( (middle<lastword.time) )
     {
-        return;
+        return false;
     }
 
     if( (middle>=BT_REC_SIZE-0.5) )
     {
-        return;
+        return false;
     }
 
     if( end>BT_REC_SIZE-0.2 )
     {
-        return;
+        return false;
     }
 
     if( isLastWord(word, middle) )
     {
         qDebug() << "last word are the same" << word << lastword.time << middle;
-        return;
+        return false;
     }
 
-    if( conf>KAL_CONF_TRESHOLD )
-    {
-        sum_det++;
-    }
-    else if( word=="up" || word=="two" )
-    {
-        if( conf>KAL_HARD_TRESHOLD )
-        {
-            sum_det++;
-        }
-    }
-    sum_conf += conf;
+    return true;
+}
 
+void BtConfidence::addWord(QString word, double middle, double conf)
+{
     if( conf>KAL_HARD_TRESHOLD )
     {
         if( !utterance.isEmpty() )
@@ -206,10 +211,63 @@ void BtConfidence::isValidWord(QString word, double start, double end, double co
         BtWord word_buf;
         word_buf.word = word;
         word_buf.time = middle-1;
+        word_buf.conf = conf;
         words.append(word_buf);
+
+        word_buf.time = middle;
+        history.append(word_buf);
+
     }
 
     printf("%s-%.2f(%.2f->%.2f) ", word.toStdString().c_str(), conf, start, end);
+}
+
+void BtConfidence::shiftHistory()
+{
+    for( int i=0 ; i<history.length() ; i++ )
+    {
+        if( history[i].time<-1 )
+        {
+            history.remove(i);
+            i--;
+        }
+        else
+        {
+            history[i].time = history[i].time-1;
+        }
+    }
+}
+
+double BtConfidence::getAvgConfidence()
+{
+    double sum = 0;
+    for( int i=0 ; i<history.length() ; i++ )
+    {
+        sum += history[i].conf;
+    }
+
+    return sum/history.length();
+}
+
+double BtConfidence::getAvgDetection()
+{
+    double detection = 0;
+    for( int i=0 ; i<history.length() ; i++ )
+    {
+        if( history[i].conf>KAL_CONF_TRESHOLD )
+        {
+            detection += 1;
+        }
+        else if( word=="up" || word=="two" )
+        {
+            if( history[i].conf>KAL_HARD_TRESHOLD )
+            {
+                detection += 1;
+            }
+        }
+    }
+
+    return detection/history.length();
 }
 
 // Return true if supplied word is the same as last word
@@ -225,4 +283,9 @@ int BtConfidence::isLastWord(QString word, double middle)
     }
 
     return false;
+}
+
+void BtConfidence::timerTimeOut()
+{
+
 }
