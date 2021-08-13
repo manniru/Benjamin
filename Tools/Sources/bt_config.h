@@ -13,6 +13,7 @@
 
 #define BT_WORDS_PATH     KAL_NATO_DIR"exp/"KAL_MODE"/graph/words.txt"
 #define BT_CONF_PATH      KAL_RESULT_DIR"confidence"
+#define BT_BAR_RESULT     "Resources/bar_result"
 
 #define KAL_CONF_TRESHOLD  0.9
 #define KAL_UDET_TRESHOLD  0.7 //Utterance Total Detection

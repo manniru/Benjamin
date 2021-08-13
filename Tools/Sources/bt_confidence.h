@@ -31,7 +31,9 @@ private:
     QString processLine(QString line);
     double  getAvgConfidence();
     double  getAvgDetection();
+    void    addWord(QString word, double middle, double conf);
     void parseWords(QString filename);
+    void writeBarResult();
     void writeConfidence(QVector<QString> lines);
     bool isValidTime(QString word, double start, double end);
     int  isLastWord(QString word, double middle);

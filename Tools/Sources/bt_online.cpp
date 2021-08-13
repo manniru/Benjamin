@@ -24,8 +24,8 @@ BtOnline::BtOnline(QObject *parent) : QObject(parent)
 void BtOnline::startDecode(QString msg)
 {
     QString filename = msg.split(" ")[0];
-//    QString cmd = "time "KAL_NATO_DIR"decode2.sh ";
-    QString cmd = KAL_NATO_DIR"decode2.sh ";
+    QString cmd = "time "KAL_NATO_DIR"decode2.sh ";
+//    QString cmd = KAL_NATO_DIR"decode2.sh ";
     cmd += filename.split('/').last();
     cmd += " &";
 
