@@ -75,7 +75,6 @@ void BtEncoder::startEncode(QString message)
 
     ///FIXME: Implement GstBufferPool
     int buf_count = BT_REC_SIZE*BT_REC_RATE/CHUNK_SIZE;
-//    int buf_count = BT_DEC_TIMEOUT*BT_REC_RATE/CHUNK_SIZE;
 
     cyclic->rewind((BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
     for( int i=0 ; i<buf_count ; i++ )

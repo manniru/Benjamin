@@ -10,7 +10,6 @@ BtRecoder::BtRecoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
     gst_init(&argc, &argv);
     sample_count = 0;
     cy_buffer = buffer;
-//    cy_buffer->constWrite(0, (BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
 
     /* Create the elements */
     source = gst_element_factory_make("pulsesrc"  , "source");
@@ -68,8 +67,6 @@ void BtRecoder::start()
         gst_object_unref(pipeline);
         return;
     }
-
-//    record_timer->start(BT_DEC_TIMEOUT*1000);
 }
 
 void BtRecoder::bufferReady(QString message)

@@ -60,3 +60,7 @@ Tools/Makefile
 *.wav
 
 *.autosave
+
+Tools/Resources/bar_result
+
+Nato/HHM/

@@ -8,8 +8,6 @@
 
 #include "bt_config.h"
 
-#define  BT_CONF_TIMEOUT 5000
-
 typedef struct BtWord
 {
     QString word;
@@ -41,7 +39,7 @@ private:
 
     QVector<QString> lexicon;
     QVector<BtWord>  history;
-    QVector<BtWord>  words;
+    QVector<BtWord>  words;  //words with conf>KAL_HARD_TRESHOLD
     QString utterance;
     BtWord  lastword;
 };

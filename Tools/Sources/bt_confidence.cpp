@@ -38,7 +38,7 @@ void BtConfidence::parseConfidence()
     }
     else
     {
-        lastword.time = 1;
+        lastword.time = BT_REC_SIZE-BT_DEC_TIMEOUT-1;
         lastword.word = "";
     }
     words.clear();
@@ -65,7 +65,7 @@ void BtConfidence::parseConfidence()
 
     if( out_lines.size() )
     {
-            printf("\n");
+        printf("\n");
     }
 
     conf_file.close();
@@ -235,22 +235,20 @@ bool BtConfidence::isValidTime(QString word, double start, double end)
 void BtConfidence::addWord(QString word, double middle, double conf)
 {
     BtWord word_buf;
+    word_buf.word = word;
+    word_buf.conf = conf;
     if( conf>KAL_HARD_TRESHOLD )
     {
-        if( !utterance.isEmpty() )
+        if( utterance.length() )
         {
             utterance += " ";
         }
         utterance += word;
 
-        word_buf.word = word;
-        word_buf.time = middle-1;
-        word_buf.conf = conf;
+        word_buf.time = middle-BT_DEC_TIMEOUT;
         words.append(word_buf);
     }
 
-    word_buf.word = word;
-    word_buf.conf = conf;
     word_buf.time = middle;
     history.append(word_buf);
 }
@@ -266,7 +264,7 @@ void BtConfidence::shiftHistory()
         }
         else
         {
-            history[i].time = history[i].time-1;
+            history[i].time = history[i].time-BT_DEC_TIMEOUT;
         }
     }
 }

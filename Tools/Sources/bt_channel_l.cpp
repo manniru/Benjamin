@@ -49,6 +49,11 @@ void ReChannelL::execute(const QString &words)
 
         system(cmd.toStdString().c_str());
     }
+    else if( conf->getUtterance().isEmpty() )
+    {
+        system("dbus-send --session --dest=com.binaee.rebound / "
+               "com.binaee.rebound.exec ");
+    }
 }
 
 void ReChannelL::nato(const QString &text)
