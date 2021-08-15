@@ -7,6 +7,7 @@ CONFIG += console
 
 SOURCES += Sources/main.cpp \
            Sources/backend.cpp \
+           Sources/bt_captain.cpp \
            Sources/bt_chapar.cpp \
            Sources/bt_confidence.cpp \
            Sources/bt_cyclic.cpp \
@@ -19,6 +20,7 @@ linux:SOURCES += \
                  Sources/bt_channel_l.cpp
 
 HEADERS += Sources/backend.h \
+           Sources/bt_captain.h \
            Sources/bt_config.h \
            Sources/bt_chapar.h \
            Sources/bt_confidence.h \

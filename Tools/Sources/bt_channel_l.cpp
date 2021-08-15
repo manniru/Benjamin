@@ -4,7 +4,7 @@
 ReChannelL::ReChannelL(QObject *parent) : QObject(parent)
 {
     ConnectDBus();
-    conf = new BtConfidence;
+    cap = new BtCaptain;
 }
 
 ReChannelL::~ReChannelL()
@@ -52,7 +52,7 @@ void ReChannelL::execute(const QString &words)
     else if( conf->getUtterance().isEmpty() )
     {
         system("dbus-send --session --dest=com.binaee.rebound / "
-               "com.binaee.rebound.exec ");
+               "com.binaee.rebound.exec  string:\"\"");
     }
 }
 

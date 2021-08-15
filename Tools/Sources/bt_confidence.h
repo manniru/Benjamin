@@ -25,23 +25,14 @@ public:
     void printWords(QString words);
     QString getUtterance();
 
+    QVector<BtWord>  words;
+
 private:
     QString processLine(QString line);
-    double  getAvgConfidence();
-    double  getAvgDetection();
-    void    addWord(QString word, double middle, double conf);
     void parseWords(QString filename);
-    void writeBarResult();
     void writeConfidence(QVector<QString> lines);
-    bool isValidTime(QString word, double start, double end);
-    int  isLastWord(QString word, double middle);
-    void shiftHistory();
 
     QVector<QString> lexicon;
-    QVector<BtWord>  history;
-    QVector<BtWord>  words;  //words with conf>KAL_HARD_TRESHOLD
-    QString utterance;
-    BtWord  lastword;
 };
 
 #endif // BT_CONFIDENE_H

@@ -3,7 +3,7 @@
 
 #include "backend.h"
 #include "bt_config.h"
-#include "bt_confidence.h"
+#include "bt_captain.h"
 
 #include <QObject>
 #include <QtCore/QObject>
@@ -27,7 +27,7 @@ public slots:
 private:
     void ConnectDBus();
 
-    BtConfidence *conf;
+    BtCaptain *cap;
 };
 
 #endif // BT_CHANNEL_L_H
