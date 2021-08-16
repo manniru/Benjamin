@@ -67,9 +67,11 @@ QString BtConfidence::processLine(QString line)
         line_list[4] = lexicon[index];
 
         BtWord buf;
-        buf.time = (start+end)/2;
-        buf.conf = line_list[5].toDouble();
-        buf.word = line_list[4];
+        buf.time  = (start+end)/2;
+        buf.start = start;
+        buf.end   = end;
+        buf.conf  = line_list[5].toDouble();
+        buf.word  = line_list[4];
 
         words.append(buf);
 

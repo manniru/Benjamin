@@ -4,39 +4,48 @@
 BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
 {
     setbuf(stdout,NULL);
+
     conf = new BtConfidence;
+    lastword.word = "";
 }
 
 void BtCaptain::parse()
 {
-    if( words.length() )
-    {
-        lastword = words.last();
-    }
-    else
-    {
-        lastword.word = "";
-    }
     words.clear();
     shiftHistory();
     utterance = "";
 
-    ///FIXME: get conf
     conf->parseConfidence();
 
-    ///FIXME: find last word time
     int index_LastWord = lastWordIndex();
-    conf->words.remove(index_LastWord);
+
+    if( index_LastWord )
+    {
+        conf->words.remove(0, index_LastWord);
+    }
 
     for( int i=0 ; i<conf->words.length() ; i++ )
     {
         processUtterance(conf->words[i]);
     }
 
-    ///FIXME: if any output!
     if( words.length() )
     {
         printf("\n");
+        lastword = words.last();
+    }
+    else
+    {
+        if( lastword.word!="" )
+        {
+            lastword.time = lastword.time-BT_DEC_TIMEOUT;
+
+            if( lastword.time<0.5 )
+            {
+                qDebug() << "word removed" << lastword.word;
+                lastword.word = "";
+            }
+        }
     }
 
     writeBarResult();
@@ -44,12 +53,11 @@ void BtCaptain::parse()
 
 void BtCaptain::processUtterance(BtWord word)
 {
-    if( isValidTime(word.time) )
+    if( isValidTime(word) )
     {
-        addWord(word.word, word.time, word.conf);
-        ///FIXME: Add start and end to BtWord
-//        printf("%s-%.2f(%.2f->%.2f) ", word.word.toStdString().c_str()
-//               , conf, start, end);
+        addWord(word);
+        printf("%s-%.2f(%.2f->%.2f) ", word.word.toStdString().c_str()
+               , word.conf, word.start, word.end);
     }
 }
 
@@ -132,19 +140,19 @@ QString BtCaptain::getUtterance()
     return utterance;
 }
 
-bool BtCaptain::isValidTime(double middle)
+bool BtCaptain::isValidTime(BtWord word)
 {
-    if( middle<0.7 )
+    if( word.time<0.7 )
     {
         return false;
     }
 
-    if( (middle>=BT_REC_SIZE-0.5) )
+    if( (word.time>=BT_REC_SIZE-0.5) )
     {
         return false;
     }
 
-    if( end>BT_REC_SIZE-0.2 )
+    if( word.end>BT_REC_SIZE-0.2 )
     {
         return false;
     }
@@ -152,25 +160,22 @@ bool BtCaptain::isValidTime(double middle)
     return true;
 }
 
-void BtCaptain::addWord(QString word, double middle, double conf)
+void BtCaptain::addWord(BtWord word)
 {
-    BtWord word_buf;
-    word_buf.word = word;
-    word_buf.conf = conf;
-    if( conf>KAL_HARD_TRESHOLD )
+    BtWord word_buf = word;
+    if( word.conf>KAL_HARD_TRESHOLD )
     {
         if( utterance.length() )
         {
             utterance += " ";
         }
-        utterance += word;
+        utterance += word.word;
 
-        word_buf.time = middle-BT_DEC_TIMEOUT;
+        word_buf.time = word.time-BT_DEC_TIMEOUT;
         words.append(word_buf);
     }
 
-    word_buf.time = middle;
-    history.append(word_buf);
+    history.append(word);
 }
 
 int BtCaptain::lastWordIndex()
@@ -262,19 +267,4 @@ double BtCaptain::getAvgDetection()
     }
 
     return detection/history.length();
-}
-
-// Return true if supplied word is the same as last word
-int BtCaptain::isLastWord(QString word, double middle)
-{
-    double acc_margin = 0.2;
-    if ( word==lastword.word )
-    {
-        if ( qAbs(middle-lastword.time)<acc_margin )
-        {
-            return true;
-        }
-    }
-
-    return false;
 }

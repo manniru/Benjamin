@@ -12,6 +12,8 @@ typedef struct BtWord
 {
     QString word;
     double  time;
+    double  start;
+    double  end;
     double  conf;
 }BtWord;
 

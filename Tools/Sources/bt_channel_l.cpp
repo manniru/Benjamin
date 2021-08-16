@@ -36,20 +36,20 @@ void ReChannelL::ConnectDBus()
 
 void ReChannelL::execute(const QString &words)
 {
-    conf->parseConfidence();
+    cap->parse();
 
-    if( conf->isValidUtterance() )
+    if( cap->isValidUtterance() )
     {
 //        conf->printWords(words);
 
         QString cmd = KAL_SI_DIR"main.sh \"";
-        cmd += conf->getUtterance() + "\"";
+        cmd += cap->getUtterance() + "\"";
 
 //        qDebug() << cmd;
 
         system(cmd.toStdString().c_str());
     }
-    else if( conf->getUtterance().isEmpty() )
+    else if( cap->getUtterance().isEmpty() )
     {
         system("dbus-send --session --dest=com.binaee.rebound / "
                "com.binaee.rebound.exec  string:\"\"");

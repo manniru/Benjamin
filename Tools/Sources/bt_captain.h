@@ -23,10 +23,9 @@ private:
     void processUtterance(BtWord word);
     double  getAvgConfidence();
     double  getAvgDetection();
-    void    addWord(QString word, double middle, double conf);
+    void    addWord(BtWord word);
     void writeBarResult();
-    bool isValidTime(double start);
-    int  isLastWord(QString word, double middle);
+    bool isValidTime(BtWord word);
     int  lastWordIndex();
     int  lastWordIndex(double max_dist);
     void shiftHistory();
