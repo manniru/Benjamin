@@ -38,6 +38,9 @@ $SD/make_mfcc.sh $AUDIO_PATH 2>/dev/null
 
 apply-cmvn --utt2spk=ark:$UTT2SPK scp:$CMVN scp:$FEAT ark:$LAT_CMVN 2>/dev/null
 add-deltas ark:$LAT_CMVN ark:$LAT_DELTA 2>/dev/null
-#gmm-latgen-faster $LATGEN_OPTIONS ark:$LAT_DELTA $LATTICE_FILE  2>&1 | grep ^bijan
+
+if [[ $# -lt 2 ]]; then
+	gmm-latgen-faster $LATGEN_OPTIONS ark:$LAT_DELTA $LATTICE_FILE  2>&1 | grep ^bijan
+fi
 
 

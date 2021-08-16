@@ -26,11 +26,12 @@ while true; do
 
 	$SD/record.sh "$WAV_DIR/$REC_NAME" $REC_TIME
 	WORDS=$($SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH")
-	
+
 	$SD/create_conf.sh decode 0.05 0.027
 	dbus-send --session $DBUS_PATH.exec string:"$WORDS"
-	
+
 	if [[ "$#" -gt "0" ]];then 
 		exit 0
 	fi
+
 done
