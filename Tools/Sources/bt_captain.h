@@ -5,9 +5,12 @@
 #include <QFile>
 #include <QTimer>
 #include <QVector>
+#include <QTime>
 
 #include "bt_config.h"
 #include "bt_confidence.h"
+
+#define BT_TIME_NOW QTime::currentTime().toString("hh:mm:ss")
 
 class BtCaptain : public QObject
 {
@@ -27,8 +30,9 @@ private:
     void writeBarResult();
     bool isValidTime(BtWord word);
     int  lastWordIndex();
-    int  lastWordIndex(double max_dist);
+    int  lastWordIndex(double min, double max);
     void shiftHistory();
+    void printConf();
 
     QVector<BtWord>  history;
     QVector<BtWord>  words;  //words with conf>KAL_HARD_TRESHOLD

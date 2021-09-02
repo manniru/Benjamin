@@ -5,45 +5,37 @@ QT += multimedia
 
 CONFIG += console
 
-SOURCES += Sources/main.cpp \
-           Sources/backend.cpp \
-           Sources/bt_captain.cpp \
-           Sources/bt_chapar.cpp \
-           Sources/bt_confidence.cpp \
-           Sources/bt_cyclic.cpp \
-           Sources/bt_encoder.cpp \
-           Sources/bt_online.cpp \
-           Sources/bt_recorder.cpp \
-           Sources/bt_state.cpp
-
-linux:SOURCES += \
-                 Sources/bt_channel_l.cpp
-
-HEADERS += Sources/backend.h \
-           Sources/bt_captain.h \
-           Sources/bt_config.h \
-           Sources/bt_chapar.h \
-           Sources/bt_confidence.h \
-           Sources/bt_cyclic.h \
-           Sources/bt_encoder.h \
-           Sources/bt_online.h \
-           Sources/bt_recorder.h \
-           Sources/bt_state.h
-
-
-linux:HEADERS += \
-                 Sources/bt_channel_l.h
+SOURCES += Sources/*.cpp
+HEADERS += Sources/*.h
 
 
 linux:INCLUDEPATH += /usr/include/glib-2.0 \
                      /usr/lib/glib-2.0/include \
-                     /usr/include/gstreamer-1.0
+                     /usr/include/gstreamer-1.0 \
+                     ../../Kaldi/src \
+                     ../../Kaldi/tools/openfst/src/include \
+                     /opt/intel/mkl/include
 
 linux:LIBS += -lgio-2.0 \
               -lgobject-2.0 \
               -lglib-2.0 \
               -pthread \
-              -lgstreamer-1.0
+              -lgstreamer-1.0 \
+              -L/opt/intel/mkl/lib/intel64 \
+              -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
+              -liomp5 -lpthread -lm -ldl \
+              -LKaldi/Libs \
+              -lfst \
+              -lkaldi-hmm -lkaldi-feat -lkaldi-transform \
+              -lkaldi-gmm  -lkaldi-tree -lkaldi-util \
+              -lkaldi-matrix -lkaldi-base
+
+DEFINES += HAVE_MKL \
+           HAVE_CXXABI_H \
+           HAVE_EXECINFO_H=1 \
+           KALDI_DOUBLEPRECISION=0
+
+QMAKE_CXXFLAGS += -std=c++14 -m64 -msse -msse2 -pthread -g -isystem
 
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc

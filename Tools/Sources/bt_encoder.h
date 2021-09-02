@@ -38,7 +38,7 @@ private:
     BtCyclic *cyclic;
     QString   msg;
 
-    int wav_num = 0;
+    long wav_num = 0;
     long sample_index;   /* Number of samples generated so far (for timestamp generation) */
 };
 

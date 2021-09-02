@@ -16,6 +16,10 @@ void BtCaptain::parse()
     utterance = "";
 
     conf->parseConfidence();
+    if( conf->words.length() )
+    {
+        printConf();
+    }
 
     int index_LastWord = lastWordIndex();
 
@@ -185,32 +189,65 @@ int BtCaptain::lastWordIndex()
         return 0;
     }
 
-    int index = lastWordIndex(0.2);
+    int index = lastWordIndex(-0.1, 0.1);
 
     if( index==0 )
     {
-        qDebug() << "Last word not found, change max_dist->0.5";
-        index = lastWordIndex(0.5);
+        index = lastWordIndex(-0.2, 0);
+    }
+    if( index==0 )
+    {
+        qDebug() << BT_TIME_NOW << "Lastword not found, max_dist->-0.5";
+        index = lastWordIndex(-0.5, 0);
+    }
+    if( index==0 )
+    {
+        qDebug() << BT_TIME_NOW << "Lastword not found, max_dist->+0.2";
+        index = lastWordIndex(0, 0.2);
+    }
+    if( index==0 )
+    {
+        qDebug() << BT_TIME_NOW << "Lastword not found, max_dist->+0.5";
+        index = lastWordIndex(0, 0.5);
+    }
+    if( index==0 )
+    {
+        qDebug() << BT_TIME_NOW << "!!!!!!Last Word Not Found" << lastword.word << lastword.time;
     }
 
     return index;
 }
 
-int BtCaptain::lastWordIndex(double max_dist)
+//Return first word that match the timing
+//Being first word is a designed feature
+int BtCaptain::lastWordIndex(double min, double max)
 {
     for( int i=0 ; i<conf->words.length() ; i++ )
     {
         if( conf->words[i].word==lastword.word )
         {
-            double dist = qAbs(conf->words[i].time-lastword.time);
-            if( dist<max_dist )
+            double dist = conf->words[i].time-lastword.time;
+            if( min<=dist && dist<=max )
             {
+//                qDebug() << "dist" << dist;
                 return i+1;
             }
         }
     }
 
     return 0;
+}
+
+void BtCaptain::printConf()
+{
+    printf("raw conf: %s ", BT_TIME_NOW.toStdString().c_str());
+
+    for( int i=0 ; i<conf->words.length() ; i++ )
+    {
+        printf("%s(%f) ", conf->words[i].word.toStdString().c_str(), conf->words[i].time);
+    }
+
+    printf("\n");
 }
 
 void BtCaptain::shiftHistory()

@@ -57,6 +57,7 @@ BtEncoder::~BtEncoder()
 
 void BtEncoder::startEncode(QString message)
 {
+#ifdef BT_DOUBLE_BUF
     if( wav_filename.contains("buf2.wav") )
     {
         wav_filename = KAL_WAV_DIR"buf1.wav";
@@ -65,7 +66,10 @@ void BtEncoder::startEncode(QString message)
     {
         wav_filename = KAL_WAV_DIR"buf2.wav";
     }
-//    wav_filename = KAL_WAV_DIR"buf" + QString::number(wav_num++) + ".wav";
+#else
+    wav_filename = KAL_WAV_DIR"buf" + QString::number(wav_num++) + ".wav";
+#endif
+
     g_object_set (sink, "location", wav_filename.toStdString().c_str(), NULL);
 
     sample_index = 0;

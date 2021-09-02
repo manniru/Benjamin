@@ -64,3 +64,5 @@ Tools/Makefile
 Tools/Resources/bar_result
 
 Nato/HHM/
+
+*.a
