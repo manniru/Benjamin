@@ -24,16 +24,13 @@ linux:LIBS += -lgio-2.0 \
               -L/opt/intel/mkl/lib/intel64 \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
               -liomp5 -lpthread -lm -ldl \
-              -LKaldi/Libs \
-              -lfst \
+              -LKaldi/Libs -lfst \
               -lkaldi-hmm -lkaldi-feat -lkaldi-transform \
               -lkaldi-gmm  -lkaldi-tree -lkaldi-util \
               -lkaldi-matrix -lkaldi-base
 
 DEFINES += HAVE_MKL \
-           HAVE_CXXABI_H \
-           HAVE_EXECINFO_H=1 \
-           KALDI_DOUBLEPRECISION=0
+           HAVE_CXXABI_H
 
 QMAKE_CXXFLAGS += -std=c++14 -m64 -msse -msse2 -pthread -g -isystem
 

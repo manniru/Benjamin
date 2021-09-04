@@ -22,7 +22,7 @@ LAT_DELTA="$RESULT_PATH/deltas.ark"
 LAT_ALIGN="$RESULT_PATH/lat_align.ark"
 CONF_FILE="$RESULT_PATH/confidence"
 
-LATGEN_OPTIONS="--max-active=5000 --beam=12.0 --lattice-beam=6.0 --acoustic-scale=$ACS_LATGEN --determinize-lattice=true --allow-partial=false --word-symbol-table=$WORD_TABLE $FINAL_MDL $HCLG_FST"
+LATGEN_OPTIONS="--max-active=7000 --beam=15.0 --lattice-beam=6.0 --acoustic-scale=$ACS_LATGEN --determinize-lattice=true --allow-partial=false --word-symbol-table=$WORD_TABLE $FINAL_MDL $HCLG_FST"
 
 FRAME_SHIFT=$(cat $AUD_PATH/frame_shift)
 CONF_OPT="--frame-shift=$FRAME_SHIFT --acoustic-scale=$ACS_CONF --decode-mbr=true"

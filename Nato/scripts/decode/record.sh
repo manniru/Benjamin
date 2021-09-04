@@ -20,16 +20,14 @@ REC_TIME_MS=$(($REC_TIME * 1000))
 sleep 0.1
 
 while [[ "$I_VAL" -lt "$REC_TIME_MS" ]]; do
-	
+
 	I_VAL=$(($I_VAL + 100))
 	sleep 0.1
 	T_VAL=$(($I_VAL / 1000))
 	MS_VAL=$(($I_VAL % 1000))
 	printf "\r                            Time = $T_VAL:$MS_VAL"
-	
-done
 
-#echo #echo newline
+done
 
 wait #wait for record to finish
 

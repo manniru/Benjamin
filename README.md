@@ -5,19 +5,20 @@ Bijan ASR Engine Based-on KalD
 
 # Installation
 
-## Step 1: Build Kakdi
-Use Intel MKL for faster kaldi performance but OpenBLAS is also a decent choice
+## Step 1: Prepare Kakdi
+1. Clone kaldi in the same folder as Benjamin
+2. Build Kaldi with Intel MKL exclusively (OpenBLAS is slower and doesn't work with this project)
 
 ### Arch Linux
 ```
 git clone https://github.com/kaldi-asr/kaldi.git
-sudo pacman -S lapack python-pyaudio
-extras/install_openblas.sh
+sudo pacman -S lapack
 cd tools
+extras/install_mkl.sh
 make
 ./install_srilm.sh
 cd ../src
-./configure --mathlib=OPENBLAS
+./configure --mathlib=MKL
 ```
 
 ### Windows Cygwin
@@ -42,3 +43,6 @@ apt-cyg install pulseaudio
 ----------------------
 To control the PC this project connect with [Rebound](https://github.com/bijanbina/RAIIS) and uses Linux uInput module.
 
+```
+sudo pacman -S python-pyaudio
+```

@@ -10,11 +10,19 @@ using namespace kaldi;
 
 BtCMVN::BtCMVN(QThread *thread, QObject *parent) : QObject(parent)
 {
-    std::string cmvn_rspecifier = "scp:$CMVN";
-    std::string feat_rspecifier = "scp:$FEAT";
-    std::string feat_wspecifier = "ark:$LAT_CMVN";
-    std::string utt2spk_rspecifier = "ark:$UTT2SPK";
+    cmvn_rspecifier = "scp:$CMVN";
+    feat_rspecifier = "scp:$FEAT";
+    feat_wspecifier = "ark:$LAT_CMVN";
+    utt2spk_rspecifier = "ark:$UTT2SPK";
+}
 
+BtCMVN::~BtCMVN()
+{
+    ;
+}
+
+void BtCMVN::compute()
+{
     bool norm_vars = false;
 
     kaldi::int32 num_done = 0, num_err = 0;
@@ -28,8 +36,6 @@ BtCMVN::BtCMVN(QThread *thread, QObject *parent) : QObject(parent)
     if( crt!=kNoRspecifier )
     {
         // reading from a Table: per-speaker or per-utt CMN/CVN.
-        std::string cmvn_rspecifier = cmvn_rspecifier;
-
         RandomAccessDoubleMatrixReaderMapped cmvn_reader(cmvn_rspecifier,
                                                          utt2spk_rspecifier);
 
@@ -57,14 +63,6 @@ BtCMVN::BtCMVN(QThread *thread, QObject *parent) : QObject(parent)
     }
     else
     {
-        if (utt2spk_rspecifier != "")
-        {
-            qDebug() << "--utt2spk option not compatible with rxfilename as input ";
-        }
+        qDebug() << "--utt2spk option not compatible with rxfilename as input ";
     }
-}
-
-BtCMVN::~BtCMVN()
-{
-    ;
 }
