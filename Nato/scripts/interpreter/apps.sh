@@ -24,6 +24,10 @@ elif [[ "$WORD" == "atom" ]]; then
 
     OUTPUT="5"
 
+elif [[ "$WORD" == "ding" ]]; then
+
+    OUTPUT="6"
+
 fi
 
 if [[ "$OUTPUT" ]]; then

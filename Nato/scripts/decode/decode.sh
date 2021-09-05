@@ -32,7 +32,7 @@ LATTICE_FILE="ark:$RESULT_PATH/lattice.ark"
 LAT_DELTA="$RESULT_PATH/deltas.ark"
 LAT_CMVN="$RESULT_PATH/cmvn.ark"
 
-LATGEN_OPTIONS="--max-active=7000 --beam=13.0 --lattice-beam=6.0 --acoustic-scale=0.083333 --allow-partial=false --word-symbol-table=$WORD_TABLE $FINAL_MDL $HCLG_FST"
+LATGEN_OPTIONS="--max-active=7000 --beam=13.0 --lattice-beam=6.0 --acoustic-scale=0.05 --allow-partial=false --word-symbol-table=$WORD_TABLE $FINAL_MDL $HCLG_FST"
 
 START=$(date +%s%3N)
 $SD/make_mfcc.sh $AUDIO_PATH 2>/dev/null

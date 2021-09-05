@@ -16,5 +16,5 @@ ln -s -f $WAV_FILENAME $DECODE_PATH/wav/rec1.wav
 
 $SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH"
 
-$SD/create_conf.sh decode 0.05 0.027
+$SD/create_conf.sh decode 0.08 0.03
 dbus-send --session $DBUS_BATOOL.exec string:""
