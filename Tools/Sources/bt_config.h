@@ -12,6 +12,8 @@
 #define KAL_MODE          "tri1"
 
 #define BT_WORDS_PATH     KAL_NATO_DIR"exp/"KAL_MODE"/graph/words.txt"
+#define BT_FINAL_PATH     KAL_NATO_DIR"exp/"KAL_MODE"/final.mdl"
+#define BT_FST_PATH       KAL_NATO_DIR"exp/"KAL_MODE"/graph/HCLG.fst"
 #define BT_CONF_PATH      KAL_RESULT_DIR"confidence"
 #define BT_BAR_RESULT     "Resources/bar_result"
 

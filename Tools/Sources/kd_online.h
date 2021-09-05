@@ -19,6 +19,9 @@ public:
 
     void startDecode();
 
+public slots:
+    void init();
+
 private:
     // Up to delta-delta derivative features are calculated (unless LDA is used)
     int kDeltaOrder = 2;

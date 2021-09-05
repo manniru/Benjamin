@@ -10,7 +10,6 @@ using namespace kaldi;
 using namespace fst;
 
 typedef kaldi::int32 int32;
-#define KALDI_DEC_MODE "tri1"
 
 OnlineFeatInputItf    *feat_transform;
 fst::SymbolTable      *word_syms;
@@ -21,11 +20,26 @@ TransitionModel       *trans_model;
 
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
+
+}
+
+KdOnline::~KdOnline()
+{
+    delete feat_transform;
+    delete word_syms;
+    delete decode_fst;
+    delete decoder;
+    delete am_gmm;
+    delete trans_model;
+}
+
+void KdOnline::init()
+{
     OnlineFasterDecoderOpts decoder_opts;
 
-    std::string model_rxfilename = "exp/"KALDI_DEC_MODE"/final.mdl";
-    std::string fst_rxfilename = "exp/"KALDI_DEC_MODE"/graph/HCLG.fst";
-    std::string word_syms_filename = "exp/"KALDI_DEC_MODE"/graph/words.txt";
+    std::string model_rxfilename = BT_FINAL_PATH;
+    std::string fst_rxfilename   = BT_FST_PATH;
+    std::string word_syms_filename = BT_WORDS_PATH;
     std::string silence_phones_str = "1:2:3:4:5:6:7:8:9:10";
 
     std::vector<int32> silence_phones;
@@ -74,28 +88,22 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     opts.order = kDeltaOrder;
     feat_transform = new OnlineDeltaInput(opts, &cmn_input);
 
-    decoder->InitDecoding();
-}
-
-KdOnline::~KdOnline()
-{
-    delete feat_transform;
-    delete word_syms;
-    delete decode_fst;
-    delete decoder;
-    delete am_gmm;
+    startDecode();
 }
 
 void KdOnline::startDecode()
 {
-    BaseFloat acoustic_scale = 0.1;
+    BaseFloat acoustic_scale = 0.05;
     // feature_reading_opts contains number of retries, batch size.
     OnlineFeatureMatrixOptions feature_reading_opts;
-    OnlineFeatureMatrix feature_matrix(feature_reading_opts,
-                                       feat_transform);
+    OnlineFeatureMatrix *feature_matrix;
+    feature_matrix = new OnlineFeatureMatrix(feature_reading_opts,
+                                             feat_transform);
 
     OnlineDecodableDiagGmmScaled decodable(*am_gmm, *trans_model, acoustic_scale,
-                                           &feature_matrix);
+                                           feature_matrix);
+
+    decoder->InitDecoding();
     VectorFst<LatticeArc> out_fst;
     bool partial_res = false;
 
