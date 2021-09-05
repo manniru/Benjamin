@@ -16,9 +16,9 @@
 #define BT_BAR_RESULT     "Resources/bar_result"
 
 #define KAL_CONF_TRESHOLD  0.9
-#define KAL_UDET_TRESHOLD  0.7 //Utterance Total Detection
-#define KAL_UCON_TRESHOLD  0.9 //Utterance Total Confidence
-#define KAL_HARD_TRESHOLD  0.5 //word will be removed
+#define KAL_UDET_TRESHOLD  0.7  //Utterance Total Detection
+#define KAL_UCON_TRESHOLD  0.9  //Utterance Total Confidence
+#define KAL_HARD_TRESHOLD  0.5  //word will be removed
 
 #define BT_REC_RATE       16000 //Recording Sample Rate
 #define BT_BUF_SIZE       10    //Buffer Size Second

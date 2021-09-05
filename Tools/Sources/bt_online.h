@@ -9,6 +9,7 @@
 #include "bt_state.h"
 #include "bt_recorder.h"
 #include "bt_encoder.h"
+#include "kd_online.h"
 
 class BtOnline : public QObject
 {
@@ -25,9 +26,11 @@ signals:
 private:
     QThread *record_thread;
     QThread *encoder_thread;
+    QThread *kaldi_thread;
     BtRecoder *recorder;
     BtEncoder *encoder;
     BtCyclic  *cyclic;
+    KdOnline  *kaldi;
 };
 
 void btRecordRun(void *thread_struct_void);

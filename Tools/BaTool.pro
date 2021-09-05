@@ -14,6 +14,7 @@ linux:INCLUDEPATH += /usr/include/glib-2.0 \
                      /usr/include/gstreamer-1.0 \
                      ../../Kaldi/src \
                      ../../Kaldi/tools/openfst/src/include \
+                     ../../Kaldi/tools/portaudio/install/include \
                      /opt/intel/mkl/include
 
 linux:LIBS += -lgio-2.0 \
@@ -24,10 +25,11 @@ linux:LIBS += -lgio-2.0 \
               -L/opt/intel/mkl/lib/intel64 \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
               -liomp5 -lpthread -lm -ldl \
-              -LKaldi/Libs -lfst \
+              -LKaldi/Libs \
+              -lkaldi-online -lkaldi-decoder -lkaldi-lat \
               -lkaldi-hmm -lkaldi-feat -lkaldi-transform \
               -lkaldi-gmm  -lkaldi-tree -lkaldi-util \
-              -lkaldi-matrix -lkaldi-base
+              -lkaldi-matrix -lkaldi-base -lportaudio -lasound -lrt -ljack -lfst
 
 DEFINES += HAVE_MKL \
            HAVE_CXXABI_H

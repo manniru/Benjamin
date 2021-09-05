@@ -14,13 +14,10 @@ class KdOnline : public QObject
 {
     Q_OBJECT
 public:
-    explicit KdOnline(QThread *thread, QObject *parent = nullptr);
+    explicit KdOnline(QObject *parent = nullptr);
+    ~KdOnline();
 
-private slots:
-    void startDecode(QString msg);
-
-signals:
-    void startRecord();
+    void startDecode();
 
 private:
     // Up to delta-delta derivative features are calculated (unless LDA is used)

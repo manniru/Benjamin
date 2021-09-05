@@ -10,35 +10,43 @@ using namespace kaldi;
 using namespace fst;
 
 typedef kaldi::int32 int32;
+#define KALDI_DEC_MODE "tri1"
 
-KdOnline::KdOnline(QThread *thread, QObject *parent) : QObject(parent)
+OnlineFeatInputItf    *feat_transform;
+fst::SymbolTable      *word_syms;
+fst::Fst<fst::StdArc> *decode_fst;
+OnlineFasterDecoder   *decoder;
+AmDiagGmm             *am_gmm;
+TransitionModel       *trans_model;
+
+KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
     OnlineFasterDecoderOpts decoder_opts;
 
-    std::string model_rxfilename = po.GetArg(1),
-    fst_rxfilename = po.GetArg(2),
-    word_syms_filename = po.GetArg(3),
-    silence_phones_str = po.GetArg(4),
+    std::string model_rxfilename = "exp/"KALDI_DEC_MODE"/final.mdl";
+    std::string fst_rxfilename = "exp/"KALDI_DEC_MODE"/graph/HCLG.fst";
+    std::string word_syms_filename = "exp/"KALDI_DEC_MODE"/graph/words.txt";
+    std::string silence_phones_str = "1:2:3:4:5:6:7:8:9:10";
 
     std::vector<int32> silence_phones;
     SplitStringToIntegers(silence_phones_str, ":", false, &silence_phones);
 
-    TransitionModel trans_model;
-    AmDiagGmm am_gmm;
+    trans_model = new TransitionModel;
+    am_gmm = new AmDiagGmm;
 
     bool rx_binary;
     Input ki(model_rxfilename, &rx_binary);
-    trans_model.Read(ki.Stream(), rx_binary);
-    am_gmm.Read(ki.Stream(), rx_binary);
+    trans_model->Read(ki.Stream(), rx_binary);
+    am_gmm->Read(ki.Stream(), rx_binary);
 
-    fst::SymbolTable *word_syms = NULL;
+    word_syms = NULL;
     if (!(word_syms = fst::SymbolTable::ReadText(word_syms_filename)))
     {
         KALDI_ERR << "Could not read symbol table from file "
                     << word_syms_filename;
     }
 
-    fst::Fst<fst::StdArc> *decode_fst = ReadDecodeGraph(fst_rxfilename);
+    decode_fst = ReadDecodeGraph(fst_rxfilename);
 
     // We are not properly registering/exposing MFCC and frame extraction options,
     // because there are parts of the online decoding code, where some of these
@@ -50,8 +58,8 @@ KdOnline::KdOnline(QThread *thread, QObject *parent) : QObject(parent)
 
     int32 window_size = right_context + left_context + 1;
     decoder_opts.batch_size = std::max(decoder_opts.batch_size, window_size);
-    OnlineFasterDecoder decoder(*decode_fst, decoder_opts,
-                                silence_phones, trans_model);
+    decoder = new OnlineFasterDecoder(*decode_fst, decoder_opts,
+                                silence_phones, *trans_model);
 
 
     OnlinePaSource au_src(kTimeout, kSampleFreq, kPaRingSize, kPaReportInt);
@@ -60,13 +68,13 @@ KdOnline::KdOnline(QThread *thread, QObject *parent) : QObject(parent)
                      frame_length * (kSampleFreq / 1000),
                      frame_shift * (kSampleFreq / 1000));
     OnlineCmnInput cmn_input(&fe_input, cmn_window, min_cmn_window);
-    OnlineFeatInputItf *feat_transform = 0;
+    feat_transform = 0;
 
     DeltaFeaturesOptions opts;
     opts.order = kDeltaOrder;
     feat_transform = new OnlineDeltaInput(opts, &cmn_input);
 
-    decoder.InitDecoding();
+    decoder->InitDecoding();
 }
 
 KdOnline::~KdOnline()
@@ -74,6 +82,8 @@ KdOnline::~KdOnline()
     delete feat_transform;
     delete word_syms;
     delete decode_fst;
+    delete decoder;
+    delete am_gmm;
 }
 
 void KdOnline::startDecode()
@@ -84,19 +94,19 @@ void KdOnline::startDecode()
     OnlineFeatureMatrix feature_matrix(feature_reading_opts,
                                        feat_transform);
 
-    OnlineDecodableDiagGmmScaled decodable(am_gmm, trans_model, acoustic_scale,
+    OnlineDecodableDiagGmmScaled decodable(*am_gmm, *trans_model, acoustic_scale,
                                            &feature_matrix);
     VectorFst<LatticeArc> out_fst;
     bool partial_res = false;
 
     while(1)
     {
-        OnlineFasterDecoder::DecodeState dstate = decoder.Decode(&decodable);
+        OnlineFasterDecoder::DecodeState dstate = decoder->Decode(&decodable);
 
         std::vector<int32> word_ids;
-        if ( dstate&decoder.kEndUtt )
+        if ( dstate&decoder->kEndUtt )
         {
-            decoder.FinishTraceBack(&out_fst);
+            decoder->FinishTraceBack(&out_fst);
             fst::GetLinearSymbolSequence(out_fst,
                                          static_cast<vector<int32> *>(0),
                                          &word_ids,
@@ -106,7 +116,7 @@ void KdOnline::startDecode()
         }
         else
         {
-            if (decoder.PartialTraceback(&out_fst))
+            if (decoder->PartialTraceback(&out_fst))
             {
                 fst::GetLinearSymbolSequence(out_fst,
                                            static_cast<vector<int32> *>(0),
