@@ -26,6 +26,6 @@
 #define BT_DEC_TIMEOUT    0.5   //Decode Timeout in Second
 #define BT_REC_INPUT      "alsa:usbstream:CARD=Solo" //Microphone Input
 
-//#define BT_DOUBLE_BUF     // if undefined encoded file not replaced
+#define BT_DOUBLE_BUF     // if undefined encoded file not replaced
 
 #endif // BT_CONFIG_H

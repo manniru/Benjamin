@@ -151,12 +151,12 @@ bool BtCaptain::isValidTime(BtWord word)
         return false;
     }
 
-    if( (word.time>=BT_REC_SIZE-0.5) )
+    if( (word.time>=BT_REC_SIZE-0.8) )
     {
         return false;
     }
 
-    if( word.end>BT_REC_SIZE-0.2 )
+    if( word.end>BT_REC_SIZE-0.4 )
     {
         return false;
     }
@@ -254,7 +254,7 @@ void BtCaptain::shiftHistory()
 {
     for( int i=0 ; i<history.length() ; i++ )
     {
-        if( history[i].time<-4 )
+        if( history[i].time<(BT_REC_SIZE-5) ) //5 second history size
         {
             history.remove(i);
             i--;

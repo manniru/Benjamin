@@ -61,12 +61,15 @@ void BtRecoder::start()
 {
     /* Start playing */
     ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
-    if (ret == GST_STATE_CHANGE_FAILURE)
+    if( ret==GST_STATE_CHANGE_FAILURE )
     {
         g_printerr ("Unable to set the pipeline to the playing state.\n");
         gst_object_unref(pipeline);
         return;
     }
+    char *dev_name;
+    g_object_get(source,"client-name", &dev_name, NULL);
+    printf("current-device=%s\n", dev_name);
 }
 
 void BtRecoder::bufferReady(QString message)
@@ -80,6 +83,8 @@ long BtRecoder::addSample(int16_t *data, int count)
     cy_buffer->write(data, count);
     sample_count += count;
 
+//    qDebug() << "done" << count;
+
     return sample_count;
 }
 
@@ -91,7 +96,7 @@ GstFlowReturn new_sample(GstElement *sink, BtRecoder *recorder)
 
     /* Retrieve the buffer */
     g_signal_emit_by_name (sink, "pull-sample", &sample);
-    if (sample)
+    if( sample )
     {
         GstBuffer *buffer = gst_sample_get_buffer(sample);
 
