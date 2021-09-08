@@ -4,6 +4,7 @@
 #include <QObject>
 #include <thread>         // std::thread
 #include <QTimer>
+#include <QDebug>
 #include "bt_channel_l.h"
 
 #include "bt_state.h"
@@ -23,6 +24,8 @@ public slots:
     void init();
 
 private:
+    void writeBarResult();
+
     // Up to delta-delta derivative features are calculated (unless LDA is used)
     int kDeltaOrder = 2;
     // Time out interval for the PortAudio source
@@ -35,6 +38,8 @@ private:
     int kPaReportInt = 4;
     int cmn_window = 600, min_cmn_window = 100;
     int right_context = 4, left_context = 4;
+
+    QVector<QString>  history;
 };
 
 #endif // KD_ONLINE_H

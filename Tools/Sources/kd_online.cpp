@@ -18,6 +18,8 @@ OnlineFasterDecoder   *decoder;
 AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
 
+void execute(SymbolTable *word_syms, std::vector<int32> word, QVector<QString> *history);
+
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
 
@@ -119,8 +121,8 @@ void KdOnline::startDecode()
                                          static_cast<vector<int32> *>(0),
                                          &word_ids,
                                          static_cast<LatticeArc::Weight*>(0));
-            PrintPartialResult(word_ids, word_syms, partial_res || word_ids.size());
-            partial_res = false;
+            execute(word_syms, word_ids, &history);
+            writeBarResult();
         }
         else
         {
@@ -130,12 +132,52 @@ void KdOnline::startDecode()
                                            static_cast<vector<int32> *>(0),
                                            &word_ids,
                                            static_cast<LatticeArc::Weight*>(0));
-                PrintPartialResult(word_ids, word_syms, false);
-                if( (partial_res==0) && (word_ids.size()>0) )
-                {
-                    partial_res = 1;
-                }
+                execute(word_syms, word_ids, &history);
+                writeBarResult();
             }
         }
     }
+}
+
+void execute(SymbolTable *word_syms, std::vector<int32> word, QVector<QString> *history)
+{
+    QString cmd = KAL_SI_DIR"main.sh \"";
+    for( int i=0 ; i<word.size() ; i++ )
+    {
+        QString word_str = word_syms->Find(word[i]).c_str();
+        cmd += word_str;
+        cmd += " ";
+        history->push_back(word_str);
+
+        if( history->size()>10 )
+        {
+            history->pop_front();
+        }
+    }
+    cmd += "\"";
+    system(cmd.toStdString().c_str());
+}
+
+void KdOnline::writeBarResult()
+{
+    QFile bar_file(BT_BAR_RESULT);
+
+    if (!bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error opening" << BT_BAR_RESULT;
+        return;
+    }
+
+    QTextStream out(&bar_file);
+
+    for( int i=0 ; i<history.length() ; i++ )
+    {
+        out << "%{u#1d1}%{+u}";
+        out << history[i];
+
+        out << "%{-u} ";
+    }
+    out << "\n";
+
+    bar_file.close();
 }
