@@ -25,6 +25,8 @@ public slots:
 
 private:
     void writeBarResult();
+    void parseWords(QString filename);
+    void execute(std::vector<int32_t> word, QVector<QString> *history);
 
     // Up to delta-delta derivative features are calculated (unless LDA is used)
     int kDeltaOrder = 2;
@@ -40,6 +42,7 @@ private:
     int right_context = 4, left_context = 4;
 
     QVector<QString>  history;
+    QVector<QString> lexicon;
 };
 
 #endif // KD_ONLINE_H

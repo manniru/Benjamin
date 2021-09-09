@@ -12,23 +12,19 @@ using namespace fst;
 typedef kaldi::int32 int32;
 
 OnlineFeatInputItf    *feat_transform;
-fst::SymbolTable      *word_syms;
 fst::Fst<fst::StdArc> *decode_fst;
 OnlineFasterDecoder   *decoder;
 AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
 
-void execute(SymbolTable *word_syms, std::vector<int32> word, QVector<QString> *history);
-
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
-
+    parseWords(BT_WORDS_PATH);
 }
 
 KdOnline::~KdOnline()
 {
     delete feat_transform;
-    delete word_syms;
     delete decode_fst;
     delete decoder;
     delete am_gmm;
@@ -41,7 +37,6 @@ void KdOnline::init()
 
     std::string model_rxfilename = BT_FINAL_PATH;
     std::string fst_rxfilename   = BT_FST_PATH;
-    std::string word_syms_filename = BT_WORDS_PATH;
     std::string silence_phones_str = "1:2:3:4:5:6:7:8:9:10";
 
     std::vector<int32> silence_phones;
@@ -54,13 +49,6 @@ void KdOnline::init()
     Input ki(model_rxfilename, &rx_binary);
     trans_model->Read(ki.Stream(), rx_binary);
     am_gmm->Read(ki.Stream(), rx_binary);
-
-    word_syms = NULL;
-    if (!(word_syms = fst::SymbolTable::ReadText(word_syms_filename)))
-    {
-        KALDI_ERR << "Could not read symbol table from file "
-                    << word_syms_filename;
-    }
 
     decode_fst = ReadDecodeGraph(fst_rxfilename);
 
@@ -107,10 +95,12 @@ void KdOnline::startDecode()
 
     decoder->InitDecoding();
     VectorFst<LatticeArc> out_fst;
-    bool partial_res = false;
+    clock_t start, end;
+    double cpu_time_used;
 
     while(1)
     {
+        start = clock();
         OnlineFasterDecoder::DecodeState dstate = decoder->Decode(&decodable);
 
         std::vector<int32> word_ids;
@@ -119,10 +109,18 @@ void KdOnline::startDecode()
             decoder->FinishTraceBack(&out_fst);
             fst::GetLinearSymbolSequence(out_fst,
                                          static_cast<vector<int32> *>(0),
-                                         &word_ids,
+                                        &word_ids,
                                          static_cast<LatticeArc::Weight*>(0));
-            execute(word_syms, word_ids, &history);
-            writeBarResult();
+            if( word_ids.size() )
+            {
+                execute(word_ids, &history);
+                writeBarResult();
+                end = clock();
+                cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+                qDebug() << cpu_time_used;
+            }
+            system("dbus-send --session --dest=com.binaee.rebound / "
+                               "com.binaee.rebound.exec  string:\"\"");
         }
         else
         {
@@ -132,19 +130,27 @@ void KdOnline::startDecode()
                                            static_cast<vector<int32> *>(0),
                                            &word_ids,
                                            static_cast<LatticeArc::Weight*>(0));
-                execute(word_syms, word_ids, &history);
+                execute(word_ids, &history);
                 writeBarResult();
+                end = clock();
+                cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+                qDebug() << cpu_time_used;
+            }
+            else
+            {
+                system("dbus-send --session --dest=com.binaee.rebound / "
+                               "com.binaee.rebound.exec  string:\"\"");
             }
         }
     }
 }
 
-void execute(SymbolTable *word_syms, std::vector<int32> word, QVector<QString> *history)
+void KdOnline::execute(std::vector<int32_t> word, QVector<QString> *history)
 {
     QString cmd = KAL_SI_DIR"main.sh \"";
     for( int i=0 ; i<word.size() ; i++ )
     {
-        QString word_str = word_syms->Find(word[i]).c_str();
+        QString word_str = lexicon[word[i]];
         cmd += word_str;
         cmd += " ";
         history->push_back(word_str);
@@ -180,4 +186,26 @@ void KdOnline::writeBarResult()
     out << "\n";
 
     bar_file.close();
+}
+
+void KdOnline::parseWords(QString filename)
+{
+    QFile words_file(filename);
+
+    if (!words_file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "Error opening" << filename;
+        return;
+    }
+
+    lexicon.clear();
+
+    while (!words_file.atEnd())
+    {
+        QString line = QString(words_file.readLine());
+        QStringList line_list = line.split(" ");
+        lexicon.append(line_list[0]);
+    }
+
+    words_file.close();
 }
