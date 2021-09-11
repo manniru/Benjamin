@@ -60,11 +60,8 @@ void KdOnline::init()
     int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 25;
     int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 10;
 
-    int32 window_size = right_context + left_context + 1;
-    decoder_opts.batch_size = std::max(decoder_opts.batch_size, window_size);
     decoder = new OnlineFasterDecoder(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
-
 
     OnlinePaSource au_src(kTimeout, kSampleFreq, kPaRingSize, kPaReportInt);
     Mfcc mfcc(mfcc_opts);
