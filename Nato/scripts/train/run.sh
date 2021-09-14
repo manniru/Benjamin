@@ -101,5 +101,18 @@ echo
 utils/mkgraph.sh data/lang exp/tri1 exp/tri1/graph || exit 1
 steps/decode.sh --config conf/decode.config --nj $nj --cmd "$decode_cmd" exp/tri1/graph data/test exp/tri1/decode
 echo
+echo "===== TRI1 (first triphone pass) ALIGNMENT ====="
+echo
+steps/align_si.sh --nj $nj --cmd "$train_cmd" data/train data/lang exp/tri1 exp/tri1_ali
+echo
+echo "===== TRI2 (LDA+MLLT) TRAINING ====="
+echo
+steps/train_lda_mllt.sh --cmd "$train_cmd" 4000 50000 data/train data/lang_nosp exp/tri1_ali exp/tri2 || exit 1
+echo
+echo "===== TRI2 (LDA+MLLT) DECODING ====="
+echo
+utils/mkgraph.sh data/lang exp/tri2 exp/tri2/graph || exit 1
+steps/decode.sh --config conf/decode.config --nj $nj --cmd "$decode_cmd" exp/tri2/graph data/test exp/tri2/decode
+echo
 echo "===== run.sh script is finished ====="
 echo
