@@ -107,12 +107,30 @@ steps/align_si.sh --nj $nj --cmd "$train_cmd" data/train data/lang exp/tri1 exp/
 echo
 echo "===== TRI2 (LDA+MLLT) TRAINING ====="
 echo
-steps/train_lda_mllt.sh --cmd "$train_cmd" 4000 50000 data/train data/lang_nosp exp/tri1_ali exp/tri2 || exit 1
+steps/train_lda_mllt.sh --cmd "$train_cmd" 4000 50000 data/train data/lang exp/tri1_ali exp/tri2 || exit 1
 echo
 echo "===== TRI2 (LDA+MLLT) DECODING ====="
 echo
 utils/mkgraph.sh data/lang exp/tri2 exp/tri2/graph || exit 1
 steps/decode.sh --config conf/decode.config --nj $nj --cmd "$decode_cmd" exp/tri2/graph data/test exp/tri2/decode
+echo
+echo "===== TRI2 (LDA+MLLT) ALIGNMENT ====="
+echo
+steps/align_si.sh --nj $nj --cmd "$train_cmd" data/train data/lang exp/tri2 exp/tri2_ali || exit 1
+echo
+echo "===== TRI3 (LDA+MLLT+SAT) TRAINING ====="
+echo
+steps/train_sat.sh --cmd "$train_cmd" 5000 100000 data/train data/lang exp/tri2_ali exp/tri3 || exit 1
+echo
+echo "===== TRI3 (LDA+MLLT+SAT) DECODING ====="
+echo
+utils/mkgraph.sh data/lang exp/tri3 exp/tri3/graph || exit 1
+steps/decode.sh --config conf/decode.config --nj $nj --cmd "$decode_cmd" exp/tri3/graph data/test exp/tri3/decode
+echo
+echo "===== TRI3 (LDA+MLLT+SAT) ONLINE ====="
+echo
+steps/online/prepare_online_decoding.sh --cmd "$train_cmd" data/train data/lang \
+    exp/tri3 exp/tri3/final.mdl exp/tri3_online || exit 1;
 echo
 echo "===== run.sh script is finished ====="
 echo
