@@ -127,10 +127,5 @@ echo
 utils/mkgraph.sh data/lang exp/tri3 exp/tri3/graph || exit 1
 steps/decode.sh --config conf/decode.config --nj $nj --cmd "$decode_cmd" exp/tri3/graph data/test exp/tri3/decode
 echo
-echo "===== TRI3 (LDA+MLLT+SAT) ONLINE ====="
-echo
-steps/online/prepare_online_decoding.sh --cmd "$train_cmd" data/train data/lang \
-    exp/tri3 exp/tri3/final.mdl exp/tri3_online || exit 1;
-echo
 echo "===== run.sh script is finished ====="
 echo
