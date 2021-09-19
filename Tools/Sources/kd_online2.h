@@ -11,12 +11,12 @@
 #include "bt_recorder.h"
 #include "bt_encoder.h"
 
-class KdOnline : public QObject
+class KdOnline2 : public QObject
 {
     Q_OBJECT
 public:
-    explicit KdOnline(QObject *parent = nullptr);
-    ~KdOnline();
+    explicit KdOnline2(QObject *parent = nullptr);
+    ~KdOnline2();
 
     void startDecode();
 
@@ -27,6 +27,9 @@ private:
     void writeBarResult();
     void parseWords(QString filename);
     void execute(std::vector<int32_t> word, QVector<QString> *history);
+
+    void print(int64_t *tot_num_frames, double *tot_like);
+    void processData(float *wav_data, int len);
 
     int kDeltaOrder = 2; // delta-delta derivative order
     int kTimeout = 500; // for the PortAudio (half second)

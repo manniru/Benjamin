@@ -1,4 +1,4 @@
-#include "kd_online.h"
+#include "kd_online2.h"
 
 #include "feat/wave-reader.h"
 #include "online2/online-feature-pipeline.h"
@@ -12,15 +12,10 @@
 using namespace kaldi;
 using namespace fst;
 
-typedef kaldi::int32 int32;
-typedef kaldi::int64 int64;
+CompactLattice clat;
 
 
-void GetDiagnosticsAndPrintOutput(const std::string &utt,
-                                  const fst::SymbolTable *word_syms,
-                                  const CompactLattice &clat,
-                                  int64 *tot_num_frames,
-                                  double *tot_like)
+void KdOnline2::print(int64 *tot_num_frames, double *tot_like)
 {
     if (clat.NumStates() == 0)
     {
@@ -43,44 +38,50 @@ void GetDiagnosticsAndPrintOutput(const std::string &utt,
     likelihood = -(weight.Value1() + weight.Value2());
     *tot_num_frames += num_frames;
     *tot_like += likelihood;
-    KALDI_VLOG(2) << "Likelihood per frame for utterance " << utt << " is "
+    KALDI_VLOG(2) << "Likelihood per frame for utterance " << " is "
                 << (likelihood / num_frames) << " over " << num_frames
                 << " frames.";
 
-    if (word_syms != NULL)
+    QString message;
+    for( size_t i = 0; i<words.size() ; i++ )
     {
-        std::cerr << utt << ' ';
-        for( size_t i = 0; i<words.size() ; i++ )
-        {
-            std::string s = word_syms->Find(words[i]);
-            if (s == "")
-            {
-                KALDI_ERR << "Word-id " << words[i] << " not in symbol table.";
-            }
-            std::cerr << s << ' ';
-        }
-        std::cerr << std::endl;
+        message += lexicon[words[i]];
     }
+    message +=  ' ';
+    qDebug() << message;
 }
 
 
-void main()
+void KdOnline2::processData(float *wav_data, int len)
 {
-    std::string word_syms_rxfilename;
-
     OnlineEndpointConfig endpoint_config;
-    OnlineFeaturePipelineCommandLineConfig feature_cmdline_config;
+    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
     OnlineGmmDecodingConfig decode_config;
+    int counter = 0;
 
     BaseFloat chunk_length_secs = 0.05;
     bool do_endpointing = false;
 
-    std::string fst_rxfilename = po.GetArg(1);
-    std::string spk2utt_rspecifier = po.GetArg(2);
-    std::string wav_rspecifier = po.GetArg(3);
-    std::string clat_wspecifier = po.GetArg(4);
+    decode_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
+    decode_config.model_rxfilename = BT_FINAL_PATH;
+    decode_config.acoustic_scale = 0.05;
+    decode_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
+    decode_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
+    decode_config.faster_decoder_opts.max_active = 7000;
+    decode_config.faster_decoder_opts.beam = 12.0;
+    decode_config.faster_decoder_opts.lattice_beam = 6.0;
 
-    OnlineFeaturePipelineConfig feature_config(feature_cmdline_config);
+    fcc.add_deltas = true;
+    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
+    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
+    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
+
+    endpoint_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
+
+    std::string fst_rxfilename = BT_FST_PATH;
+    std::string clat_wspecifier = "ark:"KAL_NATO_DIR"online/lattice.ark";
+
+    OnlineFeaturePipelineConfig feature_config(fcc);
     OnlineFeaturePipeline pipeline_prototype(feature_config);
     // The following object initializes the models we use in decoding.
     OnlineGmmDecodingModels gmm_models(decode_config);
@@ -88,102 +89,81 @@ void main()
 
     fst::Fst<fst::StdArc> *decode_fst = ReadFstKaldiGeneric(fst_rxfilename);
 
-    int32 num_done = 0, num_err = 0;
     double tot_like = 0.0;
     int64 num_frames = 0;
 
-    SequentialTokenVectorReader spk2utt_reader(spk2utt_rspecifier);
-    RandomAccessTableReader<WaveHolder> wav_reader(wav_rspecifier);
     CompactLatticeWriter clat_writer(clat_wspecifier);
 
     OnlineTimingStats timing_stats;
 
-    for (; !spk2utt_reader.Done(); spk2utt_reader.Next())
+    OnlineGmmAdaptationState adaptation_state;
+
+    // get the data for channel zero (if the signal is not mono, we only
+    // take the first channel).
+    SubVector<float> data(wav_data, len);
+
+    SingleUtteranceGmmDecoder decoder(decode_config,
+                                      gmm_models,
+                                      pipeline_prototype,
+                                      *decode_fst,
+                                      adaptation_state);
+
+    OnlineTimer decoding_timer("1");
+
+    BaseFloat samp_freq = 16000; ///FIXME
+    int32 chunk_length = int32(samp_freq * chunk_length_secs);
+    if( chunk_length==0 )
     {
-        const std::vector<std::string> &uttlist = spk2utt_reader.Value();
-        OnlineGmmAdaptationState adaptation_state;
+        chunk_length = 1;
+    }
 
-        for( size_t i=0 ; i<uttlist.size() ; i++)
+    int32 samp_offset = 0;
+    while (samp_offset < data.Dim())
+    {
+        int32 samp_remaining = data.Dim() - samp_offset;
+        int32 num_samp = chunk_length < samp_remaining ? chunk_length
+                                                       : samp_remaining;
+
+        SubVector<float> wave_part(data, samp_offset, num_samp);
+        decoder.FeaturePipeline().AcceptWaveform(samp_freq, wave_part);
+
+        samp_offset += num_samp;
+        decoding_timer.WaitUntil(samp_offset / samp_freq);
+        if (samp_offset == data.Dim())
         {
-            std::string utt = uttlist[i];
-            const WaveData &wave_data = wav_reader.Value(utt);
-            // get the data for channel zero (if the signal is not mono, we only
-            // take the first channel).
-            SubVector<BaseFloat> data(wave_data.Data(), 0);
+            // no more input. flush out last frames
+            decoder.FeaturePipeline().InputFinished();
+        }
+        decoder.AdvanceDecoding();
 
-            SingleUtteranceGmmDecoder decoder(decode_config,
-                                              gmm_models,
-                                              pipeline_prototype,
-                                              *decode_fst,
-                                              adaptation_state);
-
-            OnlineTimer decoding_timer(utt);
-
-            BaseFloat samp_freq = wave_data.SampFreq();
-            int32 chunk_length = int32(samp_freq * chunk_length_secs);
-            if (chunk_length == 0)
-            {
-                chunk_length = 1;
-            }
-
-            int32 samp_offset = 0;
-            while (samp_offset < data.Dim())
-            {
-                int32 samp_remaining = data.Dim() - samp_offset;
-                int32 num_samp = chunk_length < samp_remaining ? chunk_length
-                                                             : samp_remaining;
-
-                SubVector<BaseFloat> wave_part(data, samp_offset, num_samp);
-                decoder.FeaturePipeline().AcceptWaveform(samp_freq, wave_part);
-
-                samp_offset += num_samp;
-                decoding_timer.WaitUntil(samp_offset / samp_freq);
-                if (samp_offset == data.Dim())
-                {
-                    // no more input. flush out last frames
-                    decoder.FeaturePipeline().InputFinished();
-                }
-                decoder.AdvanceDecoding();
-
-                if (do_endpointing && decoder.EndpointDetected(endpoint_config))
-                {
-                    break;
-                }
-            }
-            decoder.FinalizeDecoding();
-
-            bool end_of_utterance = true;
-            decoder.EstimateFmllr(end_of_utterance);
-            CompactLattice clat;
-            bool rescore_if_needed = true;
-            decoder.GetLattice(rescore_if_needed, end_of_utterance, &clat);
-
-            GetDiagnosticsAndPrintOutput(utt, word_syms, clat,
-                                         &num_frames, &tot_like);
-
-            decoding_timer.OutputStats(&timing_stats);
-
-            // In an application you might avoid updating the adaptation state if
-            // you felt the utterance had low confidence.  See lat/confidence.h
-            decoder.GetAdaptationState(&adaptation_state);
-
-            // we want to output the lattice with un-scaled acoustics.
-            if (decode_config.acoustic_scale != 0.0)
-            {
-                BaseFloat inv_acoustic_scale = 1.0 / decode_config.acoustic_scale;
-                ScaleLattice(AcousticLatticeScale(inv_acoustic_scale), &clat);
-            }
-            clat_writer.Write(utt, clat);
-            KALDI_LOG << "Decoded utterance " << utt;
-            num_done++;
+        if (do_endpointing && decoder.EndpointDetected(endpoint_config))
+        {
+            break;
         }
     }
-    timing_stats.Print();
-    KALDI_LOG << "Decoded " << num_done << " utterances, "
-              << num_err << " with errors.";
-    KALDI_LOG << "Overall likelihood per frame was " << (tot_like / num_frames)
-              << " per frame over " << num_frames << " frames.";
-    delete decode_fst;
+    decoder.FinalizeDecoding();
+
+    bool end_of_utterance = true;
+    decoder.EstimateFmllr(end_of_utterance);
+    bool rescore_if_needed = true;
+    decoder.GetLattice(rescore_if_needed, end_of_utterance, &clat);
+
+    print(&num_frames, &tot_like);
+
+    decoding_timer.OutputStats(&timing_stats);
+
+    // In an application you might avoid updating the adaptation state if
+    // you felt the utterance had low confidence.  See lat/confidence.h
+    decoder.GetAdaptationState(&adaptation_state);
+
+    // we want to output the lattice with un-scaled acoustics.
+    if (decode_config.acoustic_scale != 0.0)
+    {
+        BaseFloat inv_acoustic_scale = 1.0 / decode_config.acoustic_scale;
+        ScaleLattice(AcousticLatticeScale(inv_acoustic_scale), &clat);
+    }
+    clat_writer.Write("1", clat); //utt=1
+    qDebug() << "Decoded utterance ";
 }
 
 KdOnline2::KdOnline2(QObject *parent): QObject(parent)
@@ -193,122 +173,16 @@ KdOnline2::KdOnline2(QObject *parent): QObject(parent)
 
 KdOnline2::~KdOnline2()
 {
-    delete feat_transform;
-    delete decode_fst;
-    delete decoder;
-    delete am_gmm;
-    delete trans_model;
 }
 
 void KdOnline2::init()
 {
-    OnlineFasterDecoderOpts decoder_opts;
 
-    std::string model_rxfilename = BT_FINAL_PATH;
-    std::string fst_rxfilename   = BT_FST_PATH;
-    std::string silence_phones_str = "1:2:3:4:5:6:7:8:9:10";
-
-    std::vector<int32> silence_phones;
-    SplitStringToIntegers(silence_phones_str, ":", false, &silence_phones);
-
-    trans_model = new TransitionModel;
-    am_gmm = new AmDiagGmm;
-
-    bool rx_binary;
-    Input ki(model_rxfilename, &rx_binary);
-    trans_model->Read(ki.Stream(), rx_binary);
-    am_gmm->Read(ki.Stream(), rx_binary);
-
-    decode_fst = ReadDecodeGraph(fst_rxfilename);
-
-    // We are not properly registering/exposing MFCC and frame extraction options,
-    // because there are parts of the online decoding code, where some of these
-    // options are hardwired(ToDo: we should fix this at some point)
-    MfccOptions mfcc_opts;
-    mfcc_opts.use_energy = false;
-    int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 25;
-    int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 10;
-
-    decoder = new OnlineFasterDecoder(*decode_fst, decoder_opts,
-                                silence_phones, *trans_model);
-
-    OnlinePaSource au_src(kTimeout, kSampleFreq, kPaRingSize, kPaReportInt);
-    Mfcc mfcc(mfcc_opts);
-    OnlineFeInput<Mfcc> fe_input(&au_src, &mfcc,
-                     frame_length * (kSampleFreq / 1000),
-                     frame_shift * (kSampleFreq / 1000));
-    OnlineCmnInput cmn_input(&fe_input, cmn_window, min_cmn_window);
-    feat_transform = 0;
-
-    DeltaFeaturesOptions opts;
-    opts.order = kDeltaOrder;
-    feat_transform = new OnlineDeltaInput(opts, &cmn_input);
-
-    startDecode();
 }
 
 void KdOnline2::startDecode()
 {
-    BaseFloat acoustic_scale = 0.05;
-    // feature_reading_opts contains number of retries, batch size.
-    OnlineFeatureMatrixOptions feature_reading_opts;
-    OnlineFeatureMatrix *feature_matrix;
-    feature_matrix = new OnlineFeatureMatrix(feature_reading_opts,
-                                             feat_transform);
 
-    OnlineDecodableDiagGmmScaled decodable(*am_gmm, *trans_model, acoustic_scale,
-                                           feature_matrix);
-
-    decoder->InitDecoding();
-    VectorFst<LatticeArc> out_fst;
-    clock_t start, end;
-    double cpu_time_used;
-
-    while(1)
-    {
-        start = clock();
-        OnlineFasterDecoder::DecodeState dstate = decoder->Decode(&decodable);
-
-        std::vector<int32> word_ids;
-        if ( dstate&decoder->kEndUtt )
-        {
-            decoder->FinishTraceBack(&out_fst);
-            fst::GetLinearSymbolSequence(out_fst,
-                                         static_cast<vector<int32> *>(0),
-                                        &word_ids,
-                                         static_cast<LatticeArc::Weight*>(0));
-            if( word_ids.size() )
-            {
-                execute(word_ids, &history);
-                writeBarResult();
-                end = clock();
-                cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-                qDebug() << cpu_time_used;
-            }
-            system("dbus-send --session --dest=com.binaee.rebound / "
-                               "com.binaee.rebound.exec  string:\"\"");
-        }
-        else
-        {
-            if (decoder->PartialTraceback(&out_fst))
-            {
-                fst::GetLinearSymbolSequence(out_fst,
-                                           static_cast<vector<int32> *>(0),
-                                           &word_ids,
-                                           static_cast<LatticeArc::Weight*>(0));
-                execute(word_ids, &history);
-                writeBarResult();
-                end = clock();
-                cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-                qDebug() << cpu_time_used;
-            }
-            else
-            {
-                system("dbus-send --session --dest=com.binaee.rebound / "
-                               "com.binaee.rebound.exec  string:\"\"");
-            }
-        }
-    }
 }
 
 void KdOnline2::execute(std::vector<int32_t> word, QVector<QString> *history)
