@@ -6,7 +6,7 @@
 #include <QTimer>
 #include <QDebug>
 #include "bt_channel_l.h"
-
+#include "kd_online2_gmm.h"
 #include "bt_state.h"
 
 class KdOnline2 : public QObject
@@ -18,8 +18,6 @@ public:
 
     void startDecode();
     void processData(float *wav_data, int len);
-
-    void init();
 
 private:
     void writeBarResult();
@@ -37,7 +35,8 @@ private:
     float acoustic_scale = 0.05;
 
     QVector<QString>  history;
-    QVector<QString> lexicon;
+    QVector<QString>  lexicon;
+    KdOnline2Gmm     *g_decoder;
 };
 
 #endif // KD_ONLINE2_H

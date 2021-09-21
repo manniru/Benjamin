@@ -13,9 +13,6 @@ using namespace kaldi;
 using namespace fst;
 
 CompactLattice clat;
-SingleUtteranceGmmDecoder *g_decoder;
-OnlineGmmAdaptationState adaptation_state;
-
 
 OnlineFeaturePipeline *pipeline_prototype;
 // The following object initializes the models we use in decoding.
@@ -57,6 +54,7 @@ void KdOnline2::print()
 
 void KdOnline2::processData(float *wav_data, int len)
 {
+    g_decoder->decoder_->InitDecoding();
     BaseFloat chunk_length_secs = 0.05;
 
     // get the data for channel zero (if the signal is not mono, we only
@@ -86,18 +84,18 @@ void KdOnline2::processData(float *wav_data, int len)
         g_decoder->FeaturePipeline().AcceptWaveform(samp_freq, wave_part);
 
         samp_offset += num_samp;
-//        if (samp_offset == data.Dim())
-//        {
-//            // no more input. flush out last frames
-//            g_decoder->FeaturePipeline().InputFinished();
-//        }
+        if (samp_offset == data.Dim())
+        {
+            // no more input. flush out last frames
+            g_decoder->FeaturePipeline().InputFinished();
+        }
         g_decoder->AdvanceDecoding();
 
     }
     g_decoder->FinalizeDecoding();
 
     bool end_of_utterance = true;
-//    g_decoder->EstimateFmllr(end_of_utterance);
+    g_decoder->EstimateFmllr(end_of_utterance);
     bool rescore_if_needed = true;
     g_decoder->GetLattice(rescore_if_needed, end_of_utterance, &clat);
 
@@ -112,50 +110,12 @@ KdOnline2::KdOnline2(QObject *parent): QObject(parent)
 {
     parseWords(BT_WORDS_PATH);
 
-    init();
+    g_decoder = new KdOnline2Gmm(parent);
 }
 
 KdOnline2::~KdOnline2()
 {
-}
 
-void KdOnline2::init()
-{
-    OnlineEndpointConfig endpoint_config;
-    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
-    OnlineGmmDecodingConfig decode_config;
-
-    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
-    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
-    fcc.add_deltas = true;
-    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
-
-    decode_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
-    decode_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
-    decode_config.model_rxfilename = KAL_NATO_DIR"exp/"KAL_MODE"/final.mdl";
-    decode_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
-    decode_config.faster_decoder_opts.max_active = 7000;
-    decode_config.faster_decoder_opts.beam = 12.0;
-    decode_config.faster_decoder_opts.lattice_beam = 6.0;
-    decode_config.acoustic_scale = acoustic_scale;
-
-    endpoint_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
-
-    std::string fst_rxfilename = KAL_NATO_DIR"exp/"KAL_MODE"/graph/HCLG.fst";
-
-
-    OnlineFeaturePipelineConfig feature_config(fcc);
-    pipeline_prototype = new OnlineFeaturePipeline(feature_config);
-    // The following object initializes the models we use in decoding.
-    gmm_models = new OnlineGmmDecodingModels(decode_config);
-
-    Fst<StdArc> *decode_fst2 = ReadFstKaldiGeneric(fst_rxfilename);
-
-    g_decoder = new SingleUtteranceGmmDecoder(decode_config,
-                                              *gmm_models,
-                                              *pipeline_prototype,
-                                              *decode_fst2,
-                                              adaptation_state);
 }
 
 void KdOnline2::startDecode()

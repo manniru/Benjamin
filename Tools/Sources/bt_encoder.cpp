@@ -44,8 +44,6 @@ BtEncoder::BtEncoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
         gst_object_unref (pipeline);
         return;
     }
-
-    kd.init();
 }
 
 BtEncoder::~BtEncoder()

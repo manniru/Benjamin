@@ -20,6 +20,7 @@
 #include "gmm/am-diag-gmm.h"
 #include "hmm/posterior.h"
 #include "online2/online-gmm-decoding.h"
+#include "bt_config.h"
 
 
 
@@ -35,29 +36,28 @@ public:
     void FinalizeDecoding();
     void EstimateFmllr(bool end_of_utterance);
 
-    void GetAdaptationState(kaldi::OnlineGmmAdaptationState *adaptation_state) const;
+    void GetAdaptationState(kaldi::OnlineGmmAdaptationState *adaptation_state);
     void GetLattice(bool rescore_if_needed,
                     bool end_of_utterance,
-                    kaldi::CompactLattice *clat) const;
+                    kaldi::CompactLattice *clat);
 
     void init();
+    kaldi::LatticeFasterOnlineDecoder *decoder_;
 
 private:
     bool GetGaussianPosteriors(bool end_of_utterance, kaldi::GaussPost *gpost);
     bool HaveTransform() const;
-    bool RescoringIsNeeded() const;
+    bool RescoringIsNeeded();
 
 
-    kaldi::OnlineGmmDecodingConfig *config_;
+    kaldi::OnlineGmmDecodingConfig d_config;
     kaldi::OnlineGmmDecodingModels *models_;
     kaldi::OnlineFeaturePipeline *feature_pipeline_;  // owned here.
-    kaldi::OnlineGmmAdaptationState *orig_adaptation_state_;
-    kaldi::OnlineGmmAdaptationState *adaptation_state_;
-    kaldi::LatticeFasterOnlineDecoder *decoder_;
-    fst::Fst<fst::StdArc> *fst;
+    kaldi::OnlineGmmAdaptationState orig_adaptation_state_;
+    kaldi::OnlineGmmAdaptationState adaptation_state_;
 
     std::vector<int> silence_phones_; // sorted, unique list of silence phones,
-                                        // derived from config_
+                                        // derived from d_config
 };
 
 #endif // KD_ONLINE2_GMM_H
