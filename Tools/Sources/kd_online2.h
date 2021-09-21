@@ -1,5 +1,5 @@
-#ifndef KD_ONLINE_H
-#define KD_ONLINE_H
+#ifndef KD_ONLINE2_H
+#define KD_ONLINE2_H
 
 #include <QObject>
 #include <thread>         // std::thread
@@ -8,8 +8,6 @@
 #include "bt_channel_l.h"
 
 #include "bt_state.h"
-#include "bt_recorder.h"
-#include "bt_encoder.h"
 
 class KdOnline2 : public QObject
 {
@@ -19,8 +17,8 @@ public:
     ~KdOnline2();
 
     void startDecode();
+    void processData(float *wav_data, int len);
 
-public slots:
     void init();
 
 private:
@@ -28,8 +26,7 @@ private:
     void parseWords(QString filename);
     void execute(std::vector<int32_t> word, QVector<QString> *history);
 
-    void print(int64_t *tot_num_frames, double *tot_like);
-    void processData(float *wav_data, int len);
+    void print();
 
     int kDeltaOrder = 2; // delta-delta derivative order
     int kTimeout = 500; // for the PortAudio (half second)
@@ -37,10 +34,10 @@ private:
     int kPaRingSize = 32768; // PortAudio's ring buffer size in bytes
     // Report interval for PortAudio buffer overflows in number of feat. batches
     int kPaReportInt = 4;
-    int cmn_window = 600, min_cmn_window = 100;
+    float acoustic_scale = 0.05;
 
     QVector<QString>  history;
     QVector<QString> lexicon;
 };
 
-#endif // KD_ONLINE_H
+#endif // KD_ONLINE2_H

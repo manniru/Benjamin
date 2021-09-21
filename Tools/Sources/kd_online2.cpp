@@ -13,9 +13,15 @@ using namespace kaldi;
 using namespace fst;
 
 CompactLattice clat;
+SingleUtteranceGmmDecoder *g_decoder;
+OnlineGmmAdaptationState adaptation_state;
 
 
-void KdOnline2::print(int64 *tot_num_frames, double *tot_like)
+OnlineFeaturePipeline *pipeline_prototype;
+// The following object initializes the models we use in decoding.
+OnlineGmmDecodingModels *gmm_models;
+
+void KdOnline2::print()
 {
     if (clat.NumStates() == 0)
     {
@@ -36,139 +42,77 @@ void KdOnline2::print(int64 *tot_num_frames, double *tot_like)
     GetLinearSymbolSequence(best_path_lat, &alignment, &words, &weight);
     num_frames = alignment.size();
     likelihood = -(weight.Value1() + weight.Value2());
-    *tot_num_frames += num_frames;
-    *tot_like += likelihood;
-    KALDI_VLOG(2) << "Likelihood per frame for utterance " << " is "
-                << (likelihood / num_frames) << " over " << num_frames
+    qDebug() << "Likelihood per frame for utterance " << " is "
+                << (likelihood ) << " over " << num_frames
                 << " frames.";
 
     QString message;
     for( size_t i = 0; i<words.size() ; i++ )
     {
         message += lexicon[words[i]];
+        message +=  ' ';
     }
-    message +=  ' ';
     qDebug() << message;
 }
 
-
 void KdOnline2::processData(float *wav_data, int len)
 {
-    OnlineEndpointConfig endpoint_config;
-    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
-    OnlineGmmDecodingConfig decode_config;
-    int counter = 0;
-
     BaseFloat chunk_length_secs = 0.05;
-    bool do_endpointing = false;
-
-    decode_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
-    decode_config.model_rxfilename = BT_FINAL_PATH;
-    decode_config.acoustic_scale = 0.05;
-    decode_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
-    decode_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
-    decode_config.faster_decoder_opts.max_active = 7000;
-    decode_config.faster_decoder_opts.beam = 12.0;
-    decode_config.faster_decoder_opts.lattice_beam = 6.0;
-
-    fcc.add_deltas = true;
-    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
-    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
-    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
-
-    endpoint_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
-
-    std::string fst_rxfilename = BT_FST_PATH;
-    std::string clat_wspecifier = "ark:"KAL_NATO_DIR"online/lattice.ark";
-
-    OnlineFeaturePipelineConfig feature_config(fcc);
-    OnlineFeaturePipeline pipeline_prototype(feature_config);
-    // The following object initializes the models we use in decoding.
-    OnlineGmmDecodingModels gmm_models(decode_config);
-
-
-    fst::Fst<fst::StdArc> *decode_fst = ReadFstKaldiGeneric(fst_rxfilename);
-
-    double tot_like = 0.0;
-    int64 num_frames = 0;
-
-    CompactLatticeWriter clat_writer(clat_wspecifier);
-
-    OnlineTimingStats timing_stats;
-
-    OnlineGmmAdaptationState adaptation_state;
 
     // get the data for channel zero (if the signal is not mono, we only
     // take the first channel).
     SubVector<float> data(wav_data, len);
 
-    SingleUtteranceGmmDecoder decoder(decode_config,
-                                      gmm_models,
-                                      pipeline_prototype,
-                                      *decode_fst,
-                                      adaptation_state);
-
-    OnlineTimer decoding_timer("1");
-
     BaseFloat samp_freq = 16000; ///FIXME
     int32 chunk_length = int32(samp_freq * chunk_length_secs);
-    if( chunk_length==0 )
-    {
-        chunk_length = 1;
-    }
 
     int32 samp_offset = 0;
+//    qDebug() << "data.Dim()" << data.Dim() << "len" << len;
     while (samp_offset < data.Dim())
     {
         int32 samp_remaining = data.Dim() - samp_offset;
-        int32 num_samp = chunk_length < samp_remaining ? chunk_length
-                                                       : samp_remaining;
+
+        int32 num_samp;
+        if( chunk_length<samp_remaining )
+        {
+            num_samp = chunk_length;
+        }
+        else
+        {
+            num_samp = samp_remaining;
+        }
 
         SubVector<float> wave_part(data, samp_offset, num_samp);
-        decoder.FeaturePipeline().AcceptWaveform(samp_freq, wave_part);
+        g_decoder->FeaturePipeline().AcceptWaveform(samp_freq, wave_part);
 
         samp_offset += num_samp;
-        decoding_timer.WaitUntil(samp_offset / samp_freq);
-        if (samp_offset == data.Dim())
-        {
-            // no more input. flush out last frames
-            decoder.FeaturePipeline().InputFinished();
-        }
-        decoder.AdvanceDecoding();
+//        if (samp_offset == data.Dim())
+//        {
+//            // no more input. flush out last frames
+//            g_decoder->FeaturePipeline().InputFinished();
+//        }
+        g_decoder->AdvanceDecoding();
+        g_decoder->FinalizeDecoding();
 
-        if (do_endpointing && decoder.EndpointDetected(endpoint_config))
-        {
-            break;
-        }
     }
-    decoder.FinalizeDecoding();
 
     bool end_of_utterance = true;
-    decoder.EstimateFmllr(end_of_utterance);
+//    g_decoder->EstimateFmllr(end_of_utterance);
     bool rescore_if_needed = true;
-    decoder.GetLattice(rescore_if_needed, end_of_utterance, &clat);
+    g_decoder->GetLattice(rescore_if_needed, end_of_utterance, &clat);
 
-    print(&num_frames, &tot_like);
-
-    decoding_timer.OutputStats(&timing_stats);
+    print();
 
     // In an application you might avoid updating the adaptation state if
     // you felt the utterance had low confidence.  See lat/confidence.h
-    decoder.GetAdaptationState(&adaptation_state);
-
-    // we want to output the lattice with un-scaled acoustics.
-    if (decode_config.acoustic_scale != 0.0)
-    {
-        BaseFloat inv_acoustic_scale = 1.0 / decode_config.acoustic_scale;
-        ScaleLattice(AcousticLatticeScale(inv_acoustic_scale), &clat);
-    }
-    clat_writer.Write("1", clat); //utt=1
-    qDebug() << "Decoded utterance ";
+//    g_decoder->GetAdaptationState(&adaptation_state);
 }
 
 KdOnline2::KdOnline2(QObject *parent): QObject(parent)
 {
     parseWords(BT_WORDS_PATH);
+
+    init();
 }
 
 KdOnline2::~KdOnline2()
@@ -177,12 +121,49 @@ KdOnline2::~KdOnline2()
 
 void KdOnline2::init()
 {
+    OnlineEndpointConfig endpoint_config;
+    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
+    OnlineGmmDecodingConfig decode_config;
 
+    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
+    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
+    fcc.add_deltas = true;
+    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
+
+    decode_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
+    decode_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
+    decode_config.model_rxfilename = KAL_NATO_DIR"exp/"KAL_MODE"/final.mdl";
+    decode_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
+    decode_config.faster_decoder_opts.max_active = 7000;
+    decode_config.faster_decoder_opts.beam = 12.0;
+    decode_config.faster_decoder_opts.lattice_beam = 6.0;
+    decode_config.acoustic_scale = acoustic_scale;
+
+    endpoint_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
+
+    std::string fst_rxfilename = KAL_NATO_DIR"exp/"KAL_MODE"/graph/HCLG.fst";
+
+
+    OnlineFeaturePipelineConfig feature_config(fcc);
+    pipeline_prototype = new OnlineFeaturePipeline(feature_config);
+    // The following object initializes the models we use in decoding.
+    gmm_models = new OnlineGmmDecodingModels(decode_config);
+
+    Fst<StdArc> *decode_fst2 = ReadFstKaldiGeneric(fst_rxfilename);
+
+    g_decoder = new SingleUtteranceGmmDecoder(decode_config,
+                                              *gmm_models,
+                                              *pipeline_prototype,
+                                              *decode_fst2,
+                                              adaptation_state);
 }
 
 void KdOnline2::startDecode()
 {
+    double tot_like = 0.0;
+    int64 num_frames = 0;
 
+    OnlineTimingStats timing_stats;
 }
 
 void KdOnline2::execute(std::vector<int32_t> word, QVector<QString> *history)
