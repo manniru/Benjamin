@@ -92,9 +92,9 @@ void KdOnline2::processData(float *wav_data, int len)
 //            g_decoder->FeaturePipeline().InputFinished();
 //        }
         g_decoder->AdvanceDecoding();
-        g_decoder->FinalizeDecoding();
 
     }
+    g_decoder->FinalizeDecoding();
 
     bool end_of_utterance = true;
 //    g_decoder->EstimateFmllr(end_of_utterance);
