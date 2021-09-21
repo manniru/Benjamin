@@ -44,6 +44,8 @@ BtEncoder::BtEncoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
         gst_object_unref (pipeline);
         return;
     }
+
+    kd.init();
 }
 
 BtEncoder::~BtEncoder()
@@ -57,42 +59,43 @@ BtEncoder::~BtEncoder()
 
 void BtEncoder::startEncode(QString message)
 {
-#ifdef BT_DOUBLE_BUF
-    if( wav_filename.contains("buf2.wav") )
-    {
-        wav_filename = KAL_WAV_DIR"buf1.wav";
-    }
-    else
-    {
-        wav_filename = KAL_WAV_DIR"buf2.wav";
-    }
-#else
-    wav_filename = KAL_WAV_DIR"buf" + QString::number(wav_num++) + ".wav";
-#endif
+//#ifdef BT_DOUBLE_BUF
+//    if( wav_filename.contains("buf2.wav") )
+//    {
+//        wav_filename = KAL_WAV_DIR"buf1.wav";
+//    }
+//    else
+//    {
+//        wav_filename = KAL_WAV_DIR"buf2.wav";
+//    }
+//#else
+//    wav_filename = KAL_WAV_DIR"buf" + QString::number(wav_num++) + ".wav";
+//#endif
 
-    g_object_set (sink, "location", wav_filename.toStdString().c_str(), NULL);
+//    g_object_set (sink, "location", wav_filename.toStdString().c_str(), NULL);
 
-    sample_index = 0;
+//    sample_index = 0;
 
-    /* Start playing the pipeline */
-    gst_element_set_state (pipeline, GST_STATE_PLAYING);
+//    /* Start playing the pipeline */
+//    gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-    ///FIXME: Implement GstBufferPool
-    int buf_count = BT_REC_SIZE*BT_REC_RATE/CHUNK_SIZE;
+//    ///FIXME: Implement GstBufferPool
+//    int buf_count = BT_REC_SIZE*BT_REC_RATE/CHUNK_SIZE;
 
+    int sample_count = BT_REC_SIZE*BT_REC_RATE;
     cyclic->rewind((BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
-    for( int i=0 ; i<buf_count ; i++ )
+    int16_t raw[BT_REC_SIZE*BT_REC_RATE];
+    cyclic->raad(raw, sample_count);
+
+    for( int i=0 ; i<sample_count ; i++ )
     {
-        if( pushChunk(CHUNK_SIZE)==false )
-        {
-            qDebug() << "shit has happened";
-            break;
-        }
+        raw_f[i] = raw[i];
     }
+    kd.processData(raw_f, sample_count);
 
-    record_timer->start(50);
+//    record_timer->start(50);
 
-    msg = message;
+//    msg = message;
 }
 
 bool BtEncoder::pushChunk(int sample_count)

@@ -8,8 +8,6 @@
 #include "bt_channel_l.h"
 
 #include "bt_state.h"
-#include "bt_recorder.h"
-#include "bt_encoder.h"
 
 class KdOnline : public QObject
 {
