@@ -24,9 +24,9 @@ signals:
     void startRecord();
 
 private:
-    QThread *record_thread;
-    QThread *encoder_thread;
-    QThread *kaldi_thread;
+    QThread   *record_thread;
+    QThread   *encoder_thread;
+    QThread   *kaldi_thread;
     BtRecoder *recorder;
     BtEncoder *encoder;
     BtCyclic  *cyclic;

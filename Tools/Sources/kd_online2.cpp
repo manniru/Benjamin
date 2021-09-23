@@ -1,5 +1,7 @@
 #include "kd_online2.h"
 
+
+#ifdef BT_ONLINE2
 #include "feat/wave-reader.h"
 #include "online2/online-feature-pipeline.h"
 #include "online2/online-gmm-decoding.h"
@@ -12,21 +14,15 @@
 using namespace kaldi;
 using namespace fst;
 
-CompactLattice clat;
-
-OnlineFeaturePipeline *pipeline_prototype;
-// The following object initializes the models we use in decoding.
-OnlineGmmDecodingModels *gmm_models;
-
-void KdOnline2::print()
+void KdOnline2::print(CompactLattice *clat)
 {
-    if (clat.NumStates() == 0)
+    if (clat->NumStates() == 0)
     {
         KALDI_WARN << "Empty lattice.";
         return;
     }
     CompactLattice best_path_clat;
-    CompactLatticeShortestPath(clat, &best_path_clat);
+    CompactLatticeShortestPath(*clat, &best_path_clat);
 
     Lattice best_path_lat;
     ConvertLattice(best_path_clat, &best_path_lat);
@@ -54,7 +50,7 @@ void KdOnline2::print()
 
 void KdOnline2::processData(float *wav_data, int len)
 {
-    g_decoder->decoder_->InitDecoding();
+//    g_decoder->decoder_->InitDecoding();
     BaseFloat chunk_length_secs = 0.05;
 
     // get the data for channel zero (if the signal is not mono, we only
@@ -84,11 +80,11 @@ void KdOnline2::processData(float *wav_data, int len)
         g_decoder->FeaturePipeline().AcceptWaveform(samp_freq, wave_part);
 
         samp_offset += num_samp;
-        if (samp_offset == data.Dim())
-        {
-            // no more input. flush out last frames
-            g_decoder->FeaturePipeline().InputFinished();
-        }
+//        if (samp_offset == data.Dim())
+//        {
+//            // no more input. flush out last frames
+//            g_decoder->FeaturePipeline().InputFinished();
+//        }
         g_decoder->AdvanceDecoding();
 
     }
@@ -97,9 +93,10 @@ void KdOnline2::processData(float *wav_data, int len)
     bool end_of_utterance = true;
     g_decoder->EstimateFmllr(end_of_utterance);
     bool rescore_if_needed = true;
+    CompactLattice clat;
     g_decoder->GetLattice(rescore_if_needed, end_of_utterance, &clat);
 
-    print();
+    print(&clat);
 
     // In an application you might avoid updating the adaptation state if
     // you felt the utterance had low confidence.  See lat/confidence.h
@@ -190,3 +187,5 @@ void KdOnline2::parseWords(QString filename)
 
     words_file.close();
 }
+
+#endif

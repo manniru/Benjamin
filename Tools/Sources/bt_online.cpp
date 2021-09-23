@@ -11,7 +11,6 @@ BtOnline::BtOnline(QObject *parent) : QObject(parent)
     recorder->moveToThread(record_thread);
     record_thread->start();
 
-
     encoder = new BtEncoder(encoder_thread, cyclic);
     encoder->moveToThread(encoder_thread);
     encoder_thread->start();
@@ -21,12 +20,14 @@ BtOnline::BtOnline(QObject *parent) : QObject(parent)
 //    connect(encoder,  SIGNAL(resultReady(QString)), this, SLOT(startDecode(QString)));
     emit startRecord();
 
-//    kaldi = new KdOnline;
-//    kaldi->moveToThread(kaldi_thread);
-//    kaldi_thread->start();
-//    connect(this,  SIGNAL(startRecord()), kaldi, SLOT(init()));
-////    kaldi->startDecode();
-//    emit startRecord();
+#ifndef BT_ONLINE2
+    kaldi = new KdOnline;
+    kaldi->moveToThread(kaldi_thread);
+    kaldi_thread->start();
+    connect(this,  SIGNAL(startRecord()), kaldi, SLOT(init()));
+//    kaldi->startDecode();
+    emit startRecord();
+#endif
 }
 
 void BtOnline::startDecode(QString msg)

@@ -2,6 +2,7 @@
 #include "lat/lattice-functions.h"
 #include "lat/determinize-lattice-pruned.h"
 
+#ifdef BT_ONLINE2
 using namespace kaldi;
 using namespace fst;
 
@@ -329,3 +330,5 @@ void KdOnline2Gmm::GetLattice(bool rescore_if_needed,
                                          d_config.faster_decoder_opts.det_opts);
 
 }
+
+#endif

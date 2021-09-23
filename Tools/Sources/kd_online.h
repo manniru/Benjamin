@@ -5,8 +5,8 @@
 #include <thread>         // std::thread
 #include <QTimer>
 #include <QDebug>
-#include "bt_channel_l.h"
 
+#include "bt_channel_l.h"
 #include "bt_state.h"
 
 class KdOnline : public QObject

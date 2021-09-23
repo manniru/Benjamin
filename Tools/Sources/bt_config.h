@@ -29,5 +29,6 @@
 #define BT_REC_INPUT      "alsa:usbstream:CARD=Solo" //Microphone Input
 
 #define BT_DOUBLE_BUF     // if undefined encoded file not replaced
+//#define BT_ONLINE2        // use online2 decoding alghorithm
 
 #endif // BT_CONFIG_H

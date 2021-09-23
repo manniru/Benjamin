@@ -1,11 +1,13 @@
 #ifndef KD_ONLINE2_GMM_H
 #define KD_ONLINE2_GMM_H
 
+#ifdef BT_ONLINE2
 #include <QObject>
 #include <QTimer>
 #include <QDebug>
 #include <string>
 #include <vector>
+
 
 #include "matrix/matrix-lib.h"
 #include "util/common-utils.h"
@@ -21,8 +23,6 @@
 #include "hmm/posterior.h"
 #include "online2/online-gmm-decoding.h"
 #include "bt_config.h"
-
-
 
 class KdOnline2Gmm : public QObject
 {
@@ -59,5 +59,6 @@ private:
     std::vector<int> silence_phones_; // sorted, unique list of silence phones,
                                         // derived from d_config
 };
+#endif
 
 #endif // KD_ONLINE2_GMM_H

@@ -1,6 +1,8 @@
 #ifndef KD_ONLINE2_H
 #define KD_ONLINE2_H
 
+#ifdef BT_ONLINE2
+
 #include <QObject>
 #include <thread>         // std::thread
 #include <QTimer>
@@ -24,7 +26,7 @@ private:
     void parseWords(QString filename);
     void execute(std::vector<int32_t> word, QVector<QString> *history);
 
-    void print();
+    void print(kaldi::CompactLattice *clat);
 
     int kDeltaOrder = 2; // delta-delta derivative order
     int kTimeout = 500; // for the PortAudio (half second)
@@ -38,5 +40,7 @@ private:
     QVector<QString>  lexicon;
     KdOnline2Gmm     *g_decoder;
 };
+
+#endif
 
 #endif // KD_ONLINE2_H
