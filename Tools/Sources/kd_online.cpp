@@ -1,6 +1,5 @@
 #include "kd_online.h"
 #include "feat/feature-mfcc.h"
-#include "online/online-audio-source.h"
 #include "online/online-feat-input.h"
 #include "online/online-decodable.h"
 #include "online/online-faster-decoder.h"
@@ -63,7 +62,7 @@ void KdOnline::init()
     decoder = new OnlineFasterDecoder(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
 
-    OnlinePaSource au_src(kTimeout, kSampleFreq, kPaRingSize, kPaReportInt);
+    BtOnlineSource au_src;
     Mfcc mfcc(mfcc_opts);
     OnlineFeInput<Mfcc> fe_input(&au_src, &mfcc,
                      frame_length * (kSampleFreq / 1000),
