@@ -15,13 +15,13 @@ BtOnline::BtOnline(QObject *parent) : QObject(parent)
     encoder->moveToThread(encoder_thread);
     encoder_thread->start();
 
-    connect(recorder, SIGNAL(resultReady(QString)), encoder, SLOT(startEncode(QString)));
+//    connect(recorder, SIGNAL(resultReady(QString)), encoder, SLOT(startEncode(QString)));
     connect(this,     SIGNAL(startRecord()), recorder, SLOT(start()));
 //    connect(encoder,  SIGNAL(resultReady(QString)), this, SLOT(startDecode(QString)));
     emit startRecord();
 
 #ifndef BT_ONLINE2
-    kaldi = new KdOnline;
+    kaldi = new KdOnline(cyclic);
     kaldi->moveToThread(kaldi_thread);
     kaldi_thread->start();
     connect(this,  SIGNAL(startRecord()), kaldi, SLOT(init()));

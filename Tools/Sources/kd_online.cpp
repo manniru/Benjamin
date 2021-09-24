@@ -16,9 +16,11 @@ OnlineFasterDecoder   *decoder;
 AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
 
-KdOnline::KdOnline(QObject *parent): QObject(parent)
+KdOnline::KdOnline(BtCyclic *buffer, QObject *parent): QObject(parent)
 {
     parseWords(BT_WORDS_PATH);
+
+    ab_src = new BtOnlineSource(buffer);
 }
 
 KdOnline::~KdOnline()
@@ -56,15 +58,14 @@ void KdOnline::init()
     // options are hardwired(ToDo: we should fix this at some point)
     MfccOptions mfcc_opts;
     mfcc_opts.use_energy = false;
-    int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 25;
-    int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 10;
+    int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 20;
+    int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 5;
 
     decoder = new OnlineFasterDecoder(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
 
-    BtOnlineSource au_src;
     Mfcc mfcc(mfcc_opts);
-    OnlineFeInput<Mfcc> fe_input(&au_src, &mfcc,
+    OnlineFeInput<Mfcc> fe_input(ab_src, &mfcc,
                      frame_length * (kSampleFreq / 1000),
                      frame_shift * (kSampleFreq / 1000));
     OnlineCmnInput cmn_input(&fe_input, cmn_window, min_cmn_window);

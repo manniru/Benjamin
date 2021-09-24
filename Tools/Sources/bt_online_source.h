@@ -6,13 +6,14 @@
 #include <QTimer>
 #include <QDebug>
 
-#include "matrix/kaldi-vector.h"
 #include "online/online-audio-source.h"
+#include "matrix/kaldi-vector.h"
+#include "bt_cyclic.h"
 
 class BtOnlineSource: public kaldi::OnlineAudioSourceItf
 {
 public:
-    BtOnlineSource();
+    BtOnlineSource(BtCyclic *buffer);
 
     // Implementation of the OnlineAudioSourceItf
     bool Read(kaldi::Vector<float> *data);
@@ -20,7 +21,7 @@ public:
     ~BtOnlineSource();
 
 private:
-
+    BtCyclic *cy_buf;
 };
 
 

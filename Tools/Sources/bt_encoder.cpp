@@ -111,7 +111,7 @@ void BtEncoder::startEncode(QString message)
 bool BtEncoder::pushChunk(int sample_count)
 {
     GstFlowReturn ret;
-    GstBuffer *en_buffer = gst_buffer_new_and_alloc (sample_count*sizeof(int16_t));
+    GstBuffer *en_buffer = gst_buffer_new_and_alloc(sample_count*sizeof(int16_t));
 
     /* Set its timestamp and duration */
     GST_BUFFER_TIMESTAMP (en_buffer) = gst_util_uint64_scale (sample_index, GST_SECOND, BT_REC_RATE);
@@ -147,8 +147,6 @@ void BtEncoder::recordTimeout()
     uint s_buf_count = 0;
     g_object_get(queue, "current-level-bytes", &q_buf_count, NULL);
     g_object_get(source, "current-level-bytes", &s_buf_count, NULL);
-
-//    qDebug() << "done" << msg << q_buf_count << s_buf_count;
 
     emit resultReady(wav_filename + " " + msg);
 }

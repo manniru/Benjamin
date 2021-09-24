@@ -16,8 +16,15 @@ BtCyclic::BtCyclic(int size, QObject *parent) : QObject(parent)
 }
 
 // return negative on erorr
-void BtCyclic::raad(int16_t *data, int size)
+int BtCyclic::raad(int16_t *data, int size)
 {
+    int num = 0;
+
+    if( size>getSize() )
+    {
+        size = getSize();
+    }
+
     for( int i=0 ; i<size ; i++ )
     {
         data[i] = buffer[read_p];
@@ -27,9 +34,10 @@ void BtCyclic::raad(int16_t *data, int size)
         {
             read_p = 0;
         }
+        num++;
     }
 
-    buff_data_size -= size;
+    return num;
 //    qDebug() << "raad bds" << buff_data_size/BT_REC_RATE << size;
 }
 
@@ -46,7 +54,6 @@ void BtCyclic::write(int16_t *data, int size)
             write_p = 0;
         }
     }
-    buff_data_size += size;
 //    qDebug() << "wrte bds" << buff_data_size/BT_REC_RATE << size;
 }
 
@@ -63,7 +70,6 @@ void BtCyclic::constWrite(int16_t data, int size)
             write_p = 0;
         }
     }
-    buff_data_size += size;
 //    qDebug() << "cWrt bds" << buff_data_size/BT_REC_RATE << size;
 }
 
@@ -82,6 +88,17 @@ void BtCyclic::rewind(int count)
         read_p = read_p+buff_size;
     }
 
-    buff_data_size += count;
-//    qDebug() << "buff_data_size" << buff_data_size/BT_REC_RATE;
+    //    qDebug() << "buff_data_size" << buff_data_size/BT_REC_RATE;
+}
+
+int BtCyclic::getSize()
+{
+    if( read_p<write_p )
+    {
+        return write_p-read_p;
+    }
+    else
+    {
+        return (buff_size-read_p) + write_p;
+    }
 }
