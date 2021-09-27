@@ -26,7 +26,7 @@ bool BtOnlineSource::Read(kaldi::Vector<float> *data)
 
     int nsamples = cy_buf->raad(raw, req);
     data->Resize(nsamples);
-    qDebug() << req << nsamples;
+//    qDebug() << req << nsamples;
 
     for( int i = 0 ; i<nsamples ; i++ )
     {

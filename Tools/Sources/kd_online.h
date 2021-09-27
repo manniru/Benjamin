@@ -9,6 +9,8 @@
 #include "bt_channel_l.h"
 #include "bt_state.h"
 #include "bt_online_source.h"
+#include "lat/sausages.h"
+#include "lat/kaldi-lattice.h"
 
 class KdOnline : public QObject
 {
@@ -23,14 +25,15 @@ public slots:
     void init();
 
 private:
+    void printTime(clock_t start);
     void writeBarResult();
     void parseWords(QString filename);
-    void execute(std::vector<int32_t> word, QVector<QString> *history);
+    void execute(std::vector<int32_t> word);
+    void processLat(fst::VectorFst<kaldi::LatticeArc> *fst_in, clock_t start);
 
     int kDeltaOrder = 2; // delta-delta derivative order
     int kSampleFreq = 16000; // fixed to 16KHz
     // Report interval for PortAudio buffer overflows in number of feat. batches
-    int kPaReportInt = 4;
     int cmn_window = 600, min_cmn_window = 100;
 
     BtOnlineSource   *ab_src;
