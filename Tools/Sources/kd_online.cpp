@@ -64,6 +64,8 @@ void KdOnline::init()
     int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 20;
     int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 5;
 
+    decoder_opts.max_active = 7000;
+    decoder_opts.beam = 15.0;
     decoder = new OnlineFasterDecoder(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
 
@@ -84,7 +86,7 @@ void KdOnline::init()
 
 void KdOnline::startDecode()
 {
-    BaseFloat acoustic_scale = 0.05;
+    BaseFloat acoustic_scale = 0.08;
     // feature_reading_opts contains number of retries, batch size.
     OnlineFeatureMatrixOptions feature_reading_opts;
     OnlineFeatureMatrix *feature_matrix;
@@ -171,7 +173,7 @@ void KdOnline::processLat(VectorFst<LatticeArc> *fst_in, clock_t start)
                             &word_ids, w_out);
     ConvertLattice(*fst_in, &lat);
     ConvertLattice(lat, &clat);
-    ScaleLattice(LatticeScale(10.0, 0.08), &clat);
+    ScaleLattice(LatticeScale(1.0, 0.00001), &clat);
 
     mbr = new MinimumBayesRisk(clat, mbr_opts);
 
@@ -180,6 +182,16 @@ void KdOnline::processLat(VectorFst<LatticeArc> *fst_in, clock_t start)
     for( int i=0 ; i<conf.size() ; i++ )
     {
         qDebug() << lexicon[word_ids[i]] << conf[i];
+
+        if( i>1 )
+        {
+            CompactLatticeWriter clat_writer("ark,t:b.ark");
+            clat_writer.Write("f", clat);
+//            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
+//            fst_writer.Write("f", *fst_in);
+
+            exit(0);
+        }
     }
 
     if( word_ids.size() )
