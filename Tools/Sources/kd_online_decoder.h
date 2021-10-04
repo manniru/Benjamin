@@ -68,7 +68,7 @@ private:
 
     // Makes a linear "lattice", by tracing back a path delimited by two tokens
     void MakeLattice(KdToken *start, KdToken *end,
-                     fst::MutableFst<kaldi::LatticeArc> *out_fst);
+                     kaldi::Lattice *out_fst);
 
     // Searches for the last token, ancestor of all currently active tokens
     void UpdateImmortalToken();

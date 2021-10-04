@@ -20,10 +20,9 @@ KdOnlineLDecoder::KdOnlineLDecoder(const fst::Fst<fst::StdArc> &fst,
 void KdOnlineLDecoder::ResetDecoder(bool full)
 {
     DeleteElems(toks_.Clear()); //replaced ClearToks
-    StateId start_state = fst_.Start();
+    StateId start_state = fst_->Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
-    Arc dummy_arc(0, 0, Weight::One(), start_state);
-    KdToken *dummy_token = KdToken(dummy_arc, NULL);
+    KdToken *dummy_token = new KdToken(0.0, 0.0, NULL, NULL, NULL); //Weight was Weight::One()
     toks_.Insert(start_state, dummy_token);
     prev_immortal_tok_ = immortal_tok_ = dummy_token;
     utt_frames_ = 0;
@@ -36,7 +35,7 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
 
 
 void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
-                                   fst::MutableFst<LatticeArc> *out_fst)
+                                   Lattice *out_fst)
 {
     out_fst->DeleteStates();
     if (start == NULL)
@@ -45,7 +44,7 @@ void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
     }
 
     bool is_final = true;
-    double this_cost = start->cost_ + fst_.Final(start->arc_.nextstate).Value();
+    double this_cost = start->tot_cost + fst_.Final(start->arc_.nextstate).Value();
 
     if( this_cost==std::numeric_limits<double>::infinity() )
     {
@@ -54,16 +53,16 @@ void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
 
     std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
 
-    for( Token *tok=start ; tok!=end ; tok=tok->prev_ )
+    for( KdToken *tok=start ; tok!=end ; tok=tok->next )
     {
         float last_cost = 0;
-        if( tok->prev_ )
+        if( tok->next )
         {
-            last_cost = tok->prev_->cost_;
+            last_cost = tok->next->tot_cost;
         }
 
         float tot_cost   = tok->cost_ - last_cost;
-        float graph_cost = tok->arc_.weight.Value();
+        float graph_cost = tok->links->graph_cost;
         float ac_cost    = tot_cost - graph_cost;
 
         LatticeWeight arc_weight(graph_cost, ac_cost);
@@ -71,11 +70,6 @@ void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
                          arc_weight, tok->arc_.nextstate);
 
         arcs_reverse.push_back(l_arc);
-    }
-
-    if(arcs_reverse.back().nextstate == fst_.Start())
-    {
-        arcs_reverse.pop_back();  // that was a "fake" token... gives no info.
     }
 
     StateId cur_state = out_fst->AddState();
