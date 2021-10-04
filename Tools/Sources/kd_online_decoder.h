@@ -44,14 +44,16 @@ public:
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
 
+    void MakeLattice(kaldi::CompactLattice *ofst, bool use_final_probs);
+
     // Makes a linear graph, by tracing back from the last "immortal" token
     // to the previous one
-    bool PartialTraceback(kaldi::Lattice *out_fst);
+    bool PartialTraceback(kaldi::CompactLattice *out_fst);
 
     // Makes a linear graph, by tracing back from the best currently active token
     // to the last immortal token. This method is meant to be invoked at the end
     // of an utterance in order to get the last chunk of the hypothesis
-    void FinishTraceBack(kaldi::Lattice *fst_out);
+    void FinishTraceBack(kaldi::CompactLattice *fst_out);
 
     // Returns "true" if the best current hypothesis ends with long enough silence
     bool HaveSilence();

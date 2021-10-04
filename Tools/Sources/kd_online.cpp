@@ -96,7 +96,7 @@ void KdOnline::startDecode()
                              acoustic_scale, feature_matrix);
 
     o_decoder->InitDecoding();
-    Lattice out_fst;
+    CompactLattice out_fst;
 
     clock_t start;
 
@@ -125,6 +125,7 @@ void KdOnline::startDecode()
                                "com.binaee.rebound.exec  string:\"\"");
             }
         }
+        qDebug() << out_fst.NumStates();
     }
 }
 
@@ -154,41 +155,41 @@ void KdOnline::execute(std::vector<int32_t> word)
     system(cmd.toStdString().c_str());
 }
 
-void KdOnline::processLat(Lattice *lat, clock_t start)
+void KdOnline::processLat(CompactLattice *clat, clock_t start)
 {
     MinimumBayesRiskOptions mbr_opts;
     MinimumBayesRisk *mbr = NULL;
     mbr_opts.decode_mbr = true;
 
-    CompactLattice clat;
     vector<int32> word_ids;
 
     vector<int32> *isymbols_out = NULL;
     LatticeArc::Weight *w_out = NULL;
 
-    GetLinearSymbolSequence(*lat, isymbols_out,
+    Lattice lat;
+    o_decoder->GetBestPath(&lat);
+    GetLinearSymbolSequence(lat, isymbols_out,
                             &word_ids, w_out);
-    ConvertLattice(*lat, &clat);
-    ScaleLattice(LatticeScale(1.0, 0.00001), &clat);
+    ScaleLattice(LatticeScale(1.0, 0.00001), clat);
 
-    mbr = new MinimumBayesRisk(clat, mbr_opts);
+//    mbr = new MinimumBayesRisk(clat, mbr_opts);
 
-    vector<float> conf = mbr->GetOneBestConfidences();
+//    vector<float> conf = mbr->GetOneBestConfidences();
 
-    for( int i=0 ; i<conf.size() ; i++ )
+    if( clat->NumStates()>115000 )
     {
-        qDebug() << lexicon[word_ids[i]] << conf[i];
-
-        if( i>1 )
-        {
-            CompactLatticeWriter clat_writer("ark,t:b.ark");
-            clat_writer.Write("f", clat);
+        CompactLatticeWriter clat_writer("ark,t:b.ark");
+        clat_writer.Write("f", *clat);
 //            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
 //            fst_writer.Write("f", *fst_in);
 
-            exit(0);
-        }
+        exit(0);
     }
+//    for( int i=0 ; i<word_ids.size() ; i++ )
+//    {
+//        qDebug() << lexicon[word_ids[i]];// << conf[i];
+
+//    }
 
     if( word_ids.size() )
     {

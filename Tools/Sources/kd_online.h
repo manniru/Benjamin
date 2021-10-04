@@ -30,7 +30,7 @@ private:
     void writeBarResult();
     void parseWords(QString filename);
     void execute(std::vector<int32_t> word);
-    void processLat(fst::VectorFst<kaldi::LatticeArc> *fst_in, clock_t start);
+    void processLat(kaldi::CompactLattice *clat, clock_t start);
 
     int kDeltaOrder = 2; // delta-delta derivative order
     int kSampleFreq = 16000; // fixed to 16KHz

@@ -9,3 +9,4 @@ export LC_ALL=C
 SD="scripts/decode" #Script Decode
 ST="scripts/train" #Script Train
 SI="scripts/interpreter" #Script Interpreter
+SK="scripts/kaldi" #Script Kaldi
