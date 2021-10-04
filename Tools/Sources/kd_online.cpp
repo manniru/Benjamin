@@ -96,7 +96,7 @@ void KdOnline::startDecode()
                              acoustic_scale, feature_matrix);
 
     o_decoder->InitDecoding();
-    VectorFst<LatticeArc> out_fst;
+    Lattice out_fst;
 
     clock_t start;
 
@@ -154,24 +154,21 @@ void KdOnline::execute(std::vector<int32_t> word)
     system(cmd.toStdString().c_str());
 }
 
-void KdOnline::processLat(VectorFst<LatticeArc> *fst_in, clock_t start)
+void KdOnline::processLat(Lattice *lat, clock_t start)
 {
     MinimumBayesRiskOptions mbr_opts;
     MinimumBayesRisk *mbr = NULL;
     mbr_opts.decode_mbr = true;
 
-    Lattice lat;
     CompactLattice clat;
-
     vector<int32> word_ids;
 
     vector<int32> *isymbols_out = NULL;
     LatticeArc::Weight *w_out = NULL;
 
-    GetLinearSymbolSequence(*fst_in, isymbols_out,
+    GetLinearSymbolSequence(*lat, isymbols_out,
                             &word_ids, w_out);
-    ConvertLattice(*fst_in, &lat);
-    ConvertLattice(lat, &clat);
+    ConvertLattice(*lat, &clat);
     ScaleLattice(LatticeScale(1.0, 0.00001), &clat);
 
     mbr = new MinimumBayesRisk(clat, mbr_opts);

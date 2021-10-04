@@ -46,15 +46,15 @@ public:
 
     // Makes a linear graph, by tracing back from the last "immortal" token
     // to the previous one
-    bool PartialTraceback(fst::MutableFst<kaldi::LatticeArc> *out_fst);
+    bool PartialTraceback(kaldi::Lattice *out_fst);
 
     // Makes a linear graph, by tracing back from the best currently active token
     // to the last immortal token. This method is meant to be invoked at the end
     // of an utterance in order to get the last chunk of the hypothesis
-    void FinishTraceBack(fst::MutableFst<kaldi::LatticeArc> *fst_out);
+    void FinishTraceBack(kaldi::Lattice *fst_out);
 
     // Returns "true" if the best current hypothesis ends with long enough silence
-    bool EndOfUtterance();
+    bool HaveSilence();
 
     int32 frame() { return frame_; }
 
@@ -63,12 +63,7 @@ private:
 
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token
-    void TracebackNFrames(int32 nframes,
-                          fst::MutableFst<kaldi::LatticeArc> *out_fst);
-
-    // Makes a linear "lattice", by tracing back a path delimited by two tokens
-    void MakeLattice(KdToken *start, KdToken *end,
-                     kaldi::Lattice *out_fst);
+    void TracebackNFrames(int32 nframes, kaldi::Lattice *out_fst);
 
     // Searches for the last token, ancestor of all currently active tokens
     void UpdateImmortalToken();
@@ -78,7 +73,7 @@ private:
     const kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
     float max_beam_; // the maximum allowed beam
     float effective_beam_; // the currently used beam
-    float state_; // the current state of the decoder
+    KdDecodeState state_; // the current state of the decoder
     int32 frame_; // the next frame to be processed
     int32 utt_frames_; // # frames processed from the current utterance
     KdToken *immortal_tok_;      // "immortal" token means it's an ancestor of ...

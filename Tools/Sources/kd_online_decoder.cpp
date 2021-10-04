@@ -33,82 +33,23 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
     }
 }
 
-
-void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
-                                   Lattice *out_fst)
-{
-    out_fst->DeleteStates();
-    if (start == NULL)
-    {
-        return;
-    }
-
-    bool is_final = true;
-    double this_cost = start->tot_cost + fst_.Final(start->arc_.nextstate).Value();
-
-    if( this_cost==std::numeric_limits<double>::infinity() )
-    {
-        is_final = false;
-    }
-
-    std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
-
-    for( KdToken *tok=start ; tok!=end ; tok=tok->next )
-    {
-        float last_cost = 0;
-        if( tok->next )
-        {
-            last_cost = tok->next->tot_cost;
-        }
-
-        float tot_cost   = tok->cost_ - last_cost;
-        float graph_cost = tok->links->graph_cost;
-        float ac_cost    = tot_cost - graph_cost;
-
-        LatticeWeight arc_weight(graph_cost, ac_cost);
-        LatticeArc l_arc(tok->arc_.ilabel, tok->arc_.olabel,
-                         arc_weight, tok->arc_.nextstate);
-
-        arcs_reverse.push_back(l_arc);
-    }
-
-    StateId cur_state = out_fst->AddState();
-    out_fst->SetStart(cur_state);
-    for( int i=arcs_reverse.size()-1; i>=0 ; i-- )
-    {
-        LatticeArc arc = arcs_reverse[i];
-        arc.nextstate = out_fst->AddState();
-        out_fst->AddArc(cur_state, arc);
-        cur_state = arc.nextstate;
-    }
-
-    if (is_final)
-    {
-        Weight final_weight = fst_.Final(start->arc_.nextstate);
-        out_fst->SetFinal(cur_state, LatticeWeight(final_weight.Value(), 0.0));
-    }
-    else
-    {
-        out_fst->SetFinal(cur_state, LatticeWeight::One());
-    }
-
-    RemoveEpsLocal(out_fst);
-}
-
-
 void KdOnlineLDecoder::UpdateImmortalToken()
 {
-    unordered_set<Token*> emitting;
+    unordered_set<KdToken*> emitting;
     for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
     {
-        Token* tok = e->val;
-        while (tok != NULL && tok->arc_.ilabel == 0) //deal with non-emitting ones ...
-            tok = tok->prev_;
+        KdToken* tok = e->val;
+        while( tok!=NULL /*&& ( tok->ForwardLinkT.ilabel==0 )*/ ) //deal with non-emitting ones ...
+        {
+            tok = tok->next;
+        }
         if (tok != NULL)
+        {
             emitting.insert(tok);
+        }
     }
 
-    Token* the_one = NULL;
+    KdToken* the_one = NULL;
     while (1)
     {
         if (emitting.size() == 1)
@@ -122,16 +63,16 @@ void KdOnlineLDecoder::UpdateImmortalToken()
             break;
         }
 
-        unordered_set<Token*> prev_emitting;
-        unordered_set<Token*>::iterator it;
+        unordered_set<KdToken*> prev_emitting;
+        unordered_set<KdToken*>::iterator it;
 
-        for (it = emitting.begin(); it != emitting.end(); ++it)
+        for( it=emitting.begin(); it!=emitting.end() ; ++it )
         {
-            Token* tok = *it;
-            Token* prev_token = tok->prev_;
-            while ((prev_token != NULL) && (prev_token->arc_.ilabel == 0))
+            KdToken *tok = *it;
+            KdToken *prev_token = tok->next;
+            while( ( prev_token!=NULL ) /*&& ( prev_token->ForwardLinkT.ilabel==0 )*/ )
             {
-                prev_token = prev_token->prev_; //deal with non-emitting ones
+                prev_token = prev_token->next; //deal with non-emitting ones
             }
             if (prev_token == NULL)
             {
@@ -149,7 +90,7 @@ void KdOnlineLDecoder::UpdateImmortalToken()
     }
 }
 
-bool KdOnlineLDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
+bool KdOnlineLDecoder::PartialTraceback(Lattice *out_fst)
 {
     UpdateImmortalToken();
     if(immortal_tok_ == prev_immortal_tok_)
@@ -157,20 +98,20 @@ bool KdOnlineLDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
         return false; //no partial traceback at that point of time
     }
 
-    MakeLattice(immortal_tok_, prev_immortal_tok_, out_fst);
+    GetRawLattice(out_fst);
     return true;
 }
 
-void KdOnlineLDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
+void KdOnlineLDecoder::FinishTraceBack(Lattice *out_fst)
 {
-    Token *best_tok = NULL;
+    KdToken *best_tok = NULL;
     bool is_final = ReachedFinal();
 
     if (!is_final)
     {
         for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
         {
-            if (best_tok == NULL || *best_tok < *(e->val) )
+            if (best_tok == NULL || best_tok->tot_cost < e->val->tot_cost )
             {
                 best_tok = e->val;
             }
@@ -181,7 +122,7 @@ void KdOnlineLDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
         double best_cost = std::numeric_limits<double>::infinity();
         for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
         {
-            double this_cost = e->val->cost_ + fst_.Final(e->key).Value();
+            double this_cost = e->val->tot_cost + fst_->Final(e->key).Value();
             if (this_cost != std::numeric_limits<double>::infinity() &&
                 this_cost < best_cost)
             {
@@ -190,17 +131,16 @@ void KdOnlineLDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
             }
         }
     }
-    MakeLattice(best_tok, immortal_tok_, out_fst);
+    GetRawLattice(out_fst);
 }
 
 
-void KdOnlineLDecoder::TracebackNFrames(int32 nframes,
-                                   fst::MutableFst<LatticeArc> *out_fst)
+void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 {
-    Token *best_tok = NULL;
+    KdToken *best_tok = NULL;
     for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
     {
-        if (best_tok == NULL || *best_tok < *(e->val) )
+        if (best_tok == NULL || best_tok->tot_cost<e->val->tot_cost )
         {
             best_tok = e->val;
         }
@@ -210,68 +150,88 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes,
         out_fst->DeleteStates();
         return;
     }
+    const int32 bucket_count = num_toks_/2 + 3;
+    unordered_map<KdToken*, StateId> tok_map(bucket_count);
 
-    bool is_final = false;
-    double this_cost = best_tok->cost_ +
-            fst_.Final(best_tok->arc_.nextstate).Value();
+    unordered_map<KdToken*, BaseFloat> final_costs_local;
 
-    if (this_cost != std::numeric_limits<double>::infinity())
-        is_final = true;
-    std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
-    for (Token *tok = best_tok; (tok != NULL) && (nframes > 0); tok = tok->prev_)
+    const unordered_map<KdToken*, BaseFloat> &final_costs =
+            (decoding_finalized_ ? final_costs_ : final_costs_local);
+    if (!decoding_finalized_)
     {
-        if (tok->arc_.ilabel != 0) // count only the non-epsilon arcs
+        ComputeFinalCosts(&final_costs_local, NULL, NULL);
+    }
+
+    out_fst->SetStart(0);
+    StateId cur_state;
+
+    KdToken *tok;
+    for( tok=best_tok ; (tok != NULL) && (nframes > 0) ; tok = tok->next )
+    {
+        cur_state = tok_map[tok];
+        for ( ForwardLinkT *l = tok->links; l != NULL; l = l->next )
         {
-            --nframes;
+            if (l->ilabel != 0) // count only the non-epsilon arcs
+            {
+                --nframes;
+            }
+
+            float next_cost = 0;
+            if ( tok->next )
+            {
+                next_cost = tok->next->tot_cost;
+            }
+
+            float tot_cost = tok->tot_cost - next_cost;
+            float graph_cost = l->graph_cost;
+            float ac_cost = tot_cost - graph_cost;
+            StateId nextstate = tok_map.find(tok->links->next_tok)->second;
+            LatticeArc larc(l->ilabel, l->olabel,
+                            LatticeWeight(graph_cost, ac_cost), nextstate);
+
+            larc.nextstate = out_fst->AddState();
+            out_fst->AddArc(cur_state, larc);
         }
-        float tot_cost = tok->cost_ -
-                (tok->prev_ ? tok->prev_->cost_ : 0.0);
-        float graph_cost = tok->arc_.weight.Value();
-        float ac_cost = tot_cost - graph_cost;
-        LatticeArc larc(tok->arc_.ilabel, tok->arc_.olabel,
-                        LatticeWeight(graph_cost, ac_cost),
-                        tok->arc_.nextstate);
-        arcs_reverse.push_back(larc);
     }
 
-    if(arcs_reverse.back().nextstate == fst_.Start())
+    if (!final_costs.empty())
     {
-        arcs_reverse.pop_back();  // that was a "fake" token... gives no info.
+        typename unordered_map<KdToken*, BaseFloat>::const_iterator
+                iter = final_costs.find(tok);
+        if (iter != final_costs.end())
+            out_fst->SetFinal(cur_state, LatticeWeight(iter->second, 0));
     }
-    StateId cur_state = out_fst->AddState();
-    out_fst->SetStart(cur_state);
-    for (ssize_t i = static_cast<ssize_t>(arcs_reverse.size())-1; i >= 0; i--) {
-        LatticeArc arc = arcs_reverse[i];
-        arc.nextstate = out_fst->AddState();
-        out_fst->AddArc(cur_state, arc);
-        cur_state = arc.nextstate;
-    }
-    if (is_final) {
-        Weight final_weight = fst_.Final(best_tok->arc_.nextstate);
-        out_fst->SetFinal(cur_state, LatticeWeight(final_weight.Value(), 0.0));
-    } else {
+    else
+    {
         out_fst->SetFinal(cur_state, LatticeWeight::One());
     }
     RemoveEpsLocal(out_fst);
 }
 
 
-bool KdOnlineLDecoder::EndOfUtterance() {
-    fst::VectorFst<LatticeArc> trace;
+bool KdOnlineLDecoder::HaveSilence()
+{
+    Lattice trace;
     int32 sil_frm = opts_.inter_utt_sil / (1 + utt_frames_ / opts_.max_utt_len_);
     TracebackNFrames(sil_frm, &trace);
     std::vector<int32> isymbols;
-    fst::GetLinearSymbolSequence(trace, &isymbols,
-                                 static_cast<std::vector<int32>* >(0),
-                                 static_cast<LatticeArc::Weight*>(0));
+    std::vector<int32> *osymbols = NULL;
+    LatticeArc::Weight *oweight = NULL;
+    fst::GetLinearSymbolSequence(trace, &isymbols, osymbols, oweight);
+
     std::vector<std::vector<int32> > split;
     SplitToPhones(trans_model_, isymbols, &split);
-    for (size_t i = 0; i < split.size(); i++) {
+
+    for( int i = 0; i<split.size(); i++)
+    {
         int32 tid = split[i][0];
         int32 phone = trans_model_.TransitionIdToPhone(tid);
         if (silence_set_.count(phone) == 0)
+        {
             return false;
+        }
     }
+
     return true;
 }
 
@@ -320,15 +280,15 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
         float weight_cutoff = ProcessEmitting(decodable);
         ProcessNonemitting(weight_cutoff);
     }
-    if (batch_frame == opts_.batch_size && !decodable->IsLastFrame(frame_ - 1))
+    if( batch_frame == opts_.batch_size && !decodable->IsLastFrame(frame_ - 1) )
     {
-        if (EndOfUtterance())
+        if( HaveSilence() )
         {
-            state_ = KD_EndUtt;
+            state_ = KD_EndUtt; //End of Utterance
         }
         else
         {
-            state_ = kEndBatch;
+            state_ = KD_EndBatch;
         }
     }
     else
