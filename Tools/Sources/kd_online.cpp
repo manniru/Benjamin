@@ -11,11 +11,10 @@ using namespace fst;
 
 typedef kaldi::int32 int32;
 typedef OnlineDecodableDiagGmmScaled KdGmmDecodable;
-typedef OnlineFasterDecoder::DecodeState KdDState;
 
 OnlineFeatInputItf    *feat_transform;
 fst::Fst<fst::StdArc> *decode_fst;
-OnlineFasterDecoder   *decoder;
+KdOnlineLDecoder      *o_decoder;
 AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
 
@@ -30,14 +29,14 @@ KdOnline::~KdOnline()
 {
     delete feat_transform;
     delete decode_fst;
-    delete decoder;
+    delete o_decoder;
     delete am_gmm;
     delete trans_model;
 }
 
 void KdOnline::init()
 {
-    OnlineFasterDecoderOpts decoder_opts;
+    KdOnlineLDecoderOpts decoder_opts;
 
     std::string model_rxfilename = BT_FINAL_PATH;
     std::string fst_rxfilename   = BT_FST_PATH;
@@ -66,7 +65,7 @@ void KdOnline::init()
 
     decoder_opts.max_active = 7000;
     decoder_opts.beam = 15.0;
-    decoder = new OnlineFasterDecoder(*decode_fst, decoder_opts,
+    o_decoder = new KdOnlineLDecoder(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
 
 //    OnlinePaSource au_src(500, kSampleFreq, 32768, kPaReportInt);
@@ -96,7 +95,7 @@ void KdOnline::startDecode()
     KdGmmDecodable decodable(*am_gmm, *trans_model,
                              acoustic_scale, feature_matrix);
 
-    decoder->InitDecoding();
+    o_decoder->InitDecoding();
     VectorFst<LatticeArc> out_fst;
 
     clock_t start;
@@ -104,11 +103,11 @@ void KdOnline::startDecode()
     while(1)
     {
         start = clock();
-        KdDState dstate = decoder->Decode(&decodable);
+        KdDecodeState dstate = o_decoder->Decode(&decodable);
 
-        if( dstate&decoder->kEndUtt )
+        if( dstate==KdDecodeState::KD_EndUtt )
         {
-            decoder->FinishTraceBack(&out_fst);
+            o_decoder->FinishTraceBack(&out_fst);
             processLat(&out_fst, start);
 
             system("dbus-send --session --dest=com.binaee.rebound / "
@@ -116,7 +115,7 @@ void KdOnline::startDecode()
         }
         else
         {
-            if( decoder->PartialTraceback(&out_fst) )
+            if( o_decoder->PartialTraceback(&out_fst) )
             {
                 processLat(&out_fst, start);
             }
