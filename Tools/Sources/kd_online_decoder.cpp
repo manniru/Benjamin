@@ -21,10 +21,20 @@ KdOnlineLDecoder::KdOnlineLDecoder(const fst::Fst<fst::StdArc> &fst,
 void KdOnlineLDecoder::ResetDecoder(bool full)
 {
     DeleteElems(toks_.Clear()); //replaced ClearToks
+    cost_offsets_.clear();
+//    ClearActiveTokens(); ///THIS LINE SHOULD NOT EXECUTED!
+    warned_ = false;
+    num_toks_ = 0;
+    decoding_finalized_ = false;
+    final_costs_.clear();
+
     StateId start_state = fst_->Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
-    KdToken *dummy_token = new KdToken(0.0, 0.0, NULL, NULL, NULL); //Weight was Weight::One()
+    //Weight was Weight::One()
+    KdToken *dummy_token = new KdToken(0.0, 0.0, NULL, NULL, NULL);
+    active_toks_[0].toks = dummy_token;
     toks_.Insert(start_state, dummy_token);
+    num_toks_++;
     prev_immortal_tok_ = immortal_tok_ = dummy_token;
     utt_frames_ = 0;
 
@@ -34,20 +44,21 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
     }
 }
 
-void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst, bool use_final_probs)
+void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
 {
-  Lattice raw_fst;
-  GetRawLattice(&raw_fst, use_final_probs);
-  Invert(&raw_fst);
-  fst::ILabelCompare<LatticeArc> ilabel_comp;
-  ArcSort(&raw_fst, ilabel_comp);
+    Lattice raw_fst;
+    GetRawLattice(&raw_fst);
+    Invert(&raw_fst);
+    fst::ILabelCompare<LatticeArc> ilabel_comp;
+    ArcSort(&raw_fst, ilabel_comp);
 
-  fst::DeterminizeLatticePrunedOptions lat_opts;
-  lat_opts.max_mem = config_.det_opts.max_mem;
+    fst::DeterminizeLatticePrunedOptions lat_opts;
+    lat_opts.max_mem = config_.det_opts.max_mem;
 
-  DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
-  raw_fst.DeleteStates();  // Free memory-- raw_fst no longer needed.
-  Connect(ofst);
+    ConvertLattice(raw_fst, ofst);
+    //  DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
+    raw_fst.DeleteStates();  // Free memory-- raw_fst no longer needed.
+    //  Connect(ofst);
 }
 
 void KdOnlineLDecoder::UpdateImmortalToken()
@@ -115,13 +126,13 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
         return false; //no partial traceback at that point of time
     }
 
-    GetLattice(out_fst);
+    MakeLattice(out_fst);
     return true;
 }
 
 void KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 {
-    GetLattice(out_fst);
+    MakeLattice(out_fst);
 }
 
 void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
@@ -264,14 +275,18 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
     }
 
     ProcessNonemitting(std::numeric_limits<float>::max());
-    int32 batch_frame = 0;
+    int frame_i;
     Timer timer;
-    double64 tstart = timer.Elapsed(), tstart_batch = tstart;
+    double64 tstart = timer.Elapsed();
     float factor = -1;
-    for ( ; !decodable->IsLastFrame(frame_ - 1) && batch_frame < opts_.batch_size;
-         ++frame_, ++utt_frames_, ++batch_frame)
+    for ( frame_i=0 ; frame_i<opts_.batch_size; frame_i++)
     {
-        if (batch_frame != 0 && (batch_frame % opts_.update_interval) == 0)
+        if( decodable->IsLastFrame(frame_-1) )
+        {
+            break;
+        }
+
+        if( frame_i>0 && (frame_i%opts_.update_interval)==0 )
         {
             // adjust the beam if needed
             float tend = timer.Elapsed();
@@ -282,26 +297,29 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 
             if (factor > 1 || factor < min_factor)
             {
-                float update_factor = (factor > 1)?
-                            -std::min(opts_.beam_update * factor, opts_.max_beam_update):
-                            std::min(opts_.beam_update / factor, opts_.max_beam_update);
+                float update_factor;
+                if (factor > 1)
+                {
+                    update_factor = -std::min(opts_.beam_update * factor, opts_.max_beam_update);
+                }
+                else
+                {
+                    update_factor = std::min(opts_.beam_update / factor, opts_.max_beam_update);
+                }
                 effective_beam_ += effective_beam_ * update_factor;
                 effective_beam_ = std::min(effective_beam_, max_beam_);
             }
 
             tstart = tend;
-        }
-        if (batch_frame != 0 && (frame_ % 200) == 0)
-        {
-            // one log message at every 2 seconds assuming 10ms frames
-            KALDI_VLOG(3) << "Beam: " << effective_beam_
-                          << "; Speed: " << ((timer.Elapsed() - tstart_batch) * 1000) / (batch_frame*10)
-                          << " xRT";
+//            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
         float weight_cutoff = ProcessEmitting(decodable);
         ProcessNonemitting(weight_cutoff);
+
+        utt_frames_++;
+        frame_++;
     }
-    if( batch_frame == opts_.batch_size && !decodable->IsLastFrame(frame_ - 1) )
+    if( frame_i == opts_.batch_size && !decodable->IsLastFrame(frame_ - 1) )
     {
         if( HaveSilence() )
         {

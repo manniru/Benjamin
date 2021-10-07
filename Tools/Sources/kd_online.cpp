@@ -170,26 +170,25 @@ void KdOnline::processLat(CompactLattice *clat, clock_t start)
     o_decoder->GetBestPath(&lat);
     GetLinearSymbolSequence(lat, isymbols_out,
                             &word_ids, w_out);
-    ScaleLattice(LatticeScale(1.0, 0.00001), clat);
+//    ScaleLattice(LatticeScale(1.0, 0.00001), clat);
 
 //    mbr = new MinimumBayesRisk(clat, mbr_opts);
 
 //    vector<float> conf = mbr->GetOneBestConfidences();
 
-    if( clat->NumStates()>115000 )
-    {
-        CompactLatticeWriter clat_writer("ark,t:b.ark");
-        clat_writer.Write("f", *clat);
-//            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
-//            fst_writer.Write("f", *fst_in);
-
-        exit(0);
-    }
-//    for( int i=0 ; i<word_ids.size() ; i++ )
+//    if( clat->NumStates()>50000 )
 //    {
-//        qDebug() << lexicon[word_ids[i]];// << conf[i];
+//        CompactLatticeWriter clat_writer("ark,t:b.ark");
+//        clat_writer.Write("f", *clat);
+////            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
+////            fst_writer.Write("f", *fst_in);
 
+//        exit(0);
 //    }
+    for( int i=0 ; i<word_ids.size() ; i++ )
+    {
+        qDebug() << lexicon[word_ids[i]];// << conf[i];
+    }
 
     if( word_ids.size() )
     {

@@ -44,7 +44,7 @@ public:
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
 
-    void MakeLattice(kaldi::CompactLattice *ofst, bool use_final_probs);
+    void MakeLattice(kaldi::CompactLattice *ofst);
 
     // Makes a linear graph, by tracing back from the last "immortal" token
     // to the previous one
