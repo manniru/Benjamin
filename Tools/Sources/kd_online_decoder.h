@@ -7,10 +7,8 @@
 // get multi recognition output.
 
 #include "util/stl-utils.h"
-#include "decoder/lattice-faster-decoder.h"
+#include "kd_lattice_decoder.h"
 #include "hmm/transition-model.h"
-
-typedef kaldi::decoder::StdToken KdToken;
 
 struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
 {
@@ -32,14 +30,14 @@ enum KdDecodeState
     KD_EndBatch = 4 // End of batch - end of utterance not reached yet
 };
 
-class KdOnlineLDecoder : public kaldi::LatticeFasterDecoder
+class KdOnlineLDecoder : public KdLatticeDecoder
 {
 public:
     // "sil_phones" - the IDs of all silence phones
-    KdOnlineLDecoder(const fst::Fst<fst::StdArc> &fst,
-                     const KdOnlineLDecoderOpts &opts,
-                     const std::vector<int32> &sil_phones,
-                     const kaldi::TransitionModel &trans_model);
+    KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
+                     KdOnlineLDecoderOpts &opts,
+                     std::vector<int32> &sil_phones,
+                     kaldi::TransitionModel &trans_model);
 
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);

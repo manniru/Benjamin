@@ -6,11 +6,11 @@
 
 using namespace kaldi;
 
-KdOnlineLDecoder::KdOnlineLDecoder(const fst::Fst<fst::StdArc> &fst,
-                                   const KdOnlineLDecoderOpts &opts,
-                                   const std::vector<int32> &sil_phones,
-                                   const kaldi::TransitionModel &trans_model):
-    LatticeFasterDecoder(fst, opts), opts_(opts),
+KdOnlineLDecoder::KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
+                                   KdOnlineLDecoderOpts &opts,
+                                   std::vector<int32> &sil_phones,
+                                   kaldi::TransitionModel &trans_model):
+    KdLatticeDecoder(fst, opts), opts_(opts),
     silence_set_(sil_phones), trans_model_(trans_model),
     max_beam_(opts.beam), effective_beam_(opts.beam),
     state_(KD_EndFeats), frame_(0), utt_frames_(0)
@@ -29,7 +29,7 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
     decoding_finalized_ = false;
     final_costs_.clear();
 
-    StateId start_state = fst_->Start();
+    KdStateId start_state = fst_->Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
 //    active_toks_.resize(1);
     //Weight was Weight::One()
@@ -69,7 +69,7 @@ void KdOnlineLDecoder::UpdateImmortalToken()
     for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
     {
         KdToken* tok = e->val;
-        while( tok!=NULL /*&& ( tok->ForwardLinkT.ilabel==0 )*/ ) //deal with non-emitting ones ...
+        while( tok!=NULL /*&& ( tok->KdFLink.ilabel==0 )*/ ) //deal with non-emitting ones ...
         {
             tok = tok->next;
         }
@@ -100,7 +100,7 @@ void KdOnlineLDecoder::UpdateImmortalToken()
         {
             KdToken *tok = *it;
             KdToken *prev_token = tok->next;
-            while( ( prev_token!=NULL ) /*&& ( prev_token->ForwardLinkT.ilabel==0 )*/ )
+            while( ( prev_token!=NULL ) /*&& ( prev_token->KdFLink.ilabel==0 )*/ )
             {
                 prev_token = prev_token->next; //deal with non-emitting ones
             }
@@ -160,7 +160,7 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
     int active_count = active_toks_.size();
     int bucket_count = num_toks_/2 + 3;
 
-    unordered_map<KdToken*, StateId> tok_map(bucket_count);
+    unordered_map<KdToken*, KdStateId> tok_map(bucket_count);
     unordered_map<KdToken*, BaseFloat> final_costs_local;
 
     unordered_map<KdToken*, BaseFloat> final_costs;
@@ -193,13 +193,13 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
     }
 
     out_fst->SetStart(0);
-    StateId cur_state;
+    KdStateId cur_state;
 
     KdToken *tok;
     for( tok=best_tok ; (tok!=NULL) ; tok = tok->next )
     {
         cur_state = tok_map[tok];
-        for ( ForwardLinkT *l = tok->links; (l!=NULL) && (nframes>0); l=l->next )
+        for ( KdFLink *l = tok->links; (l!=NULL) && (nframes>0); l=l->next )
         {
             if (l->ilabel != 0) // count only the non-epsilon arcs
             {
@@ -215,9 +215,9 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
             float tot_cost = tok->tot_cost - next_cost;
             float graph_cost = l->graph_cost;
             float ac_cost = tot_cost - graph_cost;
-            typename unordered_map<KdToken*, StateId>::const_iterator
+            typename unordered_map<KdToken*, KdStateId>::const_iterator
                     iter = tok_map.find(l->next_tok);
-            StateId nextstate = iter->second;
+            KdStateId nextstate = iter->second;
             LatticeArc larc(l->ilabel, l->olabel,
                             LatticeWeight(graph_cost, ac_cost), nextstate);
 

@@ -180,7 +180,7 @@ void KdOnline::processLat(CompactLattice *clat, clock_t start)
     for( int i=0 ; i<word_ids.size() ; i++ )
     {
         qDebug() << lexicon[word_ids[i]];// << conf[i];
-        if( clat->NumStates()>1000 )
+        if( clat->NumStates()>5000 )
         {
             CompactLatticeWriter clat_writer("ark:b.ark");
             clat_writer.Write("f", *clat);
