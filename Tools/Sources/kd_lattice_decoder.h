@@ -3,8 +3,21 @@
 
 #include "decoder/lattice-faster-decoder.h"
 
-//typedef KdLatticeDecoder<fst::StdFst, decoder::StdToken> LatticeFasterDecoder;
-//template <typename FST, typename Token = decoder::StdToken>
+/*  extra_cost is used in pruning tokens, to save memory.
+
+  extra_cost can be thought of as a beta (backward) cost assuming
+  we had set the betas on currently-active tokens to all be the negative
+  of the alphas for those tokens.  (So all currently active tokens would
+  be on (tied) best paths).
+
+  We can use the extra_cost to accurately prune away tokens that we know will
+  never appear in the lattice.  If the extra_cost is greater than the desired
+  lattice beam, the token would provably never appear in the lattice, so we can
+  prune away the token.
+
+  (Note: we don't update all the extra_costs every time we update a frame; we
+  only do it every 'config_.prune_interval' frames).  */
+
 typedef kaldi::decoder::StdToken             KdToken;
 typedef fst::StdFst                          KdFST;
 typedef fst::StdFst::Arc                     KdArc;
@@ -105,9 +118,6 @@ protected:
 
     // fst_ is a pointer to the FST we are decoding from.
     KdFST *fst_;
-    // delete_fst_ is true if the pointer fst_ needs to be deleted when this
-    // object is destroyed.
-    bool delete_fst_;
 
     std::vector<float> cost_offsets_; // This contains, for each
     // frame, an offset that was added to the acoustic log-likelihoods on that
