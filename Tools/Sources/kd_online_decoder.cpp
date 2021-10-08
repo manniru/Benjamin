@@ -20,6 +20,7 @@ KdOnlineLDecoder::KdOnlineLDecoder(const fst::Fst<fst::StdArc> &fst,
 
 void KdOnlineLDecoder::ResetDecoder(bool full)
 {
+    qDebug() << "Reset Kaldi" << full;
     DeleteElems(toks_.Clear()); //replaced ClearToks
     cost_offsets_.clear();
 //    ClearActiveTokens(); ///THIS LINE SHOULD NOT EXECUTED!
@@ -30,6 +31,7 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
 
     StateId start_state = fst_->Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
+//    active_toks_.resize(1);
     //Weight was Weight::One()
     KdToken *dummy_token = new KdToken(0.0, 0.0, NULL, NULL, NULL);
     active_toks_[0].toks = dummy_token;
@@ -58,7 +60,7 @@ void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
     ConvertLattice(raw_fst, ofst);
     //  DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
     raw_fst.DeleteStates();  // Free memory-- raw_fst no longer needed.
-    //  Connect(ofst);
+    Connect(ofst); //removing states and arcs that are not on successful paths.
 }
 
 void KdOnlineLDecoder::UpdateImmortalToken()
@@ -118,6 +120,7 @@ void KdOnlineLDecoder::UpdateImmortalToken()
     }
 }
 
+//Called if decoder is not in KdDecodeState::KD_EndUtt
 bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 {
     UpdateImmortalToken();

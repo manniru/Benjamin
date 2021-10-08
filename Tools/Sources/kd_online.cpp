@@ -115,7 +115,8 @@ void KdOnline::startDecode()
         }
         else
         {
-            if( o_decoder->PartialTraceback(&out_fst) )
+            int new_input = o_decoder->PartialTraceback(&out_fst);
+            if( new_input )
             {
                 processLat(&out_fst, start);
             }
@@ -176,18 +177,18 @@ void KdOnline::processLat(CompactLattice *clat, clock_t start)
 
 //    vector<float> conf = mbr->GetOneBestConfidences();
 
-//    if( clat->NumStates()>50000 )
-//    {
-//        CompactLatticeWriter clat_writer("ark,t:b.ark");
-//        clat_writer.Write("f", *clat);
-////            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
-////            fst_writer.Write("f", *fst_in);
-
-//        exit(0);
-//    }
     for( int i=0 ; i<word_ids.size() ; i++ )
     {
         qDebug() << lexicon[word_ids[i]];// << conf[i];
+        if( clat->NumStates()>1000 )
+        {
+            CompactLatticeWriter clat_writer("ark:b.ark");
+            clat_writer.Write("f", *clat);
+    //            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
+    //            fst_writer.Write("f", *fst_in);
+
+            exit(0);
+        }
     }
 
     if( word_ids.size() )
