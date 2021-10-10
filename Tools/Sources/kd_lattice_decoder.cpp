@@ -34,9 +34,9 @@ void KdLatticeDecoder::InitDecoding()
     final_costs_.clear();
     KdStateId start_state = fst_->Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
-    active_toks_.resize(1);
+    frame_toks.resize(1);
     KdToken *start_tok = new KdToken(0.0, 0.0, NULL, NULL, NULL);
-    active_toks_[0].toks = start_tok;
+    frame_toks[0].toks = start_tok;
     toks_.Insert(start_state, start_tok);
     num_toks_++;
     ProcessNonemitting(config_.beam);
@@ -50,7 +50,7 @@ bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
     AdvanceDecoding(decodable);
     FinalizeDecoding();
 
-    return !active_toks_.empty() && active_toks_.back().toks != NULL;
+    return !frame_toks.empty() && frame_toks.back().toks != NULL;
 }
 
 /// If "use_final_probs" is true AND we reached the
@@ -81,12 +81,14 @@ bool KdLatticeDecoder::GetRawLattice(Lattice *ofst, bool use_final_probs)
     const unordered_map<KdToken*, float> &final_costs =
             (decoding_finalized_ ? final_costs_ : final_costs_local);
     if (!decoding_finalized_ && use_final_probs)
+    {
         ComputeFinalCosts(&final_costs_local, NULL, NULL);
+    }
 
     ofst->DeleteStates();
     // num-frames plus one (since frames are one-based, and we have
     // an extra frame for the start-state).
-    int32 num_frames = active_toks_.size() - 1;
+    int32 num_frames = frame_toks.size() - 1;
     KALDI_ASSERT(num_frames > 0);
     const int32 bucket_count = num_toks_/2 + 3;
     unordered_map<KdToken*, KdStateId> tok_map(bucket_count);
@@ -94,13 +96,13 @@ bool KdLatticeDecoder::GetRawLattice(Lattice *ofst, bool use_final_probs)
     std::vector<KdToken*> token_list;
     for (int32 f = 0; f <= num_frames; f++)
     {
-        if (active_toks_[f].toks == NULL)
+        if (frame_toks[f].toks == NULL)
         {
             KALDI_WARN << "GetRawLattice: no tokens active on frame " << f
                        << ": not producing lattice.\n";
             return false;
         }
-        TopSortTokens(active_toks_[f].toks, &token_list);
+        TopSortTokens(frame_toks[f].toks, &token_list);
         for (size_t i = 0; i < token_list.size(); i++)
             if (token_list[i] != NULL)
                 tok_map[token_list[i]] = ofst->AddState();
@@ -115,7 +117,7 @@ bool KdLatticeDecoder::GetRawLattice(Lattice *ofst, bool use_final_probs)
     // Now create all arcs.
     for (int32 f = 0; f <= num_frames; f++)
     {
-        for (KdToken *tok = active_toks_[f].toks; tok != NULL; tok = tok->next)
+        for (KdToken *tok = frame_toks[f].toks; tok != NULL; tok = tok->next)
         {
             KdStateId cur_state = tok_map[tok];
             for ( KdFLink *l = tok->links; l != NULL; l = l->next )
@@ -162,104 +164,94 @@ void KdLatticeDecoder::PossiblyResizeHash(size_t num_toks)
     }
 }
 
-// FindOrAddToken either locates a token in hash of toks_, or if necessary
-// inserts a new, empty token (i.e. with no forward links) for the current
-// frame.  [note: it's inserted if necessary into hash toks_ and also into the
-// singly linked list of tokens active on this frame (whose head is at
-// active_toks_[frame]).  The frame_plus_one argument is the acoustic frame
-// index plus one, which is used to index into the active_toks_ array.
-// Returns the KdToken pointer.  Sets "changed" (if non-NULL) to true if the
-// token was newly created or the cost changed.
-// If KdToken == StdToken, the 'backpointer' argument has no purpose (and will
-// hopefully be optimized out).
+// Locates a token in toks_, or inserts a new, empty token
+// (i.e. with no forward links) for the current frame.
+// 'changed' true if a token created or the cost changed.
 KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
         KdStateId state, int32 frame_plus_one, float tot_cost,
         KdToken *backpointer, bool *changed)
 {
-    KALDI_ASSERT(frame_plus_one < active_toks_.size());
-    KdToken *&toks = active_toks_[frame_plus_one].toks;
+    KALDI_ASSERT(frame_plus_one < frame_toks.size());
     Elem *e_found = toks_.Insert(state, NULL);
-    if (e_found->val == NULL)
-    {  // no such token presently.
+    if( e_found->val==NULL )
+    {
+        KdTokenList *tok_list = &frame_toks[frame_plus_one];
         const float extra_cost = 0.0;
         // tokens on the currently final frame have zero extra_cost
-        // as any of them could end up
-        // on the winning path.
-        KdToken *new_tok = new KdToken (tot_cost, extra_cost, NULL, toks, backpointer);
+        // as any of them could end up on the winning path.
+        KdToken *new_tok = new KdToken (tot_cost, extra_cost, NULL, tok_list->toks, backpointer);
         // NULL: no forward links yet
-        toks = new_tok;
+        tok_list->toks = new_tok;
         num_toks_++;
         e_found->val = new_tok;
-        if (changed) *changed = true;
+        if (changed)
+        {
+            *changed = true;
+        }
         return e_found;
-    } else {
-        KdToken *tok = e_found->val;  // There is an existing KdToken for this state.
-        if (tok->tot_cost > tot_cost) {  // replace old token
+    }
+    else
+    {
+        KdToken *tok = e_found->val;
+        if( tok->tot_cost > tot_cost ) // if there is an existing token for this state.
+        {  // replace old token
             tok->tot_cost = tot_cost;
-            // SetBackpointer() just does tok->backpointer = backpointer in
-            // the case where KdToken == BackpointerToken, else nothing.
             tok->SetBackpointer(backpointer);
-            // we don't allocate a new token, the old stays linked in active_toks_
+            // we don't allocate a new token, the old stays linked in frame_toks
             // we only replace the tot_cost
-            // in the current frame, there are no forward links (and no extra_cost)
-            // only in ProcessNonemitting we have to delete forward links
-            // in case we visit a state for the second time
-            // those forward links, that lead to this replaced token before:
-            // they remain and will hopefully be pruned later (PruneForwardLinks...)
-            if (changed) *changed = true;
-        } else {
-            if (changed) *changed = false;
+            if (changed)
+            {
+                *changed = true;
+            }
+        }
+        else
+        {
+            if (changed)
+            {
+                *changed = false;
+            }
         }
         return e_found;
     }
 }
 
-// prunes outgoing links for all tokens in active_toks_[frame]
-// it's called by PruneActiveTokens
-// all links, that have link_extra_cost > lattice_beam are pruned
-
-// prunes outgoing links for all tokens in active_toks_[frame]
+// prunes outgoing links for all tokens in frame_toks[frame]
 // it's called by PruneActiveTokens
 // all links, that have link_extra_cost > lattice_beam are pruned
 // delta is the amount by which the extra_costs must change
-// before we set *extra_costs_changed = true.
-// If delta is larger,  we'll tend to go back less far
-//    toward the beginning of the file.
 // extra_costs_changed is set to true if extra_cost was changed for any token
 // links_pruned is set to true if any link in any token was pruned
-void KdLatticeDecoder::PruneForwardLinks(
-        int32 frame_plus_one, bool *extra_costs_changed,
-        bool *links_pruned, float delta)
+bool KdLatticeDecoder::PruneForwardLinks(
+        int32 frame, bool *extra_costs_changed, float delta)
 {
-    // delta is the amount by which the extra_costs must change
-    // If delta is larger,  we'll tend to go back less far
-    //    toward the beginning of the file.
-    // extra_costs_changed is set to true if extra_cost was changed for any token
-    // links_pruned is set to true if any link in any token was pruned
+    // If delta is larger,  we'll go back less toward the beginning
 
     *extra_costs_changed = false;
-    *links_pruned = false;
-    KALDI_ASSERT(frame_plus_one >= 0 && frame_plus_one < active_toks_.size());
-    if (active_toks_[frame_plus_one].toks == NULL) {  // empty list; should not happen.
-        if (!warned_) {
-            KALDI_WARN << "No tokens alive [doing pruning].. warning first "
-          "time only for each utterance\n";
+    bool links_pruned = false;
+    KALDI_ASSERT(frame>=0 && frame<frame_toks.size());
+    KdToken *start_tok = frame_toks[frame].toks;
+
+    if( frame_toks[frame].toks==NULL )
+    {  // empty list; should not happen.
+        if( !warned_ )
+        {
+            qDebug() << "PruneForwardLinks: No tokens alive @ " << frame;
             warned_ = true;
         }
     }
 
-    // We have to iterate until there is no more change, because the links
-    // are not guaranteed to be in topological order.
     bool changed = true;  // difference new minus old extra cost >= delta ?
-    while (changed) {
+    while( changed )
+    {
         changed = false;
-        for (KdToken *tok = active_toks_[frame_plus_one].toks;
-             tok != NULL; tok = tok->next) {
+        for( KdToken *tok=start_tok ; tok!=NULL; tok=tok->next )
+        {
             KdFLink *link, *prev_link = NULL;
             // will recompute tok_extra_cost for tok.
             float tok_extra_cost = std::numeric_limits<float>::infinity();
             // tok_extra_cost is the best (min) of link_extra_cost of outgoing links
-            for (link = tok->links; link != NULL; ) {
+            for( link = tok->links; link != NULL; )
+            {
                 // See if we need to excise this link...
                 KdToken *next_tok = link->next_tok;
                 float link_extra_cost = next_tok->extra_cost +
@@ -268,15 +260,19 @@ void KdLatticeDecoder::PruneForwardLinks(
                 // link_exta_cost is the difference in score between the best paths
                 // through link source state and through link destination state
                 KALDI_ASSERT(link_extra_cost == link_extra_cost);  // check for NaN
-                if (link_extra_cost > config_.lattice_beam) {  // excise link
+                if( link_extra_cost>config_.lattice_beam )  // delete link
+                {
                     KdFLink *next_link = link->next;
                     if (prev_link != NULL) prev_link->next = next_link;
                     else tok->links = next_link;
                     delete link;
                     link = next_link;  // advance link but leave prev_link the same.
-                    *links_pruned = true;
-                } else {   // keep the link and update the tok_extra_cost if needed.
-                    if (link_extra_cost < 0.0) {  // this is just a precaution.
+                    links_pruned = true;
+                }
+                else
+                {   // keep the link and update the tok_extra_cost if needed.
+                    if (link_extra_cost < 0.0)
+                    {
                         if (link_extra_cost < -0.01)
                             KALDI_WARN << "Negative extra_cost: " << link_extra_cost;
                         link_extra_cost = 0.0;
@@ -287,18 +283,27 @@ void KdLatticeDecoder::PruneForwardLinks(
                     link = link->next;
                 }
             }  // for all outgoing links
-            if (fabs(tok_extra_cost - tok->extra_cost) > delta)
+            if( fabs(tok_extra_cost-tok->extra_cost ) > delta)
                 changed = true;   // difference new minus old is bigger than delta
-            tok->extra_cost = tok_extra_cost;
+            if( tok_extra_cost!=std::numeric_limits<float>::infinity() )
+            {
+                tok->extra_cost = tok_extra_cost;
+            }
+            else
+            {
+                changed = false;
+            }
             // will be +infinity or <= lattice_beam_.
             // infinity indicates, that no forward link survived pruning
-        }  // for all KdToken on active_toks_[frame]
-        if (changed) *extra_costs_changed = true;
+        }  // for all KdToken on frame_toks[frame]
+        if (changed)
+        {
+            *extra_costs_changed = true;
+        }
 
-        // Note: it's theoretically possible that aggressive compiler
-        // optimizations could cause an infinite loop here for small delta and
-        // high-dynamic-range scores.
-    } // while changed
+    }
+
+    return links_pruned;
 }
 
 // PruneForwardLinksFinal is a version of PruneForwardLinks that we call
@@ -306,10 +311,10 @@ void KdLatticeDecoder::PruneForwardLinks(
 // the final-probs for pruning, otherwise it treats all tokens as final.
 void KdLatticeDecoder::PruneForwardLinksFinal()
 {
-    KALDI_ASSERT(!active_toks_.empty());
-    int32 frame_plus_one = active_toks_.size() - 1;
+    KALDI_ASSERT(!frame_toks.empty());
+    int32 frame_plus_one = frame_toks.size() - 1;
 
-    if (active_toks_[frame_plus_one].toks == NULL)  // empty list; should not happen.
+    if (frame_toks[frame_plus_one].toks == NULL)  // empty list; should not happen.
         KALDI_WARN << "No tokens alive at end of file";
 
     typedef typename unordered_map<KdToken*, float>::const_iterator IterType;
@@ -329,7 +334,7 @@ void KdLatticeDecoder::PruneForwardLinksFinal()
     float delta = 1.0e-05;
     while (changed) {
         changed = false;
-        for (KdToken *tok = active_toks_[frame_plus_one].toks;
+        for (KdToken *tok = frame_toks[frame_plus_one].toks;
              tok != NULL; tok = tok->next) {
             KdFLink *link, *prev_link = NULL;
             // will recompute tok_extra_cost.  It has a term in it that corresponds
@@ -411,26 +416,36 @@ float KdLatticeDecoder::FinalRelativeCost() {
 
 
 // Prune away any tokens on this frame that have no forward links.
-// [we don't do this in PruneForwardLinks because it would give us
-// a problem with dangling pointers].
-// It's called by PruneActiveTokens if any forward links have been pruned
-void KdLatticeDecoder::PruneTokensForFrame(int32 frame_plus_one)
+void KdLatticeDecoder::PruneTokensForFrame(int32 frame)
 {
-    KALDI_ASSERT(frame_plus_one >= 0 && frame_plus_one < active_toks_.size());
-    KdToken *&toks = active_toks_[frame_plus_one].toks;
-    if (toks == NULL)
-        KALDI_WARN << "No tokens alive [doing pruning]";
+    KALDI_ASSERT( frame>=0 && frame<frame_toks.size() );
+
+    KdToken *&start_token = frame_toks[frame].toks;
+    if( start_token==NULL )
+    {
+        qDebug() << "PruneTokensForFrame: No tokens alive @" << frame;
+    }
+
     KdToken *tok, *next_tok, *prev_tok = NULL;
-    for (tok = toks; tok != NULL; tok = next_tok) {
+    for( tok=start_token ; tok!=NULL ; tok=next_tok )
+    {
         next_tok = tok->next;
-        if (tok->extra_cost == std::numeric_limits<float>::infinity()) {
-            // token is unreachable from end of graph; (no forward links survived)
-            // excise tok from list and delete tok.
-            if (prev_tok != NULL) prev_tok->next = tok->next;
-            else toks = tok->next;
+        if (tok->extra_cost == std::numeric_limits<float>::infinity())
+        {   // token is unreachable from end of graph
+            if (prev_tok != NULL)
+            {
+                prev_tok->next = tok->next;
+            }
+            else
+            {
+                start_token = tok->next;
+            }
             delete tok;
             num_toks_--;
-        } else {  // fetch next KdToken
+            qDebug() << "delete" << frame << "num_toks_" << num_toks_;
+        }
+        else
+        {  // fetch next KdToken
             prev_tok = tok;
         }
     }
@@ -445,40 +460,46 @@ void KdLatticeDecoder::PruneTokensForFrame(int32 frame_plus_one)
 // less far.
 void KdLatticeDecoder::PruneActiveTokens(float delta)
 {
-    int32 cur_frame_plus_one = NumFramesDecoded();
+    int32 cur_frame_plus_one = frame_toks.size();
     int32 num_toks_begin = num_toks_;
-    // The index "f" below represents a "frame plus one", i.e. you'd have to subtract
-    // one to get the corresponding index for the decodable object.
-    for (int32 f = cur_frame_plus_one - 1; f >= 0; f--) {
+
+    for(int f=cur_frame_plus_one-1 ; f>=0 ; f-- )
+    {
         // Reason why we need to prune forward links in this situation:
         // (1) we have never pruned them (new TokenList)
         // (2) we have not yet pruned the forward links to the next f,
         // after any of those tokens have changed their extra_cost.
-        if (active_toks_[f].must_prune_forward_links) {
-            bool extra_costs_changed = false, links_pruned = false;
-            PruneForwardLinks(f, &extra_costs_changed, &links_pruned, delta);
-            if (extra_costs_changed && f > 0) // any token has changed extra_cost
-                active_toks_[f-1].must_prune_forward_links = true;
+        if( frame_toks[f].must_prune_forward_links )
+        {
+            bool extra_costs_changed = false;
+            bool links_pruned;
+            links_pruned = PruneForwardLinks(f, &extra_costs_changed, delta);
+
+            if( extra_costs_changed && f>0 ) // any token has changed extra_cost
+            {
+                frame_toks[f-1].must_prune_forward_links = true;
+            }
             if (links_pruned) // any link was pruned
-                active_toks_[f].must_prune_tokens = true;
-            active_toks_[f].must_prune_forward_links = false; // job done
+            {
+                frame_toks[f].must_prune_tokens = true;
+            }
+            frame_toks[f].must_prune_forward_links = false; // job done
         }
-        if (f+1 < cur_frame_plus_one &&      // except for last f (no forward links)
-                active_toks_[f+1].must_prune_tokens) {
+
+        if( f+1<cur_frame_plus_one && frame_toks[f+1].must_prune_tokens )
+        {
             PruneTokensForFrame(f+1);
-            active_toks_[f+1].must_prune_tokens = false;
+            frame_toks[f+1].must_prune_tokens = false;
         }
     }
     KALDI_VLOG(4) << "PruneActiveTokens: pruned tokens from " << num_toks_begin
                   << " to " << num_toks_;
 }
 
-// This function computes the final-costs for tokens active on the final
-// frame.  It outputs to final-costs, if non-NULL, a map from the KdToken*
+// computes final-costs for the final frame. It outputs to final-costs, a map from the KdToken*
 // pointer to the final-prob of the corresponding state, for all Tokens
-// that correspond to states that have final-probs.  This map will be
-// empty if there were no final-probs.  It outputs to
-// final_relative_cost, if non-NULL, the difference between the best
+// that correspond to states that have final-probs.
+// outputs to final_relative_cost, the difference between the best
 // forward-cost including the final-prob cost, and the best forward-cost
 // without including the final-prob cost (this will usually be positive), or
 // infinity if there were no final-probs.  [c.f. FinalRelativeCost(), which
@@ -490,8 +511,8 @@ void KdLatticeDecoder::PruneActiveTokens(float delta)
 // You cannot call this after FinalizeDecoding() has been called; in that
 // case you should get the answer from class-member variables.
 void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken *, float> *final_costs,
-        float *final_relative_cost,
-        float *final_best_cost) {
+        float *final_relative_cost, float *final_best_cost)
+{
     KALDI_ASSERT(!decoding_finalized_);
     if (final_costs != NULL)
         final_costs->clear();
@@ -538,7 +559,7 @@ void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken *, float> *final_
 void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable,
                                        int32 max_num_frames)
 {
-    KALDI_ASSERT(!active_toks_.empty() && !decoding_finalized_ &&
+    KALDI_ASSERT(!frame_toks.empty() && !decoding_finalized_ &&
                  "You must call InitDecoding() before AdvanceDecoding");
     int32 num_frames_ready = decodable->NumFramesReady();
     // num_frames_ready must be >= num_frames_decoded, or else
@@ -563,27 +584,18 @@ void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable,
     }
 }
 
-// FinalizeDecoding() is a version of PruneActiveTokens that we call
-// (optionally) on the final frame.  Takes into account the final-prob of
-// tokens.  This function used to be called PruneActiveTokensFinal().
-/// This function may be optionally called after AdvanceDecoding(), when you
-/// do not plan to decode any further.  It does an extra pruning step that
-/// will help to prune the lattices output by GetLattice and (particularly)
-/// GetRawLattice more completely, particularly toward the end of the
-/// utterance.  If you call this, you cannot call AdvanceDecoding again (it
-/// will fail), and you cannot call GetLattice() and related functions with
-/// use_final_probs = false.  Used to be called PruneActiveTokensFinal().
+/// optionally called after AdvanceDecoding(),
+/// It does an extra pruning that will help to prune the lattices output
 void KdLatticeDecoder::FinalizeDecoding()
 {
-    int32 final_frame_plus_one = NumFramesDecoded();
+    int32 final_frame_plus_one = frame_toks.size()-1;
     int32 num_toks_begin = num_toks_;
-    // PruneForwardLinksFinal() prunes final frame (with final-probs), and
-    // sets decoding_finalized_.
-    PruneForwardLinksFinal();
-    for (int32 f = final_frame_plus_one - 1; f >= 0; f--) {
-        bool b1, b2; // values not used.
+
+    for (int32 f = final_frame_plus_one - 1; f >= 0; f--)
+    {
+        bool b1; // values not used.
         float dontcare = 0.0; // delta of zero means we must always update
-        PruneForwardLinks(f, &b1, &b2, dontcare);
+        PruneForwardLinks(f, &b1, dontcare);
         PruneTokensForFrame(f + 1);
     }
     PruneTokensForFrame(0);
@@ -593,7 +605,7 @@ void KdLatticeDecoder::FinalizeDecoding()
 
 /// Gets the weight cutoff.  Also counts the active tokens.
 float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
-                                      float *adaptive_beam, Elem **best_elem)
+                                  float *adaptive_beam, Elem **best_elem)
 {
     float best_weight = std::numeric_limits<float>::infinity();
     // positive == high cost == bad.
@@ -665,9 +677,10 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
 //return cutoff
 float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 {
-    KALDI_ASSERT(active_toks_.size() > 0);
-    int32 frame = active_toks_.size() - 1; // frame is the frame-index
-    active_toks_.resize(active_toks_.size() + 1);
+    KALDI_ASSERT(frame_toks.size() > 0);
+    int32 frame = frame_toks.size() - 1; // frame is the frame-index
+    frame_toks.resize(frame_toks.size() + 1);
+    decoded_frame_i++;
 
     Elem *final_toks = toks_.Clear();
     Elem *best_elem = NULL;
@@ -695,10 +708,10 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
         for( fst::ArcIterator<KdFST> aiter(*fst_, state) ; !aiter.Done() ; aiter.Next() )
         {
             const KdArc &arc = aiter.Value();
-            if (arc.ilabel != 0)
+            if( arc.ilabel!=0 )
             {  // propagate..
-                float new_weight = arc.weight.Value() + cost_offset + tok->tot_cost;
-                new_weight -= decodable->LogLikelihood(frame, arc.ilabel);
+                float arc_cost = -decodable->LogLikelihood(decoded_frame_i, arc.ilabel);
+                float new_weight = arc.weight.Value() + (cost_offset + tok->tot_cost) + arc_cost;
                 if (new_weight + adaptive_beam < next_cutoff)
                 {
                     next_cutoff = new_weight + adaptive_beam;
@@ -716,7 +729,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
     // the tokens are now owned here, in final_toks, and the hash is empty.
     // 'owned' is a complex thing here; the point is we need to call DeleteElem
     // on each elem 'e' to let toks_ know we're done with them.
-    for (Elem *e = final_toks, *e_tail; e != NULL; e = e_tail)
+    for( Elem *e = final_toks, *e_tail ; e!=NULL ; e=e_tail )
     {
         // loop this way because we delete "e" as we go.
         KdStateId state = e->key;
@@ -728,16 +741,19 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
                 const KdArc &arc = aiter.Value();
                 if (arc.ilabel != 0)
                 {  // propagate..
-                    float new_weight = decodable->LogLikelihood(frame, arc.ilabel);
+                    float new_weight = decodable->LogLikelihood(decoded_frame_i, arc.ilabel);
                     float ac_cost = cost_offset - new_weight;
                     float graph_cost = arc.weight.Value();
                     float cur_cost = tok->tot_cost;
                     float tot_cost = cur_cost + ac_cost + graph_cost;
 
-                    if (tot_cost >= next_cutoff) continue;
+                    if (tot_cost >= next_cutoff)
+                    {
+                        continue;
+                    }
                     else if (tot_cost + adaptive_beam < next_cutoff)
                         next_cutoff = tot_cost + adaptive_beam; // prune by best current token
-                    // Note: the frame indexes into active_toks_ are one-based,
+                    // Note: the frame indexes into frame_toks are one-based,
                     // hence the + 1.
                     Elem *e_next = FindOrAddToken(arc.nextstate,
                                                   frame + 1, tot_cost, tok, NULL);
@@ -745,7 +761,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 
                     // Add ForwardLink from tok to next_tok (put on head of list tok->links)
                     tok->links = new KdFLink(e_next->val, arc.ilabel, arc.olabel,
-                                                  graph_cost, ac_cost, tok->links);
+                                             graph_cost, ac_cost, tok->links);
                 }
             } // for all arcs
         }
@@ -757,8 +773,8 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 
 void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 {
-    KALDI_ASSERT(!active_toks_.empty());
-    int32 frame = static_cast<int32>(active_toks_.size()) - 2;
+    KALDI_ASSERT(!frame_toks.empty());
+    int32 frame = static_cast<int32>(frame_toks.size()) - 2;
     // Note: "frame" is the time-index we just processed, or -1 if
     // we are processing the nonemitting transitions before the
     // first frame (called from InitDecoding()).
@@ -784,10 +800,12 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
     {
         KdStateId state = e->key;
         if (fst_->NumInputEpsilons(state) != 0)
+        {
             queue_.push_back(e);
+        }
     }
 
-    while (!queue_.empty())
+    while( !queue_.empty() )
     {
         const Elem *e = queue_.back();
         queue_.pop_back();
@@ -795,17 +813,17 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
         KdStateId state = e->key;
         KdToken *tok = e->val;  // would segfault if e is a NULL pointer but this can't happen.
         float cur_cost = tok->tot_cost;
-        if (cur_cost >= cutoff) // Don't bother processing successors.
+        if( cur_cost>=cutoff ) // Don't bother processing successors.
+        {
             continue;
+        }
         // If "tok" has any existing forward links, delete them,
         // because we're about to regenerate them.  This is a kind
         // of non-optimality (remember, this is the simple decoder),
         // but since most states are emitting it's not a huge issue.
         DeleteForwardLinks(tok); // necessary when re-visiting
         tok->links = NULL;
-        for (fst::ArcIterator<KdFST> aiter(*fst_, state);
-             !aiter.Done();
-             aiter.Next())
+        for(fst::ArcIterator<KdFST> aiter(*fst_, state); !aiter.Done(); aiter.Next())
         {
             const KdArc &arc = aiter.Value();
             if (arc.ilabel == 0)
@@ -837,7 +855,8 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 void KdLatticeDecoder::DeleteForwardLinks(KdToken *tok)
 {
     KdFLink *l = tok->links, *m;
-    while (l != NULL) {
+    while( l!=NULL )
+    {
         m = l->next;
         delete l;
         l = m;
@@ -866,12 +885,11 @@ void KdLatticeDecoder::DeleteElems(Elem *list)
 }
 
 void KdLatticeDecoder::ClearActiveTokens()
-{ // a cleanup routine, at utt end/begin
-    for (size_t i = 0; i < active_toks_.size(); i++)
+{
+    for (size_t i = 0; i < frame_toks.size(); i++)
     {
-        // Delete all tokens alive on this frame, and any forward
-        // links they may have.
-        for (KdToken *tok = active_toks_[i].toks; tok != NULL; )
+        KdToken *tok=frame_toks[i].toks;
+        while( tok!=NULL )
         {
             DeleteForwardLinks(tok);
             KdToken *next_tok = tok->next;
@@ -880,7 +898,7 @@ void KdLatticeDecoder::ClearActiveTokens()
             tok = next_tok;
         }
     }
-    active_toks_.clear();
+    frame_toks.clear();
     KALDI_ASSERT(num_toks_ == 0);
 }
 
@@ -984,9 +1002,8 @@ bool KdLatticeDecoder::ReachedFinal()
     return FinalRelativeCost() != std::numeric_limits<float>::infinity();
 }
 
-// Returns the number of frames decoded so far.  The value returned changes
-// whenever we call ProcessEmitting().
+// Returns the number of frames decoded so far.
 int32 KdLatticeDecoder::NumFramesDecoded()
 {
-    return active_toks_.size() - 1;
+    return decoded_frame_i - 1;
 }

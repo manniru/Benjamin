@@ -65,6 +65,8 @@ void KdOnline::init()
 
     decoder_opts.max_active = 7000;
     decoder_opts.beam = 15.0;
+    decoder_opts.lattice_beam = 30.0;
+
     o_decoder = new KdOnlineLDecoder(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
 
@@ -168,6 +170,7 @@ void KdOnline::processLat(CompactLattice *clat, clock_t start)
     LatticeArc::Weight *w_out = NULL;
 
     Lattice lat;
+    ConvertLattice(*clat, &lat);
     o_decoder->GetBestPath(&lat);
     GetLinearSymbolSequence(lat, isymbols_out,
                             &word_ids, w_out);
@@ -180,15 +183,15 @@ void KdOnline::processLat(CompactLattice *clat, clock_t start)
     for( int i=0 ; i<word_ids.size() ; i++ )
     {
         qDebug() << lexicon[word_ids[i]];// << conf[i];
-        if( clat->NumStates()>2000 )
-        {
-            CompactLatticeWriter clat_writer("ark:b.ark");
-            clat_writer.Write("f", *clat);
-    //            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
-    //            fst_writer.Write("f", *fst_in);
+//        if( clat->NumStates()>2000 )
+//        {
+//            CompactLatticeWriter clat_writer("ark:b.ark");
+//            clat_writer.Write("f", *clat);
+//    //            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
+//    //            fst_writer.Write("f", *fst_in);
 
-            exit(0);
-        }
+//            exit(0);
+//        }
     }
 
     if( word_ids.size() )

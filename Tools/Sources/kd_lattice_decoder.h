@@ -3,7 +3,7 @@
 
 #include "decoder/lattice-faster-decoder.h"
 
-/*  extra_cost is used in pruning tokens, to save memory.
+/*extra_cost is used in pruning tokens, to save memory.
 
   extra_cost can be thought of as a beta (backward) cost assuming
   we had set the betas on currently-active tokens to all be the negative
@@ -16,7 +16,7 @@
   prune away the token.
 
   (Note: we don't update all the extra_costs every time we update a frame; we
-  only do it every 'config_.prune_interval' frames).  */
+  only do it every 'config_.prune_interval' frames).*/
 
 typedef kaldi::decoder::StdToken             KdToken;
 typedef fst::StdFst                          KdFST;
@@ -55,7 +55,6 @@ public:
     bool GetRawLattice(kaldi::Lattice *ofst, bool use_final_probs = true);
 
     void InitDecoding();
-
     void AdvanceDecoding(kaldi::DecodableInterface *decodable,
                          int32 max_num_frames = -1);
 
@@ -66,25 +65,20 @@ public:
 protected:
     // protected instead of private, so classes which inherits from this,
     // also can have access
-
     inline static void DeleteForwardLinks(KdToken *tok);
     using Elem = typename kaldi::HashList<KdStateId, KdToken*>::Elem;
 
     void PossiblyResizeHash(size_t num_toks);
-
     inline Elem *FindOrAddToken(KdStateId state, int32 frame_plus_one,
                                 float tot_cost, KdToken *backpointer,
                                 bool *changed);
 
-    void PruneForwardLinks(int32 frame_plus_one, bool *extra_costs_changed,
-                           bool *links_pruned, float delta);
-
+    bool PruneForwardLinks(int32 frame, bool *extra_costs_changed, float delta);
     void ComputeFinalCosts(unordered_map<KdToken*, float> *final_costs,
-                           float *final_relative_cost,
-                           float *final_best_cost);
+                           float *final_relative_cost, float *final_best_cost);
 
     void PruneForwardLinksFinal();
-    void PruneTokensForFrame(int32 frame_plus_one);
+    void PruneTokensForFrame(int32 frame);
     void PruneActiveTokens(float delta);
 
     /// Gets the weight cutoff.  Also counts the active tokens.
@@ -110,7 +104,7 @@ protected:
     // the graph.
     kaldi::HashList<KdStateId, KdToken*> toks_;
 
-    std::vector<KdTokenList> active_toks_; // Lists of tokens, indexed by
+    std::vector<KdTokenList> frame_toks; // Lists of tokens, indexed by
     // frame (members of KdTokenList are toks, must_prune_forward_links,
     // must_prune_tokens).
     std::vector<Elem* > queue_;  // temp variable used in ProcessNonemitting,
@@ -134,6 +128,7 @@ protected:
     unordered_map<KdToken*, float> final_costs_;
     float final_relative_cost_;
     float final_best_cost_;
+    long  decoded_frame_i = 1;
 
     void DeleteElems(Elem *list);
 

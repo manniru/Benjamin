@@ -20,10 +20,10 @@ KdOnlineLDecoder::KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
 
 void KdOnlineLDecoder::ResetDecoder(bool full)
 {
-    qDebug() << "Reset Kaldi" << full;
+//    qDebug() << "Reset Kaldi" << full << frame_toks.size();
     DeleteElems(toks_.Clear()); //replaced ClearToks
     cost_offsets_.clear();
-//    ClearActiveTokens(); ///THIS LINE SHOULD NOT EXECUTED!
+    ClearActiveTokens(); ///THIS LINE SHOULD NOT EXECUTED!
     warned_ = false;
     num_toks_ = 0;
     decoding_finalized_ = false;
@@ -31,14 +31,15 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
 
     KdStateId start_state = fst_->Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
-//    active_toks_.resize(1);
+    frame_toks.resize(1);
     //Weight was Weight::One()
     KdToken *dummy_token = new KdToken(0.0, 0.0, NULL, NULL, NULL);
-    active_toks_[0].toks = dummy_token;
+    frame_toks[0].toks = dummy_token;
     toks_.Insert(start_state, dummy_token);
     num_toks_++;
     prev_immortal_tok_ = immortal_tok_ = dummy_token;
     utt_frames_ = 0;
+    ProcessNonemitting(config_.beam);
 
     if( full )
     {
@@ -123,11 +124,11 @@ void KdOnlineLDecoder::UpdateImmortalToken()
 //Called if decoder is not in KdDecodeState::KD_EndUtt
 bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 {
-    UpdateImmortalToken();
-    if(immortal_tok_ == prev_immortal_tok_)
-    {
-        return false; //no partial traceback at that point of time
-    }
+//    UpdateImmortalToken();
+//    if(immortal_tok_ == prev_immortal_tok_)
+//    {
+//        return false; //no partial traceback at that point of time
+//    }
 
     MakeLattice(out_fst);
     return true;
@@ -157,7 +158,7 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
         return;
     }
 
-    int active_count = active_toks_.size();
+    int active_count = frame_toks.size();
     int bucket_count = num_toks_/2 + 3;
 
     unordered_map<KdToken*, KdStateId> tok_map(bucket_count);
@@ -177,11 +178,11 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
     std::vector<KdToken*> token_list;
     for ( int i=0; i<active_count; i++)
     {
-        if (active_toks_[i].toks == NULL)
+        if (frame_toks[i].toks == NULL)
         {
             return;
         }
-        TopSortTokens(active_toks_[i].toks, &token_list);
+        TopSortTokens(frame_toks[i].toks, &token_list);
 
         for( int j=0; j<token_list.size() ; j++ )
         {
@@ -274,17 +275,17 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 {
     if( state_==KD_EndFeats || state_==KD_EndUtt ) // new utterance
     {
-        ResetDecoder(state_ == KD_EndFeats);
+//        ResetDecoder(state_ == KD_EndFeats);
     }
 
-    ProcessNonemitting(std::numeric_limits<float>::max());
+//    ProcessNonemitting(std::numeric_limits<float>::max());
     int frame_i;
     Timer timer;
     double64 tstart = timer.Elapsed();
     float factor = -1;
     for ( frame_i=0 ; frame_i<opts_.batch_size; frame_i++)
     {
-        if( decodable->IsLastFrame(frame_-1) )
+        if( decodable->IsLastFrame(decoded_frame_i-1) )
         {
             break;
         }
@@ -314,7 +315,11 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
             }
 
             tstart = tend;
-//            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
+        }
+
+        if ((NumFramesDecoded()+1) % config_.prune_interval == 0)
+        {
+            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
         float weight_cutoff = ProcessEmitting(decodable);
         ProcessNonemitting(weight_cutoff);
@@ -324,18 +329,20 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
     }
     if( frame_i == opts_.batch_size && !decodable->IsLastFrame(frame_ - 1) )
     {
-        if( HaveSilence() )
-        {
-            state_ = KD_EndUtt; //End of Utterance
-        }
-        else
-        {
-            state_ = KD_EndBatch;
-        }
+        //FinalizeDecoding();
+//        if( HaveSilence() )
+//        {
+//            state_ = KD_EndUtt; //End of Utterance
+//        }
+//        else
+//        {
+//            state_ = KD_EndBatch;
+//        }
     }
     else
     {
         state_ = KD_EndFeats;
+        qDebug() << "we are here";
     }
     return state_;
 }
