@@ -1,5 +1,9 @@
-#ifndef KD_ONLINE_DECODER_H
-#define KD_ONLINE_DECODER_H
+#ifndef KD_ONLINE_LDECODER_H
+#define KD_ONLINE_LDECODER_H
+
+#include "bt_config.h"
+
+#ifdef BT_LAT_ONLINE
 
 // This class provide a lattice online gmm decoder
 // Kaldi only offer an online gmm decoder with no
@@ -9,6 +13,7 @@
 #include "util/stl-utils.h"
 #include "kd_lattice_decoder.h"
 #include "hmm/transition-model.h"
+#include "lat/kaldi-lattice.h"
 
 struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
 {
@@ -79,5 +84,6 @@ private:
     KdToken *immortal_tok_;      // "immortal" token means it's an ancestor of ...
     KdToken *prev_immortal_tok_; // ... all currently active tokens
 };
+#endif // BT_LAT_ONLINE
 
 #endif // KD_ONLINE_DECODER_H

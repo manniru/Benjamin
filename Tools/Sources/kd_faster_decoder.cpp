@@ -334,7 +334,8 @@ void KdFasterDecoder::ProcessNonemitting(double cutoff) {
             if ( arc->ilabel==0 )
             {  // propagate nonemitting only...
                 KdFToken *new_tok = new KdFToken(*arc, tok);
-                if (new_tok->cost_ > cutoff)
+
+                if( new_tok->cost_>cutoff )
                 {  // prune
                     KdFTokenDelete(new_tok);
                 }

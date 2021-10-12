@@ -1,4 +1,7 @@
 #include "kd_online_decoder.h"
+
+#ifndef BT_LAT_ONLINE
+
 #include "base/timer.h"
 #include "fstext/fstext-utils.h"
 #include "hmm/hmm-utils.h"
@@ -383,3 +386,5 @@ KdDecodeState KdOnlineDecoder::Decode(DecodableInterface *decodable)
 
     return state_;
 }
+
+#endif // BT_LAT_ONLINE

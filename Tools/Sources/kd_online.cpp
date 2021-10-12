@@ -4,6 +4,7 @@
 #include "online/online-decodable.h"
 #include "online/online-faster-decoder.h"
 #include "online/onlinebin-util.h"
+#include "lat/sausages.h" //MBR
 // calc conf
 
 using namespace kaldi;
@@ -14,9 +15,9 @@ typedef OnlineDecodableDiagGmmScaled KdGmmDecodable;
 
 OnlineFeatInputItf    *feat_transform;
 fst::Fst<fst::StdArc> *decode_fst;
-KdOnlineLDecoder      *o_decoder;
 AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
+BT_ONLINE_DECODER     *o_decoder;
 
 KdOnline::KdOnline(BtCyclic *buffer, QObject *parent): QObject(parent)
 {
@@ -36,7 +37,7 @@ KdOnline::~KdOnline()
 
 void KdOnline::init()
 {
-    KdOnlineLDecoderOpts decoder_opts;
+    BT_ONLINE_OPTS decoder_opts;
 
     std::string model_rxfilename = BT_FINAL_PATH;
     std::string fst_rxfilename   = BT_FST_PATH;
@@ -65,9 +66,11 @@ void KdOnline::init()
 
     decoder_opts.max_active = 7000;
     decoder_opts.beam = 15.0;
+#ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
+#endif
 
-    o_decoder = new KdOnlineLDecoder(*decode_fst, decoder_opts,
+    o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
 
 //    OnlinePaSource au_src(500, kSampleFreq, 32768, kPaReportInt);
@@ -98,7 +101,7 @@ void KdOnline::startDecode()
                              acoustic_scale, feature_matrix);
 
     o_decoder->InitDecoding();
-    CompactLattice out_fst;
+    BT_ONLINE_LAT out_fst;
 
     clock_t start;
 
@@ -128,7 +131,6 @@ void KdOnline::startDecode()
                                "com.binaee.rebound.exec  string:\"\"");
             }
         }
-        qDebug() << out_fst.NumStates();
     }
 }
 
@@ -158,7 +160,7 @@ void KdOnline::execute(std::vector<int32_t> word)
     system(cmd.toStdString().c_str());
 }
 
-void KdOnline::processLat(CompactLattice *clat, clock_t start)
+void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
 {
     MinimumBayesRiskOptions mbr_opts;
     MinimumBayesRisk *mbr = NULL;

@@ -9,9 +9,18 @@
 #include "bt_channel_l.h"
 #include "bt_state.h"
 #include "bt_online_source.h"
-#include "lat/sausages.h"
-#include "lat/kaldi-lattice.h"
+
+#ifdef BT_LAT_ONLINE
 #include "kd_online_ldecoder.h"
+#define  BT_ONLINE_DECODER KdOnlineLDecoder
+#define  BT_ONLINE_OPTS    KdOnlineLDecoderOpts
+#define  BT_ONLINE_LAT     kaldi::CompactLattice
+#else
+#include "kd_online_decoder.h"
+#define  BT_ONLINE_DECODER KdOnlineDecoder
+#define  BT_ONLINE_OPTS    KdOnlineDecoderOpts
+#define  BT_ONLINE_LAT     fst::VectorFst<kaldi::LatticeArc>
+#endif
 
 class KdOnline : public QObject
 {
@@ -30,7 +39,8 @@ private:
     void writeBarResult();
     void parseWords(QString filename);
     void execute(std::vector<int32_t> word);
-    void processLat(kaldi::CompactLattice *clat, clock_t start);
+
+    void processLat(BT_ONLINE_LAT *clat, clock_t start);
 
     int kDeltaOrder = 2; // delta-delta derivative order
     int kSampleFreq = 16000; // fixed to 16KHz

@@ -1,10 +1,9 @@
 #ifndef KD_ONLINE_DECODER_H
 #define KD_ONLINE_DECODER_H
 
-// This class provide a lattice online gmm decoder
-// Kaldi only offer an online gmm decoder with no
-// Lattice Support. Lattices Make it possible to
-// get multi recognition output.
+#include "bt_config.h"
+
+#ifndef BT_LAT_ONLINE
 
 #include "util/stl-utils.h"
 #include "decoder/faster-decoder.h"
@@ -87,5 +86,7 @@ private:
     Token *immortal_tok_;      // "immortal" token means it's an ancestor of ...
     Token *prev_immortal_tok_; // ... all currently active tokens
 };
+
+#endif // BT_LAT_ONLINE
 
 #endif // KD_ONLINE_DECODER_H
