@@ -59,7 +59,7 @@ void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
     lat_opts.max_mem = config_.det_opts.max_mem;
 
     ConvertLattice(raw_fst, ofst);
-    //  DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
+      DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
     raw_fst.DeleteStates();  // Free memory-- raw_fst no longer needed.
     Connect(ofst); //removing states and arcs that are not on successful paths.
 }
@@ -275,7 +275,7 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 {
     if( state_==KD_EndFeats || state_==KD_EndUtt ) // new utterance
     {
-//        ResetDecoder(state_ == KD_EndFeats);
+        ResetDecoder(state_ == KD_EndFeats);
     }
 
 //    ProcessNonemitting(std::numeric_limits<float>::max());
@@ -330,14 +330,14 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
     if( frame_i == opts_.batch_size && !decodable->IsLastFrame(frame_ - 1) )
     {
         //FinalizeDecoding();
-//        if( HaveSilence() )
-//        {
-//            state_ = KD_EndUtt; //End of Utterance
-//        }
-//        else
-//        {
-//            state_ = KD_EndBatch;
-//        }
+        if( HaveSilence() )
+        {
+            state_ = KD_EndUtt; //End of Utterance
+        }
+        else
+        {
+            state_ = KD_EndBatch;
+        }
     }
     else
     {

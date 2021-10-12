@@ -65,7 +65,7 @@ void KdOnline::init()
 
     decoder_opts.max_active = 7000;
     decoder_opts.beam = 15.0;
-    decoder_opts.lattice_beam = 30.0;
+    decoder_opts.lattice_beam = 6.0;
 
     o_decoder = new KdOnlineLDecoder(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
