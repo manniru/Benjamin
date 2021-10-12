@@ -11,7 +11,7 @@
 #include "bt_online_source.h"
 #include "lat/sausages.h"
 #include "lat/kaldi-lattice.h"
-#include "kd_online_decoder.h"
+#include "kd_online_ldecoder.h"
 
 class KdOnline : public QObject
 {

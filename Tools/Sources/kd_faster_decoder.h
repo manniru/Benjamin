@@ -4,60 +4,60 @@
 #include "decoder/faster-decoder.h"
 #include "kd_f_token.h"
 
-typedef fst::Fst<fst::StdArc>             KdFST;
+typedef fst::Fst<fst::StdArc> KdFST;
 
 class KdFasterDecoder
 {
- public:
-  typedef fst::StdArc Arc;
-  typedef Arc::Label Label;
-  typedef Arc::StateId StateId;
-  typedef Arc::Weight Weight;
+public:
+    typedef fst::StdArc Arc;
+    typedef Arc::Label Label;
+    typedef Arc::StateId StateId;
+    typedef Arc::Weight Weight;
 
-  KdFasterDecoder(KdFST &fst, kaldi::FasterDecoderOptions &config);
-  ~KdFasterDecoder();
+    KdFasterDecoder(KdFST &fst, kaldi::FasterDecoderOptions &config);
+    ~KdFasterDecoder();
 
-  bool ReachedFinal();
+    bool ReachedFinal();
 
-  bool GetBestPath(fst::MutableFst<kaldi::LatticeArc> *fst_out,
-                   bool use_final_probs = true);
+    bool GetBestPath(fst::MutableFst<kaldi::LatticeArc> *fst_out,
+                     bool use_final_probs = true);
 
-  void InitDecoding();
-  void Decode(kaldi::DecodableInterface *decodable);
+    void InitDecoding();
+    void Decode(kaldi::DecodableInterface *decodable);
 
-  void AdvanceDecoding(kaldi::DecodableInterface *decodable,
-                       int32 max_num_frames = -1);
+    void AdvanceDecoding(kaldi::DecodableInterface *decodable,
+                         int32 max_num_frames = -1);
 
-  int32 NumFramesDecoded();
-  void SetOptions(kaldi::FasterDecoderOptions &config);
+    int32 NumFramesDecoded();
+    void SetOptions(kaldi::FasterDecoderOptions &config);
 
- protected:
-  typedef kaldi::HashList<StateId, KdFToken*>::Elem Elem;
+protected:
+    typedef kaldi::HashList<StateId, KdFToken*>::Elem Elem;
 
-  double GetCutoff(Elem *list_head, size_t *tok_count,
-                   float *adaptive_beam, Elem **best_elem);
+    double GetCutoff(Elem *list_head, size_t *tok_count,
+                     float *adaptive_beam, Elem **best_elem);
 
-  void PossiblyResizeHash(size_t num_toks);
+    void   PossiblyResizeHash(size_t num_toks);
 
-  double ProcessEmitting(kaldi::DecodableInterface *decodable);
+    double ProcessEmitting(kaldi::DecodableInterface *decodable);
 
-  // TODO: first time we go through this, could avoid using the queue.
-  void ProcessNonemitting(double cutoff);
+    // TODO: first time we go through this, could avoid using the queue.
+    void   ProcessNonemitting(double cutoff);
 
-  // HashList defined in ../util/hash-list.h.  It actually allows us to maintain
-  // more than one list (e.g. for current and previous frames), but only one of
-  // them at a time can be indexed by StateId.
-  kaldi::HashList<StateId, KdFToken*> toks_;
-  fst::Fst<fst::StdArc> &fst_;
-  kaldi::FasterDecoderOptions config_;
-  std::vector<const Elem* > queue_;  // temp variable used in ProcessNonemitting,
-  std::vector<float> tmp_array_;  // used in GetCutoff.
-  // make it class member to avoid internal new/delete.
+    // HashList defined in ../util/hash-list.h.  It actually allows us to maintain
+    // more than one list (e.g. for current and previous frames), but only one of
+    // them at a time can be indexed by StateId.
+    kaldi::HashList<StateId, KdFToken*> toks_;
+    fst::Fst<fst::StdArc> &fst_;
+    kaldi::FasterDecoderOptions config_;
+    std::vector<const Elem* > queue_;  // temp variable used in ProcessNonemitting,
+    std::vector<float> tmp_array_;  // used in GetCutoff.
+    // make it class member to avoid internal new/delete.
 
-  // Keep track of the number of frames decoded in the current file.
-  int32 num_frames_decoded_;
+    // Keep track of the number of frames decoded in the current file.
+    int32 num_frames_decoded_;
 
-  void ClearToks(Elem *list);
+    void ClearToks(Elem *list);
 };
 
 

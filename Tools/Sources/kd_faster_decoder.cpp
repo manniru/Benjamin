@@ -3,8 +3,8 @@
 
 using namespace kaldi;
 
-KdFasterDecoder::KdFasterDecoder(const fst::Fst<fst::StdArc> &fst,
-                                 const KdFasterDecoderOptions &opts):
+KdFasterDecoder::KdFasterDecoder(fst::Fst<fst::StdArc> &fst,
+                                 FasterDecoderOptions &opts):
     fst_(fst), config_(opts), num_frames_decoded_(-1)
 {
     KALDI_ASSERT(config_.hash_ratio >= 1.0);  // less doesn't make much sense.
@@ -291,12 +291,12 @@ double KdFasterDecoder::ProcessEmitting(DecodableInterface *decodable)
                         {
                             if (*(e_found->val) < *new_tok)
                             {
-                                KdFToken::KdFTokenDelete(e_found->val);
+                                KdFTokenDelete(e_found->val);
                                 e_found->val = new_tok;
                             }
                             else
                             {
-                                KdFToken::KdFTokenDelete(new_tok);
+                                KdFTokenDelete(new_tok);
                             }
                         }
                     }
@@ -304,7 +304,7 @@ double KdFasterDecoder::ProcessEmitting(DecodableInterface *decodable)
             }
         }
         e_tail = e->tail;
-        KdFToken::KdFTokenDelete(e->val);
+        KdFTokenDelete(e->val);
         toks_.Delete(e);
     }
     num_frames_decoded_++;
@@ -328,24 +328,32 @@ void KdFasterDecoder::ProcessNonemitting(double cutoff) {
         }
         KALDI_ASSERT(tok != NULL && state == tok->arc_.nextstate);
         for (fst::ArcIterator<fst::Fst<Arc> > aiter(fst_, state);
-             !aiter.Done();
-             aiter.Next()) {
-            const Arc &arc = aiter.Value();
-            if (arc.ilabel == 0) {  // propagate nonemitting only...
-                KdFToken *new_tok = new KdFToken(arc, tok);
-                if (new_tok->cost_ > cutoff) {  // prune
-                    KdFToken::KdFTokenDelete(new_tok);
-                } else {
-                    Elem *e_found = toks_.Insert(arc.nextstate, new_tok);
-                    if (e_found->val == new_tok) {
+             !aiter.Done(); aiter.Next())
+        {
+            Arc *arc = const_cast<Arc *>(&(aiter.Value()));
+            if ( arc->ilabel==0 )
+            {  // propagate nonemitting only...
+                KdFToken *new_tok = new KdFToken(*arc, tok);
+                if (new_tok->cost_ > cutoff)
+                {  // prune
+                    KdFTokenDelete(new_tok);
+                }
+                else
+                {
+                    Elem *e_found = toks_.Insert(arc->nextstate, new_tok);
+                    if (e_found->val == new_tok)
+                    {
                         queue_.push_back(e_found);
-                    } else {
-                        if (*(e_found->val) < *new_tok) {
-                            KdFToken::KdFTokenDelete(e_found->val);
+                    }
+                    else
+                    {
+                        if (*(e_found->val) < *new_tok)
+                        {
+                            KdFTokenDelete(e_found->val);
                             e_found->val = new_tok;
                             queue_.push_back(e_found);
                         } else {
-                            KdFToken::KdFTokenDelete(new_tok);
+                            KdFTokenDelete(new_tok);
                         }
                     }
                 }
@@ -360,9 +368,11 @@ void KdFasterDecoder::ProcessNonemitting(double cutoff) {
 // the Elem objects.  toks_.Clear() just clears them from the hash and gives ownership
 // to the caller, who then has to call toks_.Delete(e) for each one.  It was designed
 // this way for convenience in propagating tokens from one frame to the next.
-void KdFasterDecoder::ClearToks(Elem *list) {
-    for (Elem *e = list, *e_tail; e != NULL; e = e_tail) {
-        KdFToken::KdFTokenDelete(e->val);
+void KdFasterDecoder::ClearToks(Elem *list)
+{
+    for (Elem *e = list, *e_tail; e != NULL; e = e_tail)
+    {
+        KdFTokenDelete(e->val);
         e_tail = e->tail;
         toks_.Delete(e);
     }
