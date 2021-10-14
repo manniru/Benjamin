@@ -56,7 +56,7 @@ public:
     // Makes a linear graph, by tracing back from the best currently active token
     // to the last immortal token. This method is meant to be invoked at the end
     // of an utterance in order to get the last chunk of the hypothesis
-    void FinishTraceBack(kaldi::CompactLattice *fst_out);
+    double FinishTraceBack(kaldi::CompactLattice *fst_out);
 
     // Returns "true" if the best current hypothesis ends with long enough silence
     bool HaveSilence();

@@ -19,6 +19,7 @@ public:
 
 private slots:
     void startDecode(QString msg);
+    void decodeOnline();
 
 signals:
     void startRecord();
@@ -30,7 +31,11 @@ private:
     BtRecoder *recorder;
     BtEncoder *encoder;
     BtCyclic  *cyclic;
+#ifdef BT_ONLINE2
+    KdOnline2 *kaldi;
+#else
     KdOnline  *kaldi;
+#endif
 };
 
 void btRecordRun(void *thread_struct_void);

@@ -102,6 +102,7 @@ void KdOnline::startDecode()
 
     o_decoder->InitDecoding();
     BT_ONLINE_LAT out_fst;
+    int tok_count;
 
     clock_t start;
 
@@ -112,7 +113,8 @@ void KdOnline::startDecode()
 
         if( dstate==KdDecodeState::KD_EndUtt )
         {
-            o_decoder->FinishTraceBack(&out_fst);
+            tok_count = o_decoder->FinishTraceBack(&out_fst);
+//            qDebug() << "TokCound1" << tok_count;
             processLat(&out_fst, start);
 
             system("dbus-send --session --dest=com.binaee.rebound / "
@@ -120,8 +122,8 @@ void KdOnline::startDecode()
         }
         else
         {
-            int new_input = o_decoder->PartialTraceback(&out_fst);
-            if( new_input )
+            tok_count = o_decoder->PartialTraceback(&out_fst);
+            if( tok_count )
             {
                 processLat(&out_fst, start);
             }
@@ -171,11 +173,16 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     vector<int32> *isymbols_out = NULL;
     LatticeArc::Weight *w_out = NULL;
 
+#ifdef BT_LAT_ONLINE
     Lattice lat;
     ConvertLattice(*clat, &lat);
     o_decoder->GetBestPath(&lat);
     GetLinearSymbolSequence(lat, isymbols_out,
                             &word_ids, w_out);
+#else
+    GetLinearSymbolSequence(*clat, isymbols_out,
+                            &word_ids, w_out);
+#endif
 //    ScaleLattice(LatticeScale(1.0, 0.00001), clat);
 
 //    mbr = new MinimumBayesRisk(clat, mbr_opts);

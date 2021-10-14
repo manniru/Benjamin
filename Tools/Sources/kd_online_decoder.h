@@ -44,19 +44,11 @@ public:
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
 
-    // Makes a linear graph, by tracing back from the last "immortal" token
-    // to the previous one
-    bool PartialTraceback(fst::MutableFst<kaldi::LatticeArc> *out_fst);
-
-    // Makes a linear graph, by tracing back from the best currently active token
-    // to the last immortal token. This method is meant to be invoked at the end
-    // of an utterance in order to get the last chunk of the hypothesis
-    void FinishTraceBack(fst::MutableFst<kaldi::LatticeArc> *fst_out);
+    int  PartialTraceback(fst::MutableFst<kaldi::LatticeArc> *out_fst);
+    int  FinishTraceBack (fst::MutableFst<kaldi::LatticeArc> *out_fst);
 
     // Returns "true" if the best current hypothesis ends with long enough silence
     bool EndOfUtterance();
-
-    int32 frame() { return frame_; }
 
 private:
     void ResetDecoder(bool full);
@@ -71,7 +63,9 @@ private:
                      fst::MutableFst<kaldi::LatticeArc> *out_fst);
 
     // Searches for the last token, ancestor of all currently active tokens
-    void UpdateImmortalToken();
+    void   UpdateImmortalToken();
+
+    double getConf(Token *best_tok);
     Token *getBestTok();
     double updateBeam(double tstart);
 

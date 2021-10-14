@@ -50,7 +50,7 @@ void KdOnline2::print(CompactLattice *clat)
 
 void KdOnline2::processData(float *wav_data, int len)
 {
-//    g_decoder->decoder_->InitDecoding();
+    g_decoder->init();
     BaseFloat chunk_length_secs = 0.05;
 
     // get the data for channel zero (if the signal is not mono, we only
@@ -62,7 +62,7 @@ void KdOnline2::processData(float *wav_data, int len)
 
     int32 samp_offset = 0;
 //    qDebug() << "data.Dim()" << data.Dim() << "len" << len;
-    while (samp_offset < data.Dim())
+    while( samp_offset<data.Dim() )
     {
         int32 samp_remaining = data.Dim() - samp_offset;
 
@@ -91,7 +91,6 @@ void KdOnline2::processData(float *wav_data, int len)
     g_decoder->FinalizeDecoding();
 
     bool end_of_utterance = true;
-    g_decoder->EstimateFmllr(end_of_utterance);
     bool rescore_if_needed = true;
     CompactLattice clat;
     g_decoder->GetLattice(rescore_if_needed, end_of_utterance, &clat);

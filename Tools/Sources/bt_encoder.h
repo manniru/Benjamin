@@ -9,9 +9,7 @@
 #include "bt_config.h"
 #include "bt_cyclic.h"
 
-#ifdef BT_ONLINE2
 #include "kd_online2.h"
-#endif
 
 #define CHUNK_SIZE  1000   /* Amount of sample we are sending in each buffer */
 
@@ -19,7 +17,7 @@ class BtEncoder : public QObject
 {
     Q_OBJECT
 public:
-    explicit BtEncoder(QThread *thread, BtCyclic *buffer, QObject *parent = nullptr);
+    explicit BtEncoder(KdOnline2 *kaldi, BtCyclic *buffer, QThread *thread, QObject *parent = nullptr);
 
     ~BtEncoder();
 public slots:
@@ -45,10 +43,8 @@ private:
     long wav_num = 0;
     long sample_index;   /* Number of samples generated so far (for timestamp generation) */
 
-#ifdef BT_ONLINE2
-    KdOnline2 kd;
+    KdOnline2 *kd;
     float raw_f[BT_REC_SIZE*BT_REC_RATE];
-#endif
 };
 
 #endif // BT_ENCORDER_H

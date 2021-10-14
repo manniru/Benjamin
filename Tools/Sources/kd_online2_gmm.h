@@ -1,6 +1,8 @@
 #ifndef KD_ONLINE2_GMM_H
 #define KD_ONLINE2_GMM_H
 
+#include "bt_config.h"
+
 #ifdef BT_ONLINE2
 #include <QObject>
 #include <QTimer>
@@ -22,6 +24,7 @@
 #include "gmm/am-diag-gmm.h"
 #include "hmm/posterior.h"
 #include "online2/online-gmm-decoding.h"
+#include <fst/fst.h>
 #include "bt_config.h"
 
 class KdOnline2Gmm : public QObject
@@ -31,7 +34,7 @@ public:
     explicit KdOnline2Gmm(QObject *parent = NULL);
     ~KdOnline2Gmm();
 
-    kaldi::OnlineFeaturePipeline &FeaturePipeline() { return *feature_pipeline_; }
+    kaldi::OnlineFeaturePipeline &FeaturePipeline() { return *feature_pipeline; }
     void AdvanceDecoding();
     void FinalizeDecoding();
     void EstimateFmllr(bool end_of_utterance);
@@ -42,7 +45,7 @@ public:
                     kaldi::CompactLattice *clat);
 
     void init();
-    kaldi::LatticeFasterOnlineDecoder *decoder_;
+    kaldi::LatticeFasterOnlineDecoder *o_decoder;
 
 private:
     bool GetGaussianPosteriors(bool end_of_utterance, kaldi::GaussPost *gpost);
@@ -52,12 +55,14 @@ private:
 
     kaldi::OnlineGmmDecodingConfig d_config;
     kaldi::OnlineGmmDecodingModels *models_;
-    kaldi::OnlineFeaturePipeline *feature_pipeline_;  // owned here.
+    kaldi::OnlineFeaturePipeline *feature_pipeline;  // owned here.
     kaldi::OnlineGmmAdaptationState orig_adaptation_state_;
     kaldi::OnlineGmmAdaptationState adaptation_state_;
 
     std::vector<int> silence_phones_; // sorted, unique list of silence phones,
-                                        // derived from d_config
+                                      // derived from d_config
+    fst::Fst<fst::StdArc> *trans_model;
+    kaldi::OnlineFeaturePipelineConfig *feature_config;
 };
 #endif
 

@@ -52,7 +52,7 @@ void KdOnlineDecoder::MakeLattice(Token *start, Token *end,
     bool is_final = true;
     double this_cost = start->cost_ + fst_.Final(start->arc_.nextstate).Value();
 
-    if( this_cost==std::numeric_limits<double>::infinity() )
+    if( this_cost==KD_INFINITY )
     {
         is_final = false;
     }
@@ -164,19 +164,24 @@ void KdOnlineDecoder::UpdateImmortalToken()
     }
 }
 
-bool KdOnlineDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
+// Makes a linear graph, by tracing back from the last "immortal" token
+// to the previous one
+int KdOnlineDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
 {
     UpdateImmortalToken();
-    if(immortal_tok_ == prev_immortal_tok_)
+    if( immortal_tok_==prev_immortal_tok_ )
     {
-        return false; //no partial traceback at that point of time
+        return 0; //no new word
     }
 
     MakeLattice(immortal_tok_, prev_immortal_tok_, out_fst);
-    return true;
+    return getConf(NULL);
 }
 
-void KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
+// Makes a linear graph, by tracing back from the best currently active token
+// to the last immortal token. This method is meant to be invoked at the end
+// of an utterance in order to get the last chunk of the hypothesis
+int KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
 {
     Token *best_tok = NULL;
 
@@ -187,12 +192,47 @@ void KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
     else //this should not happen;
     {
         qDebug() << "FinishTraceBack: false on ReachedFinal";
-        return;
+        return -1;
     }
 
     MakeLattice(best_tok, immortal_tok_, out_fst);
+    return getConf(best_tok);
 }
 
+//LAST TOK
+//Come Back to last immortal token but it will not get you the confidene
+double KdOnlineDecoder::getConf(Token *best_tok)
+{
+    if( best_tok==NULL )
+    {
+        best_tok = getBestTok();
+    }
+
+    double i=0;
+    for( const Elem *e=toks_.GetList() ; e!=NULL ; e=e->tail )
+    {
+        Token *token = e->val;
+
+        if( token->cost_>1200 )
+        {
+            if( token->arc_.ilabel&&token->arc_.olabel ) //if both are not zero
+            {
+                qDebug() << "cost" << i << token->cost_ << token->arc_.ilabel << token->arc_.olabel ;
+                i++;
+            }
+        }
+    }
+
+    if( i>20 )
+    {
+        qDebug() << "best cost" << i/toks_.Size() << best_tok->cost_ ;
+//        exit(0);
+    }
+
+    return 1;
+}
+
+//find max cost
 KdOnlineDecoder::Token* KdOnlineDecoder::getBestTok()
 {
     Token *best_tok = NULL;
@@ -205,6 +245,36 @@ KdOnlineDecoder::Token* KdOnlineDecoder::getBestTok()
     }
 
     return best_tok;
+}
+
+double KdOnlineDecoder::updateBeam(double tstart)
+{
+    // adjust the beam if needed
+    Timer timer;
+    float tend = timer.Elapsed();
+    float elapsed = (tend - tstart) * 1000;
+    // warning: hardcoded 10ms frames assumption!
+    float factor = elapsed / (opts_.rt_max * opts_.update_interval * 10);
+    float min_factor = (opts_.rt_min / opts_.rt_max);
+
+    if (factor > 1 || factor < min_factor)
+    {
+        float update_factor = 0;
+
+        if( factor>1 )
+        {
+            update_factor = -std::min(opts_.beam_update * factor, opts_.max_beam_update);
+        }
+        else
+        {
+            update_factor = std::min(opts_.beam_update / factor, opts_.max_beam_update);
+        }
+
+        effective_beam_ += effective_beam_ * update_factor;
+        effective_beam_ = std::min(effective_beam_, max_beam_);
+    }
+
+    return tend;
 }
 
 // Used only in EndOfUtterance
@@ -307,36 +377,6 @@ bool KdOnlineDecoder::EndOfUtterance()
         }
     }
     return true;
-}
-
-double KdOnlineDecoder::updateBeam(double tstart)
-{
-    // adjust the beam if needed
-    Timer timer;
-    float tend = timer.Elapsed();
-    float elapsed = (tend - tstart) * 1000;
-    // warning: hardcoded 10ms frames assumption!
-    float factor = elapsed / (opts_.rt_max * opts_.update_interval * 10);
-    float min_factor = (opts_.rt_min / opts_.rt_max);
-
-    if (factor > 1 || factor < min_factor)
-    {
-        float update_factor = 0;
-
-        if( factor>1 )
-        {
-            update_factor = -std::min(opts_.beam_update * factor, opts_.max_beam_update);
-        }
-        else
-        {
-            update_factor = std::min(opts_.beam_update / factor, opts_.max_beam_update);
-        }
-
-        effective_beam_ += effective_beam_ * update_factor;
-        effective_beam_ = std::min(effective_beam_, max_beam_);
-    }
-
-    return tend;
 }
 
 KdDecodeState KdOnlineDecoder::Decode(DecodableInterface *decodable)

@@ -61,7 +61,8 @@ void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
     lat_opts.max_mem = config_.det_opts.max_mem;
 
     ConvertLattice(raw_fst, ofst);
-      DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
+    DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
+
     raw_fst.DeleteStates();  // Free memory-- raw_fst no longer needed.
     Connect(ofst); //removing states and arcs that are not on successful paths.
 }
@@ -136,9 +137,11 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
     return true;
 }
 
-void KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
+double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 {
     MakeLattice(out_fst);
+
+    return 1;
 }
 
 void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)

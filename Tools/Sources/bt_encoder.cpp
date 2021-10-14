@@ -1,12 +1,14 @@
 #include "bt_encoder.h"
 #include <QDebug>
 
-BtEncoder::BtEncoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObject(parent)
+BtEncoder::BtEncoder(KdOnline2 *kaldi, BtCyclic *buffer, QThread *thread, QObject *parent) : QObject(parent)
 {
     record_timer = new QTimer;
     record_timer->moveToThread(thread);
     record_timer->setSingleShot(true);
     cyclic = buffer;
+    kd = kaldi;
+
 
     connect(record_timer, SIGNAL(timeout()), this, SLOT(recordTimeout()));
 
@@ -70,16 +72,6 @@ void BtEncoder::startEncode(QString message)
     wav_filename = KAL_WAV_DIR"buf" + QString::number(wav_num++) + ".wav";
 #endif
 
-    g_object_set (sink, "location", wav_filename.toStdString().c_str(), NULL);
-
-    sample_index = 0;
-
-    /* Start playing the pipeline */
-    gst_element_set_state (pipeline, GST_STATE_PLAYING);
-
-    ///FIXME: Implement GstBufferPool
-    int buf_count = BT_REC_SIZE*BT_REC_RATE/CHUNK_SIZE;
-
 #ifdef BT_ONLINE2
     int sample_count = BT_REC_SIZE*BT_REC_RATE;
     cyclic->rewind((BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
@@ -90,8 +82,18 @@ void BtEncoder::startEncode(QString message)
     {
         raw_f[i] = raw[i];
     }
-    kd.processData(raw_f, sample_count);
+    kd->processData(raw_f, sample_count);
 #else
+    g_object_set (sink, "location", wav_filename.toStdString().c_str(), NULL);
+
+    sample_index = 0;
+
+    /* Start playing the pipeline */
+    gst_element_set_state (pipeline, GST_STATE_PLAYING);
+
+    ///FIXME: Implement GstBufferPool
+    int buf_count = BT_REC_SIZE*BT_REC_RATE/CHUNK_SIZE;
+
     cyclic->rewind((BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
     for( int i=0 ; i<buf_count ; i++ )
     {

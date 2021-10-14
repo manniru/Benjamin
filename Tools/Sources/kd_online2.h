@@ -1,6 +1,8 @@
 #ifndef KD_ONLINE2_H
 #define KD_ONLINE2_H
 
+#include "bt_config.h"
+
 #ifdef BT_ONLINE2
 
 #include <QObject>

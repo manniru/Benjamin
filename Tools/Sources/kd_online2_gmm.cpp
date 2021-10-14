@@ -29,14 +29,14 @@ KdOnline2Gmm::KdOnline2Gmm(QObject *parent) : QObject(parent)
 
     std::string fst_rxfilename = KAL_NATO_DIR"exp/"KAL_MODE"/graph/HCLG.fst";
 
-    OnlineFeaturePipelineConfig feature_config(fcc);
-    feature_pipeline_ = new OnlineFeaturePipeline(feature_config);
+    feature_config = new OnlineFeaturePipelineConfig(fcc);
     // The following object initializes the models we use in decoding.
     models_ = new OnlineGmmDecodingModels(d_config);
 
-    Fst<StdArc> *decode_fst2 = ReadFstKaldiGeneric(fst_rxfilename);
+    trans_model = ReadFstKaldiGeneric(fst_rxfilename);
 
-    decoder_ = new LatticeFasterOnlineDecoder(*decode_fst2, d_config.faster_decoder_opts);
+    feature_pipeline = NULL;
+    o_decoder = NULL;
 
     if(!SplitStringToIntegers(d_config.silence_phones, ":", false,
                               &silence_phones_))
@@ -46,8 +46,23 @@ KdOnline2Gmm::KdOnline2Gmm(QObject *parent) : QObject(parent)
     }
 
     SortAndUniq(&silence_phones_);
-    feature_pipeline_->SetTransform(adaptation_state_.transform);
-    decoder_->InitDecoding();
+}
+
+void KdOnline2Gmm::init()
+{
+    if( o_decoder ) //decoder not null
+    {
+        delete feature_pipeline;
+        delete o_decoder;
+    }
+
+    o_decoder = new LatticeFasterOnlineDecoder(*trans_model,
+                                               d_config.faster_decoder_opts);
+    feature_pipeline = new OnlineFeaturePipeline(*feature_config);
+
+    o_decoder->InitDecoding();
+    feature_pipeline->SetTransform(adaptation_state_.transform);
+
 }
 
 // Advance the decoding as far as we can, and possibly estimate fMLLR.
@@ -62,17 +77,17 @@ void KdOnline2Gmm::AdvanceDecoding()
     DecodableDiagGmmScaledOnline decodable(am_gmm,
                                            models_->GetTransitionModel(),
                                            d_config.acoustic_scale,
-                                           feature_pipeline_);
+                                           feature_pipeline);
 
-    int32 old_frames = decoder_->NumFramesDecoded();
+    int32 old_frames = o_decoder->NumFramesDecoded();
 
     // This will decode as many frames as are currently available.
-    decoder_->AdvanceDecoding(&decodable);
+    o_decoder->AdvanceDecoding(&decodable);
 
 
     // possibly estimate fMLLR.
-    int32 new_frames = decoder_->NumFramesDecoded();
-    BaseFloat frame_shift = feature_pipeline_->FrameShiftInSeconds();
+    int32 new_frames = o_decoder->NumFramesDecoded();
+    BaseFloat frame_shift = feature_pipeline->FrameShiftInSeconds();
     // if the original adaptation state (at utterance-start) had no transform,
     // then this means it's the first utt of the speaker... even if not, if we
     // don't have a transform it probably makes sense to treat it as the 1st utt
@@ -90,7 +105,7 @@ void KdOnline2Gmm::AdvanceDecoding()
 
 void KdOnline2Gmm::FinalizeDecoding()
 {
-    decoder_->FinalizeDecoding();
+    o_decoder->FinalizeDecoding();
 }
 
 // gets Gaussian posteriors for purposes of fMLLR estimation.
@@ -100,7 +115,7 @@ bool KdOnline2Gmm::GetGaussianPosteriors(bool end_of_utterance,
     // Gets the Gaussian-level posteriors for this utterance, using whatever
     // features and model we are currently decoding with.  We'll use these
     // to estimate basis-fMLLR with.
-    if (decoder_->NumFramesDecoded() == 0) {
+    if (o_decoder->NumFramesDecoded() == 0) {
         KALDI_WARN << "You have decoded no data so cannot estimate fMLLR.";
         return false;
     }
@@ -108,9 +123,9 @@ bool KdOnline2Gmm::GetGaussianPosteriors(bool end_of_utterance,
     KALDI_ASSERT(d_config.fmllr_lattice_beam > 0.0);
 
     // Note: we'll just use whatever acoustic scaling factor we were decoding
-    // with.  This is in the lattice that we get from decoder_->GetRawLattice().
+    // with.  This is in the lattice that we get from o_decoder->GetRawLattice().
     Lattice raw_lat;
-    decoder_->GetRawLatticePruned(&raw_lat, end_of_utterance,
+    o_decoder->GetRawLatticePruned(&raw_lat, end_of_utterance,
                                   d_config.fmllr_lattice_beam);
 
     // At this point we could rescore the lattice if we wanted, and
@@ -167,12 +182,12 @@ bool KdOnline2Gmm::GetGaussianPosteriors(bool end_of_utterance,
     Posterior pdf_post;
     ConvertPosteriorToPdfs(trans_model, post, &pdf_post);
 
-    Vector<BaseFloat> feat(feature_pipeline_->Dim());
+    Vector<BaseFloat> feat(feature_pipeline->Dim());
 
     double tot_like = 0.0, tot_weight = 0.0;
     gpost->resize(pdf_post.size());
     for (size_t i = 0; i < pdf_post.size(); i++) {
-        feature_pipeline_->GetFrame(i, &feat);
+        feature_pipeline->GetFrame(i, &feat);
         for (size_t j = 0; j < pdf_post[i].size(); j++) {
             int32 pdf_id = pdf_post[i][j].first;
             BaseFloat weight = pdf_post[i][j].second;
@@ -193,13 +208,13 @@ bool KdOnline2Gmm::GetGaussianPosteriors(bool end_of_utterance,
 
 
 void KdOnline2Gmm::EstimateFmllr(bool end_of_utterance) {
-    if (decoder_->NumFramesDecoded() == 0) {
+    if (o_decoder->NumFramesDecoded() == 0) {
         KALDI_WARN << "You have decoded no data so cannot estimate fMLLR.";
     }
 
     if (GetVerboseLevel() >= 2) {
         Matrix<BaseFloat> feats;
-        feature_pipeline_->GetAsMatrix(&feats);
+        feature_pipeline->GetAsMatrix(&feats);
         KALDI_VLOG(2) << "Features are " << feats;
     }
 
@@ -218,12 +233,12 @@ void KdOnline2Gmm::EstimateFmllr(bool end_of_utterance) {
         spk_stats = orig_adaptation_state_.spk_stats;
     }
 
-    int32 dim = feature_pipeline_->Dim();
+    int32 dim = feature_pipeline->Dim();
     if (spk_stats.Dim() == 0)
         spk_stats.Init(dim);
 
     Matrix<BaseFloat> empty_transform;
-    feature_pipeline_->SetTransform(empty_transform);
+    feature_pipeline->SetTransform(empty_transform);
     Vector<BaseFloat> feat(dim);
 
     if (adaptation_state_.transform.NumRows() == 0)
@@ -233,7 +248,7 @@ void KdOnline2Gmm::EstimateFmllr(bool end_of_utterance) {
         // have already computed the Gaussian-level alignments (it may have a small
         // effect if the basis is very small and doesn't include an offset as part
         // of the transform).
-        feature_pipeline_->FreezeCmvn();
+        feature_pipeline->FreezeCmvn();
     }
 
     // GetModel() returns the model to be used for estimating
@@ -241,7 +256,7 @@ void KdOnline2Gmm::EstimateFmllr(bool end_of_utterance) {
     const AmDiagGmm &am_gmm = models_->GetModel();
 
     for (size_t i = 0; i < gpost.size(); i++) {
-        feature_pipeline_->GetFrame(i, &feat);
+        feature_pipeline->GetFrame(i, &feat);
         for (size_t j = 0; j < gpost[i].size(); j++) {
             int32 pdf_id = gpost[i][j].first; // caution: this gpost has pdf-id
             // instead of transition-id, which is
@@ -264,20 +279,20 @@ void KdOnline2Gmm::EstimateFmllr(bool end_of_utterance) {
                 << (impr / spk_stats.beta_) << " per frame, over "
                 << spk_stats.beta_ << " frames, #params estimated is "
                 << basis_coeffs.Dim();
-    feature_pipeline_->SetTransform(adaptation_state_.transform);
+    feature_pipeline->SetTransform(adaptation_state_.transform);
 }
 
 
 bool KdOnline2Gmm::HaveTransform() const
 {
-    return (feature_pipeline_->HaveFmllrTransform());
+    return (feature_pipeline->HaveFmllrTransform());
 }
 
 void KdOnline2Gmm::GetAdaptationState(
         OnlineGmmAdaptationState *adaptation_state)
 {
     //    adaptation_state = &adaptation_state_;
-    feature_pipeline_->GetCmvnState(&adaptation_state->cmvn_state);
+    feature_pipeline->GetCmvnState(&adaptation_state->cmvn_state);
 }
 
 bool KdOnline2Gmm::RescoringIsNeeded()
@@ -304,7 +319,7 @@ bool KdOnline2Gmm::RescoringIsNeeded()
 
 KdOnline2Gmm::~KdOnline2Gmm()
 {
-    delete feature_pipeline_;
+    delete feature_pipeline;
 }
 
 void KdOnline2Gmm::GetLattice(bool rescore_if_needed,
@@ -313,12 +328,12 @@ void KdOnline2Gmm::GetLattice(bool rescore_if_needed,
 {
     Lattice lat;
     double lat_beam = d_config.faster_decoder_opts.lattice_beam;
-    decoder_->GetRawLattice(&lat, end_of_utterance);
+    o_decoder->GetRawLattice(&lat, end_of_utterance);
     if (rescore_if_needed && RescoringIsNeeded()) {
         DecodableDiagGmmScaledOnline decodable(models_->GetFinalModel(),
                                                models_->GetTransitionModel(),
                                                d_config.acoustic_scale,
-                                               feature_pipeline_);
+                                               feature_pipeline);
 
         if (!kaldi::RescoreLattice(&decodable, &lat))
             KALDI_WARN << "Error rescoring lattice";

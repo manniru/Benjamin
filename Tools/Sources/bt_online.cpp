@@ -11,23 +11,25 @@ BtOnline::BtOnline(QObject *parent) : QObject(parent)
     recorder->moveToThread(record_thread);
     record_thread->start();
 
-    encoder = new BtEncoder(encoder_thread, cyclic);
+    connect(this,     SIGNAL(startRecord()), recorder, SLOT(start()));
+//    connect(encoder,  SIGNAL(resultReady(QString)), this, SLOT(startDecode(QString)));
+
+#ifdef BT_ONLINE2
+    kaldi = new KdOnline2;
+
+    encoder = new BtEncoder(kaldi, cyclic, encoder_thread );
     encoder->moveToThread(encoder_thread);
     encoder_thread->start();
 
-//    connect(recorder, SIGNAL(resultReady(QString)), encoder, SLOT(startEncode(QString)));
-    connect(this,     SIGNAL(startRecord()), recorder, SLOT(start()));
-//    connect(encoder,  SIGNAL(resultReady(QString)), this, SLOT(startDecode(QString)));
-    emit startRecord();
-
-#ifndef BT_ONLINE2
+    connect(recorder, SIGNAL(resultReady(QString)), encoder, SLOT(startEncode(QString)));
+#else
     kaldi = new KdOnline(cyclic);
     kaldi->moveToThread(kaldi_thread);
     kaldi_thread->start();
     connect(this,  SIGNAL(startRecord()), kaldi, SLOT(init()));
 //    kaldi->startDecode();
-    emit startRecord();
 #endif
+    emit startRecord();
 }
 
 void BtOnline::startDecode(QString msg)
@@ -40,4 +42,9 @@ void BtOnline::startDecode(QString msg)
 
     system(cmd.toStdString().c_str()); //init decode dir
 //    qDebug() << "online" << msg;
+}
+
+void BtOnline::decodeOnline()
+{
+
 }
