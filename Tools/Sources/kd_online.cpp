@@ -169,7 +169,6 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     mbr_opts.decode_mbr = true;
 
     vector<int32> word_ids;
-
     vector<int32> *isymbols_out = NULL;
     LatticeArc::Weight *w_out = NULL;
 

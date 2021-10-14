@@ -42,8 +42,9 @@ void KdLatticeDecoder::InitDecoding()
     ProcessNonemitting(config_.beam);
 }
 
-// Returns true if any kind of traceback is available (not necessarily from
-// a final state). very rarely return false, this indicates error.
+// Decodes until there are no more frames left
+// Returns true if any kind of traceback is available.
+// rarely return false, this indicates error.
 bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
 {
     InitDecoding();
@@ -54,9 +55,9 @@ bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
 }
 
 /// If "use_final_probs" is true AND we reached the
-/// final-state of the graph then it will include those as final-probs, else
-/// it will treat all final-probs as one.  Note: this just calls GetRawLattice()
-/// and figures out the shortest path.
+/// final-state then it will include those as final-probs, else
+/// it will treat all final-probs as one.
+/// Returns true if result is nonempty.
 bool KdLatticeDecoder::GetBestPath(Lattice *olat, bool use_final_probs)
 {
     Lattice raw_lat;
@@ -556,26 +557,17 @@ void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken *, float> *final_
 /// object.  You can keep calling it each time more frames become available.
 /// If max_num_frames is specified, it specifies the maximum number of frames
 /// the function will decode before returning.
-void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable,
-                                       int32 max_num_frames)
+void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable)
 {
     KALDI_ASSERT(!frame_toks.empty() && !decoding_finalized_ &&
                  "You must call InitDecoding() before AdvanceDecoding");
-    int32 num_frames_ready = decodable->NumFramesReady();
-    // num_frames_ready must be >= num_frames_decoded, or else
-    // the number of frames ready must have decreased (which doesn't
-    // make sense) or the decodable object changed between calls
-    // (which isn't allowed).
-    KALDI_ASSERT(num_frames_ready >= NumFramesDecoded());
-    int32 target_frames_decoded = num_frames_ready;
-    if (max_num_frames >= 0)
+    int max_frame = decodable->NumFramesReady();
+
+    KALDI_ASSERT( max_frame>=NumFramesDecoded() );
+
+    while( NumFramesDecoded()<max_frame )
     {
-        target_frames_decoded = std::min(target_frames_decoded,
-                                         NumFramesDecoded() + max_num_frames);
-    }
-    while (NumFramesDecoded() < target_frames_decoded)
-    {
-        if (NumFramesDecoded() % config_.prune_interval == 0)
+        if( (NumFramesDecoded()%config_.prune_interval)==0 )
         {
             PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
@@ -674,13 +666,13 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
     }
 }
 
-//return cutoff
+/// Processes emitting arcs for one frame.  Propagates from prev_toks_ to
+/// cur_toks_.  Returns the cost cutoff
 float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 {
     KALDI_ASSERT(frame_toks.size() > 0);
     int32 frame = frame_toks.size() - 1; // frame is the frame-index
     frame_toks.resize(frame_toks.size() + 1);
-    decoded_frame_i++;
 
     Elem *final_toks = toks_.Clear();
     Elem *best_elem = NULL;
@@ -768,9 +760,12 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
         e_tail = e->tail;
         toks_.Delete(e); // delete Elem
     }
+
+    decoded_frame_i++;
     return next_cutoff;
 }
 
+/// Processes nonemitting (epsilon) arcs for one frame.
 void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 {
     KALDI_ASSERT(!frame_toks.empty());
@@ -1005,5 +1000,5 @@ bool KdLatticeDecoder::ReachedFinal()
 // Returns the number of frames decoded so far.
 int32 KdLatticeDecoder::NumFramesDecoded()
 {
-    return decoded_frame_i - 1;
+    return decoded_frame_i; // - 1;
 }

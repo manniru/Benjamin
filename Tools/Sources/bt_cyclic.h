@@ -14,7 +14,7 @@ class BtCyclic : public QObject
 public:
     explicit BtCyclic(int size, QObject *parent = nullptr);
 
-    int  raad(int16_t *data, int size);
+    int  read(int16_t *data, int size);
     void write(int16_t *data, int size);
     void constWrite(int16_t data, int size);
     void rewind(int count);

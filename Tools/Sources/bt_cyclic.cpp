@@ -16,7 +16,7 @@ BtCyclic::BtCyclic(int size, QObject *parent) : QObject(parent)
 }
 
 // return negative on erorr
-int BtCyclic::raad(int16_t *data, int size)
+int BtCyclic::read(int16_t *data, int size)
 {
     int num = 0;
 

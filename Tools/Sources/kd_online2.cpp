@@ -10,46 +10,48 @@
 #include "online2/online-endpoint.h"
 #include "fstext/fstext-lib.h"
 #include "lat/lattice-functions.h"
+#include "lat/sausages.h" //MBR
 
 using namespace kaldi;
 using namespace fst;
 
 void KdOnline2::print(CompactLattice *clat)
 {
-    if (clat->NumStates() == 0)
-    {
-        KALDI_WARN << "Empty lattice.";
-        return;
-    }
-    CompactLattice best_path_clat;
-    CompactLatticeShortestPath(*clat, &best_path_clat);
+    MinimumBayesRiskOptions mbr_opts;
+    MinimumBayesRisk *mbr = NULL;
+    mbr_opts.decode_mbr = true;
 
-    Lattice best_path_lat;
-    ConvertLattice(best_path_clat, &best_path_lat);
+    mbr = new MinimumBayesRisk(*clat, mbr_opts);
+    vector<float> conf = mbr->GetOneBestConfidences();
+    const vector<int32> &words = mbr->GetOneBest();
+    const vector<pair<float, float>> &times = mbr->GetOneBestTimes();
 
-    double likelihood;
-    LatticeWeight weight;
-    int32 num_frames;
-    std::vector<int32> alignment;
-    std::vector<int32> words;
-    GetLinearSymbolSequence(best_path_lat, &alignment, &words, &weight);
-    num_frames = alignment.size();
-    likelihood = -(weight.Value1() + weight.Value2());
-    qDebug() << "Likelihood per frame for utterance " << " is "
-                << (likelihood ) << " over " << num_frames
-                << " frames.";
 
     QString message;
-    for( size_t i = 0; i<words.size() ; i++ )
+    for( int i = 0; i<words.size() ; i++ )
     {
+        float time_c = (times[i].first+times[i].second)/2/100;
         message += lexicon[words[i]];
-        message +=  ' ';
+        message +=  "[";
+        message += QString::number(conf[i]);
+        message +=  ", ";
+        message += QString::number(time_c,'g', 2);
+        message +=  "] ";
     }
+
+    if( words.size()>10 )
+    {
+        CompactLatticeWriter clat_writer("ark:b.ark");
+        clat_writer.Write("f", *clat);
+        exit(0);
+    }
+
     qDebug() << message;
 }
 
 void KdOnline2::processData(float *wav_data, int len)
 {
+    clock_t start = clock();
     g_decoder->init();
     BaseFloat chunk_length_secs = 0.05;
 
@@ -77,7 +79,7 @@ void KdOnline2::processData(float *wav_data, int len)
         }
 
         SubVector<float> wave_part(data, samp_offset, num_samp);
-        g_decoder->FeaturePipeline().AcceptWaveform(samp_freq, wave_part);
+        g_decoder->feature_pipeline->AcceptWaveform(samp_freq, wave_part);
 
         samp_offset += num_samp;
 //        if (samp_offset == data.Dim())
@@ -90,16 +92,21 @@ void KdOnline2::processData(float *wav_data, int len)
     }
     g_decoder->FinalizeDecoding();
 
-    bool end_of_utterance = true;
-    bool rescore_if_needed = true;
     CompactLattice clat;
-    g_decoder->GetLattice(rescore_if_needed, end_of_utterance, &clat);
+    g_decoder->GetLattice(true, true, &clat);
 
     print(&clat);
 
     // In an application you might avoid updating the adaptation state if
     // you felt the utterance had low confidence.  See lat/confidence.h
 //    g_decoder->GetAdaptationState(&adaptation_state);
+}
+
+void KdOnline2::printTime(clock_t start)
+{
+    clock_t end = clock();
+    double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    qDebug() << cpu_time_used;
 }
 
 KdOnline2::KdOnline2(QObject *parent): QObject(parent)

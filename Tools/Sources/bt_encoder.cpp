@@ -76,7 +76,7 @@ void BtEncoder::startEncode(QString message)
     int sample_count = BT_REC_SIZE*BT_REC_RATE;
     cyclic->rewind((BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
     int16_t raw[BT_REC_SIZE*BT_REC_RATE];
-    cyclic->raad(raw, sample_count);
+    cyclic->read(raw, sample_count);
 
     for( int i=0 ; i<sample_count ; i++ )
     {
@@ -124,7 +124,7 @@ bool BtEncoder::pushChunk(int sample_count)
     gst_buffer_map (en_buffer, &map, GST_MAP_WRITE);
     int16_t *raw = (int16_t *)map.data;
 
-    cyclic->raad(raw, sample_count);
+    cyclic->read(raw, sample_count);
 
     gst_buffer_unmap (en_buffer, &map);
     sample_index += sample_count;

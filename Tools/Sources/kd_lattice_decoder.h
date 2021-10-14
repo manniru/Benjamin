@@ -40,27 +40,21 @@ public:
     using Weight = typename KdArc::Weight;
 
     kaldi::LatticeFasterDecoderConfig config_;
-
     KdLatticeDecoder(KdFST &fst, kaldi::LatticeFasterDecoderConfig &config);
-
     ~KdLatticeDecoder();
 
-    /// Decodes until there are no more frames left in the "decodable" object
-    /// Returns true if any kind of traceback is available
-    bool Decode(kaldi::DecodableInterface *decodable);
-    bool ReachedFinal();
-
-    /// Returns true if result is nonempty.
-    bool GetBestPath  (kaldi::Lattice *ofst, bool use_final_probs = true);
-    bool GetRawLattice(kaldi::Lattice *ofst, bool use_final_probs = true);
-
     void InitDecoding();
-    void AdvanceDecoding(kaldi::DecodableInterface *decodable,
-                         int32 max_num_frames = -1);
+    bool Decode(kaldi::DecodableInterface *decodable);
+    void AdvanceDecoding(kaldi::DecodableInterface *decodable);
 
     void  FinalizeDecoding();
     float FinalRelativeCost();
+    bool  ReachedFinal();
+
+    bool GetBestPath  (kaldi::Lattice *ofst, bool use_final_probs = true);
+    bool GetRawLattice(kaldi::Lattice *ofst, bool use_final_probs = true);
     int32 NumFramesDecoded();
+
 
 protected:
     // protected instead of private, so classes which inherits from this,
@@ -81,27 +75,13 @@ protected:
     void PruneTokensForFrame(int32 frame);
     void PruneActiveTokens(float delta);
 
-    /// Gets the weight cutoff.  Also counts the active tokens.
     float GetCutoff(Elem *list_head, size_t *tok_count,
                     float *adaptive_beam, Elem **best_elem);
 
-    /// Processes emitting arcs for one frame.  Propagates from prev_toks_ to
-    /// cur_toks_.  Returns the cost cutoff for subsequent ProcessNonemitting() to
-    /// use.
     float ProcessEmitting(kaldi::DecodableInterface *decodable);
-
-    /// Processes nonemitting (epsilon) arcs for one frame.  Called after
-    /// ProcessEmitting() on each frame.  The cost cutoff is computed by the
-    /// preceding ProcessEmitting().
     void ProcessNonemitting(float cost_cutoff);
 
-    // HashList defined in ../util/hash-list.h.  It actually allows us to maintain
-    // more than one list (e.g. for current and previous frames), but only one of
-    // them at a time can be indexed by KdStateId.  It is indexed by frame-index
-    // plus one, where the frame-index is zero-based, as used in decodable object.
-    // That is, the emitting probs of frame t are accounted for in tokens at
-    // toks_[t+1].  The zeroth frame is for nonemitting transition at the start of
-    // the graph.
+    // HashList is indexed by frame-index plus one.
     kaldi::HashList<KdStateId, KdToken*> toks_;
 
     std::vector<KdTokenList> frame_toks; // Lists of tokens, indexed by
@@ -120,15 +100,12 @@ protected:
     int32 num_toks_; // current total #toks allocated...
     bool warned_;
 
-    /// decoding_finalized_ is true if someone called FinalizeDecoding().
-    /// calling this is optional.  If true, it's forbidden to decode more.
-    bool decoding_finalized_;
+    bool decoding_finalized_; // true if someone called FinalizeDecoding().
 
-    /// see ComputeFinalCosts().
     unordered_map<KdToken*, float> final_costs_;
     float final_relative_cost_;
     float final_best_cost_;
-    long  decoded_frame_i = 1;
+    long  decoded_frame_i = 0; //changed from 1 to 0 for online2 featurepipeline
 
     void DeleteElems(Elem *list);
 

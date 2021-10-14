@@ -6,7 +6,7 @@ RESULT_PATH=$2
 
 MODE="tri1"
 #WORD_TABLE="exp/$MODE/graph/words.txt"
-#WORD_TABLE="../../exp/$MODE/graph/words.txt"
+WORD_TABLE="../../exp/$MODE/graph/words.txt"
 
 VIS_ARK="$RESULT_PATH/vis.ark"
 VIS_FST="$RESULT_PATH/vis.fst"
