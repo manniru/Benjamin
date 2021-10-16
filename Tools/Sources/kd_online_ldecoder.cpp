@@ -137,6 +137,8 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
     return true;
 }
 
+// Makes graph, by tracing back from the best currently active token
+// to the last immortal token.
 double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 {
     MakeLattice(out_fst);
@@ -247,6 +249,7 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 
 }
 
+// Returns "true" if the best current hypothesis ends with long enough silence
 bool KdOnlineLDecoder::HaveSilence()
 {
     Lattice trace;

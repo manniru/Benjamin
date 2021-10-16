@@ -11,7 +11,6 @@
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
 
-
 struct KdOnlineDecoderOpts: public kaldi::FasterDecoderOptions
 {
     float rt_min = 0.7;          // minimum decoding runtime factor

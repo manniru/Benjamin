@@ -18,10 +18,7 @@ KdLatticeDecoder::~KdLatticeDecoder()
     ClearActiveTokens();
 }
 
-/// InitDecoding initializes the decoding, and should only be used if you
-/// intend to call AdvanceDecoding().  If you call Decode(), you don't need to
-/// call this.  You can also call InitDecoding if you have already decoded an
-/// utterance and want to start with a new utterance.
+// used before AdvanceDecoding().  Decode(), don't need this.
 void KdLatticeDecoder::InitDecoding()
 {
     // clean up from last time:
@@ -44,7 +41,7 @@ void KdLatticeDecoder::InitDecoding()
 
 // Decodes until there are no more frames left
 // Returns true if any kind of traceback is available.
-// rarely return false, this indicates error.
+// return false indicates error.
 bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
 {
     InitDecoding();
@@ -403,14 +400,16 @@ void KdLatticeDecoder::PruneForwardLinksFinal()
 /// too positive (e.g. < 5 is my first guess, but this is not tested) you can
 /// take it as a good indication that we reached the final-state with
 /// reasonable likelihood.
-float KdLatticeDecoder::FinalRelativeCost() {
-    if (!decoding_finalized_) {
+float KdLatticeDecoder::FinalRelativeCost()
+{
+    if( !decoding_finalized_ )
+    {
         float relative_cost;
         ComputeFinalCosts(NULL, &relative_cost, NULL);
         return relative_cost;
-    } else {
-        // we're not allowed to call that function if FinalizeDecoding() has
-        // been called; return a cached value.
+    }
+    else
+    {   // not allowed if FinalizeDecoding() has been called.
         return final_relative_cost_;
     }
 }
@@ -553,10 +552,7 @@ void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken *, float> *final_
     }
 }
 
-/// This will decode until there are no more frames ready in the decodable
-/// object.  You can keep calling it each time more frames become available.
-/// If max_num_frames is specified, it specifies the maximum number of frames
-/// the function will decode before returning.
+// decode until there are no more frames
 void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable)
 {
     KALDI_ASSERT(!frame_toks.empty() && !decoding_finalized_ &&
@@ -576,8 +572,7 @@ void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable)
     }
 }
 
-/// optionally called after AdvanceDecoding(),
-/// It does an extra pruning that will help to prune the lattices output
+// optionally called, does extra pruning
 void KdLatticeDecoder::FinalizeDecoding()
 {
     int32 final_frame_plus_one = frame_toks.size()-1;
@@ -595,7 +590,7 @@ void KdLatticeDecoder::FinalizeDecoding()
                   << " to " << num_toks_;
 }
 
-/// Gets the weight cutoff.  Also counts the active tokens.
+// Gets the weight cutoff.  Also counts the active tokens.
 float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
                                   float *adaptive_beam, Elem **best_elem)
 {
@@ -603,50 +598,76 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
     // positive == high cost == bad.
     size_t count = 0;
     if (config_.max_active == std::numeric_limits<int32>::max() &&
-            config_.min_active == 0) {
-        for (Elem *e = list_head; e != NULL; e = e->tail, count++) {
+            config_.min_active == 0)
+    {
+        for (Elem *e = list_head; e != NULL; e = e->tail, count++)
+        {
             float w = static_cast<float>(e->val->tot_cost);
-            if (w < best_weight) {
+            if (w < best_weight)
+            {
                 best_weight = w;
                 if (best_elem) *best_elem = e;
             }
         }
-        if (tok_count != NULL) *tok_count = count;
-        if (adaptive_beam != NULL) *adaptive_beam = config_.beam;
+        if (tok_count != NULL)
+        {
+            *tok_count = count;
+        }
+        if (adaptive_beam != NULL)
+        {
+            *adaptive_beam = config_.beam;
+        }
         return best_weight + config_.beam;
-    } else {
+    }
+    else
+    {
         tmp_array_.clear();
-        for (Elem *e = list_head; e != NULL; e = e->tail, count++) {
+        for (Elem *e = list_head; e != NULL; e = e->tail, count++)
+        {
             float w = e->val->tot_cost;
             tmp_array_.push_back(w);
-            if (w < best_weight) {
+            if (w < best_weight)
+            {
                 best_weight = w;
-                if (best_elem) *best_elem = e;
+                if (best_elem)
+                {
+                    *best_elem = e;
+                }
             }
         }
         if (tok_count != NULL) *tok_count = count;
 
-        float beam_cutoff = best_weight + config_.beam,
-                min_active_cutoff = std::numeric_limits<float>::infinity(),
-                max_active_cutoff = std::numeric_limits<float>::infinity();
+        float beam_cutoff = best_weight + config_.beam;
+        float min_active_cutoff = std::numeric_limits<float>::infinity();
+        float max_active_cutoff = std::numeric_limits<float>::infinity();
 
         KALDI_VLOG(6) << "Number of tokens active on frame " << NumFramesDecoded()
                       << " is " << tmp_array_.size();
 
-        if (tmp_array_.size() > static_cast<size_t>(config_.max_active)) {
+        if (tmp_array_.size() > static_cast<size_t>(config_.max_active))
+        {
             std::nth_element(tmp_array_.begin(),
                              tmp_array_.begin() + config_.max_active,
                              tmp_array_.end());
             max_active_cutoff = tmp_array_[config_.max_active];
         }
-        if (max_active_cutoff < beam_cutoff) { // max_active is tighter than beam.
+        if (max_active_cutoff < beam_cutoff)
+        {
+            // max_active is tighter than beam.
             if (adaptive_beam)
+            {
                 *adaptive_beam = max_active_cutoff - best_weight + config_.beam_delta;
+            }
             return max_active_cutoff;
         }
-        if (tmp_array_.size() > static_cast<size_t>(config_.min_active)) {
-            if (config_.min_active == 0) min_active_cutoff = best_weight;
-            else {
+        if (tmp_array_.size() > static_cast<size_t>(config_.min_active))
+        {
+            if (config_.min_active == 0)
+            {
+                min_active_cutoff = best_weight;
+            }
+            else
+            {
                 std::nth_element(tmp_array_.begin(),
                                  tmp_array_.begin() + config_.min_active,
                                  tmp_array_.size() > static_cast<size_t>(config_.max_active) ?
@@ -655,7 +676,8 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
                 min_active_cutoff = tmp_array_[config_.min_active];
             }
         }
-        if (min_active_cutoff > beam_cutoff) { // min_active is looser than beam.
+        if (min_active_cutoff > beam_cutoff)
+        { // min_active is looser than beam.
             if (adaptive_beam)
                 *adaptive_beam = min_active_cutoff - best_weight + config_.beam_delta;
             return min_active_cutoff;
@@ -697,12 +719,16 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
         KdStateId state = best_elem->key;
         KdToken *tok = best_elem->val;
         cost_offset = - tok->tot_cost;
+        float arc_cost;
+        int   arc_count = 0;
         for( fst::ArcIterator<KdFST> aiter(*fst_, state) ; !aiter.Done() ; aiter.Next() )
         {
+            arc_count++;
+
             const KdArc &arc = aiter.Value();
             if( arc.ilabel!=0 )
             {  // propagate..
-                float arc_cost = -decodable->LogLikelihood(decoded_frame_i, arc.ilabel);
+                arc_cost = -decodable->LogLikelihood(decoded_frame_i, arc.ilabel);
                 float new_weight = arc.weight.Value() + (cost_offset + tok->tot_cost) + arc_cost;
                 if (new_weight + adaptive_beam < next_cutoff)
                 {
@@ -710,6 +736,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
                 }
             }
         }
+        qDebug() << decoded_frame_i << arc_cost << arc_count;
     }
 
     // Store the offset on the acoustic likelihoods that we're applying.
@@ -734,6 +761,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
                 if (arc.ilabel != 0)
                 {  // propagate..
                     float new_weight = decodable->LogLikelihood(decoded_frame_i, arc.ilabel);
+//                    qDebug() << "for" << new_weight;
                     float ac_cost = cost_offset - new_weight;
                     float graph_cost = arc.weight.Value();
                     float cur_cost = tok->tot_cost;
@@ -762,10 +790,11 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
     }
 
     decoded_frame_i++;
+    qDebug() << "next_cutoff" << next_cutoff;
     return next_cutoff;
 }
 
-/// Processes nonemitting (epsilon) arcs for one frame.
+// Processes nonemitting (epsilon) arcs for one frame.
 void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 {
     KALDI_ASSERT(!frame_toks.empty());

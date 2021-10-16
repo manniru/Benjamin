@@ -1,14 +1,19 @@
 #include "bt_encoder.h"
 #include <QDebug>
 
+#ifdef BT_ONLINE2
 BtEncoder::BtEncoder(KdOnline2 *kaldi, BtCyclic *buffer, QThread *thread, QObject *parent) : QObject(parent)
+#else
+BtEncoder::BtEncoder(BtCyclic *buffer, QThread *thread, QObject *parent) : QObject(parent)
+#endif
 {
     record_timer = new QTimer;
     record_timer->moveToThread(thread);
     record_timer->setSingleShot(true);
     cyclic = buffer;
+#ifdef BT_ONLINE2
     kd = kaldi;
-
+#endif
 
     connect(record_timer, SIGNAL(timeout()), this, SLOT(recordTimeout()));
 

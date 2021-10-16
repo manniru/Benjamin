@@ -30,6 +30,6 @@
 
 #define BT_DOUBLE_BUF     // if undefined encoded file not replaced
 #define BT_ONLINE2        // use online2 decoding alghorithm
-#define BT_LAT_ONLINE
+//#define BT_LAT_ONLINE
 
 #endif // BT_CONFIG_H

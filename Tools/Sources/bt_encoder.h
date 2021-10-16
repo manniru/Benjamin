@@ -17,7 +17,11 @@ class BtEncoder : public QObject
 {
     Q_OBJECT
 public:
+#ifdef BT_ONLINE2
     explicit BtEncoder(KdOnline2 *kaldi, BtCyclic *buffer, QThread *thread, QObject *parent = nullptr);
+#else
+    explicit BtEncoder(BtCyclic *buffer, QThread *thread, QObject *parent = nullptr);
+#endif
 
     ~BtEncoder();
 public slots:
@@ -43,7 +47,9 @@ private:
     long wav_num = 0;
     long sample_index;   /* Number of samples generated so far (for timestamp generation) */
 
+#ifdef BT_ONLINE2
     KdOnline2 *kd;
+#endif
     float raw_f[BT_REC_SIZE*BT_REC_RATE];
 };
 
