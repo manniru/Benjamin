@@ -736,7 +736,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
                 }
             }
         }
-        qDebug() << decoded_frame_i << arc_cost << arc_count;
+//        qDebug() << "ProcessEmitting" << decoded_frame_i << arc_cost << arc_count;
     }
 
     // Store the offset on the acoustic likelihoods that we're applying.
@@ -790,7 +790,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
     }
 
     decoded_frame_i++;
-    qDebug() << "next_cutoff" << next_cutoff;
+//    qDebug() << "next_cutoff" << next_cutoff;
     return next_cutoff;
 }
 

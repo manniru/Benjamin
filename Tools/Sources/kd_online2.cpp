@@ -46,7 +46,7 @@ void KdOnline2::print(CompactLattice *clat)
         exit(0);
     }
 
-    qDebug() << message;
+    qDebug() << "print" << message;
 }
 
 void KdOnline2::processData(float *wav_data, int len)
@@ -106,7 +106,7 @@ void KdOnline2::printTime(clock_t start)
 {
     clock_t end = clock();
     double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    qDebug() << cpu_time_used;
+    qDebug() << "cpu time" << cpu_time_used;
 }
 
 KdOnline2::KdOnline2(QObject *parent): QObject(parent)
