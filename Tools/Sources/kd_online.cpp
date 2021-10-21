@@ -117,8 +117,11 @@ void KdOnline::startDecode()
 //            qDebug() << "TokCound1" << tok_count;
             processLat(&out_fst, start);
 
-            system("dbus-send --session --dest=com.binaee.rebound / "
-                               "com.binaee.rebound.exec  string:\"\"");
+            if( BT_IMMDT_EXEC )
+            {
+                system("dbus-send --session --dest=com.binaee.rebound / "
+                       "com.binaee.rebound.exec  string:\"\"");
+            }
         }
         else
         {
@@ -127,13 +130,14 @@ void KdOnline::startDecode()
             {
                 processLat(&out_fst, start);
             }
-            else
+            else if( BT_IMMDT_EXEC )
             {
                 system("dbus-send --session --dest=com.binaee.rebound / "
                                "com.binaee.rebound.exec  string:\"\"");
             }
         }
     }
+    qDebug() << "out while";
 }
 
 void KdOnline::printTime(clock_t start)

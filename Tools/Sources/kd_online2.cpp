@@ -26,7 +26,6 @@ void KdOnline2::print(CompactLattice *clat)
     const vector<int32> &words = mbr->GetOneBest();
     const vector<pair<float, float>> &times = mbr->GetOneBestTimes();
 
-
     QString message;
     for( int i = 0; i<words.size() ; i++ )
     {
@@ -53,6 +52,7 @@ void KdOnline2::processData(float *wav_data, int len)
 {
     clock_t start = clock();
     g_decoder->init();
+    printTime(start);
     BaseFloat chunk_length_secs = 0.05;
 
     // get the data for channel zero (if the signal is not mono, we only
@@ -106,7 +106,7 @@ void KdOnline2::printTime(clock_t start)
 {
     clock_t end = clock();
     double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    qDebug() << "cpu time" << cpu_time_used;
+    qDebug() << "cpu time" << qRound(cpu_time_used*1000) << "ms";
 }
 
 KdOnline2::KdOnline2(QObject *parent): QObject(parent)
