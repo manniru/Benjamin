@@ -10,6 +10,7 @@ BtOnlineSource::~BtOnlineSource()
     ;
 }
 
+// cy_buf will be filled from the other thread using GStreamer
 bool BtOnlineSource::Read(kaldi::Vector<float> *data)
 {
     int req = data->Dim();  // number of samples to request
@@ -17,7 +18,7 @@ bool BtOnlineSource::Read(kaldi::Vector<float> *data)
 
     while( true )
     {
-        Pa_Sleep(2);
+        QThread::msleep(2);
         if( req<cy_buf->getSize() )
         {
             break;

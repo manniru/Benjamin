@@ -28,7 +28,7 @@ enum KdDecodeState
 {
     KD_EndFeats = 1,// No more scores are available from the Decodable
     KD_EndUtt   = 2,// End of utterance, caused by e.g. a sufficiently long silence
-    KD_EndBatch = 4 // End of batch - end of utterance not reached yet
+    KD_EndBatch = 4 // End of batch - end of samples not the utterance
 };
 
 class KdOnlineDecoder : public kaldi::FasterDecoder
@@ -36,9 +36,9 @@ class KdOnlineDecoder : public kaldi::FasterDecoder
 public:
     // "sil_phones" - the IDs of all silence phones
     KdOnlineDecoder(const fst::Fst<fst::StdArc> &fst,
-                     const KdOnlineDecoderOpts &opts,
-                     const std::vector<int32> &sil_phones,
-                     const kaldi::TransitionModel &trans_model);
+                    const KdOnlineDecoderOpts &opts,
+                    const std::vector<int32> &sil_phones,
+                    const kaldi::TransitionModel &trans_model);
 
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);

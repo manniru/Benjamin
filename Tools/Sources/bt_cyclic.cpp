@@ -97,6 +97,10 @@ int BtCyclic::getSize()
     {
         return write_p-read_p;
     }
+    else if( read_p==write_p )
+    {
+        return 0;
+    }
     else
     {
         return (buff_size-read_p) + write_p;

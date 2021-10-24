@@ -2,9 +2,9 @@
 #define BT_ONLINE_SOURCE_H
 
 #include <QObject>
-#include <thread>         // std::thread
 #include <QTimer>
 #include <QDebug>
+#include <QThread>
 
 #include "online/online-audio-source.h"
 #include "matrix/kaldi-vector.h"

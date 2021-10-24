@@ -65,7 +65,7 @@ void KdOnline::init()
     int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 5;
 
     decoder_opts.max_active = 7000;
-    decoder_opts.beam = 15.0;
+    decoder_opts.beam = 13.0;
 #ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
 #endif
@@ -90,7 +90,7 @@ void KdOnline::init()
 
 void KdOnline::startDecode()
 {
-    BaseFloat acoustic_scale = 0.08;
+    BaseFloat acoustic_scale = 0.05;
     // feature_reading_opts contains number of retries, batch size.
     OnlineFeatureMatrixOptions feature_reading_opts;
     OnlineFeatureMatrix *feature_matrix;
@@ -117,7 +117,7 @@ void KdOnline::startDecode()
 //            qDebug() << "TokCound1" << tok_count;
             processLat(&out_fst, start);
 
-            if( BT_IMMDT_EXEC )
+            if( 1 )
             {
                 system("dbus-send --session --dest=com.binaee.rebound / "
                        "com.binaee.rebound.exec  string:\"\"");
@@ -137,7 +137,6 @@ void KdOnline::startDecode()
             }
         }
     }
-    qDebug() << "out while";
 }
 
 void KdOnline::printTime(clock_t start)
@@ -168,9 +167,9 @@ void KdOnline::execute(std::vector<int32_t> word)
 
 void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
 {
-    MinimumBayesRiskOptions mbr_opts;
-    MinimumBayesRisk *mbr = NULL;
-    mbr_opts.decode_mbr = true;
+//    MinimumBayesRiskOptions mbr_opts;
+//    MinimumBayesRisk *mbr = NULL;
+//    mbr_opts.decode_mbr = true;
 
     vector<int32> word_ids;
     vector<int32> *isymbols_out = NULL;

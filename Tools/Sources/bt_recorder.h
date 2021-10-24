@@ -30,14 +30,15 @@ signals:
 
 
 private:
+    void createPipeline();
+
     QString wav_filename;
 
     GstElement *pipeline;
     GstElement *source, *filter, *sink;
-    GstBus *bus;
+    GstBus *error_bus;
     GstCaps *caps;
     GstMessage *msg;
-    GstStateChangeReturn ret;
 
     BtCyclic *cy_buffer;
     long sample_count;

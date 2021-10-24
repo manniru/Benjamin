@@ -10,25 +10,7 @@ BtRecoder::BtRecoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
     gst_init(&argc, &argv);
     sample_count = 0;
     cy_buffer = buffer;
-
-    /* Create the elements */
-    source = gst_element_factory_make("pulsesrc"  , "source");
-    filter = gst_element_factory_make("capsfilter", "filter");
-    sink   = gst_element_factory_make("appsink"   , "sink");
-
-    /* Create the empty pipeline */
-    pipeline = gst_pipeline_new ("test-pipeline");
-
-    if( !pipeline || !source || !sink )
-    {
-        g_printerr ("Not all elements could be created.\n");
-    }
-
-    /* Build the pipeline */
-    gst_bin_add_many (GST_BIN(pipeline), source, filter, sink, NULL);
-
-    gst_element_link(source, filter);
-    gst_element_link(filter, sink);
+    createPipeline();
 
     caps = gst_caps_new_simple ("audio/x-raw",
                                 "format" , G_TYPE_STRING, "S16LE",
@@ -36,30 +18,44 @@ BtRecoder::BtRecoder(QThread *thread, BtCyclic *buffer, QObject *parent) : QObje
                                 "layout" , G_TYPE_STRING, "interleaved",
                                 "channels",G_TYPE_INT,    1, NULL);
 
-    g_object_set (sink, "emit-signals", TRUE, "caps", caps, NULL);
+    g_object_set(sink, "emit-signals", TRUE, "caps", caps, NULL);
     g_signal_connect (sink, "new-sample", G_CALLBACK (new_sample), this);
 
-    g_object_set (source, "buffer-time", 10000, NULL);
+    g_object_set(source, "buffer-time", 10000, NULL);
 
     /* we set the input filename to the source element */
-    g_object_set(G_OBJECT(filter), "caps", caps, NULL);
+//    g_object_set(filter, "caps", caps, NULL);
 }
 
-BtRecoder::~BtRecoder()
+void BtRecoder::createPipeline()
 {
-    if (msg != NULL)
+    /* Create the elements */
+    source = gst_element_factory_make("alsasrc"  , "source");
+//    filter = gst_element_factory_make("capsfilter", "filter");
+    sink   = gst_element_factory_make("appsink"   , "sink");
+
+    /* Create the empty pipeline */
+    pipeline = gst_pipeline_new ("record-pipeline");
+
+    if( (!pipeline) || (!source) || (!sink) /*|| (!filter)*/ )
     {
-      gst_message_unref (msg);
+        g_printerr ("Not all elements could be created.\n");
     }
 
-    gst_object_unref(bus);
-    gst_element_set_state(pipeline, GST_STATE_NULL);
-    gst_object_unref(pipeline);
+    /* Build the pipeline */
+//    gst_bin_add_many (GST_BIN(pipeline), source, filter, sink, NULL);
+    gst_bin_add_many (GST_BIN(pipeline), source, sink, NULL);
+
+//    gst_element_link(source, filter);
+//    gst_element_link(filter, sink);
+
+    gst_element_link(source, sink);
 }
 
 void BtRecoder::start()
 {
     /* Start playing */
+    GstStateChangeReturn ret;
     ret = gst_element_set_state (pipeline, GST_STATE_PLAYING);
     if( ret==GST_STATE_CHANGE_FAILURE )
     {
@@ -67,9 +63,11 @@ void BtRecoder::start()
         gst_object_unref(pipeline);
         return;
     }
-    char *dev_name;
-    g_object_get(source,"client-name", &dev_name, NULL);
-    printf("current-device=%s\n", dev_name);
+//    char *dev_name;
+//    g_object_get(source,"client-name", &dev_name, NULL);
+//    printf("current-device=%s\n", dev_name);
+
+    error_bus = gst_element_get_bus(pipeline);
 }
 
 void BtRecoder::bufferReady(QString message)
@@ -83,7 +81,7 @@ long BtRecoder::addSample(int16_t *data, int count)
     cy_buffer->write(data, count);
     sample_count += count;
 
-//    qDebug() << "done" << count;
+//    qDebug() << "done" << count << cy_buffer->getSize();
 
     return sample_count;
 }
@@ -119,7 +117,7 @@ GstFlowReturn new_sample(GstElement *sink, BtRecoder *recorder)
             double max_amp = 20*qLn(recorder->sum_avg/sample_index)/qLn(10);
             message += QString::number(max_amp);
 
-//            qDebug() << "recorder" << message << sample_index;;
+            qDebug() << "recorder" << message << sample_index;
             recorder->bufferReady(message);
             recorder->sum_avg = 0;
         }
@@ -127,5 +125,18 @@ GstFlowReturn new_sample(GstElement *sink, BtRecoder *recorder)
         return GST_FLOW_OK;
     }
 
+    qDebug() << "We Got GST_FLOW_ERROR";
     return GST_FLOW_ERROR;
+}
+
+BtRecoder::~BtRecoder()
+{
+    if (msg != NULL)
+    {
+        gst_message_unref(msg);
+    }
+
+    gst_object_unref(error_bus);
+    gst_element_set_state(pipeline, GST_STATE_NULL);
+    gst_object_unref(pipeline);
 }

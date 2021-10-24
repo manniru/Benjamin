@@ -217,7 +217,7 @@ double KdOnlineDecoder::getConf(Token *best_tok)
         {
             if( token->arc_.ilabel&&token->arc_.olabel ) //if both are not zero
             {
-                qDebug() << "cost" << i << token->cost_ << token->arc_.ilabel << token->arc_.olabel ;
+//                qDebug() << "cost" << i << token->cost_ << token->arc_.ilabel << token->arc_.olabel ;
                 i++;
             }
         }
@@ -257,7 +257,7 @@ double KdOnlineDecoder::updateBeam(double tstart)
     float factor = elapsed / (opts_.rt_max * opts_.update_interval * 10);
     float min_factor = (opts_.rt_min / opts_.rt_max);
 
-    if (factor > 1 || factor < min_factor)
+    if( factor>1 || factor<min_factor )
     {
         float update_factor = 0;
 
@@ -307,7 +307,7 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
             break;
         }
 
-        if (tok->arc_.ilabel != 0) // count only the non-epsilon arcs
+        if( tok->arc_.ilabel!=0 ) // count only the non-epsilon arcs
         {
             nframes--;
         }
@@ -330,7 +330,7 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
         tok = tok->prev_;
     }
 
-    if(arcs_reverse.back().nextstate == fst_.Start())
+    if( arcs_reverse.back().nextstate==fst_.Start() )
     {
         arcs_reverse.pop_back();  // remove first "fake" token
     }
@@ -345,11 +345,13 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
         out_fst->AddArc(cur_state, arc);
         cur_state = arc.nextstate;
     }
-    if (is_final)
+    if( is_final )
     {
         Weight final_weight = fst_.Final(best_tok->arc_.nextstate);
         out_fst->SetFinal(cur_state, LatticeWeight(final_weight.Value(), 0.0));
-    } else {
+    }
+    else
+    {
         out_fst->SetFinal(cur_state, LatticeWeight::One());
     }
     RemoveEpsLocal(out_fst);
