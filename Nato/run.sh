@@ -2,6 +2,7 @@
 
 function update_data()
 {
+	mkdir -p "${DATA_DIR}/$1"
 	$ST/w_u2s.sh "$AUDIO_DIR/$1" "${DATA_DIR}/$1"
 	echo "$1 wav.scp and utt2spk generated"
 	$ST/spk2g.sh "$AUDIO_DIR/$1" "${DATA_DIR}/$1/spk2gender"

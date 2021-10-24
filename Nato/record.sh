@@ -13,6 +13,8 @@ SPK2UTT="$AUDIO_PATH/spk2utt"
 DBUS_PATH="--dest=com.binaee.batool / com.binaee.batool"
 
 source path.sh
+mkdir -p "$WAV_DIR"
+mkdir -p "$RESULT_PATH"
 
 $SD/clean.sh "$AUDIO_PATH" "$WAV_DIR" "$DECODE_PATH"
 
@@ -32,7 +34,7 @@ while true; do
 	$SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH" show_result
 
 	#$SD/create_conf.sh decode 0.05 0.027
-	echo "$WORDS"
+	#echo "$WORDS"
 
 	if [[ "$#" -gt "0" ]];then 
 		exit 0

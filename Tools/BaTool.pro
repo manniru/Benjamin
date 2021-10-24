@@ -5,10 +5,6 @@ QT += multimedia
 
 CONFIG += console
 
-SOURCES += Sources/*.cpp
-HEADERS += Sources/*.h
-
-
 linux:INCLUDEPATH += /usr/include/glib-2.0 \
                      /usr/lib/glib-2.0/include \
                      /usr/include/gstreamer-1.0 \
@@ -25,7 +21,7 @@ linux:LIBS += -lgio-2.0 \
               -L/opt/intel/mkl/lib/intel64 \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
               -liomp5 -lpthread -lm -ldl \
-              -LKaldi/Libs \
+              -L/home/bijan/Project/Benjamin/Tools/Kaldi/Libs \
               -lkaldi-online2 -lkaldi-online \
               -lkaldi-decoder -lkaldi-lat -lkaldi-fstext \
               -lkaldi-hmm -lkaldi-feat -lkaldi-transform \
@@ -40,4 +36,50 @@ QMAKE_CXXFLAGS += -std=c++14 -m64 -msse -msse2 -pthread -g -isystem
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc
 OBJECTS_DIR = Build/.obj
+
+HEADERS += \
+    Sources/backend.h \
+    Sources/bt_captain.h \
+    Sources/bt_channel_l.h \
+    Sources/bt_chapar.h \
+    Sources/bt_cmvn.h \
+    Sources/bt_confidence.h \
+    Sources/bt_config.h \
+    Sources/bt_cyclic.h \
+    Sources/bt_encoder.h \
+    Sources/bt_online_source.h \
+    Sources/bt_online.h \
+    Sources/bt_recorder.h \
+    Sources/bt_state.h \
+    Sources/kd_f_token.h \
+    Sources/kd_faster_decoder.h \
+    Sources/kd_lattice_decoder.h \
+    Sources/kd_online_decoder.h \
+    Sources/kd_online_ldecoder.h \
+    Sources/kd_online.h \
+    Sources/kd_online2_gmm.h \
+    Sources/kd_online2.h
+
+SOURCES += \
+    Sources/backend.cpp \
+    Sources/bt_captain.cpp \
+    Sources/bt_channel_l.cpp \
+    Sources/bt_chapar.cpp \
+    Sources/bt_cmvn.cpp \
+    Sources/bt_confidence.cpp \
+    Sources/bt_cyclic.cpp \
+    Sources/bt_encoder.cpp \
+    Sources/bt_online_source.cpp \
+    Sources/bt_online.cpp \
+    Sources/bt_recorder.cpp \
+    Sources/bt_state.cpp \
+    Sources/kd_f_token.cpp \
+    Sources/kd_faster_decoder.cpp \
+    Sources/kd_lattice_decoder.cpp \
+    Sources/kd_online_decoder.cpp \
+    Sources/kd_online_ldecoder.cpp \
+    Sources/kd_online.cpp \
+    Sources/kd_online2_gmm.cpp \
+    Sources/kd_online2.cpp \
+    Sources/main.cpp
 
