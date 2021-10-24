@@ -1,6 +1,4 @@
 
-Videos/
-
 Nato/data/local/dict/nonsilence_phones.txt
 
 Nato/files
@@ -32,8 +30,6 @@ Nato/data/local/corpus.txt
 Nato/data/local/dict/lexiconp.txt
 
 Nato/data/local/tmp/
-
-Nato/local/score.sh
 
 Nato/decode/audio/
 

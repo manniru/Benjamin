@@ -13,8 +13,7 @@ Bijan ASR Engine Based-on KalD
 
 ## Step 2: Import Neccesary Tools
 
-1. From `kaldi/egs/wsj/s5` copy `utils` and `steps` into Nato Project.
-2. Copy `kaldi/egs/voxforge/s5/local/score.sh` to `Nato/local`
+From `kaldi/egs/wsj/s5` copy `utils` and `steps` into Nato Project.
 
 ## Step 3: Prepare Model
 
