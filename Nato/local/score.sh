@@ -48,23 +48,16 @@ $cmd LMWT=$min_lmwt:$max_lmwt $dir/scoring/log/score.LMWT.log \
      ark:$dir/scoring/test_filt.txt  ark,p:- ">&" $dir/wer_LMWT || exit 1;
 
 # Show results
-for f in $dir/wer_*; do echo $f; egrep  '(WER)|(SER)' < $f; done
-
 for i in $(seq $min_lmwt $max_lmwt); do
 
     echo "####### lmwt=$i #######";
+    
+    egrep '(WER)|(SER)' < $dir/wer_$i
 	
 	while read f; do
 	
 		WORD_COUNT=$(echo "$f" | wc -w)
-
-        if [[ "$WORD_COUNT" != "4" ]]; then
-            
-            echo "$f"
-            
-        fi
-        
-        FILENAME=$(echo "$f" | cut -d " " -f 1)
+        FILENAME=$(echo "$f" | cut -d " " -f 1 | cut -d "_" -f 2-)
         
         SYM1=$(echo "$f" | cut -d " " -f 2)
         SYM2=$(echo "$f" | cut -d " " -f 3)
@@ -81,9 +74,15 @@ for i in $(seq $min_lmwt $max_lmwt); do
         ID1=$((ID1-1))
         ID2=$((ID2-1))
         ID3=$((ID3-1))
+
+        if [[ "$WORD_COUNT" != "4" ]]; then
+            
+            echo "WORD SIZE WRONG $f ${WORD1} ${WORD2} ${WORD3}"
+            
+        elif [[ "$FILENAME" != "${ID1}_${ID2}_${ID3}" ]]; then
         
-        if [[ "$FILENAME" != "bijan_${ID1}_${ID2}_${ID3}" ]]; then
-	        echo "$f"
+	        echo "$FILENAME ${WORD1} ${WORD2} ${WORD3}"
+	        
         fi
 		
 	done <$dir/scoring/$i.tra

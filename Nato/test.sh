@@ -9,9 +9,29 @@ LAT_CONF="$RESULT_PATH/lat_conf.ark"
 #WORDS=$($SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH")
 
 if [[ "$1" == "r" ]]; then
+
 	echo "Rec Mode"
 	REC_TIME="5"
 	$SD/record.sh "$DECODE_PATH/wav/rec1.wav" $REC_TIME
+
+elif [[ "$1" == "t" ]]; then
+
+	echo "Test Mode"
+    
+    find "audio/test/sajad-sen" -type f > list_file
+    sed -i '1d' list_file #remove first line
+
+    while read p; do
+	    
+	    cp "$p" "$DECODE_PATH/wav/rec1.wav"
+        $SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH" 1
+	    
+		    
+    done <list_file
+
+    #rm list_file
+    exit 0
+
 fi
 
 time $SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH" 1

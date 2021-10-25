@@ -11,11 +11,16 @@ SPK2UTT="$AUDIO_PATH/spk2utt"
 SC_CW="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd $SC_CW/../.. #cd to nato project
 
-#MIC_NAME="Sennheiser_Communications_Sennheiser_USB_headset-00.mono-fallback"
-#VOLUME="52430" #set volume to 80% 
-
 MIC_NAME="Focusrite_iTrack_Solo-00.analog-stereo"
 VOLUME="78500" #set volume to 110% 
+IS_SENNHEISER=$(pacmd list-sources | grep Sennheiser | wc -l)
+
+if [[ "$IS_SENNHEISER" -gt 1 ]]; then
+
+    MIC_NAME="Sennheiser_Communications_Sennheiser_USB_headset-00.mono-fallback"
+    VOLUME="52430" #set volume to 80% 
+
+fi
 
 pacmd set-default-source alsa_input.usb-$MIC_NAME #set source to Sennheier
 pacmd set-source-volume alsa_input.usb-$MIC_NAME $VOLUME
@@ -38,3 +43,5 @@ utils/utt2spk_to_spk2utt.pl $UTT2SPK > $SPK2UTT
 
 mkdir -p $AUDIO_PATH/conf
 cp conf/mfcc.conf $AUDIO_PATH/conf/mfcc.conf
+
+mkdir -p "../Tools/Resources"
