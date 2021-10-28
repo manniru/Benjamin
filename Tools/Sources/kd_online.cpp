@@ -90,7 +90,7 @@ void KdOnline::init()
 
 void KdOnline::startDecode()
 {
-    BaseFloat acoustic_scale = 0.05;
+    BaseFloat acoustic_scale = 0.08;
     // feature_reading_opts contains number of retries, batch size.
     OnlineFeatureMatrixOptions feature_reading_opts;
     OnlineFeatureMatrix *feature_matrix;

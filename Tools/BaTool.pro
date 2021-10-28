@@ -26,11 +26,10 @@ linux:LIBS += -lgio-2.0 \
               -lkaldi-decoder -lkaldi-lat -lkaldi-fstext \
               -lkaldi-hmm -lkaldi-feat -lkaldi-transform \
               -lkaldi-gmm  -lkaldi-tree -lkaldi-util \
-              -lkaldi-matrix -lkaldi-base -lfst
+              -lkaldi-matrix -lkaldi-base -lportaudio -lasound -lrt -ljack -lfst
 
 DEFINES += HAVE_MKL \
-           HAVE_CXXABI_H \
-           KALDI_NO_PORTAUDIO
+           HAVE_CXXABI_H
 
 QMAKE_CXXFLAGS += -std=c++14 -m64 -msse -msse2 -pthread -g -isystem
 

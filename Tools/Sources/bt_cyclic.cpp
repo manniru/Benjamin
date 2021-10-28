@@ -20,9 +20,9 @@ int BtCyclic::read(int16_t *data, int size)
 {
     int num = 0;
 
-    if( size>getSize() )
+    if( size>getDataSize() )
     {
-        size = getSize();
+        size = getDataSize();
     }
 
     for( int i=0 ; i<size ; i++ )
@@ -91,7 +91,7 @@ void BtCyclic::rewind(int count)
     //    qDebug() << "buff_data_size" << buff_data_size/BT_REC_RATE;
 }
 
-int BtCyclic::getSize()
+int BtCyclic::getDataSize()
 {
     if( read_p<write_p )
     {
@@ -105,4 +105,9 @@ int BtCyclic::getSize()
     {
         return (buff_size-read_p) + write_p;
     }
+}
+
+int BtCyclic::getFreeSize()
+{
+    return buff_size-getDataSize();
 }

@@ -18,7 +18,8 @@ public:
     void write(int16_t *data, int size);
     void constWrite(int16_t data, int size);
     void rewind(int count);
-    int  getSize();
+    int  getDataSize(); // Get Data size that are in Buf
+    int  getFreeSize(); // Get Availible Byte to Write in Buf
 
 private:
     int16_t *buffer;
