@@ -1,10 +1,10 @@
 #include "kd_online.h"
 #include "feat/feature-mfcc.h"
-#include "online/online-feat-input.h"
 #include "online/online-decodable.h"
 #include "online/online-faster-decoder.h"
 #include "online/onlinebin-util.h"
 #include "lat/sausages.h" //MBR
+#include "kd_online_feinput.h"
 // calc conf
 
 using namespace kaldi;
@@ -74,9 +74,8 @@ void KdOnline::init()
     o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
 
-//    OnlinePaSource au_src(500, kSampleFreq, 32768, kPaReportInt);
     Mfcc mfcc(mfcc_opts);
-    OnlineFeInput<Mfcc> fe_input(ab_src, &mfcc,
+    KdOnlineFeInput<Mfcc> fe_input(ab_src, &mfcc,
                      frame_length * (kSampleFreq / 1000),
                      frame_shift * (kSampleFreq / 1000));
     OnlineCmnInput cmn_input(&fe_input, cmn_window, min_cmn_window);

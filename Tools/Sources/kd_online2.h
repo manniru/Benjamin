@@ -30,7 +30,7 @@ public slots:
 private:
     void writeBarResult();
     void parseWords(QString filename);
-    void execute(std::vector<int32_t> word, QVector<QString> *history);
+    void execute(std::vector<int32_t> word);
     void printTime(clock_t start);
 
     void print(kaldi::CompactLattice *clat);

@@ -51,6 +51,7 @@ HEADERS += \
     Sources/kd_faster_decoder.h \
     Sources/kd_lattice_decoder.h \
     Sources/kd_online_decoder.h \
+    Sources/kd_online_feinput.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
     Sources/kd_online2_gmm.h \
@@ -71,6 +72,7 @@ SOURCES += \
     Sources/kd_faster_decoder.cpp \
     Sources/kd_lattice_decoder.cpp \
     Sources/kd_online_decoder.cpp \
+    Sources/kd_online_feinput.cpp \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
     Sources/kd_online2_gmm.cpp \

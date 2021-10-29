@@ -61,8 +61,7 @@ void KdOnline2::init()
     }
 }
 
-
-void KdOnline2::execute(std::vector<int32_t> word, QVector<QString> *history)
+void KdOnline2::execute(std::vector<int32_t> word)
 {
     QString cmd = KAL_SI_DIR"main.sh \"";
     for( int i=0 ; i<word.size() ; i++ )
@@ -70,11 +69,11 @@ void KdOnline2::execute(std::vector<int32_t> word, QVector<QString> *history)
         QString word_str = lexicon[word[i]];
         cmd += word_str;
         cmd += " ";
-        history->push_back(word_str);
+        history.push_back(word_str);
 
-        if( history->size()>10 )
+        if( history.size()>10 )
         {
-            history->pop_front();
+            history.pop_front();
         }
     }
     cmd += "\"";
@@ -137,10 +136,12 @@ void KdOnline2::print(CompactLattice *clat)
     vector<float> conf = mbr->GetOneBestConfidences();
     const vector<int32> &words = mbr->GetOneBest();
     const vector<pair<float, float>> &times = mbr->GetOneBestTimes();
+    history.clear();
 
     QString message;
     for( int i = 0; i<words.size() ; i++ )
     {
+        history.push_back(lexicon[words[i]]);
         float time_c = (times[i].first+times[i].second)/2/100;
         message += lexicon[words[i]];
         message +=  "[";
@@ -157,6 +158,13 @@ void KdOnline2::print(CompactLattice *clat)
         exit(0);
     }
 
+    if( words.size() )
+    {
+//        execute(words);
+//        printTime(start);
+        writeBarResult();
+    }
+
     qDebug() << "print" << message;
 }
 
@@ -164,7 +172,6 @@ void KdOnline2::processData(float *wav_data, int len)
 {
     clock_t start = clock();
     g_decoder->init();
-    printTime(start);
     BaseFloat chunk_length_secs = 0.05;
 
     // get the data for channel zero (if the signal is not mono, we only
@@ -209,6 +216,7 @@ void KdOnline2::processData(float *wav_data, int len)
 
     print(&clat);
 
+    printTime(start);
     // In an application you might avoid updating the adaptation state if
     // you felt the utterance had low confidence.  See lat/confidence.h
 //    g_decoder->GetAdaptationState(&adaptation_state);
