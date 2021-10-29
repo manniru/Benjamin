@@ -26,7 +26,7 @@ class KdOnline : public QObject
 {
     Q_OBJECT
 public:
-    explicit KdOnline(BtCyclic *buffer, QObject *parent = nullptr);
+    explicit KdOnline(QObject *parent = nullptr);
     ~KdOnline();
 
     void startDecode();
@@ -50,6 +50,8 @@ private:
     BtOnlineSource   *ab_src;
     QVector<QString>  history;
     QVector<QString>  lexicon;
+    BtCyclic         *cy_buf;
+
 };
 
 #endif // KD_ONLINE_H

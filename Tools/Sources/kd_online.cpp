@@ -19,11 +19,12 @@ AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
 BT_ONLINE_DECODER     *o_decoder;
 
-KdOnline::KdOnline(BtCyclic *buffer, QObject *parent): QObject(parent)
+KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
+    cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
     parseWords(BT_WORDS_PATH);
 
-    ab_src = new BtOnlineSource(buffer);
+    ab_src = new BtOnlineSource(cy_buf);
 }
 
 KdOnline::~KdOnline()

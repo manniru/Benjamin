@@ -16,6 +16,7 @@ class BtOnlineSource: public kaldi::OnlineAudioSourceItf
 {
 public:
     BtOnlineSource(BtCyclic *buffer);
+    void startStream();
 
     // Implementation of the OnlineAudioSourceItf
     bool Read(kaldi::Vector<float> *data);

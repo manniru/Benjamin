@@ -32,6 +32,23 @@ BtOnlineSource::~BtOnlineSource()
     }
 }
 
+// This function deosn't need to be called
+// Only use if you don't plan on using read function
+void BtOnlineSource::startStream()
+{
+    if( Pa_IsStreamStopped(pa_stream) )
+    {
+        PaError paerr = Pa_StartStream(pa_stream);
+        if( paerr )
+        {
+            qDebug() << "Error while trying to open PortAudio stream";
+            exit(0);
+        }
+    }
+}
+
+
+
 // cy_buf will be filled from the other thread using GStreamer
 bool BtOnlineSource::Read(kaldi::Vector<float> *data)
 {

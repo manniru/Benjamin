@@ -6,12 +6,13 @@
 #ifdef BT_ONLINE2
 
 #include <QObject>
-#include <thread>         // std::thread
+#include <QThread>
 #include <QTimer>
 #include <QDebug>
 #include "bt_channel_l.h"
 #include "kd_online2_gmm.h"
 #include "bt_state.h"
+#include "bt_online_source.h"
 
 class KdOnline2 : public QObject
 {
@@ -22,6 +23,9 @@ public:
 
     void startDecode();
     void processData(float *wav_data, int len);
+
+public slots:
+    void init();
 
 private:
     void writeBarResult();
@@ -42,6 +46,8 @@ private:
     QVector<QString>  history;
     QVector<QString>  lexicon;
     KdOnline2Gmm     *g_decoder;
+    BtOnlineSource   *rec_src;
+    BtCyclic         *cy_buf;
 };
 
 #endif

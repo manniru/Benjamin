@@ -7,7 +7,6 @@ CONFIG += console
 
 linux:INCLUDEPATH += /usr/include/glib-2.0 \
                      /usr/lib/glib-2.0/include \
-                     /usr/include/gstreamer-1.0 \
                      ../../Kaldi/src \
                      ../../Kaldi/tools/openfst/src/include \
                      ../../Kaldi/tools/portaudio/install/include \
@@ -17,7 +16,6 @@ linux:LIBS += -lgio-2.0 \
               -lgobject-2.0 \
               -lglib-2.0 \
               -pthread \
-              -lgstreamer-1.0 \
               -L/opt/intel/mkl/lib/intel64 \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
               -liomp5 -lpthread -lm -ldl \
@@ -46,10 +44,8 @@ HEADERS += \
     Sources/bt_confidence.h \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
-    Sources/bt_encoder.h \
     Sources/bt_online_source.h \
     Sources/bt_online.h \
-    Sources/bt_recorder.h \
     Sources/bt_state.h \
     Sources/kd_f_token.h \
     Sources/kd_faster_decoder.h \
@@ -68,10 +64,8 @@ SOURCES += \
     Sources/bt_cmvn.cpp \
     Sources/bt_confidence.cpp \
     Sources/bt_cyclic.cpp \
-    Sources/bt_encoder.cpp \
     Sources/bt_online_source.cpp \
     Sources/bt_online.cpp \
-    Sources/bt_recorder.cpp \
     Sources/bt_state.cpp \
     Sources/kd_f_token.cpp \
     Sources/kd_faster_decoder.cpp \

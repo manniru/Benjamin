@@ -1,6 +1,5 @@
 #include "kd_online2.h"
 
-
 #ifdef BT_ONLINE2
 #include "feat/wave-reader.h"
 #include "online2/online-feature-pipeline.h"
@@ -14,6 +13,119 @@
 
 using namespace kaldi;
 using namespace fst;
+
+KdOnline2::KdOnline2(QObject *parent): QObject(parent)
+{
+    cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
+    parseWords(BT_WORDS_PATH);
+
+    g_decoder = new KdOnline2Gmm(parent);
+    rec_src = new BtOnlineSource(cy_buf);
+}
+
+KdOnline2::~KdOnline2()
+{
+
+}
+
+void KdOnline2::init()
+{
+    int sample_count = BT_REC_SIZE*BT_REC_RATE;
+    int16_t raw[BT_REC_SIZE*BT_REC_RATE];
+    float raw_f[BT_REC_SIZE*BT_REC_RATE];
+
+    rec_src->startStream();
+
+    while( cy_buf->getDataSize()>BT_REC_SIZE*BT_REC_RATE )
+    {
+        QThread::sleep(2);
+    }
+    cy_buf->read(raw, (BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
+
+    while( true )
+    {
+        if( cy_buf->getDataSize()<BT_DEC_TIMEOUT*BT_REC_RATE )
+        {
+            QThread::sleep(2);
+            continue;
+        }
+
+        cy_buf->rewind((BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
+        cy_buf->read(raw, sample_count);
+
+        for( int i=0 ; i<sample_count ; i++ )
+        {
+            raw_f[i] = raw[i];
+        }
+        processData(raw_f, sample_count);
+    }
+}
+
+
+void KdOnline2::execute(std::vector<int32_t> word, QVector<QString> *history)
+{
+    QString cmd = KAL_SI_DIR"main.sh \"";
+    for( int i=0 ; i<word.size() ; i++ )
+    {
+        QString word_str = lexicon[word[i]];
+        cmd += word_str;
+        cmd += " ";
+        history->push_back(word_str);
+
+        if( history->size()>10 )
+        {
+            history->pop_front();
+        }
+    }
+    cmd += "\"";
+    system(cmd.toStdString().c_str());
+}
+
+void KdOnline2::writeBarResult()
+{
+    QFile bar_file(BT_BAR_RESULT);
+
+    if (!bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error opening" << BT_BAR_RESULT;
+        return;
+    }
+
+    QTextStream out(&bar_file);
+
+    for( int i=0 ; i<history.length() ; i++ )
+    {
+        out << "%{u#1d1}%{+u}";
+        out << history[i];
+
+        out << "%{-u} ";
+    }
+    out << "\n";
+
+    bar_file.close();
+}
+
+void KdOnline2::parseWords(QString filename)
+{
+    QFile words_file(filename);
+
+    if (!words_file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "Error opening" << filename;
+        return;
+    }
+
+    lexicon.clear();
+
+    while (!words_file.atEnd())
+    {
+        QString line = QString(words_file.readLine());
+        QStringList line_list = line.split(" ");
+        lexicon.append(line_list[0]);
+    }
+
+    words_file.close();
+}
 
 void KdOnline2::print(CompactLattice *clat)
 {
@@ -107,91 +219,6 @@ void KdOnline2::printTime(clock_t start)
     clock_t end = clock();
     double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     qDebug() << "cpu time" << qRound(cpu_time_used*1000) << "ms";
-}
-
-KdOnline2::KdOnline2(QObject *parent): QObject(parent)
-{
-    parseWords(BT_WORDS_PATH);
-
-    g_decoder = new KdOnline2Gmm(parent);
-}
-
-KdOnline2::~KdOnline2()
-{
-
-}
-
-void KdOnline2::startDecode()
-{
-    double tot_like = 0.0;
-    int64 num_frames = 0;
-
-    OnlineTimingStats timing_stats;
-}
-
-void KdOnline2::execute(std::vector<int32_t> word, QVector<QString> *history)
-{
-    QString cmd = KAL_SI_DIR"main.sh \"";
-    for( int i=0 ; i<word.size() ; i++ )
-    {
-        QString word_str = lexicon[word[i]];
-        cmd += word_str;
-        cmd += " ";
-        history->push_back(word_str);
-
-        if( history->size()>10 )
-        {
-            history->pop_front();
-        }
-    }
-    cmd += "\"";
-    system(cmd.toStdString().c_str());
-}
-
-void KdOnline2::writeBarResult()
-{
-    QFile bar_file(BT_BAR_RESULT);
-
-    if (!bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Error opening" << BT_BAR_RESULT;
-        return;
-    }
-
-    QTextStream out(&bar_file);
-
-    for( int i=0 ; i<history.length() ; i++ )
-    {
-        out << "%{u#1d1}%{+u}";
-        out << history[i];
-
-        out << "%{-u} ";
-    }
-    out << "\n";
-
-    bar_file.close();
-}
-
-void KdOnline2::parseWords(QString filename)
-{
-    QFile words_file(filename);
-
-    if (!words_file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        qDebug() << "Error opening" << filename;
-        return;
-    }
-
-    lexicon.clear();
-
-    while (!words_file.atEnd())
-    {
-        QString line = QString(words_file.readLine());
-        QStringList line_list = line.split(" ");
-        lexicon.append(line_list[0]);
-    }
-
-    words_file.close();
 }
 
 #endif

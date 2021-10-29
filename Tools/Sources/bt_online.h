@@ -7,9 +7,11 @@
 #include "bt_channel_l.h"
 
 #include "bt_state.h"
-#include "bt_recorder.h"
-#include "bt_encoder.h"
+#ifdef BT_ONLINE2
+#include "kd_online2.h"
+#else
 #include "kd_online.h"
+#endif
 
 class BtOnline : public QObject
 {
@@ -25,11 +27,7 @@ signals:
     void startRecord();
 
 private:
-    QThread   *record_thread;
-    QThread   *encoder_thread;
     QThread   *kaldi_thread;
-    BtRecoder *recorder;
-    BtEncoder *encoder;
     BtCyclic  *cyclic;
 #ifdef BT_ONLINE2
     KdOnline2 *kaldi;

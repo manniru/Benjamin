@@ -2,33 +2,17 @@
 
 BtOnline::BtOnline(QObject *parent) : QObject(parent)
 {
-    record_thread = new QThread;
-    encoder_thread = new QThread;
     kaldi_thread   = new QThread;
-    cyclic = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
-
-//    recorder = new BtRecoder(record_thread, cyclic);
-//    recorder->moveToThread(record_thread);
-//    record_thread->start();
-
-//    connect(this,     SIGNAL(startRecord()), recorder, SLOT(start()));
-//    connect(encoder,  SIGNAL(resultReady(QString)), this, SLOT(startDecode(QString)));
 
 #ifdef BT_ONLINE2
     kaldi = new KdOnline2;
-
-    encoder = new BtEncoder(kaldi, cyclic, encoder_thread );
-    encoder->moveToThread(encoder_thread);
-    encoder_thread->start();
-
-    connect(recorder, SIGNAL(resultReady(QString)), encoder, SLOT(startEncode(QString)));
 #else
-    kaldi = new KdOnline(cyclic);
+    kaldi = new KdOnline;
+#endif
+
     kaldi->moveToThread(kaldi_thread);
     kaldi_thread->start();
     connect(this,  SIGNAL(startRecord()), kaldi, SLOT(init()));
-//    kaldi->startDecode();
-#endif
     emit startRecord();
 }
 
