@@ -4,10 +4,10 @@
 
 #include "QDebug"
 
-//using namespace kaldi;
+using namespace kaldi;
 
 
-KdOnlineFeInput::KdOnlineFeInput(BtOnlineSource *au_src, kaldi::Mfcc *fe,
+KdOnlineFeInput::KdOnlineFeInput(BtRecorder *au_src, Mfcc *fe,
                                 int32 frame_size, int32 frame_shift,
                                 bool snip_edges)
     : source_(au_src), extractor_(fe),
@@ -20,9 +20,9 @@ KdOnlineFeInput::KdOnlineFeInput(BtOnlineSource *au_src, kaldi::Mfcc *fe,
       frame_opts_.snip_edges = snip_edges;
 }
 
-bool KdOnlineFeInput::Compute(kaldi::Matrix<kaldi::BaseFloat> *output)
+bool KdOnlineFeInput::Compute(Matrix<float> *output)
 {
-    kaldi::MatrixIndexT nvec = output->NumRows(); // the number of output vectors
+    MatrixIndexT nvec = output->NumRows(); // the number of output vectors
     if( nvec<=0 )
     {
         qDebug() << "No feature vectors requested?!";
@@ -31,11 +31,11 @@ bool KdOnlineFeInput::Compute(kaldi::Matrix<kaldi::BaseFloat> *output)
 
     // Prepare the input audio samples
     int32 samples_req = frame_size_ + (nvec - 1) * frame_shift_;
-    kaldi::Vector<kaldi::BaseFloat> read_samples(samples_req);
+    Vector<float> read_samples(samples_req);
 
     bool ans = source_->Read(&read_samples);
 
-    kaldi::Vector<kaldi::BaseFloat> all_samples(wave_remainder_.Dim() + read_samples.Dim());
+    Vector<float> all_samples(wave_remainder_.Dim() + read_samples.Dim());
     all_samples.Range(0, wave_remainder_.Dim()).CopyFromVec(wave_remainder_);
     all_samples.Range(wave_remainder_.Dim(), read_samples.Dim()).
             CopyFromVec(read_samples);
@@ -52,7 +52,7 @@ bool KdOnlineFeInput::Compute(kaldi::Matrix<kaldi::BaseFloat> *output)
         KALDI_ASSERT(remaining_len >= 0);
         if (remaining_len > 0)
         {
-            wave_remainder_.CopyFromVec(kaldi::SubVector<kaldi::BaseFloat>
+            wave_remainder_.CopyFromVec(SubVector<float>
                                         (all_samples, offset, remaining_len));
         }
         extractor_->Compute(all_samples, 1.0, output);

@@ -23,11 +23,7 @@ private slots:
     void startDecode(QString msg);
     void decodeOnline();
 
-signals:
-    void startRecord();
-
 private:
-    QThread   *kaldi_thread;
     BtCyclic  *cyclic;
 #ifdef BT_ONLINE2
     KdOnline2 *kaldi;

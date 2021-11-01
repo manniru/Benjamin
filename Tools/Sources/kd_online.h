@@ -8,7 +8,7 @@
 
 #include "bt_channel_l.h"
 #include "bt_state.h"
-#include "bt_online_source.h"
+#include "bt_recorder.h"
 
 #ifdef BT_LAT_ONLINE
 #include "kd_online_ldecoder.h"
@@ -47,7 +47,7 @@ private:
     // Report interval for PortAudio buffer overflows in number of feat. batches
     int cmn_window = 600, min_cmn_window = 100;
 
-    BtOnlineSource   *ab_src;
+    BtRecorder   *ab_src;
     QVector<QString>  history;
     QVector<QString>  lexicon;
     BtCyclic         *cy_buf;

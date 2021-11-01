@@ -2,18 +2,13 @@
 
 BtOnline::BtOnline(QObject *parent) : QObject(parent)
 {
-    kaldi_thread   = new QThread;
-
 #ifdef BT_ONLINE2
     kaldi = new KdOnline2;
 #else
     kaldi = new KdOnline;
 #endif
 
-    kaldi->moveToThread(kaldi_thread);
-    kaldi_thread->start();
-    connect(this,  SIGNAL(startRecord()), kaldi, SLOT(init()));
-    emit startRecord();
+    kaldi->init();
 }
 
 void BtOnline::startDecode(QString msg)

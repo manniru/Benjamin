@@ -19,8 +19,13 @@ KdOnline2::KdOnline2(QObject *parent): QObject(parent)
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
     parseWords(BT_WORDS_PATH);
 
-    g_decoder = new KdOnline2Gmm(parent);
-    rec_src = new BtOnlineSource(cy_buf);
+    g_decoder  = new KdOnline2Gmm(parent);
+    rec_thread = new QThread;
+    rec_src = new BtRecorder(cy_buf);
+    rec_src->moveToThread(rec_thread);
+    rec_thread->start();
+
+    connect(this,  SIGNAL(startRecord()), rec_src, SLOT(startStream()));
 }
 
 KdOnline2::~KdOnline2()
@@ -34,7 +39,7 @@ void KdOnline2::init()
     int16_t raw[BT_REC_SIZE*BT_REC_RATE];
     float raw_f[BT_REC_SIZE*BT_REC_RATE];
 
-    rec_src->startStream();
+    emit startRecord();
 
     while( cy_buf->getDataSize()>BT_REC_SIZE*BT_REC_RATE )
     {

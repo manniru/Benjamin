@@ -23,7 +23,7 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
     parseWords(BT_WORDS_PATH);
 
-    ab_src = new BtOnlineSource(cy_buf);
+    ab_src = new BtRecorder(cy_buf);
 }
 
 KdOnline::~KdOnline()

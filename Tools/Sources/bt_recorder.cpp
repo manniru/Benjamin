@@ -1,6 +1,6 @@
-#include "bt_online_source.h"
+#include "bt_recorder.h"
 
-BtOnlineSource::BtOnlineSource(BtCyclic *buffer)
+BtRecorder::BtRecorder(BtCyclic *buffer, QObject *parent): QObject(parent)
 {
     cy_buf = buffer;
 
@@ -19,7 +19,7 @@ BtOnlineSource::BtOnlineSource(BtCyclic *buffer)
     }
 }
 
-BtOnlineSource::~BtOnlineSource()
+BtRecorder::~BtRecorder()
 {
     if( pa_stream )
     {
@@ -34,7 +34,7 @@ BtOnlineSource::~BtOnlineSource()
 
 // This function deosn't need to be called
 // Only use if you don't plan on using read function
-void BtOnlineSource::startStream()
+void BtRecorder::startStream()
 {
     if( Pa_IsStreamStopped(pa_stream) )
     {
@@ -48,9 +48,8 @@ void BtOnlineSource::startStream()
 }
 
 
-
 // cy_buf will be filled from the other thread using GStreamer
-bool BtOnlineSource::Read(kaldi::Vector<float> *data)
+bool BtRecorder::Read(kaldi::Vector<float> *data)
 {
     if( Pa_IsStreamStopped(pa_stream) )
     {
@@ -91,7 +90,7 @@ bool BtOnlineSource::Read(kaldi::Vector<float> *data)
     return true;
 }
 
-int BtOnlineSource::Callback(int16_t *data, int size)
+int BtRecorder::Callback(int16_t *data, int size)
 {
     if( cy_buf->getFreeSize()<size )
     {
@@ -107,7 +106,7 @@ int PaCallback(const void *input, void *output,
                const PaStreamCallbackTimeInfo *time_info,
                PaStreamCallbackFlags status_flags, void *user_data)
 {
-    BtOnlineSource *pa_src = reinterpret_cast<BtOnlineSource*>(user_data);
+    BtRecorder *pa_src = reinterpret_cast<BtRecorder*>(user_data);
 
     int size = frame_count;
     void *ptr = const_cast<void *>(input);

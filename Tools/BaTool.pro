@@ -44,8 +44,8 @@ HEADERS += \
     Sources/bt_confidence.h \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
-    Sources/bt_online_source.h \
     Sources/bt_online.h \
+    Sources/bt_recorder.h \
     Sources/bt_state.h \
     Sources/kd_f_token.h \
     Sources/kd_faster_decoder.h \
@@ -65,8 +65,8 @@ SOURCES += \
     Sources/bt_cmvn.cpp \
     Sources/bt_confidence.cpp \
     Sources/bt_cyclic.cpp \
-    Sources/bt_online_source.cpp \
     Sources/bt_online.cpp \
+    Sources/bt_recorder.cpp \
     Sources/bt_state.cpp \
     Sources/kd_f_token.cpp \
     Sources/kd_faster_decoder.cpp \

@@ -7,7 +7,7 @@
 
 #include "online/online-feat-input.h"
 #include "feat/feature-mfcc.h"
-#include "bt_online_source.h"
+#include "bt_recorder.h"
 
 
 class KdOnlineFeInput : public kaldi::OnlineFeatInputItf
@@ -15,7 +15,7 @@ class KdOnlineFeInput : public kaldi::OnlineFeatInputItf
 public:
     // "frame_size" - frame extraction window size in audio samples
     // "frame_shift" - feature frame width in audio samples
-    KdOnlineFeInput(BtOnlineSource *au_src, kaldi::Mfcc *fe,
+    KdOnlineFeInput(BtRecorder *au_src, kaldi::Mfcc *fe,
                     const int32 frame_size, const int32 frame_shift,
                     const bool snip_edges = true);
 
@@ -24,7 +24,7 @@ public:
     bool Compute(kaldi::Matrix<kaldi::BaseFloat> *output);
 private:
 
-    BtOnlineSource *source_; // audio source
+    BtRecorder *source_; // audio source
     kaldi::Mfcc *extractor_; // the actual feature extractor used
     const int32 frame_size_;
     const int32 frame_shift_;
