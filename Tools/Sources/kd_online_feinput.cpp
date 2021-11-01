@@ -7,8 +7,7 @@
 //using namespace kaldi;
 
 
-template<class E>
-KdOnlineFeInput<E>::KdOnlineFeInput(BtOnlineSource *au_src, E *fe,
+KdOnlineFeInput::KdOnlineFeInput(BtOnlineSource *au_src, kaldi::Mfcc *fe,
                                 int32 frame_size, int32 frame_shift,
                                 bool snip_edges)
     : source_(au_src), extractor_(fe),
@@ -21,42 +20,49 @@ KdOnlineFeInput<E>::KdOnlineFeInput(BtOnlineSource *au_src, E *fe,
       frame_opts_.snip_edges = snip_edges;
 }
 
-template<class E> bool
-KdOnlineFeInput<E>::CC_F(kaldi::Matrix<kaldi::BaseFloat> *output) {
-  kaldi::MatrixIndexT nvec = output->NumRows(); // the number of output vectors
-  if (nvec <= 0) {
-    KALDI_WARN << "No feature vectors requested?!";
-    return true;
-  }
+bool KdOnlineFeInput::Compute(kaldi::Matrix<kaldi::BaseFloat> *output)
+{
+    kaldi::MatrixIndexT nvec = output->NumRows(); // the number of output vectors
+    if( nvec<=0 )
+    {
+        qDebug() << "No feature vectors requested?!";
+        return true;
+    }
 
-  // Prepare the input audio samples
-  int32 samples_req = frame_size_ + (nvec - 1) * frame_shift_;
-  kaldi::Vector<kaldi::BaseFloat> read_samples(samples_req);
+    // Prepare the input audio samples
+    int32 samples_req = frame_size_ + (nvec - 1) * frame_shift_;
+    kaldi::Vector<kaldi::BaseFloat> read_samples(samples_req);
 
-  bool ans = source_->Read(&read_samples);
+    bool ans = source_->Read(&read_samples);
 
-  kaldi::Vector<kaldi::BaseFloat> all_samples(wave_remainder_.Dim() + read_samples.Dim());
-  all_samples.Range(0, wave_remainder_.Dim()).CopyFromVec(wave_remainder_);
-  all_samples.Range(wave_remainder_.Dim(), read_samples.Dim()).
-      CopyFromVec(read_samples);
+    kaldi::Vector<kaldi::BaseFloat> all_samples(wave_remainder_.Dim() + read_samples.Dim());
+    all_samples.Range(0, wave_remainder_.Dim()).CopyFromVec(wave_remainder_);
+    all_samples.Range(wave_remainder_.Dim(), read_samples.Dim()).
+            CopyFromVec(read_samples);
 
-  // Extract the features
-  if (all_samples.Dim() >= frame_size_) {
-    // extract waveform remainder before calling Compute()
-    int32 num_frames = NumFrames(all_samples.Dim(), frame_opts_);
-    // offset is the amount at the start that has been extracted.
-    int32 offset = num_frames * frame_shift_;
-    int32 remaining_len = all_samples.Dim() - offset;
-    wave_remainder_.Resize(remaining_len);
-    KALDI_ASSERT(remaining_len >= 0);
-    if (remaining_len > 0)
-      wave_remainder_.CopyFromVec(kaldi::SubVector<kaldi::BaseFloat>(all_samples, offset, remaining_len));
-    extractor_->Compute(all_samples, 1.0, output);
-  } else {
-    output->Resize(0, 0);
-    wave_remainder_ = all_samples;
-  }
+    // Extract the features
+    if (all_samples.Dim() >= frame_size_)
+    {
+        // extract waveform remainder before calling Compute()
+        int32 num_frames = NumFrames(all_samples.Dim(), frame_opts_);
+        // offset is the amount at the start that has been extracted.
+        int32 offset = num_frames * frame_shift_;
+        int32 remaining_len = all_samples.Dim() - offset;
+        wave_remainder_.Resize(remaining_len);
+        KALDI_ASSERT(remaining_len >= 0);
+        if (remaining_len > 0)
+        {
+            wave_remainder_.CopyFromVec(kaldi::SubVector<kaldi::BaseFloat>
+                                        (all_samples, offset, remaining_len));
+        }
+        extractor_->Compute(all_samples, 1.0, output);
+    }
+    else
+    {
+        output->Resize(0, 0);
+        wave_remainder_ = all_samples;
+    }
 
-  return ans;
+    return ans;
 }
 //#endif // BT_LAT_ONLINE

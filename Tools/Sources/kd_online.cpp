@@ -1,5 +1,4 @@
 #include "kd_online.h"
-#include "feat/feature-mfcc.h"
 #include "online/online-decodable.h"
 #include "online/online-faster-decoder.h"
 #include "online/onlinebin-util.h"
@@ -75,7 +74,7 @@ void KdOnline::init()
                                 silence_phones, *trans_model);
 
     Mfcc mfcc(mfcc_opts);
-    KdOnlineFeInput<Mfcc> fe_input(ab_src, &mfcc,
+    KdOnlineFeInput fe_input(ab_src, &mfcc,
                      frame_length * (kSampleFreq / 1000),
                      frame_shift * (kSampleFreq / 1000));
     OnlineCmnInput cmn_input(&fe_input, cmn_window, min_cmn_window);
