@@ -9,7 +9,6 @@
 #include <QThread>
 #include <QTimer>
 #include <QDebug>
-#include "bt_channel_l.h"
 #include "kd_online2_gmm.h"
 #include "bt_state.h"
 #include "bt_recorder.h"

@@ -38,13 +38,11 @@ OBJECTS_DIR = Build/.obj
 HEADERS += \
     Sources/backend.h \
     Sources/bt_captain.h \
-    Sources/bt_channel_l.h \
     Sources/bt_chapar.h \
     Sources/bt_cmvn.h \
     Sources/bt_confidence.h \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
-    Sources/bt_online.h \
     Sources/bt_recorder.h \
     Sources/bt_state.h \
     Sources/kd_f_token.h \
@@ -60,12 +58,10 @@ HEADERS += \
 SOURCES += \
     Sources/backend.cpp \
     Sources/bt_captain.cpp \
-    Sources/bt_channel_l.cpp \
     Sources/bt_chapar.cpp \
     Sources/bt_cmvn.cpp \
     Sources/bt_confidence.cpp \
     Sources/bt_cyclic.cpp \
-    Sources/bt_online.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_state.cpp \
     Sources/kd_f_token.cpp \

@@ -4,8 +4,16 @@
 ReChapar::ReChapar(QObject *parent) : QObject(parent)
 {
     state = new BtState;
-    channel = new ReChannelL;
-    online = new BtOnline;
+    cap = new BtCaptain;
+
+
+#ifdef BT_ONLINE2
+    KdOnline2 *kaldi = new KdOnline2;
+#else
+    KdOnline  *kaldi = new KdOnline;
+#endif
+
+    kaldi->init();
 }
 
 void ReChapar::switchWindow(int index)
@@ -18,4 +26,26 @@ void ReChapar::requstSuspend()
 #ifdef _WIN32
     state->hardware->disconnectXbox();
 #endif
+}
+
+void ReChapar::execute(const QString &words)
+{
+    cap->parse();
+
+    if( cap->isValidUtterance() )
+    {
+//        conf->printWords(words);
+
+        QString cmd = KAL_SI_DIR"main.sh \"";
+        cmd += cap->getUtterance() + "\"";
+
+//        qDebug() << cmd;
+
+        system(cmd.toStdString().c_str());
+    }
+    else if( cap->getUtterance().isEmpty() )
+    {
+        system("dbus-send --session --dest=com.binaee.rebound / "
+               "com.binaee.rebound.exec  string:\"\"");
+    }
 }

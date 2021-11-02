@@ -5,9 +5,14 @@
 #include <thread>         // std::thread
 #include <QTimer>
 
-#include "bt_channel_l.h"
-#include "bt_online.h"
 #include "bt_state.h"
+#include "bt_captain.h"
+
+#ifdef BT_ONLINE2
+#include "kd_online2.h"
+#else
+#include "kd_online.h"
+#endif
 
 class ReChapar : public QObject
 {
@@ -15,14 +20,16 @@ class ReChapar : public QObject
 public:
     explicit ReChapar(QObject *parent = nullptr);
 
+public slots:
+    void execute(const QString &text);
+
 private slots:
     void switchWindow(int index);
     void requstSuspend();
 
 private:
-    BtOnline   *online;
     BtState    *state;
-    ReChannelL *channel;
+    BtCaptain *cap;
 };
 
 #endif // BT_CHAPAR_H
