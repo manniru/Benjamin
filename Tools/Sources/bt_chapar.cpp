@@ -30,8 +30,6 @@ void ReChapar::requstSuspend()
 
 void ReChapar::execute(const QString &words)
 {
-    cap->parse();
-
     if( cap->isValidUtterance() )
     {
 //        conf->printWords(words);

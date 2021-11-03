@@ -9,7 +9,8 @@
 #include "online2/online-endpoint.h"
 #include "fstext/fstext-lib.h"
 #include "lat/lattice-functions.h"
-#include "lat/sausages.h" //MBR
+#include "lat/sausages.h"  //MBR
+#include "bt_captain.h" //For BtWord
 
 using namespace kaldi;
 using namespace fst;
@@ -43,7 +44,7 @@ void KdOnline2::init()
 
     while( cy_buf->getDataSize()>BT_REC_SIZE*BT_REC_RATE )
     {
-        QThread::sleep(2);
+        QThread::msleep(2);
     }
     cy_buf->read(raw, (BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
 
@@ -51,7 +52,7 @@ void KdOnline2::init()
     {
         if( cy_buf->getDataSize()<BT_DEC_TIMEOUT*BT_REC_RATE )
         {
-            QThread::sleep(2);
+            QThread::msleep(2);
             continue;
         }
 
@@ -167,8 +168,8 @@ void KdOnline2::print(CompactLattice *clat)
     {
 //        execute(words);
 //        printTime(start);
-        writeBarResult();
     }
+    writeBarResult();
 
     qDebug() << "print" << message;
 }

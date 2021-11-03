@@ -40,7 +40,6 @@ HEADERS += \
     Sources/bt_captain.h \
     Sources/bt_chapar.h \
     Sources/bt_cmvn.h \
-    Sources/bt_confidence.h \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
     Sources/bt_recorder.h \
@@ -60,7 +59,6 @@ SOURCES += \
     Sources/bt_captain.cpp \
     Sources/bt_chapar.cpp \
     Sources/bt_cmvn.cpp \
-    Sources/bt_confidence.cpp \
     Sources/bt_cyclic.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_state.cpp \

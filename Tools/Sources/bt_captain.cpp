@@ -5,32 +5,30 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
 {
     setbuf(stdout,NULL);
 
-    conf = new BtConfidence;
     lastword.word = "";
 }
 
-void BtCaptain::parse()
+void BtCaptain::parse(QVector<BtWord> in_words)
 {
     words.clear();
     shiftHistory();
     utterance = "";
 
-    conf->parseConfidence();
-    if( conf->words.length() )
+    if( in_words.length() )
     {
-        printConf();
+        printConf(in_words);
     }
 
-    int index_LastWord = lastWordIndex();
+    int index_LastWord = lastWordIndex(in_words);
 
     if( index_LastWord )
     {
-        conf->words.remove(0, index_LastWord);
+        in_words.remove(0, index_LastWord);
     }
 
-    for( int i=0 ; i<conf->words.length() ; i++ )
+    for( int i=0 ; i<in_words.length() ; i++ )
     {
-        processUtterance(conf->words[i]);
+        processUtterance(in_words[i]);
     }
 
     if( words.length() )
@@ -182,33 +180,33 @@ void BtCaptain::addWord(BtWord word)
     history.append(word);
 }
 
-int BtCaptain::lastWordIndex()
+int BtCaptain::lastWordIndex(QVector<BtWord> in_words)
 {
     if ( lastword.word.isEmpty() )
     {
         return 0;
     }
 
-    int index = lastWordIndex(-0.1, 0.1);
+    int index = lastWordIndex(-0.1, 0.1, in_words);
 
     if( index==0 )
     {
-        index = lastWordIndex(-0.2, 0);
+        index = lastWordIndex(-0.2, 0, in_words);
     }
     if( index==0 )
     {
         qDebug() << BT_TIME_NOW << "Lastword not found, max_dist->-0.5";
-        index = lastWordIndex(-0.5, 0);
+        index = lastWordIndex(-0.5, 0, in_words);
     }
     if( index==0 )
     {
         qDebug() << BT_TIME_NOW << "Lastword not found, max_dist->+0.2";
-        index = lastWordIndex(0, 0.2);
+        index = lastWordIndex(0, 0.2, in_words);
     }
     if( index==0 )
     {
         qDebug() << BT_TIME_NOW << "Lastword not found, max_dist->+0.5";
-        index = lastWordIndex(0, 0.5);
+        index = lastWordIndex(0, 0.5, in_words);
     }
     if( index==0 )
     {
@@ -220,13 +218,13 @@ int BtCaptain::lastWordIndex()
 
 //Return first word that match the timing
 //Being first word is a designed feature
-int BtCaptain::lastWordIndex(double min, double max)
+int BtCaptain::lastWordIndex(double min, double max, QVector<BtWord> in_words)
 {
-    for( int i=0 ; i<conf->words.length() ; i++ )
+    for( int i=0 ; i<in_words.length() ; i++ )
     {
-        if( conf->words[i].word==lastword.word )
+        if( in_words[i].word==lastword.word )
         {
-            double dist = conf->words[i].time-lastword.time;
+            double dist = in_words[i].time-lastword.time;
             if( min<=dist && dist<=max )
             {
 //                qDebug() << "dist" << dist;
@@ -238,13 +236,13 @@ int BtCaptain::lastWordIndex(double min, double max)
     return 0;
 }
 
-void BtCaptain::printConf()
+void BtCaptain::printConf(QVector<BtWord> in_words)
 {
     printf("raw conf: %s ", BT_TIME_NOW.toStdString().c_str());
 
-    for( int i=0 ; i<conf->words.length() ; i++ )
+    for( int i=0 ; i<in_words.length() ; i++ )
     {
-        printf("%s(%f) ", conf->words[i].word.toStdString().c_str(), conf->words[i].time);
+        printf("%s(%f) ", in_words[i].word.toStdString().c_str(), in_words[i].time);
     }
 
     printf("\n");
