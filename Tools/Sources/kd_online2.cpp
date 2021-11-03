@@ -85,7 +85,7 @@ void KdOnline2::execute(std::vector<int32_t> word)
     system(cmd.toStdString().c_str());
 }
 
-void KdOnline2::writeBarResult()
+void KdOnline2::writeBarResult(QVector<BtWord> result)
 {
     QFile bar_file(BT_BAR_RESULT);
 
@@ -97,10 +97,34 @@ void KdOnline2::writeBarResult()
 
     QTextStream out(&bar_file);
 
-    for( int i=0 ; i<history.length() ; i++ )
+    for( int i=0 ; i<result.length() ; i++ )
     {
-        out << "%{u#1d1}%{+u}";
-        out << history[i];
+        if( result[i].conf<KAL_CONF_TRESHOLD )
+        {
+            out << "%{F#777}";
+        }
+        else
+        {
+            out << "%{F#ddd}";
+        }
+
+        if( result[i].conf<KAL_HARD_TRESHOLD )
+        {
+            out << "%{u#f00}%{+u}";
+        }
+        else if( result[i].conf==1.00 )
+        {
+            out << "%{u#1d1}%{+u}";
+        }
+        else if( result[i].conf>KAL_CONF_TRESHOLD )
+        {
+            out << "%{u#16A1CF}%{+u}";
+        }
+        else
+        {
+            out << "%{u#CF8516}%{+u}";
+        }
+        out << result[i].word;
 
         out << "%{-u} ";
     }
@@ -159,8 +183,12 @@ void KdOnline2::print(CompactLattice *clat)
         message +=  "[";
         message += QString::number(conf[i]);
         message +=  ", ";
-        message += QString::number(word_buf.time,'g', 2);
-        message +=  "] ";
+        message += QString::number(word_buf.start,'g', 3);
+        message +=  "-";
+//        message += QString::number(word_buf.time,'g', 3);
+//        message +=  "-";
+        message += QString::number(word_buf.end,'g', 3);
+        message +=  " ]";
     }
 
     if( words.size()>10 )
@@ -174,11 +202,11 @@ void KdOnline2::print(CompactLattice *clat)
     {
 //        execute(words);
 //        printTime(start);
+        qDebug() << "print" << message;
     }
-//    writeBarResult();
-    emit resultReady(result);
+    writeBarResult(result);
 
-    qDebug() << "print" << message;
+//    emit resultReady(result);
 }
 
 void KdOnline2::processData(float *wav_data, int len)
@@ -229,7 +257,7 @@ void KdOnline2::processData(float *wav_data, int len)
 
     print(&clat);
 
-    printTime(start);
+//    printTime(start);
     // In an application you might avoid updating the adaptation state if
     // you felt the utterance had low confidence.  See lat/confidence.h
 //    g_decoder->GetAdaptationState(&adaptation_state);

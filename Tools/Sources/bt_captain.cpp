@@ -10,15 +10,14 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
 
 void BtCaptain::parse(QVector<BtWord> in_words)
 {
-    qDebug() << "hey;";
     words.clear();
     shiftHistory();
     utterance = "";
 
-    if( in_words.length() )
-    {
-        printConf(in_words);
-    }
+//    if( in_words.length() )
+//    {
+//        printConf(in_words);
+//    }
 
     int index_LastWord = lastWordIndex(in_words);
 
