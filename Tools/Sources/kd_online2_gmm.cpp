@@ -67,11 +67,10 @@ void KdOnline2Gmm::init()
 // Advance the decoding as far as we can, and possibly estimate fMLLR.
 void KdOnline2Gmm::AdvanceDecoding()
 {
-    const AmDiagGmm &am_gmm = (HaveTransform() ? models_->GetModel() :
-                                                 models_->GetOnlineAlignmentModel());
+    const AmDiagGmm &am_gmm = models_->GetOnlineAlignmentModel();
 
     // Decodable is lightweight, lose nothing constructing it each time
-    DecodableDiagGmmScaledOnline decodable(am_gmm,
+    KdOnline2Decodable decodable(am_gmm,
                                            models_->GetTransitionModel(),
                                            d_config.acoustic_scale,
                                            feature_pipeline);
@@ -81,11 +80,6 @@ void KdOnline2Gmm::AdvanceDecoding()
 void KdOnline2Gmm::FinalizeDecoding()
 {
     o_decoder->FinalizeDecoding();
-}
-
-bool KdOnline2Gmm::HaveTransform() const
-{
-    return (feature_pipeline->HaveFmllrTransform());
 }
 
 void KdOnline2Gmm::updateState(

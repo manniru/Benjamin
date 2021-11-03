@@ -7,11 +7,11 @@
 using namespace kaldi;
 
 
-KdOnlineFeInput::KdOnlineFeInput(BtRecorder *au_src, Mfcc *fe,
-                                int32 frame_size, int32 frame_shift,
-                                bool snip_edges)
+KdOnlineFeInput::KdOnlineFeInput(BtRecorder *au_src, Mfcc *fe, int32 frame_size,
+                                 int32 frame_shift, bool snip_edges)
     : source_(au_src), extractor_(fe),
-      frame_size_(frame_size), frame_shift_(frame_shift) {
+      frame_size_(frame_size), frame_shift_(frame_shift)
+{
       // we need a FrameExtractionOptions to call NumFrames()
       // 1000 is just a fake sample rate which equates ms and samples
       frame_opts_.samp_freq = 1000;
@@ -38,22 +38,22 @@ bool KdOnlineFeInput::Compute(Matrix<float> *output)
     Vector<float> all_samples(wave_remainder_.Dim() + read_samples.Dim());
     all_samples.Range(0, wave_remainder_.Dim()).CopyFromVec(wave_remainder_);
     all_samples.Range(wave_remainder_.Dim(), read_samples.Dim()).
-            CopyFromVec(read_samples);
+                      CopyFromVec(read_samples);
 
     // Extract the features
-    if (all_samples.Dim() >= frame_size_)
+    if( all_samples.Dim()>=frame_size_ )
     {
         // extract waveform remainder before calling Compute()
         int32 num_frames = NumFrames(all_samples.Dim(), frame_opts_);
         // offset is the amount at the start that has been extracted.
         int32 offset = num_frames * frame_shift_;
         int32 remaining_len = all_samples.Dim() - offset;
-        wave_remainder_.Resize(remaining_len);
-        KALDI_ASSERT(remaining_len >= 0);
-        if (remaining_len > 0)
+        wave_remainder_.Resize( remaining_len );
+        KALDI_ASSERT( remaining_len>=0 );
+        if( remaining_len>0 )
         {
             wave_remainder_.CopyFromVec(SubVector<float>
-                                        (all_samples, offset, remaining_len));
+                                       (all_samples, offset, remaining_len));
         }
         extractor_->Compute(all_samples, 1.0, output);
     }

@@ -25,6 +25,7 @@
 #include "hmm/posterior.h"
 #include "online2/online-gmm-decoding.h"
 #include "kd_lattice_decoder.h"
+#include "kd_online2_decodabe.h"
 #include <fst/fst.h>
 #include "bt_config.h"
 
@@ -47,7 +48,6 @@ public:
     kaldi::OnlineFeaturePipeline   *feature_pipeline;  // owned here.
 
 private:
-    bool HaveTransform() const;
     bool RescoringIsNeeded();
 
     kaldi::OnlineGmmDecodingConfig d_config;
