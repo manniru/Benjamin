@@ -5,6 +5,7 @@ ReChapar::ReChapar(QObject *parent) : QObject(parent)
 {
     state = new BtState;
     cap = new BtCaptain;
+    kaldi_thread = new QThread;
 
 
 #ifdef BT_ONLINE2
@@ -12,8 +13,15 @@ ReChapar::ReChapar(QObject *parent) : QObject(parent)
 #else
     KdOnline  *kaldi = new KdOnline;
 #endif
+    kaldi->moveToThread(kaldi_thread);
+    kaldi_thread->start();
 
-    kaldi->init();
+    ///Magic Happens Here
+    qRegisterMetaType<QVector<BtWord> >("QVector<BtWord>");
+    connect(kaldi, SIGNAL(resultReady(QVector<BtWord>)),
+            cap, SLOT(parse(QVector<BtWord>)));
+    connect(this, SIGNAL(startDecoding()), kaldi, SLOT(init()));
+    emit startDecoding();
 }
 
 void ReChapar::switchWindow(int index)

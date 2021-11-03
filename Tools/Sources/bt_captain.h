@@ -25,10 +25,12 @@ class BtCaptain : public QObject
     Q_OBJECT
 public:
     explicit BtCaptain(QObject *parent = nullptr);
-    void parse(QVector<BtWord> in_words);
     bool isValidUtterance();
     void printWords(QString words);
     QString getUtterance();
+
+public slots:
+    void parse(QVector<BtWord> in_words);
 
 private:
     void processUtterance(BtWord word);

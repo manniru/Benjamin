@@ -18,7 +18,8 @@ elif [[ "$1" == "t" ]]; then
 
 	echo "Test Mode"
     
-    find "audio/test/sajad-sen" -type f > list_file
+    TEST_NAME=$(ls audio/test/)
+    find "audio/test/$TEST_NAME" -type f > list_file
     sed -i '1d' list_file #remove first line
 
     while read p; do
@@ -29,7 +30,7 @@ elif [[ "$1" == "t" ]]; then
 		    
     done <list_file
 
-    #rm list_file
+    rm list_file
     exit 0
 
 fi

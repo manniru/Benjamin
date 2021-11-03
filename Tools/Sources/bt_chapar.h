@@ -27,9 +27,13 @@ private slots:
     void switchWindow(int index);
     void requstSuspend();
 
+signals:
+    void startDecoding();
+
 private:
-    BtState    *state;
-    BtCaptain *cap;
+    QThread     *kaldi_thread;
+    BtState     *state;
+    BtCaptain   *cap;
 };
 
 #endif // BT_CHAPAR_H

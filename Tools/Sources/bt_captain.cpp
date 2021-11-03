@@ -10,6 +10,7 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
 
 void BtCaptain::parse(QVector<BtWord> in_words)
 {
+    qDebug() << "hey;";
     words.clear();
     shiftHistory();
     utterance = "";

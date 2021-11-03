@@ -12,6 +12,7 @@
 #include "kd_online2_gmm.h"
 #include "bt_state.h"
 #include "bt_recorder.h"
+#include "bt_captain.h" //For BtWord
 
 class KdOnline2 : public QObject
 {
@@ -28,6 +29,7 @@ public slots:
 
 signals:
     void startRecord();
+    void resultReady(QVector<BtWord> result);
 
 private:
     void writeBarResult();

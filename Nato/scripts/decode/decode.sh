@@ -55,7 +55,7 @@ if [[ $# -lt 2 ]] || [[ $# -gt 3 ]]; then
 	END=$(date +%s%3N)
 	GMM_TIME=$(echo "$END - $START" | bc)
 	
-	#echo M=$MFCC_TIME C=$CMVN_TIME D=$DELTA_TIME G=$GMM_TIME
+	echo M=$MFCC_TIME C=$CMVN_TIME D=$DELTA_TIME G=$GMM_TIME
 fi
 
 

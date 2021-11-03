@@ -10,7 +10,6 @@
 #include "fstext/fstext-lib.h"
 #include "lat/lattice-functions.h"
 #include "lat/sausages.h"  //MBR
-#include "bt_captain.h" //For BtWord
 
 using namespace kaldi;
 using namespace fst;
@@ -137,6 +136,7 @@ void KdOnline2::print(CompactLattice *clat)
     MinimumBayesRiskOptions mbr_opts;
     MinimumBayesRisk *mbr = NULL;
     mbr_opts.decode_mbr = true;
+    QVector<BtWord> result;
 
     mbr = new MinimumBayesRisk(*clat, mbr_opts);
     vector<float> conf = mbr->GetOneBestConfidences();
@@ -147,13 +147,19 @@ void KdOnline2::print(CompactLattice *clat)
     QString message;
     for( int i = 0; i<words.size() ; i++ )
     {
-        history.push_back(lexicon[words[i]]);
-        float time_c = (times[i].first+times[i].second)/2/100;
+        BtWord word_buf;
+        word_buf.conf = conf[i];
+        word_buf.start = times[i].first/100.0;
+        word_buf.end = times[i].second/100.0;
+        word_buf.time = (word_buf.start+word_buf.end)/2;
+        word_buf.word = lexicon[words[i]];
+
+        result.push_back(word_buf);
         message += lexicon[words[i]];
         message +=  "[";
         message += QString::number(conf[i]);
         message +=  ", ";
-        message += QString::number(time_c,'g', 2);
+        message += QString::number(word_buf.time,'g', 2);
         message +=  "] ";
     }
 
@@ -169,7 +175,8 @@ void KdOnline2::print(CompactLattice *clat)
 //        execute(words);
 //        printTime(start);
     }
-    writeBarResult();
+//    writeBarResult();
+    emit resultReady(result);
 
     qDebug() << "print" << message;
 }
