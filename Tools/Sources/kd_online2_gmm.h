@@ -23,7 +23,6 @@
 #include "hmm/transition-model.h"
 #include "gmm/am-diag-gmm.h"
 #include "hmm/posterior.h"
-#include "online2/online-gmm-decoding.h"
 #include "kd_lattice_decoder.h"
 #include "kd_online2_decodabe.h"
 #include <fst/fst.h>
