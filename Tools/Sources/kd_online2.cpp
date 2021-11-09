@@ -211,9 +211,8 @@ void KdOnline2::print(CompactLattice *clat)
 
 void KdOnline2::processData(float *wav_data, int len)
 {
-    clock_t start = clock();
     g_decoder->init();
-    BaseFloat chunk_length_secs = 0.05;
+    BaseFloat chunk_length_secs = 0.5;
 
     // get the data for channel zero (if the signal is not mono, we only
     // take the first channel).
@@ -250,24 +249,21 @@ void KdOnline2::processData(float *wav_data, int len)
         g_decoder->AdvanceDecoding();
 
     }
-    g_decoder->FinalizeDecoding();
-
+//    g_decoder->FinalizeDecoding();
+    clock_t start = clock();
     CompactLattice clat;
-    g_decoder->GetLattice(true, true, &clat);
-
-    print(&clat);
-
+    bool ret = g_decoder->GetLattice(true, &clat);
 //    printTime(start);
+
+    if( ret )
+    {
+        print(&clat);
+    }
+
+
     // In an application you might avoid updating the adaptation state if
     // you felt the utterance had low confidence.  See lat/confidence.h
 //    g_decoder->GetAdaptationState(&adaptation_state);
-}
-
-void KdOnline2::printTime(clock_t start)
-{
-    clock_t end = clock();
-    double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    qDebug() << "cpu time" << qRound(cpu_time_used*1000) << "ms";
 }
 
 #endif

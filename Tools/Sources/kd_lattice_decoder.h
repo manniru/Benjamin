@@ -24,6 +24,8 @@ typedef fst::StdFst::Arc                     KdArc;
 typedef KdArc::StateId                       KdStateId;
 typedef kaldi::decoder::ForwardLink<KdToken> KdFLink;
 
+#define KD_INFINITY std::numeric_limits<double>::infinity()
+
 // head of per-frame list of Tokens (list is in topological order),
 // and something saying whether we ever pruned it using PruneForwardLinks.
 struct KdTokenList

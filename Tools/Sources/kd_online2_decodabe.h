@@ -11,18 +11,15 @@
 #include "hmm/transition-model.h"
 #include "online2/online-gmm-decoding.h"
 
-namespace kaldi {
-
-
-class KdOnline2Decodable : public DecodableInterface
+class KdOnline2Decodable : public kaldi::DecodableInterface
 {
 public:
-    KdOnline2Decodable(OnlineGmmDecodingModels *model,
-                       float scale, OnlineFeatureInterface *input_feats);
+    KdOnline2Decodable(kaldi::OnlineGmmDecodingModels *model,
+                       float scale, kaldi::OnlineFeatureInterface *input_feats);
 
 
     /// Returns the scaled log likelihood
-    virtual BaseFloat LogLikelihood(int32 frame, int32 index);
+    virtual kaldi::BaseFloat LogLikelihood(int32 frame, int32 index);
 
     virtual bool IsLastFrame(int32 frame) const;
 
@@ -34,17 +31,16 @@ public:
 private:
     void CacheFrame(int32 frame);
 
-    OnlineFeatureInterface *features;
-    AmDiagGmm *ac_model;
+    kaldi::OnlineFeatureInterface *features;
+    kaldi::AmDiagGmm *ac_model;
     float ac_scale_;
-    TransitionModel *trans_model;
+    kaldi::TransitionModel *trans_model;
     const int32 feat_dim_;  // dimensionality of the input features
-    Vector<BaseFloat> cur_feats_;
+    kaldi::Vector<float> cur_feats_;
     int32 cur_frame_;
-    std::vector<std::pair<int32, BaseFloat> > cache_;
+    std::vector<std::pair<int32, float> > cache_;
 };
 
-} // namespace kaldi
 #endif
 
 #endif // KD_ONLINE2_DECODABLE_H

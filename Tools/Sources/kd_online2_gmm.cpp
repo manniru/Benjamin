@@ -62,37 +62,20 @@ void KdOnline2Gmm::init()
     o_decoder->InitDecoding();
     feature_pipeline->SetTransform(adaptation_state_.transform);
 
+    // Decodable is lightweight, lose nothing constructing it each time
+    decodable = new KdOnline2Decodable(models_, d_config.acoustic_scale, feature_pipeline);
+
 }
 
 // Advance the decoding as far as we can, and possibly estimate fMLLR.
 void KdOnline2Gmm::AdvanceDecoding()
 {
-    // Decodable is lightweight, lose nothing constructing it each time
-    KdOnline2Decodable decodable(models_, d_config.acoustic_scale, feature_pipeline);
-    o_decoder->AdvanceDecoding(&decodable);
+    o_decoder->AdvanceDecoding(decodable);
 }
 
 void KdOnline2Gmm::FinalizeDecoding()
 {
     o_decoder->FinalizeDecoding();
-}
-
-void KdOnline2Gmm::updateState(
-        OnlineGmmAdaptationState *adaptation_state)
-{
-    feature_pipeline->GetCmvnState(&adaptation_state->cmvn_state);
-}
-
-bool KdOnline2Gmm::RescoringIsNeeded()
-{
-    if (adaptation_state_.transform.NumRows() != 0 &&
-            &models_->GetModel() != &models_->GetFinalModel())
-    {
-        return true; // we have an fMLLR transform, and a discriminatively estimated
-        // model which differs from the one used to estimate fMLLR.
-    }
-    return false;
-
 }
 
 KdOnline2Gmm::~KdOnline2Gmm()
@@ -101,31 +84,27 @@ KdOnline2Gmm::~KdOnline2Gmm()
 }
 
 //end_of_utterance
-void KdOnline2Gmm::GetLattice(bool rescore,
-                              bool end_of_utterance,
+bool KdOnline2Gmm::GetLattice(bool end_of_utterance,
                               CompactLattice *clat)
 {
     Lattice lat;
     double lat_beam = d_config.faster_decoder_opts.lattice_beam;
-    o_decoder->GetRawLattice(&lat, end_of_utterance);
-    if( rescore && RescoringIsNeeded() )
-    {
-        DecodableDiagGmmScaledOnline decodable(models_->GetFinalModel(),
-                                               models_->GetTransitionModel(),
-                                               d_config.acoustic_scale,
-                                               feature_pipeline);
+    clock_t start = clock();
+    bool ret = o_decoder->GetRawLattice(&lat, end_of_utterance);
+    printTime(start);
 
-        if (!kaldi::RescoreLattice(&decodable, &lat))
-        {
-            KALDI_WARN << "Error rescoring lattice";
-        }
+    if( ret==false )
+    {
+        return false;
     }
+
     PruneLattice(lat_beam, &lat);
 
     DeterminizeLatticePhonePrunedWrapper(models_->GetTransitionModel(),
                                          &lat, lat_beam, clat,
                                          d_config.faster_decoder_opts.det_opts);
 
+    return true;
 }
 
 #endif

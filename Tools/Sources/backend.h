@@ -8,6 +8,7 @@
 
 int getIntCommand(char *command);
 QString getStrCommand(QString command);
+void printTime(clock_t start);
 
 
 #endif // BACKEND_H

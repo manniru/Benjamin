@@ -87,7 +87,12 @@ bool KdLatticeDecoder::GetRawLattice(Lattice *ofst, bool use_final_probs)
     // num-frames plus one (since frames are one-based, and we have
     // an extra frame for the start-state).
     int32 num_frames = frame_toks.size() - 1;
-    KALDI_ASSERT(num_frames > 0);
+
+    if( num_frames<=0 )
+    {
+        return false;
+    }
+
     const int32 bucket_count = num_toks_/2 + 3;
     unordered_map<KdToken*, KdStateId> tok_map(bucket_count);
     // First create all states.
@@ -1023,7 +1028,11 @@ void KdLatticeDecoder::TopSortTokens(
 /// lattice (or traceback) will end with states that are not final-states.
 bool KdLatticeDecoder::ReachedFinal()
 {
-    return FinalRelativeCost() != std::numeric_limits<float>::infinity();
+    if( FinalRelativeCost()==KD_INFINITY )
+    {
+        return false;
+    }
+    return true;
 }
 
 // Returns the number of frames decoded so far.

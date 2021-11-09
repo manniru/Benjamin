@@ -27,6 +27,7 @@
 #include "kd_online2_decodabe.h"
 #include <fst/fst.h>
 #include "bt_config.h"
+#include "backend.h"
 
 class KdOnline2Gmm : public QObject
 {
@@ -39,16 +40,14 @@ public:
     void AdvanceDecoding();
     void FinalizeDecoding();
 
-    void updateState(kaldi::OnlineGmmAdaptationState *adaptation_state);
-    void GetLattice(bool rescore, bool end_of_utterance,
+    bool GetLattice(bool end_of_utterance,
                     kaldi::CompactLattice *clat);
 
     KdLatticeDecoder *o_decoder;
+    KdOnline2Decodable *decodable;
     kaldi::OnlineFeaturePipeline   *feature_pipeline;  // owned here.
 
 private:
-    bool RescoringIsNeeded();
-
     kaldi::OnlineGmmDecodingConfig d_config;
     kaldi::OnlineGmmDecodingModels *models_;
     kaldi::OnlineGmmAdaptationState adaptation_state_;

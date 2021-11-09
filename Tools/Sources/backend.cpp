@@ -54,3 +54,10 @@ QString getStrCommand(QString command)
     pclose(fp);
     return returnData;
 }
+
+void printTime(clock_t start)
+{
+    clock_t end = clock();
+    double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    qDebug() << "cpu time" << qRound(cpu_time_used*1000) << "ms";
+}
