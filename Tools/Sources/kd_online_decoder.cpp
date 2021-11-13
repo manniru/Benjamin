@@ -9,11 +9,11 @@
 
 using namespace kaldi;
 
-KdOnlineDecoder::KdOnlineDecoder(const fst::Fst<fst::StdArc> &fst,
-                                   const KdOnlineDecoderOpts &opts,
+KdOnlineDecoder::KdOnlineDecoder(fst::Fst<fst::StdArc> &fst,
+                                   KdOnlineDecoderOpts &opts,
                                    const std::vector<int32> &sil_phones,
                                    const kaldi::TransitionModel &trans_model):
-    FasterDecoder(fst, opts), opts_(opts),
+    KdFasterDecoder(fst, opts), opts_(opts),
     silence_set_(sil_phones), trans_model_(trans_model),
     max_beam_(opts.beam), effective_beam_(opts.beam),
     state_(KD_EndFeats), frame_(0), utt_frames_(0)
@@ -28,7 +28,7 @@ void KdOnlineDecoder::ResetDecoder(bool full)
     StateId start_state = fst_.Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
     Arc dummy_arc(0, 0, Weight::One(), start_state);
-    Token *dummy_token = new Token(dummy_arc, NULL);
+    KdFToken *dummy_token = new KdFToken(dummy_arc, NULL);
     toks_.Insert(start_state, dummy_token);
     prev_immortal_tok_ = immortal_tok_ = dummy_token;
     utt_frames_ = 0;
@@ -40,7 +40,7 @@ void KdOnlineDecoder::ResetDecoder(bool full)
 }
 
 
-void KdOnlineDecoder::MakeLattice(Token *start, Token *end,
+void KdOnlineDecoder::MakeLattice(KdFToken *start, KdFToken *end,
                                    fst::MutableFst<LatticeArc> *out_fst)
 {
     out_fst->DeleteStates();
@@ -59,7 +59,7 @@ void KdOnlineDecoder::MakeLattice(Token *start, Token *end,
 
     std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
 
-    for( Token *tok=start ; tok!=end ; tok=tok->prev_ )
+    for( KdFToken *tok=start ; tok!=end ; tok=tok->prev_ )
     {
         float last_cost = 0;
         if( tok->prev_ )
@@ -109,10 +109,11 @@ void KdOnlineDecoder::MakeLattice(Token *start, Token *end,
 
 void KdOnlineDecoder::UpdateImmortalToken()
 {
-    unordered_set<Token*> emitting;
+    unordered_set<KdFToken*> emitting;
+    int count = 0;
     for( const Elem *e=toks_.GetList() ; e != NULL; e = e->tail )
     {
-        Token* tok = e->val;
+        KdFToken* tok = e->val;
         while( tok!=NULL && tok->arc_.ilabel==0 ) //deal with non-emitting ones ...
         {
             tok = tok->prev_;
@@ -121,9 +122,11 @@ void KdOnlineDecoder::UpdateImmortalToken()
         {
             emitting.insert(tok);
         }
+        count++;
     }
+//    qDebug() << "emit count" << emitting.size() << count;
 
-    Token* the_one = NULL;
+    KdFToken* the_one = NULL;
     while( 1 )
     {
         if (emitting.size() == 1)
@@ -137,13 +140,13 @@ void KdOnlineDecoder::UpdateImmortalToken()
             break;
         }
 
-        unordered_set<Token*> prev_emitting;
-        unordered_set<Token*>::iterator it;
+        unordered_set<KdFToken*> prev_emitting;
+        unordered_set<KdFToken*>::iterator it;
 
         for (it = emitting.begin(); it != emitting.end(); ++it)
         {
-            Token* tok = *it;
-            Token* prev_token = tok->prev_;
+            KdFToken* tok = *it;
+            KdFToken* prev_token = tok->prev_;
             while ((prev_token != NULL) && (prev_token->arc_.ilabel == 0))
             {
                 prev_token = prev_token->prev_; //deal with non-emitting ones
@@ -153,15 +156,16 @@ void KdOnlineDecoder::UpdateImmortalToken()
                 continue;
             }
             prev_emitting.insert(prev_token);
-        } // for
+        }
         emitting = prev_emitting;
-    } // while
+    }
     if (the_one != NULL)
     {
         prev_immortal_tok_ = immortal_tok_;
         immortal_tok_ = the_one;
         return;
     }
+//    qDebug() << "FUUUUUCK";
 }
 
 // Makes a linear graph, by tracing back from the last "immortal" token
@@ -183,7 +187,7 @@ int KdOnlineDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
 // of an utterance in order to get the last chunk of the hypothesis
 int KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
 {
-    Token *best_tok = NULL;
+    KdFToken *best_tok = NULL;
 
     if( ReachedFinal() )
     {
@@ -201,7 +205,7 @@ int KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
 
 //LAST TOK
 //Come Back to last immortal token but it will not get you the confidene
-double KdOnlineDecoder::getConf(Token *best_tok)
+double KdOnlineDecoder::getConf(KdFToken *best_tok)
 {
     if( best_tok==NULL )
     {
@@ -211,7 +215,7 @@ double KdOnlineDecoder::getConf(Token *best_tok)
     double i=0;
     for( const Elem *e=toks_.GetList() ; e!=NULL ; e=e->tail )
     {
-        Token *token = e->val;
+        KdFToken *token = e->val;
 
         if( token->cost_>1200 )
         {
@@ -225,7 +229,7 @@ double KdOnlineDecoder::getConf(Token *best_tok)
 
     if( i>20 )
     {
-        qDebug() << "best cost" << i/toks_.Size() << best_tok->cost_ ;
+//        qDebug() << "best cost" << i/toks_.Size() << best_tok->cost_ ;
 //        exit(0);
     }
 
@@ -233,9 +237,9 @@ double KdOnlineDecoder::getConf(Token *best_tok)
 }
 
 //find max cost
-KdOnlineDecoder::Token* KdOnlineDecoder::getBestTok()
+KdFToken *KdOnlineDecoder::getBestTok()
 {
-    Token *best_tok = NULL;
+    KdFToken *best_tok = NULL;
     for( const Elem *e=toks_.GetList() ; e != NULL ; e=e->tail )
     {
         if( best_tok==NULL || *best_tok<*(e->val) )
@@ -281,7 +285,7 @@ double KdOnlineDecoder::updateBeam(double tstart)
 void KdOnlineDecoder::TracebackNFrames(int32 nframes,
                                    fst::MutableFst<LatticeArc> *out_fst)
 {
-    Token *best_tok = getBestTok();
+    KdFToken *best_tok = getBestTok();
     if( best_tok==NULL )
     {
         out_fst->DeleteStates();
@@ -299,7 +303,7 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
 
     std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
 
-    Token *tok = best_tok;
+    KdFToken *tok = best_tok;
     while( nframes>0 )
     {
         if( tok==NULL )
@@ -361,7 +365,7 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
 bool KdOnlineDecoder::EndOfUtterance()
 {
     fst::VectorFst<LatticeArc> trace;
-    int32 sil_frm = opts_.inter_utt_sil / (1 + utt_frames_ / opts_.max_utt_len_);
+    int32 sil_frm = opts_.inter_utt_sil / (1 + utt_frames_ / opts_.max_utt_len_); //50
     TracebackNFrames(sil_frm, &trace);
     std::vector<int32> isymbols;
     std::vector<int32> *osymbols = NULL;

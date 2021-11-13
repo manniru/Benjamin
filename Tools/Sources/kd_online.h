@@ -8,6 +8,7 @@
 
 #include "bt_state.h"
 #include "bt_recorder.h"
+#include "bt_captain.h" //For BtWord
 
 #ifdef BT_LAT_ONLINE
 #include "kd_online_ldecoder.h"
@@ -32,6 +33,9 @@ public:
 
 public slots:
     void init();
+
+signals:
+    void resultReady(QVector<BtWord> result);
 
 private:
     void printTime(clock_t start);

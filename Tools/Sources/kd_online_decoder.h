@@ -2,6 +2,7 @@
 #define KD_ONLINE_DECODER_H
 
 #include "bt_config.h"
+#include "kd_faster_decoder.h"
 
 #ifndef BT_LAT_ONLINE
 
@@ -31,12 +32,12 @@ enum KdDecodeState
     KD_EndBatch = 4 // End of batch - end of samples not the utterance
 };
 
-class KdOnlineDecoder : public kaldi::FasterDecoder
+class KdOnlineDecoder : public KdFasterDecoder
 {
 public:
     // "sil_phones" - the IDs of all silence phones
-    KdOnlineDecoder(const fst::Fst<fst::StdArc> &fst,
-                    const KdOnlineDecoderOpts &opts,
+    KdOnlineDecoder(fst::Fst<fst::StdArc> &fst,
+                    KdOnlineDecoderOpts &opts,
                     const std::vector<int32> &sil_phones,
                     const kaldi::TransitionModel &trans_model);
 
@@ -58,14 +59,14 @@ private:
                           fst::MutableFst<kaldi::LatticeArc> *out_fst);
 
     // Makes a linear "lattice", by tracing back a path delimited by two tokens
-    void MakeLattice(Token *start, Token *end,
+    void MakeLattice(KdFToken *start, KdFToken *end,
                      fst::MutableFst<kaldi::LatticeArc> *out_fst);
 
     // Searches for the last token, ancestor of all currently active tokens
     void   UpdateImmortalToken();
 
-    double getConf(Token *best_tok);
-    Token *getBestTok();
+    double getConf(KdFToken *best_tok);
+    KdFToken *getBestTok();
     double updateBeam(double tstart);
 
     KdOnlineDecoderOpts opts_;
@@ -76,8 +77,8 @@ private:
     KdDecodeState state_; // the current state of the decoder
     int32 frame_; // the next frame to be processed
     int32 utt_frames_; // # frames processed from the current utterance
-    Token *immortal_tok_;      // "immortal" token means it's an ancestor of ...
-    Token *prev_immortal_tok_; // ... all currently active tokens
+    KdFToken *immortal_tok_;      // "immortal" token means it's an ancestor of ...
+    KdFToken *prev_immortal_tok_; // ... all currently active tokens
 };
 
 #endif // BT_LAT_ONLINE

@@ -173,6 +173,7 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     vector<int32> word_ids;
     vector<int32> *isymbols_out = NULL;
     LatticeArc::Weight *w_out = NULL;
+    QVector<BtWord> result;
 
 #ifdef BT_LAT_ONLINE
     Lattice lat;

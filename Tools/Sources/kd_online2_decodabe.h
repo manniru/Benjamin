@@ -3,7 +3,7 @@
 
 #include "bt_config.h"
 
-#ifdef BT_ONLINE2
+//#ifdef BT_ONLINE2
 #include "itf/online-feature-itf.h"
 #include "matrix/matrix-lib.h"
 #include "itf/decodable-itf.h"
@@ -41,6 +41,6 @@ private:
     std::vector<std::pair<int32, float> > cache_;
 };
 
-#endif
+//#endif
 
 #endif // KD_ONLINE2_DECODABLE_H
