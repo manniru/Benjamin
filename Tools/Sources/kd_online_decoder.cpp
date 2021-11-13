@@ -10,9 +10,9 @@
 using namespace kaldi;
 
 KdOnlineDecoder::KdOnlineDecoder(fst::Fst<fst::StdArc> &fst,
-                                   KdOnlineDecoderOpts &opts,
-                                   const std::vector<int32> &sil_phones,
-                                   const kaldi::TransitionModel &trans_model):
+                                 KdOnlineDecoderOpts &opts,
+                                 const std::vector<int32> &sil_phones,
+                                 const kaldi::TransitionModel &trans_model):
     KdFasterDecoder(fst, opts), opts_(opts),
     silence_set_(sil_phones), trans_model_(trans_model),
     max_beam_(opts.beam), effective_beam_(opts.beam),

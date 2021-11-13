@@ -1,6 +1,8 @@
 #ifndef KD_FASTER_DECODER_H
 #define KD_FASTER_DECODER_H
 
+#define KD_INFINITY std::numeric_limits<double>::infinity()
+
 #include "decoder/faster-decoder.h"
 #include "kd_f_token.h"
 
@@ -50,7 +52,7 @@ protected:
     kaldi::HashList<StateId, KdFToken*> toks_;
     fst::Fst<fst::StdArc> &fst_;
     kaldi::FasterDecoderOptions config_;
-    std::vector<const Elem* > queue_;  // temp variable used in ProcessNonemitting,
+    std::vector<const Elem*> queue_;  // temp variable used in ProcessNonemitting,
     std::vector<float> tmp_array_;  // used in GetCutoff.
     // make it class member to avoid internal new/delete.
 
