@@ -39,7 +39,9 @@ protected:
     double GetCutoff(Elem *list_head, size_t *tok_count,
                      float *adaptive_beam, Elem **best_elem);
 
-    void   PossiblyResizeHash(size_t num_toks);
+    double GetBestCutoff(Elem *best_elem,
+                         kaldi::DecodableInterface *decodable,
+                         float adaptive_beam);
 
     double ProcessEmitting(kaldi::DecodableInterface *decodable);
 

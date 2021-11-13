@@ -48,9 +48,12 @@ void KdFasterDecoder::AdvanceDecoding(DecodableInterface *decodable,
     KALDI_ASSERT(num_frames_ready >= num_frames_decoded_);
     int32 target_frames_decoded = num_frames_ready;
     if (max_num_frames >= 0)
+    {
         target_frames_decoded = std::min(target_frames_decoded,
                                          num_frames_decoded_ + max_num_frames);
-    while (num_frames_decoded_ < target_frames_decoded) {
+    }
+    while (num_frames_decoded_ < target_frames_decoded)
+    {
         // note: ProcessEmitting() increments num_frames_decoded_
         double weight_cutoff = ProcessEmitting(decodable);
         ProcessNonemitting(weight_cutoff);
@@ -66,7 +69,7 @@ bool KdFasterDecoder::ReachedFinal()
 {
     for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
     {
-        if( e->val->cost_!=KD_INFINITY && fst_.Final(e->key)!=Weight::Zero() )
+        if( e->val->cost!=KD_INFINITY && fst_.Final(e->key)!=Weight::Zero() )
         {
             return true;
         }
@@ -99,7 +102,7 @@ bool KdFasterDecoder::GetBestPath(fst::MutableFst<LatticeArc> *fst_out,
         double best_cost = KD_INFINITY;
         for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
         {
-            double this_cost = e->val->cost_ + fst_.Final(e->key).Value();
+            double this_cost = e->val->cost + fst_.Final(e->key).Value();
             if( this_cost<best_cost && this_cost!=KD_INFINITY )
             {
                 best_cost = this_cost;
@@ -115,8 +118,8 @@ bool KdFasterDecoder::GetBestPath(fst::MutableFst<LatticeArc> *fst_out,
     std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
 
     for (KdFToken *tok = best_tok; tok != NULL; tok = tok->prev_) {
-        BaseFloat tot_cost = tok->cost_ -
-                (tok->prev_ ? tok->prev_->cost_ : 0.0),
+        BaseFloat tot_cost = tok->cost -
+                (tok->prev_ ? tok->prev_->cost : 0.0),
                 graph_cost = tok->arc_.weight.Value(),
                 ac_cost = tot_cost - graph_cost;
         LatticeArc l_arc(tok->arc_.ilabel,
@@ -156,114 +159,105 @@ double KdFasterDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
 {
     double best_cost = KD_INFINITY;
     size_t count = 0;
-    if (config_.max_active == std::numeric_limits<int32>::max() &&
-            config_.min_active == 0)
+
+    tmp_array_.clear();
+    for( Elem *e=list_head ; e!=NULL ; e=e->tail )
     {
-        for (Elem *e = list_head; e != NULL; e = e->tail, count++)
+        count++;
+        double w = e->val->cost;
+        tmp_array_.push_back(w);
+//        qDebug() << count << w;
+
+        if( w<best_cost )
         {
-            double w = e->val->cost_;
-            if (w < best_cost)
+            best_cost = w;
+            if( best_elem )
             {
-                best_cost = w;
-                if (best_elem)
-                {
-                    *best_elem = e;
-                }
+                *best_elem = e;
             }
         }
-
-        if( tok_count!=NULL )
-        {
-            *tok_count = count;
-        }
-
-        if( adaptive_beam!=NULL )
-        {
-            *adaptive_beam = config_.beam;
-        }
-
-        return best_cost + config_.beam;
     }
-    else
+    if (tok_count != NULL)
     {
-        tmp_array_.clear();
-        for (Elem *e = list_head; e != NULL; e = e->tail, count++)
-        {
-            double w = e->val->cost_;
-            tmp_array_.push_back(w);
+        *tok_count = count;
+    }
 
-            if( w<best_cost )
-            {
-                best_cost = w;
-                if( best_elem )
-                {
-                    *best_elem = e;
-                }
-            }
-        }
-        if (tok_count != NULL)
-        {
-            *tok_count = count;
-        }
-        double beam_cutoff = best_cost + config_.beam;
-        double min_active_cutoff = KD_INFINITY;
-        double max_active_cutoff = KD_INFINITY;
 
-        if (tmp_array_.size() > static_cast<size_t>(config_.max_active))
+    double beam_cutoff = best_cost + config_.beam;
+    double min_active_cutoff = KD_INFINITY;
+    double max_active_cutoff = KD_INFINITY;
+
+    if( tmp_array_.size()>config_.max_active )
+    {
+        std::nth_element(tmp_array_.begin(),
+                         tmp_array_.begin() + config_.max_active,
+                         tmp_array_.end());
+        max_active_cutoff = tmp_array_[config_.max_active];
+    }
+    if(max_active_cutoff < beam_cutoff)
+    { // max_active is tighter than beam.
+        if (adaptive_beam)
         {
-            std::nth_element(tmp_array_.begin(),
-                             tmp_array_.begin() + config_.max_active,
-                             tmp_array_.end());
-            max_active_cutoff = tmp_array_[config_.max_active];
+            *adaptive_beam = max_active_cutoff - best_cost + config_.beam_delta;
         }
-        if (max_active_cutoff < beam_cutoff)
-        { // max_active is tighter than beam.
-            if (adaptive_beam)
-            {
-                *adaptive_beam = max_active_cutoff - best_cost + config_.beam_delta;
-            }
-            return max_active_cutoff;
-        }
-        if (tmp_array_.size() > static_cast<size_t>(config_.min_active))
+        return max_active_cutoff;
+    }
+    if( tmp_array_.size()>config_.min_active )
+    {
+        if (config_.min_active == 0)
         {
-            if (config_.min_active == 0)
-            {
-                min_active_cutoff = best_cost;
-            }
-            else
-            {
-                std::nth_element(tmp_array_.begin(),
-                                 tmp_array_.begin() + config_.min_active,
-                                 tmp_array_.size() > static_cast<size_t>(config_.max_active) ?
-                                     tmp_array_.begin() + config_.max_active :
-                                     tmp_array_.end());
-                min_active_cutoff = tmp_array_[config_.min_active];
-            }
-        }
-        if (min_active_cutoff > beam_cutoff)
-        { // min_active is looser than beam.
-            if (adaptive_beam)
-            {
-                *adaptive_beam = min_active_cutoff - best_cost + config_.beam_delta;
-            }
-            return min_active_cutoff;
+            min_active_cutoff = best_cost;
         }
         else
         {
-            *adaptive_beam = config_.beam;
-            return beam_cutoff;
+            std::nth_element(tmp_array_.begin(),
+                             tmp_array_.begin() + config_.min_active,
+                             tmp_array_.size() > static_cast<size_t>(config_.max_active) ?
+                                 tmp_array_.begin() + config_.max_active :
+                                 tmp_array_.end());
+            min_active_cutoff = tmp_array_[config_.min_active];
         }
+    }
+    if (min_active_cutoff > beam_cutoff)
+    { // min_active is looser than beam.
+        if (adaptive_beam)
+        {
+            *adaptive_beam = min_active_cutoff - best_cost + config_.beam_delta;
+        }
+        return min_active_cutoff;
+    }
+    else
+    {
+//        qDebug() << "best_cost" << beam_cutoff;
+        *adaptive_beam = config_.beam;
+        return beam_cutoff;
     }
 }
 
-void KdFasterDecoder::PossiblyResizeHash(size_t num_toks)
+double KdFasterDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *decodable,
+                                      float adaptive_beam)
 {
-    size_t new_sz = static_cast<size_t>(static_cast<BaseFloat>(num_toks)
-                                        * config_.hash_ratio);
-    if (new_sz > toks_.Size())
+    double cutoff = KD_INFINITY;
+    if( best_elem )
     {
-        toks_.SetSize(new_sz);
+        StateId state = best_elem->key;
+        KdFToken *tok = best_elem->val;
+        for( fst::ArcIterator<fst::Fst<Arc> > aiter(fst_, state) ;
+             !aiter.Done(); aiter.Next())
+        {
+            const Arc &arc = aiter.Value();
+            if( arc.ilabel!=0 )
+            {
+                BaseFloat ac_cost = - decodable->LogLikelihood(num_frames_decoded_, arc.ilabel);
+                double new_weight = arc.weight.Value() + tok->cost + ac_cost + adaptive_beam;
+                if( new_weight<cutoff )
+                {
+                    cutoff = new_weight + adaptive_beam;
+                }
+            }
+        }
     }
+    return cutoff;
 }
 
 // ProcessEmitting returns the likelihood cutoff used.
@@ -272,62 +266,39 @@ void KdFasterDecoder::PossiblyResizeHash(size_t num_toks)
 double KdFasterDecoder::ProcessEmitting(DecodableInterface *decodable)
 {
     int32 frame = num_frames_decoded_;
+//    ClearToks(toks_.Clear());
     Elem *last_toks = toks_.Clear();
     size_t tok_cnt;
-    BaseFloat adaptive_beam;
+    float adaptive_beam;
     Elem *best_elem = NULL;
-    double weight_cutoff = GetCutoff(last_toks, &tok_cnt,
+    double cutoff = GetCutoff(last_toks, &tok_cnt,
                                      &adaptive_beam, &best_elem);
-    KALDI_VLOG(3) << tok_cnt << " tokens active.";
-    PossiblyResizeHash(tok_cnt);  // This makes sure the hash is always big enough.
 
     // This is the cutoff we use after adding in the log-likes (i.e.
     // for the next frame).  This is a bound on the cutoff we will use
     // on the next frame.
-    double next_weight_cutoff = std::numeric_limits<double>::infinity();
+    double next_weight_cutoff = GetBestCutoff(best_elem, decodable,
+                                              adaptive_beam);
 
-    // First process the best token to get a hopefully
-    // reasonably tight bound on the next cutoff.
-    if (best_elem)
+    Elem *e_tail;
+//    qDebug() << "tok_count" << tok_cnt;
+    int tok_count = 0;
+    for( Elem *e=last_toks ; e!=NULL ; e=e_tail )
     {
-        StateId state = best_elem->key;
-        KdFToken *tok = best_elem->val;
-        for( fst::ArcIterator<fst::Fst<Arc> > aiter(fst_, state) ;
-             !aiter.Done(); aiter.Next())
-        {
-            const Arc &arc = aiter.Value();
-            if (arc.ilabel != 0)
-            {  // we'd propagate..
-                BaseFloat ac_cost = - decodable->LogLikelihood(frame, arc.ilabel);
-                double new_weight = arc.weight.Value() + tok->cost_ + ac_cost;
-                if (new_weight + adaptive_beam < next_weight_cutoff)
-                    next_weight_cutoff = new_weight + adaptive_beam;
-            }
-        }
-    }
+        tok_count++;
 
-    // int32 n = 0, np = 0;
-
-    // the tokens are now owned here, in last_toks, and the hash is empty.
-    // 'owned' is a complex thing here; the point is we need to call KdFTokenDelete
-    // on each elem 'e' to let toks_ know we're done with them.
-    for (Elem *e = last_toks, *e_tail; e != NULL; e = e_tail)
-    {  // loop this way
-        // n++;
-        // because we delete "e" as we go.
         StateId state = e->key;
         KdFToken *tok = e->val;
-        if (tok->cost_ < weight_cutoff)
-        {  // not pruned.
-            // np++;
+        if( tok->cost<cutoff )
+        {
             KALDI_ASSERT(state == tok->arc_.nextstate);
             for (fst::ArcIterator<KdFST> aiter(fst_, state); !aiter.Done(); aiter.Next())
             {
                 Arc arc = aiter.Value();
                 if (arc.ilabel != 0)
-                {  // propagate..
+                {
                     BaseFloat ac_cost =  - decodable->LogLikelihood(frame, arc.ilabel);
-                    double new_weight = arc.weight.Value() + tok->cost_ + ac_cost;
+                    double new_weight = arc.weight.Value() + tok->cost + ac_cost;
                     if (new_weight < next_weight_cutoff)
                     {  // not pruned..
                         KdFToken *new_tok = new KdFToken(arc, ac_cost, tok);
@@ -365,7 +336,10 @@ void KdFasterDecoder::ProcessNonemitting(double cutoff)
     // Processes nonemitting arcs for one frame.
     KALDI_ASSERT(queue_.empty());
     for (const Elem *e = toks_.GetList(); e != NULL;  e = e->tail)
+    {
         queue_.push_back(e);
+    }
+
     while (!queue_.empty())
     {
         const Elem* e = queue_.back();
@@ -373,7 +347,7 @@ void KdFasterDecoder::ProcessNonemitting(double cutoff)
         StateId state = e->key;
         KdFToken *tok = e->val;  // would segfault if state not
         // in toks_ but this can't happen.
-        if (tok->cost_ > cutoff)
+        if (tok->cost > cutoff)
         { // Don't bother processing successors.
             continue;
         }
@@ -386,7 +360,7 @@ void KdFasterDecoder::ProcessNonemitting(double cutoff)
             {  // propagate nonemitting only...
                 KdFToken *new_tok = new KdFToken(*arc, tok);
 
-                if( new_tok->cost_>cutoff )
+                if( new_tok->cost>cutoff )
                 {  // prune
                     KdFTokenDelete(new_tok);
                 }
@@ -424,7 +398,8 @@ void KdFasterDecoder::ProcessNonemitting(double cutoff)
 // this way for convenience in propagating tokens from one frame to the next.
 void KdFasterDecoder::ClearToks(Elem *list)
 {
-    for( Elem *e=list, *e_tail ; e!=NULL ; e=e_tail )
+    Elem *e_tail;
+    for( Elem *e=list ; e!=NULL ; e=e_tail )
     {
         KdFTokenDelete(e->val);
         e_tail = e->tail;

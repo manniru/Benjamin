@@ -50,7 +50,7 @@ void KdOnlineDecoder::MakeLattice(KdFToken *start, KdFToken *end,
     }
 
     bool is_final = true;
-    double this_cost = start->cost_ + fst_.Final(start->arc_.nextstate).Value();
+    double this_cost = start->cost + fst_.Final(start->arc_.nextstate).Value();
 
     if( this_cost==KD_INFINITY )
     {
@@ -64,10 +64,10 @@ void KdOnlineDecoder::MakeLattice(KdFToken *start, KdFToken *end,
         float last_cost = 0;
         if( tok->prev_ )
         {
-            last_cost = tok->prev_->cost_;
+            last_cost = tok->prev_->cost;
         }
 
-        float tot_cost   = tok->cost_ - last_cost;
+        float tot_cost   = tok->cost - last_cost;
         float graph_cost = tok->arc_.weight.Value();
         float ac_cost    = tot_cost - graph_cost;
 
@@ -109,8 +109,7 @@ void KdOnlineDecoder::MakeLattice(KdFToken *start, KdFToken *end,
 
 void KdOnlineDecoder::UpdateImmortalToken()
 {
-    unordered_set<KdFToken*> emitting;
-    int count = 0;
+    QVector<KdFToken*> emitting;
     for( const Elem *e=toks_.GetList() ; e != NULL; e = e->tail )
     {
         KdFToken* tok = e->val;
@@ -118,54 +117,49 @@ void KdOnlineDecoder::UpdateImmortalToken()
         {
             tok = tok->prev_;
         }
-        if ( tok!=NULL )
+        if ( tok==NULL )
         {
-            emitting.insert(tok);
+            continue;
         }
-        count++;
+        if( emitting.contains(tok) )
+        {
+            continue;
+        }
+        emitting.push_back(tok);
     }
-//    qDebug() << "emit count" << emitting.size() << count;
 
-    KdFToken* the_one = NULL;
-    while( 1 )
+    QVector<KdFToken*> p_emitting;
+
+    while( emitting.size()>1 )
     {
-        if (emitting.size() == 1)
+        p_emitting.clear();
+        for( int i=0 ; i<emitting.size() ; i++ )
         {
-            the_one = *(emitting.begin());
-            break;
-        }
-
-        if (emitting.size() == 0)
-        {
-            break;
-        }
-
-        unordered_set<KdFToken*> prev_emitting;
-        unordered_set<KdFToken*>::iterator it;
-
-        for (it = emitting.begin(); it != emitting.end(); ++it)
-        {
-            KdFToken* tok = *it;
-            KdFToken* prev_token = tok->prev_;
-            while ((prev_token != NULL) && (prev_token->arc_.ilabel == 0))
+            KdFToken* p_token = emitting[i]->prev_;
+            while ((p_token!=NULL) && (p_token->arc_.ilabel == 0)) //deal with non-emitting ones
             {
-                prev_token = prev_token->prev_; //deal with non-emitting ones
+                p_token = p_token->prev_;
             }
-            if (prev_token == NULL)
+            if (p_token == NULL)
             {
                 continue;
             }
-            prev_emitting.insert(prev_token);
+
+            if( p_emitting.contains(p_token) )
+            {
+                continue;
+            }
+            p_emitting.push_back(p_token);
         }
-        emitting = prev_emitting;
+        emitting = p_emitting;
     }
-    if (the_one != NULL)
+
+    if( emitting.size()==1 )
     {
         prev_immortal_tok_ = immortal_tok_;
-        immortal_tok_ = the_one;
+        immortal_tok_ = emitting[0];
         return;
     }
-//    qDebug() << "FUUUUUCK";
 }
 
 // Makes a linear graph, by tracing back from the last "immortal" token
@@ -217,7 +211,7 @@ double KdOnlineDecoder::getConf(KdFToken *best_tok)
     {
         KdFToken *token = e->val;
 
-        if( token->cost_>1200 )
+        if( token->cost>1200 )
         {
             if( token->arc_.ilabel&&token->arc_.olabel ) //if both are not zero
             {
@@ -293,7 +287,7 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
     }
 
     bool is_final = false;
-    double this_cost = best_tok->cost_ +
+    double this_cost = best_tok->cost +
             fst_.Final(best_tok->arc_.nextstate).Value();
 
     if( this_cost!=KD_INFINITY )
@@ -316,11 +310,11 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
             nframes--;
         }
 
-        float tot_cost = tok->cost_;
+        float tot_cost = tok->cost;
 
         if( tok->prev_ )
         {
-            tot_cost -= tok->prev_->cost_;
+            tot_cost -= tok->prev_->cost;
         }
 
         float graph_cost = tok->arc_.weight.Value();

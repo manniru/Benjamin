@@ -12,12 +12,10 @@ public:
 
     bool operator < (KdFToken &other);
 
-    fst::StdArc arc_; // contains only the graph part of the cost;
-    // we can work out the acoustic part from difference between
-    // "cost_" and prev->cost_.
+    fst::StdArc arc_;
     KdFToken *prev_;
-    int       ref_count_;
-    double cost_;
+    int       ref_count; //how many token refrenced
+    double cost;
 };
 
 void KdFTokenDelete(KdFToken *tok);

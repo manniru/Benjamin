@@ -4,37 +4,39 @@
 using namespace kaldi;
 
 KdFToken::KdFToken(fst::StdArc &arc, float ac_cost, KdFToken *prev):
-    arc_(arc), prev_(prev), ref_count_(1)
+    arc_(arc), prev_(prev)
 {
-    cost_ = arc.weight.Value() + ac_cost;
+    cost = arc.weight.Value() + ac_cost;
+    ref_count = 1;
 
     if( prev )
     {
-        prev->ref_count_++;
-        cost_ += prev->cost_;
+        prev->ref_count++;
+        cost += prev->cost;
     }
 }
 
 KdFToken::KdFToken(fst::StdArc &arc, KdFToken *prev):
-    arc_(arc), prev_(prev), ref_count_(1)
+    arc_(arc), prev_(prev)
 {
-    cost_ = arc.weight.Value();
+    cost = arc.weight.Value();
+    ref_count = 1;
 
     if( prev )
     {
-        prev->ref_count_++;
-        cost_ += prev->cost_;
+        prev->ref_count++;
+        cost += prev->cost;
     }
 }
 
 bool KdFToken::operator < (KdFToken &other)
 {
-    return other.cost_<cost_;
+    return other.cost<cost;
 }
 
 void KdFTokenDelete(KdFToken *tok)
 {
-    while( tok->ref_count_==0 )
+    while( tok->ref_count==0 )
     {
         tok--;
         KdFToken *prev = tok->prev_;
