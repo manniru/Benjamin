@@ -5,7 +5,7 @@
 #include "bt_config.h"
 #include "kd_faster_decoder.h"
 
-#ifndef BT_LAT_ONLINE2
+#ifndef BT_LAT_ONLINE
 
 #include "util/stl-utils.h"
 #include "decoder/faster-decoder.h"
@@ -43,7 +43,10 @@ public:
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
 
+    // Makes a linear graph, by tracing back from the last "immortal" token
+    // to the previous one
     int  PartialTraceback(fst::MutableFst<kaldi::LatticeArc> *out_fst);
+
     // Makes a linear graph, by tracing back from the best currently active token
     // to the last immortal token. This method is meant to be invoked at the end
     // of an utterance in order to get the last chunk of the hypothesis

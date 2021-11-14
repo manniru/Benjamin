@@ -54,7 +54,6 @@ private:
     QVector<QString>  history;
     QVector<QString>  lexicon;
     BtCyclic         *cy_buf;
-
 };
 
 #endif // KD_ONLINE_H

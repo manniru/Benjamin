@@ -1,6 +1,6 @@
 #include "kd_online_decoder.h"
 
-#ifndef BT_LAT_ONLINE2
+#ifndef BT_LAT_ONLINE
 
 #include "base/timer.h"
 #include "fstext/fstext-utils.h"
@@ -105,7 +105,6 @@ void KdOnlineDecoder::MakeLattice(KdFToken *start, KdFToken *end,
     RemoveEpsLocal(out_fst);
 }
 
-
 void KdOnlineDecoder::UpdateImmortalToken()
 {
     QVector<KdFToken*> emitting;
@@ -161,8 +160,6 @@ void KdOnlineDecoder::UpdateImmortalToken()
     }
 }
 
-// Makes a linear graph, by tracing back from the last "immortal" token
-// to the previous one
 int KdOnlineDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
 {
     UpdateImmortalToken();
@@ -175,9 +172,6 @@ int KdOnlineDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
     return 1;
 }
 
-// Makes a linear graph, by tracing back from the best currently active token
-// to the last immortal token. This method is meant to be invoked at the end
-// of an utterance in order to get the last chunk of the hypothesis
 int KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
 {
     KdFToken *best_tok = NULL;

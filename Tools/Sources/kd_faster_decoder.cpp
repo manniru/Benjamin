@@ -347,8 +347,8 @@ void KdFasterDecoder::ProcessNonemitting(double cutoff)
         StateId state = e->key;
         KdFToken *tok = e->val;  // would segfault if state not
         // in toks_ but this can't happen.
-        if (tok->cost > cutoff)
-        { // Don't bother processing successors.
+        if(tok->cost > cutoff)
+        {
             continue;
         }
         KALDI_ASSERT(tok != NULL && state == tok->arc_.nextstate);

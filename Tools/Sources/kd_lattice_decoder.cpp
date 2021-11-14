@@ -4,7 +4,6 @@
 
 using namespace kaldi;
 
-// instantiate this class once for each thing you have to decode.
 KdLatticeDecoder::KdLatticeDecoder(KdFST &fst, LatticeFasterDecoderConfig &config):
     fst_(&fst), config_(config), num_toks_(0)
 {
@@ -18,7 +17,6 @@ KdLatticeDecoder::~KdLatticeDecoder()
     ClearActiveTokens();
 }
 
-// used before AdvanceDecoding().  Decode(), don't need this.
 void KdLatticeDecoder::InitDecoding()
 {
     // clean up from last time:
@@ -39,8 +37,6 @@ void KdLatticeDecoder::InitDecoding()
     ProcessNonemitting(config_.beam);
 }
 
-// Decodes until there are no more frames left
-// Returns true if any kind of traceback is available.
 // return false indicates error.
 bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
 {
@@ -51,9 +47,6 @@ bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
     return !frame_toks.empty() && frame_toks.back().toks != NULL;
 }
 
-/// If "use_final_probs" is true AND we reached the
-/// final-state then it will include those as final-probs, else
-/// it will treat all final-probs as one.
 /// Returns true if result is nonempty.
 bool KdLatticeDecoder::GetBestPath(Lattice *olat, bool use_final_probs)
 {
@@ -63,9 +56,6 @@ bool KdLatticeDecoder::GetBestPath(Lattice *olat, bool use_final_probs)
     return (olat->NumStates() != 0);
 }
 
-/// Outputs an FST corresponding to the raw, state-level
-/// tracebacks.  Returns true if result is nonempty.
-/// The raw lattice will be topologically sorted.
 bool KdLatticeDecoder::GetRawLattice(Lattice *ofst, bool use_final_probs)
 {
     if (decoding_finalized_ && !use_final_probs)
@@ -168,8 +158,7 @@ void KdLatticeDecoder::PossiblyResizeHash(size_t num_toks)
 }
 
 // Locates a token in toks_, or inserts a new, empty token
-// (i.e. with no forward links) for the current frame.
-// 'changed' true if a token created or the cost changed.
+// for the current frame. 'changed' true if a token created or cost changed.
 KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
         KdStateId state, int32 frame_plus_one, float tot_cost,
         KdToken *backpointer, bool *changed)
@@ -219,11 +208,7 @@ KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
 }
 
 // prunes outgoing links for all tokens in frame_toks[frame]
-// it's called by PruneActiveTokens
-// all links, that have link_extra_cost > lattice_beam are pruned
-// delta is the amount by which the extra_costs must change
-// extra_costs_changed is set to true if extra_cost was changed for any token
-// links_pruned is set to true if any link in any token was pruned
+// PruneActiveTokens
 bool KdLatticeDecoder::PruneForwardLinks(
         int32 frame, bool *extra_costs_changed, float delta)
 {
@@ -397,14 +382,7 @@ void KdLatticeDecoder::PruneForwardLinksFinal()
     } // while changed
 }
 
-/// FinalRelativeCost() serves the same purpose as ReachedFinal(), but gives
-/// more information.  It returns the difference between the best (final-cost
-/// plus cost) of any token on the final frame, and the best cost of any token
-/// on the final frame.  If it is infinity it means no final-states were
-/// present on the final frame.  It will usually be nonnegative.  If it not
-/// too positive (e.g. < 5 is my first guess, but this is not tested) you can
-/// take it as a good indication that we reached the final-state with
-/// reasonable likelihood.
+/// Same as ReachedFinal()
 float KdLatticeDecoder::FinalRelativeCost()
 {
     if( !decoding_finalized_ )
@@ -418,7 +396,6 @@ float KdLatticeDecoder::FinalRelativeCost()
         return final_relative_cost_;
     }
 }
-
 
 // Prune away any tokens on this frame that have no forward links.
 void KdLatticeDecoder::PruneTokensForFrame(int32 frame)
@@ -504,17 +481,6 @@ void KdLatticeDecoder::PruneActiveTokens(float delta)
 // computes final-costs for the final frame. It outputs to final-costs, a map from the KdToken*
 // pointer to the final-prob of the corresponding state, for all Tokens
 // that correspond to states that have final-probs.
-// outputs to final_relative_cost, the difference between the best
-// forward-cost including the final-prob cost, and the best forward-cost
-// without including the final-prob cost (this will usually be positive), or
-// infinity if there were no final-probs.  [c.f. FinalRelativeCost(), which
-// outputs this quanitity].  It outputs to final_best_cost, if
-// non-NULL, the lowest for any token t active on the final frame, of
-// forward-cost[t] + final-cost[t], where final-cost[t] is the final-cost in
-// the graph of the state corresponding to token t, or the best of
-// forward-cost[t] if there were no final-probs active on the final frame.
-// You cannot call this after FinalizeDecoding() has been called; in that
-// case you should get the answer from class-member variables.
 void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken *, float> *final_costs,
         float *final_relative_cost, float *final_best_cost)
 {
@@ -557,7 +523,6 @@ void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken *, float> *final_
     }
 }
 
-// decode until there are no more frames
 void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable)
 {
     KALDI_ASSERT(!frame_toks.empty() && !decoding_finalized_ &&
@@ -595,7 +560,6 @@ void KdLatticeDecoder::FinalizeDecoding()
                   << " to " << num_toks_;
 }
 
-// Gets the weight cutoff.  Also counts the active tokens.
 float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
                                   float *adaptive_beam, Elem **best_elem)
 {
@@ -693,8 +657,7 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
     }
 }
 
-/// Processes emitting arcs for one frame.  Propagates from prev_toks_ to
-/// cur_toks_.  Returns the cost cutoff
+// Processes for one frame.
 float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 {
     KALDI_ASSERT(frame_toks.size() > 0);
@@ -799,7 +762,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
     return next_cutoff;
 }
 
-// Processes nonemitting (epsilon) arcs for one frame.
+// Processes for one frame.
 void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 {
     KALDI_ASSERT(!frame_toks.empty());
@@ -893,17 +856,9 @@ void KdLatticeDecoder::DeleteForwardLinks(KdToken *tok)
     tok->links = NULL;
 }
 
-// There are various cleanup tasks... the toks_ structure contains
-// singly linked lists of KdToken pointers, where Elem is the list type.
-// It also indexes them in a hash, indexed by state (this hash is only
-// maintained for the most recent frame).  toks_.Clear()
-// deletes them from the hash and returns the list of Elems.  The
-// function DeleteElems calls toks_.Delete(elem) for each elem in
-// the list, which returns ownership of the Elem to the toks_ structure
-// for reuse, but does not delete the KdToken pointer.  The KdToken pointers
+// the toks_ indexed by state. The function DeleteElems returns
+// ownership of toks_ structure for reuse, The KdToken pointers
 // are reference-counted and are ultimately deleted in PruneTokensForFrame,
-// but are also linked together on each frame by their own linked-list,
-// using the "next" pointer.  We delete them manually.
 void KdLatticeDecoder::DeleteElems(Elem *list)
 {
     for (Elem *e = list, *e_tail; e != NULL; e = e_tail)
@@ -931,12 +886,7 @@ void KdLatticeDecoder::ClearActiveTokens()
     KALDI_ASSERT(num_toks_ == 0);
 }
 
-// This function takes a singly linked list of tokens for a single frame, and
-// outputs a list of them in topological order (it will crash if no such order
-// can be found, which will typically be due to decoding graphs with epsilon
-// cycles, which are not allowed).  Note: the output list may contain NULLs,
-// which the caller should pass over; it just happens to be more efficient for
-// the algorithm to output a list that contains NULLs.
+// outputs a list in topological order
 void KdLatticeDecoder::TopSortTokens(
         KdToken *tok_list, std::vector<KdToken *> *topsorted_list)
 {
@@ -1024,8 +974,7 @@ void KdLatticeDecoder::TopSortTokens(
     }
 }
 
-/// says whether a final-state was active on the last frame.  If it was not, the
-/// lattice (or traceback) will end with states that are not final-states.
+// says whether a final-state was active on the last frame.
 bool KdLatticeDecoder::ReachedFinal()
 {
     if( FinalRelativeCost()==KD_INFINITY )
