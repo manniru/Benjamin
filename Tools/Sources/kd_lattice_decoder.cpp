@@ -21,7 +21,7 @@ void KdLatticeDecoder::InitDecoding()
 {
     // clean up from last time:
     DeleteElems(toks_.Clear());
-    cost_offsets_.clear();
+    cost_offsets.clear();
     ClearActiveTokens();
     warned_ = false;
     num_toks_ = 0;
@@ -122,8 +122,8 @@ bool KdLatticeDecoder::GetRawLattice(Lattice *ofst, bool use_final_probs)
                 float cost_offset = 0.0;
                 if (l->ilabel != 0)
                 {  // emitting..
-                    KALDI_ASSERT(f >= 0 && f < cost_offsets_.size());
-                    cost_offset = cost_offsets_[f];
+                    KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
+                    cost_offset = cost_offsets[f];
                 }
                 LatticeArc::Weight arc_w(l->graph_cost, l->acoustic_cost - cost_offset);
                 LatticeArc arc(l->ilabel, l->olabel,arc_w, nextstate);
@@ -382,7 +382,6 @@ void KdLatticeDecoder::PruneForwardLinksFinal()
     } // while changed
 }
 
-/// Same as ReachedFinal()
 float KdLatticeDecoder::FinalRelativeCost()
 {
     if( !decoding_finalized_ )
@@ -529,11 +528,11 @@ void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable)
                  "You must call InitDecoding() before AdvanceDecoding");
     int max_frame = decodable->NumFramesReady();
 
-    KALDI_ASSERT( max_frame>=NumFramesDecoded() );
+    KALDI_ASSERT( max_frame>=frame_num );
 
-    while( NumFramesDecoded()<max_frame )
+    while( frame_num<max_frame )
     {
-        if( (NumFramesDecoded()%config_.prune_interval)==0 )
+        if( (frame_num%config_.prune_interval)==0 )
         {
             PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
@@ -610,7 +609,7 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
         float min_active_cutoff = std::numeric_limits<float>::infinity();
         float max_active_cutoff = std::numeric_limits<float>::infinity();
 
-        KALDI_VLOG(6) << "Number of tokens active on frame " << NumFramesDecoded()
+        KALDI_VLOG(6) << "Number of tokens active on frame " << frame_num
                       << " is " << tmp_array_.size();
 
         if (tmp_array_.size() > static_cast<size_t>(config_.max_active))
@@ -657,108 +656,94 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
     }
 }
 
+double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *decodable,
+                                      float adaptive_beam)
+{
+    double cutoff = KD_INFINITY;
+    int32 frame = cost_offsets.size();
+
+    cost_offsets.push_back(0.0);
+    if( best_elem )
+    {
+        KdStateId state = best_elem->key;
+        KdToken *tok = best_elem->val;
+        float cost_offset = -tok->tot_cost;
+
+        for( fst::ArcIterator<KdFST> aiter(*fst_, state) ; !aiter.Done() ; aiter.Next() )
+        {
+            const KdArc &arc = aiter.Value();
+            if( arc.ilabel!=0 )
+            {
+                float arc_cost = -decodable->LogLikelihood(frame_num, arc.ilabel);
+                float new_weight = arc.weight.Value() + (cost_offset + tok->tot_cost)
+                                 + arc_cost + adaptive_beam;
+                if( new_weight<cutoff )
+                {
+                    cutoff = new_weight;
+                }
+            }
+        }
+        cost_offsets[frame] = cost_offset;
+    }
+
+    return cutoff;
+}
+
 // Processes for one frame.
 float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 {
     KALDI_ASSERT(frame_toks.size() > 0);
-    int32 frame = frame_toks.size() - 1; // frame is the frame-index
+    int32 frame = frame_toks.size() - 1;
     frame_toks.resize(frame_toks.size() + 1);
 
     Elem *final_toks = toks_.Clear();
     Elem *best_elem = NULL;
     float adaptive_beam;
     size_t tok_cnt;
-    float cur_cutoff = GetCutoff(final_toks, &tok_cnt, &adaptive_beam, &best_elem);
-    KALDI_VLOG(6) << "Adaptive beam on frame " << NumFramesDecoded()
-                  << " is " << adaptive_beam;
 
-    PossiblyResizeHash(tok_cnt);  // This makes sure the hash is always big enough.
+    float cutoff = GetCutoff(final_toks, &tok_cnt, &adaptive_beam, &best_elem);
+    float next_cutoff = GetBestCutoff(best_elem, decodable, adaptive_beam);
 
-    float next_cutoff = std::numeric_limits<float>::infinity();
-    // pruning "online" before having seen all tokens
-
-    float cost_offset = 0.0; //keep probabilities in a good dynamic range.
-
-    // First process the best token to get a hopefully
-    // reasonably tight bound on the next cutoff.  The only
-    // products of the next block are "next_cutoff" and "cost_offset".
-    if( best_elem )
+    Elem *e_tail;
+    for( Elem *e=final_toks ; e!=NULL ; e=e_tail )
     {
-        KdStateId state = best_elem->key;
-        KdToken *tok = best_elem->val;
-        cost_offset = - tok->tot_cost;
-        float arc_cost;
-        int   arc_count = 0;
-        for( fst::ArcIterator<KdFST> aiter(*fst_, state) ; !aiter.Done() ; aiter.Next() )
-        {
-            arc_count++;
-
-            const KdArc &arc = aiter.Value();
-            if( arc.ilabel!=0 )
-            {  // propagate..
-                arc_cost = -decodable->LogLikelihood(decoded_frame_i, arc.ilabel);
-                float new_weight = arc.weight.Value() + (cost_offset + tok->tot_cost) + arc_cost;
-                if (new_weight + adaptive_beam < next_cutoff)
-                {
-                    next_cutoff = new_weight + adaptive_beam;
-                }
-            }
-        }
-//        qDebug() << "ProcessEmitting" << decoded_frame_i << arc_cost << arc_count;
-    }
-
-    // Store the offset on the acoustic likelihoods that we're applying.
-    // Could just do cost_offsets_.push_back(cost_offset), but we
-    // do it this way as it's more robust to future code changes.
-    cost_offsets_.resize(frame + 1, 0.0);
-    cost_offsets_[frame] = cost_offset;
-
-    // the tokens are now owned here, in final_toks, and the hash is empty.
-    // 'owned' is a complex thing here; the point is we need to call DeleteElem
-    // on each elem 'e' to let toks_ know we're done with them.
-    for( Elem *e = final_toks, *e_tail ; e!=NULL ; e=e_tail )
-    {
-        // loop this way because we delete "e" as we go.
         KdStateId state = e->key;
         KdToken *tok = e->val;
-        if (tok->tot_cost <= cur_cutoff)
+        if( tok->tot_cost<=cutoff )
         {
             for(fst::ArcIterator<KdFST> aiter(*fst_, state); !aiter.Done(); aiter.Next() )
             {
                 const KdArc &arc = aiter.Value();
                 if (arc.ilabel != 0)
-                {  // propagate..
-                    float new_weight = decodable->LogLikelihood(decoded_frame_i, arc.ilabel);
-//                    qDebug() << "for" << new_weight;
-                    float ac_cost = cost_offset - new_weight;
+                {
+                    float new_weight = decodable->LogLikelihood(frame_num, arc.ilabel);
+                    float ac_cost = cost_offsets[frame] - new_weight;
                     float graph_cost = arc.weight.Value();
-                    float cur_cost = tok->tot_cost;
-                    float tot_cost = cur_cost + ac_cost + graph_cost;
+                    float tot_cost = tok->tot_cost + ac_cost + graph_cost;
 
-                    if (tot_cost >= next_cutoff)
+                    if( tot_cost>=next_cutoff )
                     {
                         continue;
                     }
-                    else if (tot_cost + adaptive_beam < next_cutoff)
+                    else if( tot_cost+adaptive_beam<next_cutoff )
+                    {
                         next_cutoff = tot_cost + adaptive_beam; // prune by best current token
-                    // Note: the frame indexes into frame_toks are one-based,
-                    // hence the + 1.
+                    }
+
                     Elem *e_next = FindOrAddToken(arc.nextstate,
                                                   frame + 1, tot_cost, tok, NULL);
-                    // NULL: no change indicator needed
 
                     // Add ForwardLink from tok to next_tok (put on head of list tok->links)
                     tok->links = new KdFLink(e_next->val, arc.ilabel, arc.olabel,
                                              graph_cost, ac_cost, tok->links);
                 }
-            } // for all arcs
+            }
         }
         e_tail = e->tail;
-        toks_.Delete(e); // delete Elem
+        toks_.Delete(e);
     }
 
-    decoded_frame_i++;
-//    qDebug() << "next_cutoff" << next_cutoff;
+    frame_num++;
     return next_cutoff;
 }
 
@@ -973,19 +958,5 @@ void KdLatticeDecoder::TopSortTokens(
         (*topsorted_list)[iter->second] = iter->first;
     }
 }
+// FinalRelativeCost()!=KD_INFINITY --> ReachedFinal
 
-// says whether a final-state was active on the last frame.
-bool KdLatticeDecoder::ReachedFinal()
-{
-    if( FinalRelativeCost()==KD_INFINITY )
-    {
-        return false;
-    }
-    return true;
-}
-
-// Returns the number of frames decoded so far.
-int32 KdLatticeDecoder::NumFramesDecoded()
-{
-    return decoded_frame_i; // - 1;
-}

@@ -26,7 +26,7 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
 {
 //    qDebug() << "Reset Kaldi" << full << frame_toks.size();
     DeleteElems(toks_.Clear()); //replaced ClearToks
-    cost_offsets_.clear();
+    cost_offsets.clear();
     ClearActiveTokens(); ///THIS LINE SHOULD NOT EXECUTED!
     warned_ = false;
     num_toks_ = 0;
@@ -295,7 +295,7 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
     float factor = -1;
     for ( frame_i=0 ; frame_i<opts_.batch_size; frame_i++)
     {
-        if( decodable->IsLastFrame(decoded_frame_i-1) )
+        if( decodable->IsLastFrame(frame_num-1) )
         {
             break;
         }
@@ -327,7 +327,7 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
             tstart = tend;
         }
 
-        if ((NumFramesDecoded()+1) % config_.prune_interval == 0)
+        if ((frame_num+1) % config_.prune_interval == 0)
         {
             PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }

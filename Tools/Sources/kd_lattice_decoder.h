@@ -1,6 +1,7 @@
 #ifndef KD_LATTICE_DECODER_H
 #define KD_LATTICE_DECODER_H
 
+#include<QVector>
 #include "decoder/lattice-faster-decoder.h"
 
 /*extra_cost is used in pruning tokens, to save memory.
@@ -40,6 +41,7 @@ class KdLatticeDecoder
 public:
     using Label = typename KdArc::Label;
     using Weight = typename KdArc::Weight;
+    typedef kaldi::HashList<KdStateId, KdToken*>::Elem Elem;
 
     kaldi::LatticeFasterDecoderConfig config_;
     KdLatticeDecoder(KdFST &fst, kaldi::LatticeFasterDecoderConfig &config);
@@ -51,18 +53,19 @@ public:
 
     void  FinalizeDecoding();
     float FinalRelativeCost();
-    bool  ReachedFinal();
 
     bool GetBestPath  (kaldi::Lattice *ofst, bool use_final_probs = true);
     bool GetRawLattice(kaldi::Lattice *ofst, bool use_final_probs = true);
-    int32 NumFramesDecoded();
+    double GetBestCutoff(Elem *best_elem,
+                         kaldi::DecodableInterface *decodable,
+                         float adaptive_beam);
 
+    long frame_num = 0; //number of decoded frame
 
 protected:
     // protected instead of private, so classes which inherits from this,
     // also can have access
     inline static void DeleteForwardLinks(KdToken *tok);
-    using Elem = typename kaldi::HashList<KdStateId, KdToken*>::Elem;
 
     void PossiblyResizeHash(size_t num_toks);
     inline Elem *FindOrAddToken(KdStateId state, int32 frame_plus_one,
@@ -95,9 +98,7 @@ protected:
     // fst_ is a pointer to the FST we are decoding from.
     KdFST *fst_;
 
-    std::vector<float> cost_offsets_; // This contains, for each
-    // frame, an offset that was added to the acoustic log-likelihoods on that
-    // frame in order to keep everything in a nice dynamic range i.e.  close to
+    QVector<float> cost_offsets; //offset that keep costs close to
     // zero, to reduce roundoff errors.
     int32 num_toks_; // current total #toks allocated...
     bool warned_;
@@ -107,7 +108,6 @@ protected:
     unordered_map<KdToken*, float> final_costs_;
     float final_relative_cost_;
     float final_best_cost_;
-    long  decoded_frame_i = 0; //changed from 1 to 0 for online2 featurepipeline
 
     void DeleteElems(Elem *list);
 

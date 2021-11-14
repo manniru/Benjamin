@@ -252,7 +252,7 @@ double KdFasterDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *decod
                 double new_weight = arc.weight.Value() + tok->cost + ac_cost + adaptive_beam;
                 if( new_weight<cutoff )
                 {
-                    cutoff = new_weight + adaptive_beam;
+                    cutoff = new_weight;
                 }
             }
         }
@@ -272,7 +272,7 @@ double KdFasterDecoder::ProcessEmitting(DecodableInterface *decodable)
     float adaptive_beam;
     Elem *best_elem = NULL;
     double cutoff = GetCutoff(last_toks, &tok_cnt,
-                                     &adaptive_beam, &best_elem);
+                              &adaptive_beam, &best_elem);
 
     // This is the cutoff we use after adding in the log-likes (i.e.
     // for the next frame).  This is a bound on the cutoff we will use
