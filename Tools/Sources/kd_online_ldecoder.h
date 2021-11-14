@@ -1,6 +1,7 @@
 #ifndef KD_ONLINE_LDECODER_H
 #define KD_ONLINE_LDECODER_H
 
+#include <QVector>
 #include "bt_config.h"
 
 #ifdef BT_LAT_ONLINE
@@ -39,10 +40,8 @@ class KdOnlineLDecoder : public KdLatticeDecoder
 {
 public:
     // "sil_phones" - the IDs of all silence phones
-    KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
-                     KdOnlineLDecoderOpts &opts,
-                     std::vector<int32> &sil_phones,
-                     kaldi::TransitionModel &trans_model);
+    KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst, KdOnlineLDecoderOpts &opts,
+                     QVector<int> sil_phones, kaldi::TransitionModel &trans_model);
 
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
@@ -74,7 +73,7 @@ private:
     void UpdateImmortalToken();
 
     const KdOnlineLDecoderOpts opts_;
-    const kaldi::ConstIntegerSet<int32> silence_set_; // silence phones IDs
+    QVector<int> silence_set; // silence phones IDs
     const kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
     float max_beam_; // the maximum allowed beam
     float effective_beam_; // the currently used beam

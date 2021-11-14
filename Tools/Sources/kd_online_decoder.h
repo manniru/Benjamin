@@ -1,10 +1,11 @@
 #ifndef KD_ONLINE_DECODER_H
 #define KD_ONLINE_DECODER_H
 
+#include <QVector>
 #include "bt_config.h"
 #include "kd_faster_decoder.h"
 
-#ifndef BT_LAT_ONLINE
+#ifndef BT_LAT_ONLINE2
 
 #include "util/stl-utils.h"
 #include "decoder/faster-decoder.h"
@@ -35,20 +36,19 @@ enum KdDecodeState
 class KdOnlineDecoder : public KdFasterDecoder
 {
 public:
-    // "sil_phones" - the IDs of all silence phones
     KdOnlineDecoder(fst::Fst<fst::StdArc> &fst,
-                    KdOnlineDecoderOpts &opts,
-                    const std::vector<int32> &sil_phones,
+                    KdOnlineDecoderOpts &opts, QVector<int> sil_phones,
                     const kaldi::TransitionModel &trans_model);
 
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
 
     int  PartialTraceback(fst::MutableFst<kaldi::LatticeArc> *out_fst);
+    // Makes a linear graph, by tracing back from the best currently active token
+    // to the last immortal token. This method is meant to be invoked at the end
+    // of an utterance in order to get the last chunk of the hypothesis
     int  FinishTraceBack (fst::MutableFst<kaldi::LatticeArc> *out_fst);
-
-    // Returns "true" if the best current hypothesis ends with long enough silence
-    bool EndOfUtterance();
+    bool HaveSilence();
 
 private:
     void ResetDecoder(bool full);
@@ -65,12 +65,11 @@ private:
     // Searches for the last token, ancestor of all currently active tokens
     void   UpdateImmortalToken();
 
-    double getConf(KdFToken *best_tok);
     KdFToken *getBestTok();
     double updateBeam(double tstart);
 
     KdOnlineDecoderOpts opts_;
-    const kaldi::ConstIntegerSet<int32> silence_set_; // silence phones IDs
+    QVector<int> silence_set; // silence phones IDs
     const kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
     float max_beam_; // the maximum allowed beam
     float effective_beam_; // the currently used beam

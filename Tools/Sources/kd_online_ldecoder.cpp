@@ -10,14 +10,16 @@ using namespace kaldi;
 
 KdOnlineLDecoder::KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
                                    KdOnlineLDecoderOpts &opts,
-                                   std::vector<int32> &sil_phones,
+                                   QVector<int> sil_phones,
                                    kaldi::TransitionModel &trans_model):
     KdLatticeDecoder(fst, opts), opts_(opts),
-    silence_set_(sil_phones), trans_model_(trans_model),
-    max_beam_(opts.beam), effective_beam_(opts.beam),
-    state_(KD_EndFeats), frame_(0), utt_frames_(0)
+    trans_model_(trans_model), max_beam_(opts.beam)
 {
-    ;
+    silence_set = sil_phones;
+    frame_ = 0;
+    utt_frames_ = 0;
+    state_ = KD_EndFeats;
+    effective_beam_ = opts.beam;
 }
 
 void KdOnlineLDecoder::ResetDecoder(bool full)
@@ -270,7 +272,7 @@ bool KdOnlineLDecoder::HaveSilence()
     {
         int32 tid = split[i][0];
         int32 phone = trans_model_.TransitionIdToPhone(tid);
-        if (silence_set_.count(phone) == 0)
+        if( !silence_set.contains(phone) )
         {
             return false;
         }

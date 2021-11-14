@@ -1,6 +1,6 @@
 #include "kd_online_decoder.h"
 
-#ifndef BT_LAT_ONLINE
+#ifndef BT_LAT_ONLINE2
 
 #include "base/timer.h"
 #include "fstext/fstext-utils.h"
@@ -10,15 +10,14 @@
 using namespace kaldi;
 
 KdOnlineDecoder::KdOnlineDecoder(fst::Fst<fst::StdArc> &fst,
-                                 KdOnlineDecoderOpts &opts,
-                                 const std::vector<int32> &sil_phones,
+                                 KdOnlineDecoderOpts &opts, QVector<int> sil_phones,
                                  const kaldi::TransitionModel &trans_model):
     KdFasterDecoder(fst, opts), opts_(opts),
-    silence_set_(sil_phones), trans_model_(trans_model),
+    trans_model_(trans_model),
     max_beam_(opts.beam), effective_beam_(opts.beam),
     state_(KD_EndFeats), frame_(0), utt_frames_(0)
 {
-    ;
+    silence_set = sil_phones;
 }
 
 void KdOnlineDecoder::ResetDecoder(bool full)
@@ -173,7 +172,7 @@ int KdOnlineDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
     }
 
     MakeLattice(immortal_tok_, prev_immortal_tok_, out_fst);
-    return getConf(NULL);
+    return 1;
 }
 
 // Makes a linear graph, by tracing back from the best currently active token
@@ -194,43 +193,9 @@ int KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
     }
 
     MakeLattice(best_tok, immortal_tok_, out_fst);
-    return getConf(best_tok);
+    return 0;
 }
 
-//LAST TOK
-//Come Back to last immortal token but it will not get you the confidene
-double KdOnlineDecoder::getConf(KdFToken *best_tok)
-{
-    if( best_tok==NULL )
-    {
-        best_tok = getBestTok();
-    }
-
-    double i=0;
-    for( const Elem *e=toks_.GetList() ; e!=NULL ; e=e->tail )
-    {
-        KdFToken *token = e->val;
-
-        if( token->cost>1200 )
-        {
-            if( token->arc_.ilabel&&token->arc_.olabel ) //if both are not zero
-            {
-//                qDebug() << "cost" << i << token->cost_ << token->arc_.ilabel << token->arc_.olabel ;
-                i++;
-            }
-        }
-    }
-
-    if( i>20 )
-    {
-//        qDebug() << "best cost" << i/toks_.Size() << best_tok->cost_ ;
-//        exit(0);
-    }
-
-    return 1;
-}
-
-//find max cost
 KdFToken *KdOnlineDecoder::getBestTok()
 {
     KdFToken *best_tok = NULL;
@@ -355,8 +320,8 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
     RemoveEpsLocal(out_fst);
 }
 
-
-bool KdOnlineDecoder::EndOfUtterance()
+// Detect End of Utterance
+bool KdOnlineDecoder::HaveSilence()
 {
     fst::VectorFst<LatticeArc> trace;
     int32 sil_frm = opts_.inter_utt_sil / (1 + utt_frames_ / opts_.max_utt_len_); //50
@@ -371,7 +336,7 @@ bool KdOnlineDecoder::EndOfUtterance()
     {
         int32 tid = split[i][0];
         int32 phone = trans_model_.TransitionIdToPhone(tid);
-        if( silence_set_.count(phone)==0 )
+        if( !silence_set.contains(phone) )
         {
             return false;
         }
@@ -414,7 +379,7 @@ KdDecodeState KdOnlineDecoder::Decode(DecodableInterface *decodable)
     }
     else
     {
-        if( EndOfUtterance() )
+        if( HaveSilence() )
         {
             state_ = KdDecodeState::KD_EndUtt;
         }

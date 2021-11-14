@@ -41,10 +41,7 @@ void KdOnline::init()
 
     std::string model_rxfilename = BT_FINAL_PATH;
     std::string fst_rxfilename   = BT_FST_PATH;
-    std::string silence_phones_str = "1:2:3:4:5:6:7:8:9:10";
-
-    std::vector<int32> silence_phones;
-    SplitStringToIntegers(silence_phones_str, ":", false, &silence_phones);
+    QVector<int> silence_phones = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     trans_model = new TransitionModel;
     am_gmm = new AmDiagGmm;
@@ -56,9 +53,6 @@ void KdOnline::init()
 
     decode_fst = ReadDecodeGraph(fst_rxfilename);
 
-    // We are not properly registering/exposing MFCC and frame extraction options,
-    // because there are parts of the online decoding code, where some of these
-    // options are hardwired(ToDo: we should fix this at some point)
     MfccOptions mfcc_opts;
     mfcc_opts.use_energy = false;
     int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 20;
