@@ -46,6 +46,7 @@ public:
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
 
+    void RawLattice(KdToken *start, KdToken *end, kaldi::Lattice *ofst);
     void MakeLattice(KdToken *start, KdToken *end, kaldi::CompactLattice *ofst);
 
     // Makes a linear graph, by tracing back from the last "immortal" token

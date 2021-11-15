@@ -51,6 +51,47 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
     }
 }
 
+
+void KdOnlineLDecoder::RawLattice(KdToken *start, KdToken *end,
+                                   Lattice *ofst)
+{
+    ofst->DeleteStates();
+    std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
+
+    for( KdToken *tok=start ; tok!=end ; tok=tok->next )
+    {
+        float last_cost = 0;
+        if( tok==NULL )
+        {
+            break;
+        }
+        if( tok->links )
+        {
+            LatticeWeight arc_weight(tok->links->graph_cost, tok->links->acoustic_cost);
+            LatticeArc l_arc(tok->links->ilabel, tok->links->olabel,
+                             arc_weight, 0/*tok->arc_.nextstate*/);
+
+            arcs_reverse.push_back(l_arc);
+        }
+    }
+
+//    if(arcs_reverse.back().nextstate == fst_.Start())
+//    {
+//        arcs_reverse.pop_back();  // that was a "fake" token... gives no info.
+//    }
+
+    KdStateId cur_state = ofst->AddState();
+    ofst->SetStart(cur_state);
+    for( int i=arcs_reverse.size()-1; i>=0 ; i-- )
+    {
+        LatticeArc arc = arcs_reverse[i];
+        arc.nextstate = ofst->AddState();
+        ofst->AddArc(cur_state, arc);
+        cur_state = arc.nextstate;
+    }
+//    GetRawLattice(&raw_fst);
+}
+
 void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
                                    CompactLattice *ofst)
 {
@@ -68,8 +109,8 @@ void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
     }
 
     Lattice raw_fst;
-    GetRawLattice(&raw_fst);
-    Invert(&raw_fst);
+    RawLattice(start, end, &raw_fst);
+//    Invert(&raw_fst);
     fst::ILabelCompare<LatticeArc> ilabel_comp;
     ArcSort(&raw_fst, ilabel_comp);
 
