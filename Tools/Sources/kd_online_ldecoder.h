@@ -46,7 +46,7 @@ public:
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
 
-    void MakeLattice(kaldi::CompactLattice *ofst);
+    void MakeLattice(KdToken *start, KdToken *end, kaldi::CompactLattice *ofst);
 
     // Makes a linear graph, by tracing back from the last "immortal" token
     // to the previous one
@@ -68,6 +68,7 @@ private:
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token
     void TracebackNFrames(int32 nframes, kaldi::Lattice *out_fst);
+    KdToken* getBestTok();
 
     // Searches for the last token, ancestor of all currently active tokens
     void UpdateImmortalToken();

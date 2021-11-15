@@ -714,7 +714,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
             for(fst::ArcIterator<KdFST> aiter(*fst_, state); !aiter.Done(); aiter.Next() )
             {
                 const KdArc &arc = aiter.Value();
-                if (arc.ilabel != 0)
+                if( arc.ilabel!=0 )
                 {
                     float new_weight = decodable->LogLikelihood(frame_num, arc.ilabel);
                     float ac_cost = cost_offsets[frame] - new_weight;
@@ -735,7 +735,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 
                     // Add ForwardLink from tok to next_tok (put on head of list tok->links)
                     tok->links = new KdFLink(e_next->val, arc.ilabel, arc.olabel,
-                                             graph_cost, ac_cost, tok->links);
+                                             graph_cost , ac_cost,    tok->links);
                 }
             }
         }

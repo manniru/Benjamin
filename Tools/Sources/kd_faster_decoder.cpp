@@ -52,7 +52,7 @@ void KdFasterDecoder::AdvanceDecoding(DecodableInterface *decodable,
         target_frames_decoded = std::min(target_frames_decoded,
                                          num_frames_decoded_ + max_num_frames);
     }
-    while (num_frames_decoded_ < target_frames_decoded)
+    while( num_frames_decoded_<target_frames_decoded )
     {
         // note: ProcessEmitting() increments num_frames_decoded_
         double weight_cutoff = ProcessEmitting(decodable);
@@ -299,8 +299,8 @@ double KdFasterDecoder::ProcessEmitting(DecodableInterface *decodable)
                 {
                     BaseFloat ac_cost =  - decodable->LogLikelihood(frame, arc.ilabel);
                     double new_weight = arc.weight.Value() + tok->cost + ac_cost;
-                    if (new_weight < next_weight_cutoff)
-                    {  // not pruned..
+                    if( new_weight<next_weight_cutoff )
+                    {
                         KdFToken *new_tok = new KdFToken(arc, ac_cost, tok);
                         Elem *e_found = toks_.Insert(arc.nextstate, new_tok);
                         if (new_weight + adaptive_beam < next_weight_cutoff)

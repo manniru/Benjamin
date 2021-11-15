@@ -5,7 +5,7 @@
 #include "bt_config.h"
 #include "kd_faster_decoder.h"
 
-#ifndef BT_LAT_ONLINE
+#ifndef BT_LAT_ONLINE2
 
 #include "util/stl-utils.h"
 #include "decoder/faster-decoder.h"

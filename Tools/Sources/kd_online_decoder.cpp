@@ -1,6 +1,6 @@
 #include "kd_online_decoder.h"
 
-#ifndef BT_LAT_ONLINE
+#ifndef BT_LAT_ONLINE2
 
 #include "base/timer.h"
 #include "fstext/fstext-utils.h"
@@ -111,7 +111,7 @@ void KdOnlineDecoder::UpdateImmortalToken()
     for( const Elem *e=toks_.GetList() ; e != NULL; e = e->tail )
     {
         KdFToken* tok = e->val;
-        while( tok!=NULL && tok->arc_.ilabel==0 ) //deal with non-emitting ones ...
+        while( tok!=NULL && tok->arc_.ilabel==0 )
         {
             tok = tok->prev_;
         }
@@ -134,7 +134,7 @@ void KdOnlineDecoder::UpdateImmortalToken()
         for( int i=0 ; i<emitting.size() ; i++ )
         {
             KdFToken* p_token = emitting[i]->prev_;
-            while ((p_token!=NULL) && (p_token->arc_.ilabel == 0)) //deal with non-emitting ones
+            while( ( p_token!=NULL ) && ( p_token->arc_.ilabel==0 ))
             {
                 p_token = p_token->prev_;
             }
@@ -142,7 +142,6 @@ void KdOnlineDecoder::UpdateImmortalToken()
             {
                 continue;
             }
-
             if( p_emitting.contains(p_token) )
             {
                 continue;

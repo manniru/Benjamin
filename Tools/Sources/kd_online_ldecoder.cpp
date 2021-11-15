@@ -51,8 +51,22 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
     }
 }
 
-void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
+void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
+                                   CompactLattice *ofst)
 {
+    if (start == NULL)
+    {
+        return;
+    }
+
+    bool is_final = true;
+    double this_cost = start->tot_cost/* + fst_->Final(start->links->olabel).Value()*/;
+
+    if( this_cost==KD_INFINITY )
+    {
+        is_final = false;
+    }
+
     Lattice raw_fst;
     GetRawLattice(&raw_fst);
     Invert(&raw_fst);
@@ -71,57 +85,54 @@ void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
 
 void KdOnlineLDecoder::UpdateImmortalToken()
 {
-    unordered_set<KdToken*> emitting;
+    QVector<KdToken*> emitting;
     for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
     {
         KdToken* tok = e->val;
-        while( tok!=NULL /*&& ( tok->KdFLink.ilabel==0 )*/ ) //deal with non-emitting ones ...
+        while( tok!=NULL && ( tok->links->ilabel==0 ) ) //deal with non-emitting ones ...
         {
             tok = tok->next;
         }
         if (tok != NULL)
         {
-            emitting.insert(tok);
+            continue;
         }
+        if( emitting.contains(tok) )
+        {
+            continue;
+        }
+        emitting.push_back(tok);
     }
 
-    KdToken* the_one = NULL;
-    while (1)
+    QVector<KdToken*> p_emitting;
+
+    while( emitting.size()>1 )
     {
-        if (emitting.size() == 1)
+        p_emitting.clear();
+        for( int i=0 ; i<emitting.size() ; i++ )
         {
-            the_one = *(emitting.begin());
-            break;
-        }
-
-        if (emitting.size() == 0)
-        {
-            break;
-        }
-
-        unordered_set<KdToken*> prev_emitting;
-        unordered_set<KdToken*>::iterator it;
-
-        for( it=emitting.begin(); it!=emitting.end() ; ++it )
-        {
-            KdToken *tok = *it;
-            KdToken *prev_token = tok->next;
-            while( ( prev_token!=NULL ) /*&& ( prev_token->KdFLink.ilabel==0 )*/ )
+            KdToken *p_token = emitting[i]->next;
+            while( ( p_token!=NULL ) && ( p_token->links->ilabel==0 ) )
             {
-                prev_token = prev_token->next; //deal with non-emitting ones
+                p_token = p_token->next;
             }
-            if (prev_token == NULL)
+            if ( p_token==NULL )
             {
                 continue;
             }
-            prev_emitting.insert(prev_token);
-        } // for
-        emitting = prev_emitting;
-    } // while
-    if (the_one != NULL)
+            if( p_emitting.contains(p_token) )
+            {
+                continue;
+            }
+            p_emitting.push_back(p_token);
+        }
+        emitting = p_emitting;
+    }
+
+    if( emitting.size()==1 )
     {
         prev_immortal_tok_ = immortal_tok_;
-        immortal_tok_ = the_one;
+        immortal_tok_ = emitting[0];
         return;
     }
 }
@@ -129,13 +140,13 @@ void KdOnlineLDecoder::UpdateImmortalToken()
 //Called if decoder is not in KdDecodeState::KD_EndUtt
 bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 {
-//    UpdateImmortalToken();
-//    if(immortal_tok_ == prev_immortal_tok_)
-//    {
-//        return false; //no partial traceback at that point of time
-//    }
+    UpdateImmortalToken();
+    if( immortal_tok_==prev_immortal_tok_ )
+    {
+        return false;
+    }
 
-    MakeLattice(out_fst);
+    MakeLattice(immortal_tok_, prev_immortal_tok_, out_fst);
     return true;
 }
 
@@ -143,10 +154,26 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 // to the last immortal token.
 double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 {
-    MakeLattice(out_fst);
+    KdToken *best_tok = getBestTok();
+    MakeLattice(best_tok, immortal_tok_, out_fst);
 
     return 1;
 }
+
+KdToken *KdOnlineLDecoder::getBestTok()
+{
+    KdToken *best_tok = NULL;
+    for( const Elem *e=toks_.GetList() ; e!=NULL ; e=e->tail )
+    {
+        if( best_tok==NULL || best_tok->tot_cost<e->val->tot_cost )
+        {
+            best_tok = e->val;
+        }
+    }
+
+    return best_tok;
+}
+
 
 void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 {
@@ -288,7 +315,7 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
         ResetDecoder(state_ == KD_EndFeats);
     }
 
-//    ProcessNonemitting(std::numeric_limits<float>::max());
+    ProcessNonemitting(std::numeric_limits<float>::max());
     int frame_i;
     Timer timer;
     double64 tstart = timer.Elapsed();

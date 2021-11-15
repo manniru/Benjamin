@@ -43,7 +43,7 @@ public:
     bool GetLattice(bool end_of_utterance,
                     kaldi::CompactLattice *clat);
 
-    KdLatticeDecoder *o_decoder;
+    KdLatticeDecoder   *o_decoder;
     KdOnline2Decodable *decodable;
     kaldi::OnlineFeaturePipeline   *feature_pipeline;  // owned here.
 
