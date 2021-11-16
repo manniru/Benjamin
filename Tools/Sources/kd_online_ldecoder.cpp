@@ -53,14 +53,22 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
 
 
 void KdOnlineLDecoder::RawLattice(KdToken *start, KdToken *end,
-                                   Lattice *ofst)
+                                  Lattice *ofst)
 {
     ofst->DeleteStates();
+
+    bool is_final = true;
+    double this_cost = start->tot_cost/* + fst_->Final(start->links->olabel).Value()*/;
+
+    if( this_cost==KD_INFINITY )
+    {
+        is_final = false;
+    }
+
     std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
 
     for( KdToken *tok=start ; tok!=end ; tok=tok->next )
     {
-        float last_cost = 0;
         if( tok==NULL )
         {
             break;
@@ -89,6 +97,16 @@ void KdOnlineLDecoder::RawLattice(KdToken *start, KdToken *end,
         ofst->AddArc(cur_state, arc);
         cur_state = arc.nextstate;
     }
+
+    if (is_final)
+    {
+//        Weight final_weight = fst_.Final(start->);
+//        ofst->SetFinal(cur_state, LatticeWeight(final_weight.Value(), 0.0));
+    }
+    else
+    {
+        ofst->SetFinal(cur_state, LatticeWeight::One());
+    }
 //    GetRawLattice(&raw_fst);
 }
 
@@ -100,17 +118,11 @@ void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
         return;
     }
 
-    bool is_final = true;
-    double this_cost = start->tot_cost/* + fst_->Final(start->links->olabel).Value()*/;
-
-    if( this_cost==KD_INFINITY )
-    {
-        is_final = false;
-    }
-
     Lattice raw_fst;
-    RawLattice(start, end, &raw_fst);
-//    Invert(&raw_fst);
+//    RawLattice(start, end, &raw_fst);
+
+    GetRawLattice(&raw_fst);
+    Invert(&raw_fst);
     fst::ILabelCompare<LatticeArc> ilabel_comp;
     ArcSort(&raw_fst, ilabel_comp);
 
@@ -130,11 +142,25 @@ void KdOnlineLDecoder::UpdateImmortalToken()
     for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
     {
         KdToken* tok = e->val;
-        while( tok!=NULL && ( tok->links->ilabel==0 ) ) //deal with non-emitting ones ...
+        while( tok!=NULL ) //deal with non-emitting ones ...
         {
-            tok = tok->next;
+            if( tok->links )
+            {
+                if( tok->links->ilabel==0 )
+                {
+                    tok = tok->next;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                tok = tok->next;
+            }
         }
-        if (tok != NULL)
+        if( tok==NULL )
         {
             continue;
         }
@@ -346,7 +372,7 @@ bool KdOnlineLDecoder::HaveSilence()
         }
     }
 
-    return true;
+    return false; ///shit! change this to true
 }
 
 KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
@@ -354,6 +380,7 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
     if( state_==KD_EndFeats || state_==KD_EndUtt ) // new utterance
     {
         ResetDecoder(state_ == KD_EndFeats);
+        qDebug() << "reset";
     }
 
     ProcessNonemitting(std::numeric_limits<float>::max());

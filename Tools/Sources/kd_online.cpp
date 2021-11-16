@@ -39,7 +39,7 @@ void KdOnline::init()
 {
     BT_ONLINE_OPTS decoder_opts;
 
-    std::string model_rxfilename = BT_FINAL_PATH;
+    std::string model_rxfilename = BT_MDL_PATH;
     std::string fst_rxfilename   = BT_FST_PATH;
     QVector<int> silence_phones = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
@@ -62,6 +62,37 @@ void KdOnline::init()
     decoder_opts.beam = 13.0;
 #ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
+//    decoder_opts. = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
+    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
+
+    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
+    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
+    fcc.add_deltas = true;
+    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
+
+    d_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
+    d_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
+    d_config.model_rxfilename = KAL_NATO_DIR"exp/"KAL_MODE"/final.mdl";
+    d_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
+    d_config.faster_decoder_opts.max_active = 7000;
+    d_config.faster_decoder_opts.beam = 12.0;
+    d_config.faster_decoder_opts.lattice_beam = 6.0;
+    d_config.acoustic_scale = 0.08;
+
+    feature_config = new OnlineFeaturePipelineConfig(fcc);
+    // The following object initializes the models we use in decoding.
+    models_ = new OnlineGmmDecodingModels(d_config);
+
+    decode_fst = ReadFstKaldiGeneric(fst_rxfilename); ///May replace with ReadDecodeGraph
+
+    feature_pipeline = NULL;
+    feature_pipeline = new OnlineFeaturePipeline(*feature_config);
+
+    o_decoder->InitDecoding();
+    feature_pipeline->SetTransform(adaptation_state_.transform);
+
+    // Decodable is lightweight, lose nothing constructing it each time
+    decodable = new KdOnline2Decodable(models_, d_config.acoustic_scale, feature_pipeline);
 #endif
 
     o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
