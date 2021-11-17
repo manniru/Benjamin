@@ -31,7 +31,15 @@ KdOnline2Gmm::KdOnline2Gmm(QObject *parent) : QObject(parent)
 
     feature_config = new OnlineFeaturePipelineConfig(fcc);
     // The following object initializes the models we use in decoding.
-    models_ = new OnlineGmmDecodingModels(d_config);
+
+    TransitionModel *trans_model = new TransitionModel;
+    AmDiagGmm *am_gmm = new AmDiagGmm;
+
+    bool rx_binary;
+    Input ki(d_config.model_rxfilename, &rx_binary);
+    trans_model->Read(ki.Stream(), rx_binary);
+    am_gmm->Read(ki.Stream(), rx_binary);
+    models_ = new KdOnline2Model(trans_model, am_gmm, &d_config);
 
     decode_fst = ReadFstKaldiGeneric(fst_rxfilename);
 
@@ -100,7 +108,7 @@ bool KdOnline2Gmm::GetLattice(bool end_of_utterance,
 
     PruneLattice(lat_beam, &lat);
 
-    DeterminizeLatticePhonePrunedWrapper(models_->GetTransitionModel(),
+    DeterminizeLatticePhonePrunedWrapper(*(models_->GetTransitionModel()),
                                          &lat, lat_beam, clat,
                                          d_config.faster_decoder_opts.det_opts);
 

@@ -1,62 +1,43 @@
-#ifndef KD_ONLINE2_GMM_H
-#define KD_ONLINE2_GMM_H
+#ifndef KD_ONLINE2_MODEL_H
+#define KD_ONLINE2_MODEL_H
 
 #include "bt_config.h"
 
-#ifdef BT_ONLINE2
 #include <QObject>
 #include <QTimer>
 #include <QDebug>
 #include <string>
 #include <vector>
 
+#include "online2/online-gmm-decoding.h"
 
-#include "matrix/matrix-lib.h"
-#include "util/common-utils.h"
-#include "base/kaldi-error.h"
-#include "transform/basis-fmllr-diag-gmm.h"
-#include "transform/fmllr-diag-gmm.h"
-#include "online2/online-feature-pipeline.h"
-#include "online2/online-gmm-decodable.h"
-#include "online2/online-endpoint.h"
-#include "decoder/lattice-faster-online-decoder.h"
-#include "hmm/transition-model.h"
-#include "gmm/am-diag-gmm.h"
-#include "hmm/posterior.h"
-#include "kd_lattice_decoder.h"
-#include "kd_online2_decodabe.h"
-#include <fst/fst.h>
 #include "bt_config.h"
 #include "backend.h"
-
-class KdOnline2Gmm : public QObject
+class KdOnline2Model
 {
-    Q_OBJECT
 public:
-    explicit KdOnline2Gmm(QObject *parent = NULL);
-    ~KdOnline2Gmm();
+    KdOnline2Model(kaldi::TransitionModel *tran, kaldi::AmDiagGmm *acc_model,
+                   kaldi::OnlineGmmDecodingConfig *config);
 
-    void init();
-    void AdvanceDecoding();
-    void FinalizeDecoding();
+    kaldi::TransitionModel* GetTransitionModel();
 
-    bool GetLattice(bool end_of_utterance,
-                    kaldi::CompactLattice *clat);
+    kaldi::AmDiagGmm* GetOnlineAlignmentModel();
 
-    KdLatticeDecoder   *o_decoder;
-    KdOnline2Decodable *decodable;
-    kaldi::OnlineFeaturePipeline   *feature_pipeline;  // owned here.
+    kaldi::AmDiagGmm* GetModel();
+
+    kaldi::AmDiagGmm* GetFinalModel();
+
+    kaldi::BasisFmllrEstimate* GetFmllrBasis();
 
 private:
-    kaldi::OnlineGmmDecodingConfig d_config;
-    kaldi::OnlineGmmDecodingModels *models_;
-    kaldi::OnlineGmmAdaptationState adaptation_state_;
-
-    std::vector<int> silence_phones_; // sorted, unique list of silence phones,
-                                      // derived from d_config
-    fst::Fst<fst::StdArc> *decode_fst;
-    kaldi::OnlineFeaturePipelineConfig *feature_config;
+    kaldi::TransitionModel *t_model;
+    // The model trained with online-CMVN features
+    kaldi::AmDiagGmm *oa_model; //online alignment model;
+    // The ML-trained model used to get transforms (required)
+    kaldi::AmDiagGmm *a_model;
+    // The following object contains the basis elements for
+    // "Basis fMLLR".
+    kaldi::BasisFmllrEstimate *fmllr_basis;
 };
-#endif
 
-#endif // KD_ONLINE2_GMM_H
+#endif // KD_ONLINE2_MODEL_H

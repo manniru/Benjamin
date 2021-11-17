@@ -379,8 +379,8 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 {
     if( state_==KD_EndFeats || state_==KD_EndUtt ) // new utterance
     {
-        ResetDecoder(state_ == KD_EndFeats);
-        qDebug() << "reset";
+//        ResetDecoder(state_ == KD_EndFeats);
+//        qDebug() << "reset";
     }
 
     ProcessNonemitting(std::numeric_limits<float>::max());

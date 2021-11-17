@@ -11,6 +11,8 @@
 #include "bt_captain.h" //For BtWord
 
 #ifdef BT_LAT_ONLINE
+#include "kd_online2_model.h"
+#include "kd_online2_decodabe.h"
 #include "kd_online_ldecoder.h"
 #define  BT_ONLINE_DECODER KdOnlineLDecoder
 #define  BT_ONLINE_OPTS    KdOnlineLDecoderOpts

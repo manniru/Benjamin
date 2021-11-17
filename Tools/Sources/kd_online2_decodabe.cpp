@@ -1,20 +1,19 @@
 #include "kd_online2_decodabe.h"
 
-#ifdef BT_ONLINE2
 using namespace kaldi;
 using namespace fst;
 
-KdOnline2Decodable::KdOnline2Decodable(OnlineGmmDecodingModels *model,
-      float scale, OnlineFeatureInterface *input_feats):
-      ac_scale_(scale),
-      feat_dim_(input_feats->Dim()), cur_feats_(feat_dim_),
-      cur_frame_(-1)
+KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
+      float scale, OnlineFeatureMatrix *input_feats)
 {
-    const AmDiagGmm &am_gmm = model->GetOnlineAlignmentModel();
-    ac_model = const_cast<AmDiagGmm *>(&am_gmm);
+    ac_scale_ = scale;
+    feat_dim = input_feats->Dim();
+    cur_feats_.Resize(feat_dim);
+    cur_frame_ = -1;
 
-    const TransitionModel &tm = model->GetTransitionModel();
-    trans_model = const_cast<TransitionModel *>(&tm);
+    ac_model = mdl->GetOnlineAlignmentModel();
+
+    trans_model = mdl->GetTransitionModel();
 
     features = input_feats;
 
@@ -27,7 +26,8 @@ void KdOnline2Decodable::CacheFrame(int32 frame)
   // The call below will fail if "frame" is an invalid index, i.e. <0
   // or >= features_->NumFramesReady(), so there
   // is no need to check again.
-  features->GetFrame(frame, &cur_feats_);
+  cur_feats_.CopyFromVec(features->GetFrame(frame));
+//  features->GetFrame(frame, &cur_feats_);
   cur_frame_ = frame;
 }
 
@@ -53,12 +53,15 @@ BaseFloat KdOnline2Decodable::LogLikelihood(int32 frame, int32 index)
 
 bool KdOnline2Decodable::IsLastFrame(int32 frame) const
 {
-    return features->IsLastFrame(frame);
+//    return features->IsLastFrame(frame);
+    return features->IsValidFrame(frame+1);
 }
 
 int32 KdOnline2Decodable::NumFramesReady() const
 {
-    return features->NumFramesReady();
+//    return features->NumFramesReady();
+    qDebug() << "NumFramesReady() not implemented for this decodable type.";
+    return -1;
 }
 
 int32 KdOnline2Decodable::NumIndices() const
@@ -66,4 +69,3 @@ int32 KdOnline2Decodable::NumIndices() const
     return trans_model->NumTransitionIds();
 }
 
-#endif

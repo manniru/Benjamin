@@ -49,7 +49,7 @@ public:
 
 private:
     kaldi::OnlineGmmDecodingConfig d_config;
-    kaldi::OnlineGmmDecodingModels *models_;
+    KdOnline2Model *models_;
     kaldi::OnlineGmmAdaptationState adaptation_state_;
 
     std::vector<int> silence_phones_; // sorted, unique list of silence phones,

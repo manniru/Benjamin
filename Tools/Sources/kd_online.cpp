@@ -17,6 +17,7 @@ fst::Fst<fst::StdArc> *decode_fst;
 AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
 BT_ONLINE_DECODER     *o_decoder;
+KdOnline2Model        *o2_model; //gaussain online 2 model
 
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
@@ -63,36 +64,20 @@ void KdOnline::init()
 #ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
 //    decoder_opts. = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
-    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
 
-    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
-    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
-    fcc.add_deltas = true;
-    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
-
+    OnlineGmmDecodingConfig d_config;
     d_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
     d_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
-    d_config.model_rxfilename = KAL_NATO_DIR"exp/"KAL_MODE"/final.mdl";
-    d_config.silence_phones = "1:2:3:4:5:6:7:8:9:10";
-    d_config.faster_decoder_opts.max_active = 7000;
-    d_config.faster_decoder_opts.beam = 12.0;
-    d_config.faster_decoder_opts.lattice_beam = 6.0;
-    d_config.acoustic_scale = 0.08;
-
-    feature_config = new OnlineFeaturePipelineConfig(fcc);
-    // The following object initializes the models we use in decoding.
-    models_ = new OnlineGmmDecodingModels(d_config);
+    o2_model = new KdOnline2Model(trans_model, am_gmm, &d_config);
 
     decode_fst = ReadFstKaldiGeneric(fst_rxfilename); ///May replace with ReadDecodeGraph
+//    feature_pipeline = NULL;
+//    feature_pipeline = new OnlineFeaturePipeline(*feature_config);
 
-    feature_pipeline = NULL;
-    feature_pipeline = new OnlineFeaturePipeline(*feature_config);
-
-    o_decoder->InitDecoding();
-    feature_pipeline->SetTransform(adaptation_state_.transform);
+//    o_decoder->InitDecoding();
+//    feature_pipeline->SetTransform(adaptation_state_.transform);
 
     // Decodable is lightweight, lose nothing constructing it each time
-    decodable = new KdOnline2Decodable(models_, d_config.acoustic_scale, feature_pipeline);
 #endif
 
     o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
@@ -121,8 +106,24 @@ void KdOnline::startDecode()
     feature_matrix = new OnlineFeatureMatrix(feature_reading_opts,
                                              feat_transform);
 
+#ifdef BT_LAT_ONLINE
+//    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
+
+//    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
+//    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
+//    fcc.add_deltas = true;
+//    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
+
+//    OnlineFeaturePipelineConfig feature_config(fcc);
+//    OnlineFeaturePipeline *feature_pipeline = new
+//                       OnlineFeaturePipeline(feature_config);
+
+    KdOnline2Decodable decodable(o2_model,
+                            acoustic_scale, feature_matrix);
+#else
     KdGmmDecodable decodable(*am_gmm, *trans_model,
                              acoustic_scale, feature_matrix);
+#endif
 
     o_decoder->InitDecoding();
     BT_ONLINE_LAT out_fst;
