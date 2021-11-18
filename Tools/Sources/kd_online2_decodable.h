@@ -11,6 +11,8 @@
 #include "online2/online-gmm-decoding.h"
 #include "kd_online2_model.h"
 #include "online/online-feat-input.h"
+#include "kd_online2_feinput.h"
+
 
 class KdOnline2Decodable : public kaldi::DecodableInterface
 {
@@ -32,7 +34,7 @@ public:
 private:
     void CacheFrame(int32 frame);
 
-    kaldi::OnlineFeaturePipeline *features;
+    KdOnline2FeInput *features;
     kaldi::AmDiagGmm *ac_model;
     float ac_scale_;
     kaldi::TransitionModel *trans_model;

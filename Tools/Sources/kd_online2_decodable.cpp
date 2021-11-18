@@ -15,8 +15,7 @@ KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
     int32 num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int32,BaseFloat>(-1, 0.0f));
 
-    OnlineFeaturePipelineConfig feature_config(fcc);
-    features = new OnlineFeaturePipeline(feature_config);
+    features = new KdOnline2FeInput;
     feat_dim = features->Dim();
     cur_feats_.Resize(feat_dim);
     features->SetTransform(transform);
