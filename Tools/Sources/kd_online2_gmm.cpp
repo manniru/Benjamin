@@ -71,8 +71,38 @@ void KdOnline2Gmm::init()
     feature_pipeline->SetTransform(adaptation_state_.transform);
 
     // Decodable is lightweight, lose nothing constructing it each time
-    decodable = new KdOnline2Decodable(models_, d_config.acoustic_scale, feature_pipeline);
+//    decodable = new KdOnline2Decodable(models_,
+//                    d_config.acoustic_scale, feature_pipeline);
 
+    int cmn_window = 600, min_cmn_window = 100;
+    int kSampleFreq = 16000; // fixed to 16KHz
+    int kDeltaOrder = 2; // delta-delta derivative order
+
+    BtCyclic *cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
+    BtRecorder *ab_src = new BtRecorder(cy_buf);
+
+    MfccOptions mfcc_opts;
+    mfcc_opts.use_energy = false;
+    int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 20;
+    int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 5;
+    Mfcc mfcc(mfcc_opts);
+    KdOnlineFeInput fe_input(ab_src, &mfcc,
+                     frame_length * (kSampleFreq / 1000),
+                     frame_shift * (kSampleFreq / 1000));
+    OnlineCmnInput cmn_input(&fe_input, cmn_window, min_cmn_window);
+
+    DeltaFeaturesOptions opts;
+    opts.order = kDeltaOrder;
+    OnlineFeatInputItf    *feat_transform;
+    feat_transform = new OnlineDeltaInput(opts, &cmn_input);
+    OnlineFeatureMatrixOptions feature_reading_opts;
+    OnlineFeatureMatrix *feature_matrix;
+    feature_matrix = new OnlineFeatureMatrix(feature_reading_opts,
+                                             feat_transform);
+
+
+    decodable = new KdOnlineDecodable(models_,
+                             d_config.acoustic_scale, feature_matrix);
 }
 
 // Advance the decoding as far as we can, and possibly estimate fMLLR.

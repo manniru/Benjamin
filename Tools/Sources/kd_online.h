@@ -12,16 +12,19 @@
 
 #ifdef BT_LAT_ONLINE
 #include "kd_online2_model.h"
-#include "kd_online2_decodabe.h"
+#include "kd_online2_decodable.h"
 #include "kd_online_ldecoder.h"
-#define  BT_ONLINE_DECODER KdOnlineLDecoder
-#define  BT_ONLINE_OPTS    KdOnlineLDecoderOpts
-#define  BT_ONLINE_LAT     kaldi::CompactLattice
+#define  BT_ONLINE_DECODER   KdOnlineLDecoder
+#define  BT_ONLINE_DECODABLE KdOnline2Decodable
+#define  BT_ONLINE_OPTS      KdOnlineLDecoderOpts
+#define  BT_ONLINE_LAT       kaldi::CompactLattice
 #else
+#include "kd_online_decodable.h"
 #include "kd_online_decoder.h"
-#define  BT_ONLINE_DECODER KdOnlineDecoder
-#define  BT_ONLINE_OPTS    KdOnlineDecoderOpts
-#define  BT_ONLINE_LAT     fst::VectorFst<kaldi::LatticeArc>
+#define  BT_ONLINE_DECODER   KdOnlineDecoder
+#define  BT_ONLINE_DECODABLE KdOnlineDecodable
+#define  BT_ONLINE_OPTS      KdOnlineDecoderOpts
+#define  BT_ONLINE_LAT       fst::VectorFst<kaldi::LatticeArc>
 #endif
 
 class KdOnline : public QObject

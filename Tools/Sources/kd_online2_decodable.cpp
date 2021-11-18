@@ -1,10 +1,10 @@
-#include "kd_online2_decodabe.h"
+#include "kd_online2_decodable.h"
 
 using namespace kaldi;
 using namespace fst;
 
 KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
-      float scale, OnlineFeatureMatrix *input_feats)
+      float scale, OnlineFeaturePipeline *input_feats)
 {
     ac_scale_ = scale;
     feat_dim = input_feats->Dim();
@@ -26,8 +26,7 @@ void KdOnline2Decodable::CacheFrame(int32 frame)
   // The call below will fail if "frame" is an invalid index, i.e. <0
   // or >= features_->NumFramesReady(), so there
   // is no need to check again.
-  cur_feats_.CopyFromVec(features->GetFrame(frame));
-//  features->GetFrame(frame, &cur_feats_);
+  features->GetFrame(frame, &cur_feats_);
   cur_frame_ = frame;
 }
 
@@ -53,8 +52,7 @@ BaseFloat KdOnline2Decodable::LogLikelihood(int32 frame, int32 index)
 
 bool KdOnline2Decodable::IsLastFrame(int32 frame) const
 {
-//    return features->IsLastFrame(frame);
-    return features->IsValidFrame(frame+1);
+    return features->IsLastFrame(frame);
 }
 
 int32 KdOnline2Decodable::NumFramesReady() const

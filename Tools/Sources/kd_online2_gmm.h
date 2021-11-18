@@ -24,10 +24,18 @@
 #include "gmm/am-diag-gmm.h"
 #include "hmm/posterior.h"
 #include "kd_lattice_decoder.h"
-#include "kd_online2_decodabe.h"
+#include "kd_online2_decodable.h"
+#include "kd_online_decodable.h"
+#include "kd_online_feinput.h"
 #include <fst/fst.h>
 #include "bt_config.h"
 #include "backend.h"
+
+#ifdef BT_LAT_ONLINE
+#define  BT_ONLINE_DECODABLE KdOnline2Decodable
+#else
+#define  BT_ONLINE_DECODABLE KdOnlineDecodable
+#endif
 
 class KdOnline2Gmm : public QObject
 {
@@ -44,7 +52,7 @@ public:
                     kaldi::CompactLattice *clat);
 
     KdLatticeDecoder   *o_decoder;
-    KdOnline2Decodable *decodable;
+    BT_ONLINE_DECODABLE *decodable;
     kaldi::OnlineFeaturePipeline   *feature_pipeline;  // owned here.
 
 private:

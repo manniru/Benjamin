@@ -61,14 +61,16 @@ void KdOnline::init()
 
     decoder_opts.max_active = 7000;
     decoder_opts.beam = 13.0;
-#ifdef BT_LAT_ONLINE
-    decoder_opts.lattice_beam = 6.0;
-//    decoder_opts. = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
 
     OnlineGmmDecodingConfig d_config;
     d_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
     d_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
     o2_model = new KdOnline2Model(trans_model, am_gmm, &d_config);
+
+#ifdef BT_LAT_ONLINE
+    decoder_opts.lattice_beam = 6.0;
+//    decoder_opts. = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
+
 
     decode_fst = ReadFstKaldiGeneric(fst_rxfilename); ///May replace with ReadDecodeGraph
 //    feature_pipeline = NULL;
@@ -121,7 +123,7 @@ void KdOnline::startDecode()
     KdOnline2Decodable decodable(o2_model,
                             acoustic_scale, feature_matrix);
 #else
-    KdGmmDecodable decodable(*am_gmm, *trans_model,
+    BT_ONLINE_DECODABLE decodable(o2_model,
                              acoustic_scale, feature_matrix);
 #endif
 
