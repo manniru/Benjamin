@@ -16,7 +16,7 @@ class KdOnline2Decodable : public kaldi::DecodableInterface
 {
 public:
     KdOnline2Decodable(KdOnline2Model *mdl,
-                       float scale, kaldi::OnlineFeaturePipeline *input_feats);
+                       float scale, kaldi::Matrix<kaldi::BaseFloat> transform);
 
 
     /// Returns the scaled log likelihood

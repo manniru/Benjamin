@@ -4,30 +4,37 @@ using namespace kaldi;
 using namespace fst;
 
 KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
-      float scale, OnlineFeaturePipeline *input_feats)
+      float scale,Matrix<BaseFloat> transform)
 {
     ac_scale_ = scale;
-    feat_dim = input_feats->Dim();
-    cur_feats_.Resize(feat_dim);
     cur_frame_ = -1;
 
     ac_model = mdl->GetOnlineAlignmentModel();
-
     trans_model = mdl->GetTransitionModel();
-
-    features = input_feats;
 
     int32 num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int32,BaseFloat>(-1, 0.0f));
+
+    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
+
+    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
+    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
+    fcc.add_deltas = true;
+    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
+    OnlineFeaturePipelineConfig feature_config(fcc);
+    features = new OnlineFeaturePipeline(feature_config);
+    feat_dim = features->Dim();
+    cur_feats_.Resize(feat_dim);
+    features->SetTransform(transform);
 }
 
 void KdOnline2Decodable::CacheFrame(int32 frame)
 {
-  // The call below will fail if "frame" is an invalid index, i.e. <0
-  // or >= features_->NumFramesReady(), so there
-  // is no need to check again.
-  features->GetFrame(frame, &cur_feats_);
-  cur_frame_ = frame;
+    // The call below will fail if "frame" is an invalid index, i.e. <0
+    // or >= features_->NumFramesReady(), so there
+    // is no need to check again.
+    features->GetFrame(frame, &cur_feats_);
+    cur_frame_ = frame;
 }
 
 BaseFloat KdOnline2Decodable::LogLikelihood(int32 frame, int32 index)
@@ -57,9 +64,7 @@ bool KdOnline2Decodable::IsLastFrame(int32 frame) const
 
 int32 KdOnline2Decodable::NumFramesReady() const
 {
-//    return features->NumFramesReady();
-    qDebug() << "NumFramesReady() not implemented for this decodable type.";
-    return -1;
+    return features->NumFramesReady();
 }
 
 int32 KdOnline2Decodable::NumIndices() const

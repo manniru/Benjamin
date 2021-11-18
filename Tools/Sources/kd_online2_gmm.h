@@ -31,11 +31,7 @@
 #include "bt_config.h"
 #include "backend.h"
 
-#ifdef BT_LAT_ONLINE
 #define  BT_ONLINE_DECODABLE KdOnline2Decodable
-#else
-#define  BT_ONLINE_DECODABLE KdOnlineDecodable
-#endif
 
 class KdOnline2Gmm : public QObject
 {
@@ -57,7 +53,7 @@ public:
 
 private:
     kaldi::OnlineGmmDecodingConfig d_config;
-    KdOnline2Model *models_;
+    KdOnline2Model *models;
     kaldi::OnlineGmmAdaptationState adaptation_state_;
 
     std::vector<int> silence_phones_; // sorted, unique list of silence phones,
