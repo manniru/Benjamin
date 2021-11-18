@@ -5,13 +5,13 @@
 
 //#ifndef BT_LAT_ONLINE
 
-#include "online/online-feat-input.h"
+#include "online2/online-feature-pipeline.h"
 #include "feat/feature-mfcc.h"
 #include "bt_recorder.h"
-class OnlineFeaturePipeline: public OnlineFeatureInterface
+class KdOnline2FeInput: public kaldi::OnlineFeatureInterface
 {
 public:
-  explicit OnlineFeaturePipeline(const OnlineFeaturePipelineConfig &cfg);
+  explicit KdOnline2FeInput();
 
   /// Member functions from OnlineFeatureInterface:
   virtual int32 Dim() const;
@@ -36,8 +36,9 @@ public:
   void AcceptWaveform(BaseFloat sampling_rate,
                       const VectorBase<BaseFloat> &waveform);
 
-  BaseFloat FrameShiftInSeconds() const {
-    return config_.FrameShiftInSeconds();
+  BaseFloat FrameShiftInSeconds() const
+  {
+      return config_.FrameShiftInSeconds();
   }
 
   // InputFinished() tells the class you won't be providing any
@@ -77,9 +78,8 @@ public:
   /// initialized.
   void Init();
 
-  OnlineFeaturePipelineConfig config_;
-  Matrix<BaseFloat> lda_mat_;  // LDA matrix, if supplied.
-  Matrix<BaseFloat> global_cmvn_stats_;  // Global CMVN stats.
+  kaldi::Matrix<float> lda_mat_;  // LDA matrix, if supplied.
+  kaldi::Matrix<float> global_cmvn_stats_;  // Global CMVN stats.
 
   OnlineBaseFeature *base_feature_;        // MFCC/PLP/Fbank
   OnlinePitchFeature *pitch_;              // Raw pitch

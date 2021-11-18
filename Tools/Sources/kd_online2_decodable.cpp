@@ -15,12 +15,6 @@ KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
     int32 num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int32,BaseFloat>(-1, 0.0f));
 
-    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
-
-    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
-    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
-    fcc.add_deltas = true;
-    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
     OnlineFeaturePipelineConfig feature_config(fcc);
     features = new OnlineFeaturePipeline(feature_config);
     feat_dim = features->Dim();
