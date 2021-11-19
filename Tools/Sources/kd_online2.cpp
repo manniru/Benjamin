@@ -238,7 +238,7 @@ void KdOnline2::processData(float *wav_data, int len)
         }
 
         SubVector<float> wave_part(data, samp_offset, num_samp);
-        g_decoder->feature_pipeline->AcceptWaveform(samp_freq, wave_part);
+        g_decoder->decodable->features->AcceptWaveform(samp_freq, wave_part);
 
         samp_offset += num_samp;
 //        if (samp_offset == data.Dim())

@@ -49,7 +49,6 @@ public:
 
     KdLatticeDecoder   *o_decoder;
     BT_ONLINE_DECODABLE *decodable;
-    kaldi::OnlineFeaturePipeline   *feature_pipeline;  // owned here.
 
 private:
     kaldi::OnlineGmmDecodingConfig d_config;

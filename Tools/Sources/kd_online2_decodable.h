@@ -19,6 +19,7 @@ class KdOnline2Decodable : public kaldi::DecodableInterface
 public:
     KdOnline2Decodable(KdOnline2Model *mdl,
                        float scale, kaldi::Matrix<kaldi::BaseFloat> transform);
+    ~KdOnline2Decodable();
 
 
     /// Returns the scaled log likelihood
@@ -30,11 +31,11 @@ public:
 
     /// Indices are one-based!  This is for compatibility with OpenFst.
     virtual int32 NumIndices() const;
+    KdOnline2FeInput *features;
 
 private:
     void CacheFrame(int32 frame);
 
-    KdOnline2FeInput *features;
     kaldi::AmDiagGmm *ac_model;
     float ac_scale_;
     kaldi::TransitionModel *trans_model;

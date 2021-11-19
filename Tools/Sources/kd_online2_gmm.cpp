@@ -46,7 +46,6 @@ void KdOnline2Gmm::init()
 {
     if( o_decoder ) //decoder not null
     {
-        delete feature_pipeline;
         delete o_decoder;
     }
 
@@ -72,7 +71,6 @@ void KdOnline2Gmm::FinalizeDecoding()
 
 KdOnline2Gmm::~KdOnline2Gmm()
 {
-    delete feature_pipeline;
 }
 
 //end_of_utterance

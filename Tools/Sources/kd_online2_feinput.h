@@ -44,6 +44,7 @@ public:
   // Returns true if an fMLLR transform has been set using
   // SetTransform().
   bool HaveFmllrTransform() { return fmllr_ != NULL; }
+  void ComputeFeatures();
 
   virtual ~KdOnline2FeInput();
 
@@ -56,7 +57,7 @@ public:
   kaldi::Matrix<float> lda_mat_;  // LDA matrix, if supplied.
   kaldi::Matrix<float> global_cmvn_stats_;  // Global CMVN stats.
 
-  kaldi::OnlineBaseFeature *base_feature_;        // MFCC/PLP/Fbank
+//  kaldi::OnlineBaseFeature *mfcc;
 
   kaldi::OnlineCmvn *cmvn;
   OnlineFeatureInterface *delta;
@@ -71,6 +72,15 @@ public:
   /// this were not private we would have const and non-const versions returning
   /// const and non-const pointers.
   OnlineFeatureInterface* AdaptedFeature() const;
+
+  /////////////////////////////
+  kaldi::RecyclingVector *o_features;
+  kaldi::MfccComputer *mfcc;
+
+  // waveform_remainder_ is a short piece of waveform that we may need to keep
+  // after extracting all the whole frames we can (whatever length of feature
+  // will be required for the next phase of computation).
+  kaldi::Vector<float> waveform_remainder_;
 };
 
 #endif // KD_ONLINE2_FEINPUT_H

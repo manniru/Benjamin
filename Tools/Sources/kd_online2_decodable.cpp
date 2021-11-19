@@ -21,6 +21,11 @@ KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
     features->SetTransform(transform);
 }
 
+KdOnline2Decodable::~KdOnline2Decodable()
+{
+    delete features;
+}
+
 void KdOnline2Decodable::CacheFrame(int32 frame)
 {
     // The call below will fail if "frame" is an invalid index, i.e. <0
