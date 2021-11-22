@@ -81,6 +81,14 @@ public:
   // after extracting all the whole frames we can (whatever length of feature
   // will be required for the next phase of computation).
   kaldi::Vector<float> waveform_remainder_;
+
+  // waveform_offset_ is the number of samples of waveform that we have
+  // already discarded, i.e. that were prior to 'waveform_remainder_'.
+  int64 waveform_offset;
+
+
+  kaldi::DeltaFeatures *delta_features;  // This class contains just a few
+                                        // coefficients.
 };
 
 #endif // KD_ONLINE2_FEINPUT_H
