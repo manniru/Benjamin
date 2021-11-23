@@ -39,11 +39,11 @@ HEADERS += \
     Sources/backend.h \
     Sources/bt_captain.h \
     Sources/bt_chapar.h \
-    Sources/bt_cmvn.h \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
     Sources/bt_recorder.h \
     Sources/bt_state.h \
+    Sources/kd_cmvn.h \
     Sources/kd_f_token.h \
     Sources/kd_faster_decoder.h \
     Sources/kd_lattice_decoder.h \
@@ -62,10 +62,10 @@ SOURCES += \
     Sources/backend.cpp \
     Sources/bt_captain.cpp \
     Sources/bt_chapar.cpp \
-    Sources/bt_cmvn.cpp \
     Sources/bt_cyclic.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_state.cpp \
+    Sources/kd_cmvn.cpp \
     Sources/kd_f_token.cpp \
     Sources/kd_faster_decoder.cpp \
     Sources/kd_lattice_decoder.cpp \
