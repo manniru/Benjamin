@@ -18,7 +18,6 @@ KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
     features = new KdOnline2FeInput;
     feat_dim = features->Dim();
     cur_feats_.Resize(feat_dim);
-    features->SetTransform(transform);
 }
 
 KdOnline2Decodable::~KdOnline2Decodable()

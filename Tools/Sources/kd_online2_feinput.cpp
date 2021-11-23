@@ -16,14 +16,6 @@ KdOnline2FeInput::KdOnline2FeInput()
     Init();
 }
 
-OnlineFeatureInterface* KdOnline2FeInput::AdaptedFeature() const
-{
-    if (fmllr_)
-        return fmllr_;
-    else
-        return delta;
-}
-
 // Init() is to be called from the constructor; it assumes the pointer
 // members are all uninitialized but config_ and lda_mat_ are
 // initialized.
@@ -36,25 +28,8 @@ void KdOnline2FeInput::Init()
 //    OnlineCmvnState initial_state(global_cmvn_stats_dbl);
 //    cmvn = new OnlineCmvn(cmvn_opts, initial_state, mfcc);
 
-//    delta = new OnlineDeltaFeature(delta_opts, cmvn);
     delta_features = new DeltaFeatures(delta_opts);
-    fmllr_ = NULL;  // This will be set up if the user calls SetTransform().
 }
-
-void KdOnline2FeInput::SetTransform(MatrixBase<float> &transform)
-{
-    if (fmllr_ != NULL)
-    {
-        delete fmllr_;
-        fmllr_ = NULL;
-    }
-
-    if( transform.NumRows()!=0 )
-    {
-        fmllr_ = new OnlineTransform(transform, delta);
-    }
-}
-
 
 void KdOnline2FeInput::FreezeCmvn()
 {
@@ -114,10 +89,6 @@ void KdOnline2FeInput::GetFrame(int32 frame,
 
 KdOnline2FeInput::~KdOnline2FeInput()
 {
-    // Note: the delete command only deletes pointers that are non-NULL.  Not all
-    // of the pointers below will be non-NULL.
-    delete fmllr_;
-    //  delete delta;
     // Guard against double deleting the cmvn_ ptr
     delete cmvn;
     delete mfcc;

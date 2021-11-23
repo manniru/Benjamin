@@ -36,14 +36,6 @@ public:
   // (making them more accurate).
   void InputFinished();
 
-  // This object is used to set the fMLLR transform.  Call it with
-  // the empty matrix if you want to stop it using any transform.
-  void SetTransform(kaldi::MatrixBase<float> &transform);
-
-
-  // Returns true if an fMLLR transform has been set using
-  // SetTransform().
-  bool HaveFmllrTransform() { return fmllr_ != NULL; }
   void ComputeFeatures();
 
   virtual ~KdOnline2FeInput();
@@ -57,21 +49,12 @@ public:
   kaldi::Matrix<float> lda_mat_;  // LDA matrix, if supplied.
   kaldi::Matrix<float> global_cmvn_stats_;  // Global CMVN stats.
 
-//  kaldi::OnlineBaseFeature *mfcc;
-
   kaldi::OnlineCmvn *cmvn;
   OnlineFeatureInterface *delta;
 
-  OnlineFeatureInterface *fmllr_;  // non-NULL if we currently have an fMLLR
-                                   // transform.
   kaldi::MfccOptions mfcc_opts;  // options for MFCC computation,
   kaldi::OnlineCmvnOptions cmvn_opts;  // Options for online CMN/CMVN computation.
   kaldi::DeltaFeaturesOptions delta_opts;  // Options for delta computation, if done.
-
-  /// returns adapted feature if fmllr_ exists, else UnadaptedFeature().  If
-  /// this were not private we would have const and non-const versions returning
-  /// const and non-const pointers.
-  OnlineFeatureInterface* AdaptedFeature() const;
 
   /////////////////////////////
   kaldi::RecyclingVector *o_features;
