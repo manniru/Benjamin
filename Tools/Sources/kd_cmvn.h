@@ -4,24 +4,11 @@
 #include <QObject>
 #include <QThread>
 
+#include "feat/online-feature.h"
+
 class KdCMVN : public QObject
 {
 public:
-
-    //
-    // First, functions that are present in the interface:
-    //
-    virtual int32 Dim() const { return src_->Dim(); }
-
-    virtual bool IsLastFrame(int32 frame) const {
-        return src_->IsLastFrame(frame);
-    }
-    virtual BaseFloat FrameShiftInSeconds() const {
-        return src_->FrameShiftInSeconds();
-    }
-
-    // The online cmvn does not introduce any additional latency.
-    virtual int32 NumFramesReady() const { return src_->NumFramesReady(); }
 
     virtual void GetFrame(int32 frame, VectorBase<BaseFloat> *feat);
 
@@ -37,14 +24,9 @@ public:
     /// If you do have previous utterances from the same speaker or at least a
     /// similar environment, you are supposed to initialize it by calling GetState
     /// from the previous utterance
-    OnlineCmvn(const OnlineCmvnOptions &opts,
-               const OnlineCmvnState &cmvn_state,
-               OnlineFeatureInterface *src);
-
-    /// Initializer that does not set the cmvn state:
-    /// after calling this, you should call SetState().
-    OnlineCmvn(const OnlineCmvnOptions &opts,
-               OnlineFeatureInterface *src);
+    KdCMVN(OnlineCmvnOptions &opts,
+           OnlineCmvnState &cmvn_state,
+           OnlineFeatureInterface *src);
 
     // Outputs any state information from this utterance to "cmvn_state".
     // The value of "cmvn_state" before the call does not matter: the output
@@ -61,7 +43,7 @@ public:
     // (otherwise it will crash).  This "state" is really just the information
     // that is propagated between utterances, not the state of the computation
     // inside an utterance.
-    void SetState(const OnlineCmvnState &cmvn_state);
+    void SetState(kaldi::OnlineCmvnState cmvn_state);
 
     // From this point it will freeze the CMN to what it would have been if
     // measured at frame "cur_frame", and it will stop it from changing
@@ -72,7 +54,7 @@ public:
     // utterance's CMVN object.
     void Freeze(int32 cur_frame);
 
-    virtual ~OnlineCmvn();
+    virtual ~KdCMVN();
 protected:
 
     /// Smooth the CMVN stats "stats" (which are stored in the normal format as a
