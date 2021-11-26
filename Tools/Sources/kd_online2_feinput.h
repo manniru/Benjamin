@@ -8,6 +8,8 @@
 #include "online2/online-feature-pipeline.h"
 #include "feat/feature-mfcc.h"
 #include "bt_recorder.h"
+#include "kd_cmvn.h"
+
 class KdOnline2FeInput: public kaldi::OnlineFeatureInterface
 {
 public:
@@ -49,9 +51,7 @@ public:
   kaldi::Matrix<float> lda_mat_;  // LDA matrix, if supplied.
   kaldi::Matrix<float> global_cmvn_stats_;  // Global CMVN stats.
 
-  kaldi::OnlineCmvn *cmvn;
-  OnlineFeatureInterface *delta;
-
+  KdCMVN *cmvn;
   kaldi::MfccOptions mfcc_opts;  // options for MFCC computation,
   kaldi::OnlineCmvnOptions cmvn_opts;  // Options for online CMN/CMVN computation.
   kaldi::DeltaFeaturesOptions delta_opts;  // Options for delta computation, if done.

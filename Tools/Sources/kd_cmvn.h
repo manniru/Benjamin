@@ -6,11 +6,13 @@
 
 #include "feat/online-feature.h"
 
-class KdCMVN : public QObject
+class KdCMVN
 {
 public:
 
-    virtual void GetFrame(int32 frame, VectorBase<BaseFloat> *feat);
+    void GetFrame(int32 frame,
+                  kaldi::RecyclingVector *o_features,
+                  kaldi::VectorBase<float> *feat);
 
     //
     // Next, functions that are not in the interface.
@@ -24,9 +26,8 @@ public:
     /// If you do have previous utterances from the same speaker or at least a
     /// similar environment, you are supposed to initialize it by calling GetState
     /// from the previous utterance
-    KdCMVN(OnlineCmvnOptions &opts,
-           OnlineCmvnState &cmvn_state,
-           OnlineFeatureInterface *src);
+    KdCMVN(kaldi::OnlineCmvnOptions &opts,
+           kaldi::OnlineCmvnState &cmvn_state, int32 dim);
 
     // Outputs any state information from this utterance to "cmvn_state".
     // The value of "cmvn_state" before the call does not matter: the output
@@ -35,8 +36,8 @@ public:
     // of the user possibly having called Freeze().
     // If cur_frame is -1, it will just output the unmodified original
     // state that was supplied to this object.
-    void GetState(int32 cur_frame,
-                  OnlineCmvnState *cmvn_state);
+    void GetState(int32 cur_frame, kaldi::RecyclingVector *o_features,
+                  kaldi::OnlineCmvnState *cmvn_state);
 
     // This function can be used to modify the state of the CMVN computation
     // from outside, but must only be called before you have processed any data
@@ -52,7 +53,8 @@ public:
     // from cur_frame; and it applies in the future too if you then
     // call OutputState() and use this state to initialize the next
     // utterance's CMVN object.
-    void Freeze(int32 cur_frame);
+    void Freeze(int32 cur_frame,
+                kaldi::RecyclingVector *o_features);
 
     virtual ~KdCMVN();
 protected:
@@ -61,19 +63,19 @@ protected:
     /// 2 x (dim+1) matrix), by possibly adding some stats from "global_stats"
     /// and/or "speaker_stats", controlled by the config.  The best way to
     /// understand the smoothing rule we use is just to look at the code.
-    static void SmoothOnlineCmvnStats(const MatrixBase<double> &speaker_stats,
-                                      const MatrixBase<double> &global_stats,
-                                      const OnlineCmvnOptions &opts,
-                                      MatrixBase<double> *stats);
+    static void SmoothOnlineCmvnStats(const kaldi::MatrixBase<double> &speaker_stats,
+                                      const kaldi::MatrixBase<double> &global_stats,
+                                      const kaldi::OnlineCmvnOptions &opts,
+                                      kaldi::MatrixBase<double> *stats);
 
     /// Get the most recent cached frame of CMVN stats.  [If no frames
     /// were cached, sets up empty stats for frame zero and returns that].
     void GetMostRecentCachedFrame(int32 frame,
                                   int32 *cached_frame,
-                                  MatrixBase<double> *stats);
+                                  kaldi::MatrixBase<double> *stats);
 
     /// Cache this frame of stats.
-    void CacheFrame(int32 frame, const MatrixBase<double> &stats);
+    void CacheFrame(int32 frame, const kaldi::MatrixBase<double> &stats);
 
     /// Initialize ring buffer for caching stats.
     inline void InitRingBufferIfNeeded();
@@ -81,15 +83,15 @@ protected:
     /// Computes the raw CMVN stats for this frame, making use of (and updating if
     /// necessary) the cached statistics in raw_stats_.  This means the (x,
     /// x^2, count) stats for the last up to opts_.cmn_window frames.
-    void ComputeStatsForFrame(int32 frame,
-                              MatrixBase<double> *stats);
+    void ComputeStatsForFrame(int32 frame, kaldi::RecyclingVector *o_features,
+                              kaldi::MatrixBase<double> *stats);
 
 
-    OnlineCmvnOptions opts_;
+    kaldi::OnlineCmvnOptions opts_;
     std::vector<int32> skip_dims_; // Skip CMVN for these dimensions.  Derived from opts_.
-    OnlineCmvnState orig_state_;   // reflects the state before we saw this
+    kaldi::OnlineCmvnState orig_state_;   // reflects the state before we saw this
     // utterance.
-    Matrix<double> frozen_state_;  // If the user called Freeze(), this variable
+    kaldi::Matrix<double> frozen_state_;  // If the user called Freeze(), this variable
     // will reflect the CMVN state that we froze
     // at.
 
@@ -97,18 +99,17 @@ protected:
     // input, computed every opts_.modulus frames.  raw_stats_[n / opts_.modulus]
     // contains the (count, x, x^2) statistics for the frames from
     // std::max(0, n - opts_.cmn_window) through n.
-    std::vector<Matrix<double>*> cached_stats_modulo_;
+    std::vector<kaldi::Matrix<double>*> cached_stats_modulo_;
     // the variable below is a ring-buffer of cached stats.  the int32 is the
     // frame index.
-    std::vector<std::pair<int32, Matrix<double> > > cached_stats_ring_;
+    std::vector<std::pair<int32, kaldi::Matrix<double> > > cached_stats_ring_;
 
     // Some temporary variables used inside functions of this class, which
     // put here to avoid reallocation.
-    Matrix<double> temp_stats_;
-    Vector<BaseFloat> temp_feats_;
-    Vector<double> temp_feats_dbl_;
-
-    OnlineFeatureInterface *src_;  // Not owned here
+    kaldi::Matrix<double> temp_stats_;
+    kaldi::Vector<float>  temp_feats_;
+    kaldi::Vector<double> temp_feats_dbl_;
+    int32 Dim; ///REMOVE THIS
 };
 
 

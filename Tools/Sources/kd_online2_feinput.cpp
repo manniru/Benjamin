@@ -25,15 +25,15 @@ void KdOnline2FeInput::Init()
     o_features = new RecyclingVector(mfcc_opts.frame_opts.max_feature_vectors);
     KALDI_ASSERT(global_cmvn_stats_.NumRows() != 0);
     Matrix<double> global_cmvn_stats_dbl(global_cmvn_stats_);
-//    OnlineCmvnState initial_state(global_cmvn_stats_dbl);
-//    cmvn = new OnlineCmvn(cmvn_opts, initial_state, mfcc);
+    OnlineCmvnState initial_state(global_cmvn_stats_dbl);
+    cmvn = new KdCMVN(cmvn_opts, initial_state, mfcc->Dim());
 
     delta_features = new DeltaFeatures(delta_opts);
 }
 
 void KdOnline2FeInput::FreezeCmvn()
 {
-    cmvn->Freeze(cmvn->NumFramesReady() - 1);
+    cmvn->Freeze(o_features->Size() - 1, o_features);
 }
 
 int32 KdOnline2FeInput::Dim() const
@@ -80,7 +80,8 @@ void KdOnline2FeInput::GetFrame(int32 frame,
     for( int32 t=left_frame ; t<=right_frame ; t++ )
     {
         SubVector<BaseFloat> temp_row(temp_src, t - left_frame);
-        temp_row.CopyFromVec(*(o_features->At(t)));
+        temp_row.CopyFromVec(*(o_features->At(t)));////GET FRAME
+        cmvn->GetFrame(t, o_features, &temp_row);
     }
     int32 temp_t = frame - left_frame;  // temp_t is the offset of frame "frame"
                                         // within temp_src
