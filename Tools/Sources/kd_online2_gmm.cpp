@@ -81,7 +81,7 @@ bool KdOnline2Gmm::GetLattice(bool end_of_utterance,
     double lat_beam = d_config.faster_decoder_opts.lattice_beam;
     clock_t start = clock();
     bool ret = o_decoder->GetRawLattice(&lat, end_of_utterance);
-    printTime(start);
+//    printTime(start);
 
     if( ret==false )
     {

@@ -10,16 +10,14 @@
 #include "bt_recorder.h"
 #include "kd_cmvn.h"
 
-class KdOnline2FeInput: public kaldi::OnlineFeatureInterface
+class KdOnline2FeInput
 {
 public:
   KdOnline2FeInput();
 
-  /// Member functions from OnlineFeatureInterface:
-  virtual int32 Dim() const;
-  virtual bool IsLastFrame(int32 frame) const;
-  virtual int32 NumFramesReady() const;
-  virtual void GetFrame(int32 frame, kaldi::VectorBase<float> *feat);
+  int32 Dim();
+  int32 NumFramesReady();
+  void GetFrame(int32 frame, kaldi::VectorBase<float> *feat);
 
   void FreezeCmvn();  // stop it from moving further (do this when you start
                       // using fMLLR). This will crash if NumFramesReady() == 0.
@@ -27,10 +25,7 @@ public:
   /// Accept more data to process (won't actually process it, will
   /// just copy it).   sampling_rate is necessary just to assert
   /// it equals what's in the config.
-  void AcceptWaveform(float sampling_rate,
-                      kaldi::VectorBase<float> &waveform);
-
-  virtual float FrameShiftInSeconds() const;
+  void AcceptWaveform(kaldi::VectorBase<float> &waveform);
 
   // InputFinished() tells the class you won't be providing any
   // more waveform.  This will help flush out the last few frames

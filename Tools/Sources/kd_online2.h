@@ -13,6 +13,7 @@
 #include "bt_state.h"
 #include "bt_recorder.h"
 #include "bt_captain.h" //For BtWord
+#include "backend.h"
 
 class KdOnline2 : public QObject
 {
@@ -35,7 +36,6 @@ private:
     void writeBarResult(QVector<BtWord> result);
     void parseWords(QString filename);
     void execute(std::vector<int32_t> word);
-    void printTime(clock_t start);
 
     void print(kaldi::CompactLattice *clat);
 

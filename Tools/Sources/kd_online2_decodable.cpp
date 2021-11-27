@@ -56,7 +56,8 @@ BaseFloat KdOnline2Decodable::LogLikelihood(int32 frame, int32 index)
 
 bool KdOnline2Decodable::IsLastFrame(int32 frame) const
 {
-    return features->IsLastFrame(frame);
+    // no frame is last
+    return false;// this is online!
 }
 
 int32 KdOnline2Decodable::NumFramesReady() const

@@ -5,12 +5,9 @@ using namespace kaldi;
 KdOnline2FeInput::KdOnline2FeInput()
 {
     waveform_offset = 0;
-    std::string mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
-    std::string cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
     std::string  global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
+    mfcc_opts.use_energy = false;
 
-    ReadConfigFromFile(mfcc_config, &mfcc_opts);
-    ReadConfigFromFile(cmvn_config, &cmvn_opts);
     ReadKaldiObject(global_cmvn_stats_rxfilename,
                     &global_cmvn_stats_);
     Init();
@@ -36,16 +33,13 @@ void KdOnline2FeInput::FreezeCmvn()
     cmvn->Freeze(o_features->Size() - 1, o_features);
 }
 
-int32 KdOnline2FeInput::Dim() const
+int32 KdOnline2FeInput::Dim()
 {
     int32 mfcc_dim = mfcc->Dim();
     return mfcc_dim * (1 + delta_opts.order);
 }
-bool KdOnline2FeInput::IsLastFrame(int32 frame) const
-{
-    return false;
-}
-int32 KdOnline2FeInput::NumFramesReady() const
+
+int32 KdOnline2FeInput::NumFramesReady()
 {
     int32 num_frames = o_features->Size();
     // number of frames that is less to produce the output.
@@ -95,8 +89,9 @@ KdOnline2FeInput::~KdOnline2FeInput()
     delete mfcc;
 }
 
-void KdOnline2FeInput::AcceptWaveform(float sampling_rate,
-                                      VectorBase<float> &waveform)
+
+///sampling_rate is fixed to 16KHz
+void KdOnline2FeInput::AcceptWaveform(VectorBase<float> &waveform)
 {
     if( waveform.Dim()==0 )
     {
@@ -106,10 +101,10 @@ void KdOnline2FeInput::AcceptWaveform(float sampling_rate,
     Vector<BaseFloat> appended_wave;
 
     appended_wave.Resize(waveform_remainder_.Dim() + waveform.Dim());
-    if (waveform_remainder_.Dim() != 0)
+    if( waveform_remainder_.Dim()!=0 )
     {
-      appended_wave.Range(0, waveform_remainder_.Dim())
-          .CopyFromVec(waveform_remainder_);
+        appended_wave.Range(0, waveform_remainder_.Dim())
+                .CopyFromVec(waveform_remainder_);
     }
     appended_wave.Range(waveform_remainder_.Dim(), waveform.Dim())
         .CopyFromVec(waveform);
@@ -129,17 +124,16 @@ void KdOnline2FeInput::ComputeFeatures()
     KALDI_ASSERT(num_frames_new >= num_frames_old);
 
     Vector<BaseFloat> window;
-    bool need_raw_log_energy = mfcc->NeedRawLogEnergy();
     for (int32 frame = num_frames_old; frame < num_frames_new; frame++)
     {
-        BaseFloat raw_log_energy = 0.0;
         ExtractWindow(waveform_offset, waveform_remainder_, frame,
-                      frame_opts, window_function, &window,
-                      need_raw_log_energy ? &raw_log_energy : NULL);
+                      frame_opts, window_function, &window, NULL); //dont need energy
+
         Vector<BaseFloat> *this_feature = new Vector<BaseFloat>(mfcc->Dim(),
                                                                 kUndefined);
-        // note: this online feature-extraction code does not support VTLN.
-        BaseFloat vtln_warp = 1.0;
+
+        float vtln_warp = 1.0; // this code does not support VTLN.
+        float raw_log_energy = 0.0;
         mfcc->Compute(raw_log_energy, vtln_warp, &window, this_feature);
         o_features->PushBack(this_feature);
     }
@@ -172,9 +166,4 @@ void KdOnline2FeInput::ComputeFeatures()
 void KdOnline2FeInput::InputFinished()
 {
     ComputeFeatures();
-}
-
-float KdOnline2FeInput::FrameShiftInSeconds() const
-{
-    return mfcc_opts.frame_opts.frame_shift_ms / 1000.0f;
 }

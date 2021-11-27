@@ -212,48 +212,18 @@ void KdOnline2::print(CompactLattice *clat)
 void KdOnline2::processData(float *wav_data, int len)
 {
     g_decoder->init();
-    BaseFloat chunk_length_secs = 0.5;
-
     // get the data for channel zero (if the signal is not mono, we only
     // take the first channel).
     SubVector<float> data(wav_data, len);
-
-    BaseFloat samp_freq = 16000; ///FIXME
-    int32 chunk_length = int32(samp_freq * chunk_length_secs);
-
-    int32 samp_offset = 0;
-//    qDebug() << "data.Dim()" << data.Dim() << "len" << len;
-    while( samp_offset<data.Dim() )
-    {
-        int32 samp_remaining = data.Dim() - samp_offset;
-
-        int32 num_samp;
-        if( chunk_length<samp_remaining )
-        {
-            num_samp = chunk_length;
-        }
-        else
-        {
-            num_samp = samp_remaining;
-        }
-
-        SubVector<float> wave_part(data, samp_offset, num_samp);
-        g_decoder->decodable->features->AcceptWaveform(samp_freq, wave_part);
-
-        samp_offset += num_samp;
-//        if (samp_offset == data.Dim())
-//        {
-//            // no more input. flush out last frames
-//            g_decoder->FeaturePipeline().InputFinished();
-//        }
-        g_decoder->AdvanceDecoding();
-
-    }
-//    g_decoder->FinalizeDecoding();
     clock_t start = clock();
+    SubVector<float> wave_part(data, 0, len);
+    g_decoder->decodable->features->AcceptWaveform(wave_part);
+
+    printTime(start);
+    g_decoder->AdvanceDecoding();
+//    g_decoder->FinalizeDecoding();
     CompactLattice clat;
     bool ret = g_decoder->GetLattice(true, &clat);
-//    printTime(start);
 
     if( ret )
     {
