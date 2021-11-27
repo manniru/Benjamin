@@ -25,6 +25,9 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     parseWords(BT_WORDS_PATH);
 
     ab_src = new BtRecorder(cy_buf);
+//    rec_thread = new QThread;
+//    ab_src->moveToThread(rec_thread);
+//    rec_thread->start();
 }
 
 KdOnline::~KdOnline()
@@ -69,22 +72,8 @@ void KdOnline::init()
 
 #ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
-//    decoder_opts. = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
-
-
     decode_fst = ReadFstKaldiGeneric(fst_rxfilename); ///May replace with ReadDecodeGraph
-//    feature_pipeline = NULL;
-//    feature_pipeline = new OnlineFeaturePipeline(*feature_config);
-
-//    o_decoder->InitDecoding();
-//    feature_pipeline->SetTransform(adaptation_state_.transform);
-
-    // Decodable is lightweight, lose nothing constructing it each time
-#endif
-
-    o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
-                                silence_phones, *trans_model);
-
+#else
     Mfcc mfcc(mfcc_opts);
     KdOnlineFeInput fe_input(ab_src, &mfcc,
                      frame_length * (kSampleFreq / 1000),
@@ -95,6 +84,11 @@ void KdOnline::init()
     DeltaFeaturesOptions opts;
     opts.order = kDeltaOrder;
     feat_transform = new OnlineDeltaInput(opts, &cmn_input);
+#endif
+
+    o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
+                                silence_phones, *trans_model);
+
 
     startDecode();
 }
@@ -103,26 +97,15 @@ void KdOnline::startDecode()
 {
     BaseFloat acoustic_scale = 0.08;
     // feature_reading_opts contains number of retries, batch size.
+
+#ifdef BT_LAT_ONLINE
+    KdOnline2Decodable decodable(ab_src,
+                                 o2_model, acoustic_scale);
+#else
     OnlineFeatureMatrixOptions feature_reading_opts;
     OnlineFeatureMatrix *feature_matrix;
     feature_matrix = new OnlineFeatureMatrix(feature_reading_opts,
                                              feat_transform);
-
-#ifdef BT_LAT_ONLINE
-//    OnlineFeaturePipelineCommandLineConfig fcc; //feature_cmdline_config
-
-//    fcc.mfcc_config = KAL_NATO_DIR"exp/tri1_online/conf/mfcc.conf";
-//    fcc.cmvn_config = KAL_NATO_DIR"exp/tri1_online/conf/online_cmvn.conf";
-//    fcc.add_deltas = true;
-//    fcc.global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
-
-//    OnlineFeaturePipelineConfig feature_config(fcc);
-//    OnlineFeaturePipeline *feature_pipeline = new
-//                       OnlineFeaturePipeline(feature_config);
-
-    KdOnline2Decodable decodable(o2_model,
-                            acoustic_scale, feature_matrix);
-#else
     BT_ONLINE_DECODABLE decodable(o2_model,
                              acoustic_scale, feature_matrix);
 #endif

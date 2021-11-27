@@ -42,7 +42,7 @@ KdOnline2Gmm::KdOnline2Gmm(QObject *parent) : QObject(parent)
     SortAndUniq(&silence_phones_);
 }
 
-void KdOnline2Gmm::init()
+void KdOnline2Gmm::init(BtRecorder *au_src)
 {
     if( o_decoder ) //decoder not null
     {
@@ -54,8 +54,7 @@ void KdOnline2Gmm::init()
     o_decoder->InitDecoding();
 
     // Decodable is lightweight, lose nothing constructing it each time
-    decodable = new BT_ONLINE_DECODABLE(models, d_config.acoustic_scale,
-                                        adaptation_state_.transform);
+    decodable = new BT_ONLINE_DECODABLE(au_src, models, d_config.acoustic_scale);
 }
 
 // Advance the decoding as far as we can, and possibly estimate fMLLR.

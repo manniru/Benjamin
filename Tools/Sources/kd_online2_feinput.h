@@ -10,32 +10,27 @@
 #include "bt_recorder.h"
 #include "kd_cmvn.h"
 
-class KdOnline2FeInput
+class KdOnline2FeInput: public QObject
 {
+    Q_OBJECT
 public:
-  KdOnline2FeInput();
+  explicit KdOnline2FeInput(BtRecorder *au_src,
+                            QObject *parent = nullptr);
+  ~KdOnline2FeInput();
 
   int32 Dim();
   int32 NumFramesReady();
   void GetFrame(int32 frame, kaldi::VectorBase<float> *feat);
+  void FreezeCmvn();
 
-  void FreezeCmvn();  // stop it from moving further (do this when you start
-                      // using fMLLR). This will crash if NumFramesReady() == 0.
-
-  /// Accept more data to process (won't actually process it, will
-  /// just copy it).   sampling_rate is necessary just to assert
-  /// it equals what's in the config.
-  void AcceptWaveform(kaldi::VectorBase<float> &waveform);
-
-  // InputFinished() tells the class you won't be providing any
-  // more waveform.  This will help flush out the last few frames
-  // of delta or LDA features, and finalize the pitch features
-  // (making them more accurate).
-  void InputFinished();
 
   void ComputeFeatures();
 
-  virtual ~KdOnline2FeInput();
+signals:
+    void startRecording();
+
+public slots:
+  void AcceptWaveform(int16_t *data, int size);
 
  private:
   /// Init() is to be called from the constructor; it assumes the pointer
@@ -67,6 +62,7 @@ public:
 
   kaldi::DeltaFeatures *delta_features;  // This class contains just a few
                                         // coefficients.
+  BtRecorder *rec_src;
 };
 
 #endif // KD_ONLINE2_FEINPUT_H

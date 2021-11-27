@@ -2,7 +2,8 @@
 
 using namespace kaldi;
 
-KdOnline2FeInput::KdOnline2FeInput()
+KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
+                : QObject(parent)
 {
     waveform_offset = 0;
     std::string  global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
@@ -11,6 +12,16 @@ KdOnline2FeInput::KdOnline2FeInput()
     ReadKaldiObject(global_cmvn_stats_rxfilename,
                     &global_cmvn_stats_);
     Init();
+
+    if( au_src )
+    {
+        connect(au_src, SIGNAL(dataReady(int16_t*,int)),
+                this, SLOT(AcceptWaveform(int16_t*,int)));
+        connect(this, SIGNAL(startRecording()),
+                au_src, SLOT(startStream()));
+
+        emit startRecording();
+    }
 }
 
 // Init() is to be called from the constructor; it assumes the pointer
@@ -67,7 +78,12 @@ void KdOnline2FeInput::GetFrame(int32 frame,
     {
       right_frame = src_frames_ready - 1;
     }
-    KALDI_ASSERT(right_frame >= left_frame);
+    if( right_frame<left_frame );
+    {
+//        qDebug() << "right_frame" << right_frame
+//                 << "left_frame" << left_frame;
+        return;
+    }
     int32 temp_num_frames = right_frame + 1 - left_frame;
     int32 mfcc_dim = mfcc->Dim();
     Matrix<BaseFloat> temp_src(temp_num_frames, mfcc_dim);
@@ -91,23 +107,28 @@ KdOnline2FeInput::~KdOnline2FeInput()
 
 
 ///sampling_rate is fixed to 16KHz
-void KdOnline2FeInput::AcceptWaveform(VectorBase<float> &waveform)
+void KdOnline2FeInput::AcceptWaveform(int16_t *data, int size)
 {
-    if( waveform.Dim()==0 )
+    qDebug() << "AcceptWaveform" << data
+             << "size" << size;
+    if( size==0 )
     {
         return;
     }
 
-    Vector<BaseFloat> appended_wave;
+    Vector<float> appended_wave;
+    int rem_size = waveform_remainder_.Dim();
 
-    appended_wave.Resize(waveform_remainder_.Dim() + waveform.Dim());
-    if( waveform_remainder_.Dim()!=0 )
+    appended_wave.Resize(rem_size + size);
+    if( rem_size!=0 )
     {
         appended_wave.Range(0, waveform_remainder_.Dim())
                 .CopyFromVec(waveform_remainder_);
     }
-    appended_wave.Range(waveform_remainder_.Dim(), waveform.Dim())
-        .CopyFromVec(waveform);
+    for( int i=0 ; i<size ; i++ )
+    {
+        appended_wave(i+rem_size) = data[i];
+    }
     waveform_remainder_.Swap(&appended_wave);
     ComputeFeatures();
 }
@@ -161,9 +182,4 @@ void KdOnline2FeInput::ComputeFeatures()
             waveform_remainder_.Swap(&new_remainder);
         }
     }
-}
-
-void KdOnline2FeInput::InputFinished()
-{
-    ComputeFeatures();
 }

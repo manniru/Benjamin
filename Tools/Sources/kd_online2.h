@@ -23,7 +23,7 @@ public:
     ~KdOnline2();
 
     void startDecode();
-    void processData(float *wav_data, int len);
+    void processData(int16_t *wav_data, int len);
 
 public slots:
     void init();

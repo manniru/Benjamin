@@ -22,10 +22,12 @@ public:
     bool Read(kaldi::Vector<float> *data);
 
     // The real PortAudio callback delegates to this one
-    int Callback(int16_t *data,
-                 int size);
+    int Callback(int16_t *data, int size);
 
     ~BtRecorder();
+
+signals:
+    void dataReady(int16_t *data, int size);
 
 public slots:
     void startStream();

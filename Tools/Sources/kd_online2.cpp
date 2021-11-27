@@ -37,7 +37,6 @@ void KdOnline2::init()
 {
     int sample_count = BT_REC_SIZE*BT_REC_RATE;
     int16_t raw[BT_REC_SIZE*BT_REC_RATE];
-    float raw_f[BT_REC_SIZE*BT_REC_RATE];
 
     emit startRecord();
 
@@ -58,11 +57,7 @@ void KdOnline2::init()
         cy_buf->rewind((BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
         cy_buf->read(raw, sample_count);
 
-        for( int i=0 ; i<sample_count ; i++ )
-        {
-            raw_f[i] = raw[i];
-        }
-        processData(raw_f, sample_count);
+        processData(raw, sample_count);
     }
 }
 
@@ -209,19 +204,15 @@ void KdOnline2::print(CompactLattice *clat)
 //    emit resultReady(result);
 }
 
-void KdOnline2::processData(float *wav_data, int len)
+void KdOnline2::processData(int16_t *wav_data, int len)
 {
-    g_decoder->init();
-    // get the data for channel zero (if the signal is not mono, we only
-    // take the first channel).
-    SubVector<float> data(wav_data, len);
+    g_decoder->init(NULL); ///FIXME: Replace with rec_src
     clock_t start = clock();
-    SubVector<float> wave_part(data, 0, len);
-    g_decoder->decodable->features->AcceptWaveform(wave_part);
+    g_decoder->decodable->features->AcceptWaveform(wav_data, len);
 
     printTime(start);
     g_decoder->AdvanceDecoding();
-//    g_decoder->FinalizeDecoding();
+    g_decoder->FinalizeDecoding();
     CompactLattice clat;
     bool ret = g_decoder->GetLattice(true, &clat);
 
@@ -229,11 +220,6 @@ void KdOnline2::processData(float *wav_data, int len)
     {
         print(&clat);
     }
-
-
-    // In an application you might avoid updating the adaptation state if
-    // you felt the utterance had low confidence.  See lat/confidence.h
-//    g_decoder->GetAdaptationState(&adaptation_state);
 }
 
 #endif

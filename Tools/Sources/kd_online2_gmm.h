@@ -40,7 +40,7 @@ public:
     explicit KdOnline2Gmm(QObject *parent = NULL);
     ~KdOnline2Gmm();
 
-    void init();
+    void init(BtRecorder *au_src);
     void AdvanceDecoding();
     void FinalizeDecoding();
 

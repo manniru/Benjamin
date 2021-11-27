@@ -3,8 +3,7 @@
 using namespace kaldi;
 using namespace fst;
 
-KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
-      float scale,Matrix<BaseFloat> transform)
+KdOnline2Decodable::KdOnline2Decodable(BtRecorder *au_src, KdOnline2Model *mdl, float scale)
 {
     ac_scale_ = scale;
     cur_frame_ = -1;
@@ -15,7 +14,7 @@ KdOnline2Decodable::KdOnline2Decodable(KdOnline2Model *mdl,
     int32 num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int32,BaseFloat>(-1, 0.0f));
 
-    features = new KdOnline2FeInput;
+    features = new KdOnline2FeInput(au_src);
     feat_dim = features->Dim();
     cur_feats_.Resize(feat_dim);
 }

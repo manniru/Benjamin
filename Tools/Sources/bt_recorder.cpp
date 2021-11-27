@@ -100,10 +100,11 @@ int BtRecorder::Callback(int16_t *data, int size)
 {
     if( cy_buf->getFreeSize()<size )
     {
-        qDebug() << "Overflow occurd" << size << cy_buf->getFreeSize();
+        qDebug() << "BtRecorder Overflow" << size << cy_buf->getFreeSize();
         return paContinue;
     }
     cy_buf->write(data, size);
+    emit dataReady(data, size);
     return paContinue;
 }
 

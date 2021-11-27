@@ -17,8 +17,7 @@
 class KdOnline2Decodable : public kaldi::DecodableInterface
 {
 public:
-    KdOnline2Decodable(KdOnline2Model *mdl,
-                       float scale, kaldi::Matrix<kaldi::BaseFloat> transform);
+    KdOnline2Decodable(BtRecorder *au_src, KdOnline2Model *mdl, float scale);
     ~KdOnline2Decodable();
 
 
