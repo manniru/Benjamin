@@ -25,9 +25,6 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     parseWords(BT_WORDS_PATH);
 
     ab_src = new BtRecorder(cy_buf);
-//    rec_thread = new QThread;
-//    ab_src->moveToThread(rec_thread);
-//    rec_thread->start();
 }
 
 KdOnline::~KdOnline()

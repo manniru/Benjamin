@@ -23,14 +23,9 @@ public:
   void GetFrame(int32 frame, kaldi::VectorBase<float> *feat);
   void FreezeCmvn();
 
-
-  void ComputeFeatures();
-
-signals:
-    void startRecording();
-
-public slots:
   void AcceptWaveform(int16_t *data, int size);
+  void AcceptWaveform(BtCyclic *buf);
+  void ComputeFeatures();
 
  private:
   /// Init() is to be called from the constructor; it assumes the pointer
@@ -48,7 +43,7 @@ public slots:
 
   /////////////////////////////
   kaldi::RecyclingVector *o_features;
-  kaldi::MfccComputer *mfcc;
+  kaldi::MfccComputer    *mfcc;
 
   // waveform_remainder_ is a short piece of waveform that we may need to keep
   // after extracting all the whole frames we can (whatever length of feature
@@ -59,10 +54,10 @@ public slots:
   // already discarded, i.e. that were prior to 'waveform_remainder_'.
   int64 waveform_offset;
 
-
   kaldi::DeltaFeatures *delta_features;  // This class contains just a few
-                                        // coefficients.
+                                         // coefficients.
   BtRecorder *rec_src;
+  QThread    *rec_thread;
 };
 
 #endif // KD_ONLINE2_FEINPUT_H

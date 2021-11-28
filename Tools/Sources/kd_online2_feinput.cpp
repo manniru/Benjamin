@@ -5,6 +5,7 @@ using namespace kaldi;
 KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
                 : QObject(parent)
 {
+    rec_src = au_src;
     waveform_offset = 0;
     std::string  global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
     mfcc_opts.use_energy = false;
@@ -13,14 +14,12 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
                     &global_cmvn_stats_);
     Init();
 
-    if( au_src )
+    if( rec_src )
     {
-        connect(au_src, SIGNAL(dataReady(int16_t*,int)),
-                this, SLOT(AcceptWaveform(int16_t*,int)));
-        connect(this, SIGNAL(startRecording()),
-                au_src, SLOT(startStream()));
-
-        emit startRecording();
+        rec_src->startStream();
+//        rec_thread = new QThread;
+//        rec_src->moveToThread(rec_thread);
+//        rec_thread->start();
     }
 }
 
@@ -66,6 +65,11 @@ int32 KdOnline2FeInput::NumFramesReady()
 void KdOnline2FeInput::GetFrame(int32 frame,
                                 VectorBase<float> *feat)
 {
+    if( rec_src )
+    {
+        AcceptWaveform(rec_src->cy_buf);
+    }
+
     int32 context = delta_opts.order * delta_opts.window;
     int32 left_frame = frame - context;
     int32 right_frame = frame + context;
@@ -109,8 +113,6 @@ KdOnline2FeInput::~KdOnline2FeInput()
 ///sampling_rate is fixed to 16KHz
 void KdOnline2FeInput::AcceptWaveform(int16_t *data, int size)
 {
-    qDebug() << "AcceptWaveform" << data
-             << "size" << size;
     if( size==0 )
     {
         return;
@@ -132,6 +134,31 @@ void KdOnline2FeInput::AcceptWaveform(int16_t *data, int size)
     waveform_remainder_.Swap(&appended_wave);
     ComputeFeatures();
 }
+
+///sampling_rate is fixed to 16KHz
+void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf)
+{
+    int len = buf->getDataSize();
+    if( len==0 )
+    {
+        return;
+    }
+    qDebug() << "hey";
+
+    Vector<float> appended_wave;
+    int rem_size = waveform_remainder_.Dim();
+
+    appended_wave.Resize(rem_size + len);
+    if( rem_size!=0 )
+    {
+        appended_wave.Range(0, waveform_remainder_.Dim())
+                .CopyFromVec(waveform_remainder_);
+    }
+    buf->read(&appended_wave, len);
+    waveform_remainder_.Swap(&appended_wave);
+    ComputeFeatures();
+}
+
 
 void KdOnline2FeInput::ComputeFeatures()
 {

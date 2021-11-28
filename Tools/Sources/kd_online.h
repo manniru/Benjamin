@@ -56,7 +56,6 @@ private:
     int cmn_window = 600, min_cmn_window = 100;
 
     BtRecorder   *ab_src;
-    QThread      *rec_thread;
     QVector<QString>  history;
     QVector<QString>  lexicon;
     BtCyclic         *cy_buf;

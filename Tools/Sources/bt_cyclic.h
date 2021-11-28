@@ -7,6 +7,7 @@
 #include <QVector>
 
 #include "bt_config.h"
+#include "matrix/kaldi-vector.h"
 
 class BtCyclic : public QObject
 {
@@ -15,6 +16,7 @@ public:
     explicit BtCyclic(int size, QObject *parent = nullptr);
 
     int  read(int16_t *data, int size);
+    int  read(kaldi::Vector<float> *data, int size);
     void write(int16_t *data, int size);
     void constWrite(int16_t data, int size);
     void rewind(int count);

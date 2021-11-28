@@ -25,15 +25,12 @@ public:
     int Callback(int16_t *data, int size);
 
     ~BtRecorder();
-
-signals:
-    void dataReady(int16_t *data, int size);
+    BtCyclic *cy_buf;
 
 public slots:
     void startStream();
 
 private:
-    BtCyclic *cy_buf;
 
     PaStream *pa_stream;
     bool pa_started_; // becomes "true" after "pa_stream_" is started

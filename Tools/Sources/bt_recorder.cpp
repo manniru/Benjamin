@@ -53,7 +53,6 @@ void BtRecorder::startStream()
     }
 }
 
-
 // cy_buf will be filled from the other thread using GStreamer
 bool BtRecorder::Read(kaldi::Vector<float> *data)
 {
@@ -104,7 +103,6 @@ int BtRecorder::Callback(int16_t *data, int size)
         return paContinue;
     }
     cy_buf->write(data, size);
-    emit dataReady(data, size);
     return paContinue;
 }
 
