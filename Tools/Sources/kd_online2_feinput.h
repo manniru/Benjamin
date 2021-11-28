@@ -23,8 +23,7 @@ public:
   void GetFrame(int32 frame, kaldi::VectorBase<float> *feat);
   void FreezeCmvn();
 
-  void AcceptWaveform(int16_t *data, int size);
-  void AcceptWaveform(BtCyclic *buf);
+  void AcceptWaveform(BtCyclic *buf, int len);
   void ComputeFeatures();
 
  private:

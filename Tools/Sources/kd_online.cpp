@@ -98,6 +98,17 @@ void KdOnline::startDecode()
 #ifdef BT_LAT_ONLINE
     KdOnline2Decodable decodable(ab_src,
                                  o2_model, acoustic_scale);
+
+    int16_t raw[BT_REC_SIZE*BT_REC_RATE];
+
+    ab_src->startStream();
+//    emit startRecord();
+
+    while( cy_buf->getDataSize()>BT_REC_SIZE*BT_REC_RATE )
+    {
+        QThread::msleep(2);
+    }
+    cy_buf->read(raw, (BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
 #else
     OnlineFeatureMatrixOptions feature_reading_opts;
     OnlineFeatureMatrix *feature_matrix;
@@ -116,6 +127,7 @@ void KdOnline::startDecode()
     while(1)
     {
         start = clock();
+        decodable.features->AcceptWaveform(cy_buf, 0);
         KdDecodeState dstate = o_decoder->Decode(&decodable);
 
         if( dstate==KdDecodeState::KD_EndUtt )

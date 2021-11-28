@@ -16,7 +16,6 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
 
     if( rec_src )
     {
-        rec_src->startStream();
 //        rec_thread = new QThread;
 //        rec_src->moveToThread(rec_thread);
 //        rec_thread->start();
@@ -65,11 +64,6 @@ int32 KdOnline2FeInput::NumFramesReady()
 void KdOnline2FeInput::GetFrame(int32 frame,
                                 VectorBase<float> *feat)
 {
-    if( rec_src )
-    {
-        AcceptWaveform(rec_src->cy_buf);
-    }
-
     int32 context = delta_opts.order * delta_opts.window;
     int32 left_frame = frame - context;
     int32 right_frame = frame + context;
@@ -82,10 +76,10 @@ void KdOnline2FeInput::GetFrame(int32 frame,
     {
       right_frame = src_frames_ready - 1;
     }
-    if( right_frame<left_frame );
+    if( right_frame<left_frame )
     {
-//        qDebug() << "right_frame" << right_frame
-//                 << "left_frame" << left_frame;
+        qDebug() << "right_frame" << right_frame
+                 << "left_frame" << left_frame;
         return;
     }
     int32 temp_num_frames = right_frame + 1 - left_frame;
@@ -109,41 +103,17 @@ KdOnline2FeInput::~KdOnline2FeInput()
     delete mfcc;
 }
 
-
 ///sampling_rate is fixed to 16KHz
-void KdOnline2FeInput::AcceptWaveform(int16_t *data, int size)
+void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf, int len)
 {
-    if( size==0 )
-    {
-        return;
-    }
-
-    Vector<float> appended_wave;
-    int rem_size = waveform_remainder_.Dim();
-
-    appended_wave.Resize(rem_size + size);
-    if( rem_size!=0 )
-    {
-        appended_wave.Range(0, waveform_remainder_.Dim())
-                .CopyFromVec(waveform_remainder_);
-    }
-    for( int i=0 ; i<size ; i++ )
-    {
-        appended_wave(i+rem_size) = data[i];
-    }
-    waveform_remainder_.Swap(&appended_wave);
-    ComputeFeatures();
-}
-
-///sampling_rate is fixed to 16KHz
-void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf)
-{
-    int len = buf->getDataSize();
     if( len==0 )
     {
-        return;
+        len = buf->getDataSize()-10;
+        if( len<=0 )
+        {
+            return;
+        }
     }
-    qDebug() << "hey";
 
     Vector<float> appended_wave;
     int rem_size = waveform_remainder_.Dim();

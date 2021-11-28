@@ -3,6 +3,7 @@
 
 #include<QVector>
 #include "decoder/lattice-faster-decoder.h"
+#include "kd_token2.h"
 
 /*extra_cost is used in pruning tokens, to save memory.
 
@@ -19,11 +20,10 @@
   (Note: we don't update all the extra_costs every time we update a frame; we
   only do it every 'config_.prune_interval' frames).*/
 
-typedef kaldi::decoder::StdToken             KdToken;
-typedef fst::StdFst                          KdFST;
-typedef fst::StdFst::Arc                     KdArc;
-typedef KdArc::StateId                       KdStateId;
-typedef kaldi::decoder::ForwardLink<KdToken> KdFLink;
+typedef fst::StdFst                           KdFST;
+typedef fst::StdFst::Arc                      KdArc;
+typedef KdArc::StateId                        KdStateId;
+typedef kaldi::decoder::ForwardLink<KdToken2> KdFLink;
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
 
@@ -31,7 +31,7 @@ typedef kaldi::decoder::ForwardLink<KdToken> KdFLink;
 // and something saying whether we ever pruned it using PruneForwardLinks.
 struct KdTokenList
 {
-    KdToken *toks = NULL;
+    KdToken2 *toks = NULL;
     bool must_prune_forward_links = true;
     bool must_prune_tokens = true;
 };
@@ -41,7 +41,7 @@ class KdLatticeDecoder
 public:
     using Label = typename KdArc::Label;
     using Weight = typename KdArc::Weight;
-    typedef kaldi::HashList<KdStateId, KdToken*>::Elem Elem;
+    typedef kaldi::HashList<KdStateId, KdToken2*>::Elem Elem;
 
     kaldi::LatticeFasterDecoderConfig config_;
     KdLatticeDecoder(KdFST &fst, kaldi::LatticeFasterDecoderConfig &config);
@@ -65,15 +65,15 @@ public:
 protected:
     // protected instead of private, so classes which inherits from this,
     // also can have access
-    inline static void DeleteForwardLinks(KdToken *tok);
+    inline static void DeleteForwardLinks(KdToken2 *tok);
 
     void PossiblyResizeHash(size_t num_toks);
     inline Elem *FindOrAddToken(KdStateId state, int32 frame_plus_one,
-                                float tot_cost, KdToken *backpointer,
+                                float tot_cost, KdToken2 *backpointer,
                                 bool *changed);
 
     bool PruneForwardLinks(int32 frame, bool *extra_costs_changed, float delta);
-    void ComputeFinalCosts(unordered_map<KdToken*, float> *final_costs,
+    void ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
                            float *final_relative_cost, float *final_best_cost);
 
     void PruneForwardLinksFinal();
@@ -87,7 +87,7 @@ protected:
     void ProcessNonemitting(float cost_cutoff);
 
     // HashList is indexed by frame-index plus one.
-    kaldi::HashList<KdStateId, KdToken*> toks_;
+    kaldi::HashList<KdStateId, KdToken2*> toks_;
 
     std::vector<KdTokenList> frame_toks; // Lists of tokens, indexed by
     // frame (members of KdTokenList are toks, must_prune_forward_links,
@@ -105,13 +105,14 @@ protected:
 
     bool decoding_finalized_; // true if someone called FinalizeDecoding().
 
-    unordered_map<KdToken*, float> final_costs_;
+    unordered_map<KdToken2*, float> final_costs_;
     float final_relative_cost_;
     float final_best_cost_;
 
     void DeleteElems(Elem *list);
 
-    static void TopSortTokens(KdToken *tok_list, std::vector<KdToken*> *topsorted_list);
+    static void TopSortTokens(KdToken2 *tok_list,
+                              std::vector<KdToken2*> *topsorted_list);
 
     void ClearActiveTokens();
 };

@@ -55,9 +55,7 @@ void KdOnline2::init()
         }
 
         cy_buf->rewind((BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
-        cy_buf->read(raw, sample_count);
-
-        processData(raw, sample_count);
+        processData(sample_count);
     }
 }
 
@@ -204,13 +202,14 @@ void KdOnline2::print(CompactLattice *clat)
 //    emit resultReady(result);
 }
 
-void KdOnline2::processData(int16_t *wav_data, int len)
+void KdOnline2::processData(int len)
 {
     g_decoder->init(NULL); ///FIXME: Replace with rec_src
-    clock_t start = clock();
-    g_decoder->decodable->features->AcceptWaveform(wav_data, len);
+    g_decoder->decodable->features->AcceptWaveform(cy_buf, len);
+//    clock_t start = clock();
+//    g_decoder->decodable->features->AcceptWaveform(wav_data, len);
 
-    printTime(start);
+//    printTime(start);
     g_decoder->AdvanceDecoding();
     g_decoder->FinalizeDecoding();
     CompactLattice clat;

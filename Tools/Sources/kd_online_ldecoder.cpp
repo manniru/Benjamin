@@ -37,7 +37,7 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
     KALDI_ASSERT(start_state != fst::kNoStateId);
     frame_toks.resize(1);
     //Weight was Weight::One()
-    KdToken *dummy_token = new KdToken(0.0, 0.0, NULL, NULL, NULL);
+    KdToken2 *dummy_token = new KdToken2(0.0, 0.0, NULL, NULL);
     frame_toks[0].toks = dummy_token;
     toks_.Insert(start_state, dummy_token);
     num_toks_++;
@@ -52,13 +52,13 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
 }
 
 
-void KdOnlineLDecoder::RawLattice(KdToken *start, KdToken *end,
+void KdOnlineLDecoder::RawLattice(int start, int end,
                                   Lattice *ofst)
 {
     ofst->DeleteStates();
 
     bool is_final = true;
-    double this_cost = start->tot_cost/* + fst_->Final(start->links->olabel).Value()*/;
+    double this_cost = 0;//start->tot_cost/* + fst_->Final(start->links->olabel).Value()*/;
 
     if( this_cost==KD_INFINITY )
     {
@@ -67,21 +67,21 @@ void KdOnlineLDecoder::RawLattice(KdToken *start, KdToken *end,
 
     std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
 
-    for( KdToken *tok=start ; tok!=end ; tok=tok->next )
-    {
-        if( tok==NULL )
-        {
-            break;
-        }
-        if( tok->links )
-        {
-            LatticeWeight arc_weight(tok->links->graph_cost, tok->links->acoustic_cost);
-            LatticeArc l_arc(tok->links->ilabel, tok->links->olabel,
-                             arc_weight, 0/*tok->arc_.nextstate*/);
+//    for( KdToken *tok=start ; tok!=end ; tok=tok->next )
+//    {
+//        if( tok==NULL )
+//        {
+//            break;
+//        }
+//        if( tok->links )
+//        {
+//            LatticeWeight arc_weight(tok->links->graph_cost, tok->links->acoustic_cost);
+//            LatticeArc l_arc(tok->links->ilabel, tok->links->olabel,
+//                             arc_weight, 0/*tok->arc_.nextstate*/);
 
-            arcs_reverse.push_back(l_arc);
-        }
-    }
+//            arcs_reverse.push_back(l_arc);
+//        }
+//    }
 
 //    if(arcs_reverse.back().nextstate == fst_.Start())
 //    {
@@ -110,7 +110,7 @@ void KdOnlineLDecoder::RawLattice(KdToken *start, KdToken *end,
 //    GetRawLattice(&raw_fst);
 }
 
-void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
+void KdOnlineLDecoder::MakeLattice(int start, int end,
                                    CompactLattice *ofst)
 {
     if (start == NULL)
@@ -119,9 +119,9 @@ void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
     }
 
     Lattice raw_fst;
-//    RawLattice(start, end, &raw_fst);
+    RawLattice(start, end, &raw_fst);
 
-    GetRawLattice(&raw_fst);
+//    GetRawLattice(&raw_fst);
     Invert(&raw_fst);
     fst::ILabelCompare<LatticeArc> ilabel_comp;
     ArcSort(&raw_fst, ilabel_comp);
@@ -138,10 +138,10 @@ void KdOnlineLDecoder::MakeLattice(KdToken *start, KdToken *end,
 
 void KdOnlineLDecoder::UpdateImmortalToken()
 {
-    QVector<KdToken*> emitting;
+    QVector<KdToken2*> emitting;
     for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
     {
-        KdToken* tok = e->val;
+        KdToken2* tok = e->val;
         while( tok!=NULL ) //deal with non-emitting ones ...
         {
             if( tok->links )
@@ -171,14 +171,14 @@ void KdOnlineLDecoder::UpdateImmortalToken()
         emitting.push_back(tok);
     }
 
-    QVector<KdToken*> p_emitting;
+    QVector<KdToken2*> p_emitting;
 
     while( emitting.size()>1 )
     {
         p_emitting.clear();
         for( int i=0 ; i<emitting.size() ; i++ )
         {
-            KdToken *p_token = emitting[i]->next;
+            KdToken2 *p_token = emitting[i]->next;
             while( ( p_token!=NULL ) && ( p_token->links->ilabel==0 ) )
             {
                 p_token = p_token->next;
@@ -213,7 +213,7 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
         return false;
     }
 
-    MakeLattice(immortal_tok_, prev_immortal_tok_, out_fst);
+//    MakeLattice(immortal_tok_, prev_immortal_tok_, out_fst);
     return true;
 }
 
@@ -221,15 +221,15 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 // to the last immortal token.
 double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 {
-    KdToken *best_tok = getBestTok();
-    MakeLattice(best_tok, immortal_tok_, out_fst);
+    KdToken2 *best_tok = getBestTok();
+//    MakeLattice(best_tok, immortal_tok_, out_fst);
 
     return 1;
 }
 
-KdToken *KdOnlineLDecoder::getBestTok()
+KdToken2 *KdOnlineLDecoder::getBestTok()
 {
-    KdToken *best_tok = NULL;
+    KdToken2 *best_tok = NULL;
     for( const Elem *e=toks_.GetList() ; e!=NULL ; e=e->tail )
     {
         if( best_tok==NULL || best_tok->tot_cost<e->val->tot_cost )
@@ -244,7 +244,7 @@ KdToken *KdOnlineLDecoder::getBestTok()
 
 void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 {
-    KdToken *best_tok = NULL;
+    KdToken2 *best_tok = NULL;
 
     //Find token with the maximum cost->best_tok
     for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
@@ -264,10 +264,10 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
     int active_count = frame_toks.size();
     int bucket_count = num_toks_/2 + 3;
 
-    unordered_map<KdToken*, KdStateId> tok_map(bucket_count);
-    unordered_map<KdToken*, BaseFloat> final_costs_local;
+    unordered_map<KdToken2*, KdStateId> tok_map(bucket_count);
+    unordered_map<KdToken2*, float> final_costs_local;
 
-    unordered_map<KdToken*, BaseFloat> final_costs;
+    unordered_map<KdToken2*, float> final_costs;
     if (decoding_finalized_)
     {
         final_costs = final_costs_;
@@ -278,7 +278,7 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
         final_costs = final_costs_local;
     }
 
-    std::vector<KdToken*> token_list;
+    std::vector<KdToken2*> token_list;
     for ( int i=0; i<active_count; i++)
     {
         if (frame_toks[i].toks == NULL)
@@ -299,7 +299,7 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
     out_fst->SetStart(0);
     KdStateId cur_state;
 
-    KdToken *tok;
+    KdToken2 *tok;
     for( tok=best_tok ; (tok!=NULL) ; tok = tok->next )
     {
         cur_state = tok_map[tok];
@@ -319,7 +319,7 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
             float tot_cost = tok->tot_cost - next_cost;
             float graph_cost = l->graph_cost;
             float ac_cost = tot_cost - graph_cost;
-            typename unordered_map<KdToken*, KdStateId>::const_iterator
+            typename unordered_map<KdToken2*, KdStateId>::const_iterator
                     iter = tok_map.find(l->next_tok);
             KdStateId nextstate = iter->second;
             LatticeArc larc(l->ilabel, l->olabel,
@@ -332,7 +332,7 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 
     if (!final_costs.empty())
     {
-        typename unordered_map<KdToken*, BaseFloat>::const_iterator
+        typename unordered_map<KdToken2*, BaseFloat>::const_iterator
                 iter = final_costs.find(tok);
         if (iter != final_costs.end())
             out_fst->SetFinal(cur_state, LatticeWeight(iter->second, 0));

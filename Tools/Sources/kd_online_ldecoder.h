@@ -46,8 +46,8 @@ public:
 
     KdDecodeState Decode(kaldi::DecodableInterface *decodable);
 
-    void RawLattice(KdToken *start, KdToken *end, kaldi::Lattice *ofst);
-    void MakeLattice(KdToken *start, KdToken *end, kaldi::CompactLattice *ofst);
+    void RawLattice(int start, int end, kaldi::Lattice *ofst);
+    void MakeLattice(int start, int end, kaldi::CompactLattice *ofst);
 
     // Makes a linear graph, by tracing back from the last "immortal" token
     // to the previous one
@@ -69,7 +69,7 @@ private:
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token
     void TracebackNFrames(int32 nframes, kaldi::Lattice *out_fst);
-    KdToken* getBestTok();
+    KdToken2* getBestTok();
 
     // Searches for the last token, ancestor of all currently active tokens
     void UpdateImmortalToken();
@@ -82,8 +82,8 @@ private:
     KdDecodeState state_; // the current state of the decoder
     int32 frame_; // the next frame to be processed
     int32 utt_frames_; // # frames processed from the current utterance
-    KdToken *immortal_tok_;      // "immortal" token means it's an ancestor of ...
-    KdToken *prev_immortal_tok_; // ... all currently active tokens
+    KdToken2 *immortal_tok_;      // "immortal" token means it's an ancestor of ...
+    KdToken2 *prev_immortal_tok_; // ... all currently active tokens
 };
 #endif // BT_LAT_ONLINE
 
