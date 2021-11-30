@@ -127,7 +127,10 @@ void KdOnline::startDecode()
     while(1)
     {
         start = clock();
+
+#ifdef BT_LAT_ONLINE
         decodable.features->AcceptWaveform(cy_buf, 0);
+#endif
         KdDecodeState dstate = o_decoder->Decode(&decodable);
 
         if( dstate==KdDecodeState::KD_EndUtt )

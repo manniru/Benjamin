@@ -162,8 +162,7 @@ void KdLatticeDecoder::PossiblyResizeHash(size_t num_toks)
 // Locates a token in toks_, or inserts a new, empty token
 // for the current frame. 'changed' true if a token created or cost changed.
 KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
-        KdStateId state, int32 frame_plus_one, float tot_cost,
-        KdToken2 *backpointer, bool *changed)
+        KdStateId state, int32 frame_plus_one, float tot_cost, bool *changed)
 {
     KALDI_ASSERT(frame_plus_one < frame_toks.size());
     Elem *e_found = toks_.Insert(state, NULL);
@@ -184,13 +183,12 @@ KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
         }
         return e_found;
     }
-    else
+    else// replace old token
     {
         KdToken2 *tok = e_found->val;
-        if( tok->tot_cost > tot_cost ) // if there is an existing token for this state.
-        {  // replace old token
+        if( tok->tot_cost > tot_cost )
+        {
             tok->tot_cost = tot_cost;
-//            tok->SetBackpointer(backpointer); ///FIXME REMOVED?
             // we don't allocate a new token, the old stays linked in frame_toks
             // we only replace the tot_cost
             if (changed)
@@ -740,7 +738,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
                     }
 
                     Elem *e_next = FindOrAddToken(arc.nextstate,
-                                                  frame + 1, tot_cost, tok, NULL);
+                                                  frame + 1, tot_cost, NULL);
 
                     // Add ForwardLink from tok to next_tok (put on head of list tok->links)
                     tok->links = new KdFLink(e_next->val, arc.ilabel, arc.olabel,
@@ -819,11 +817,11 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
                 if (tot_cost < cutoff)
                 {
                     bool changed;
-                    Elem *e_new = FindOrAddToken(arc.nextstate, frame + 1, tot_cost,
-                                                 tok, &changed);
+                    Elem *e_new = FindOrAddToken(arc.nextstate, frame + 1,
+                                                 tot_cost, &changed);
 
                     tok->links = new KdFLink(e_new->val, 0, arc.olabel,
-                                                  graph_cost, 0, tok->links);
+                                             graph_cost, 0, tok->links);
 
                     // "changed" tells us whether the new token has a different
                     // cost from before, or is new [if so, add into queue].

@@ -55,59 +55,93 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
 void KdOnlineLDecoder::RawLattice(int start, int end,
                                   Lattice *ofst)
 {
+    if( end==0 )
+    {
+        end = frame_toks.size();
+    }
+    if( start<0 )
+    {
+        start = frame_toks.size()+start;
+    }
+
+    if( end<=0 )
+    {
+        return;
+    }
+    if( start<0 )
+    {
+        return;
+    }
+
+    unordered_map<KdToken2*, float> final_costs_local;
+
+    const unordered_map<KdToken2*, float> &final_costs = final_costs_local;
+
+    ComputeFinalCosts(&final_costs_local, NULL, NULL);
+
+
     ofst->DeleteStates();
 
-    bool is_final = true;
-    double this_cost = 0;//start->tot_cost/* + fst_->Final(start->links->olabel).Value()*/;
 
-    if( this_cost==KD_INFINITY )
+    const int32 bucket_count = num_toks_/2 + 3;
+    unordered_map<KdToken2*, KdStateId> tok_map(bucket_count);
+    // First create all states.
+    std::vector<KdToken2*> token_list;
+    for( int32 f=0 ; f<end ; f++ )
     {
-        is_final = false;
+        if( frame_toks[f].toks==NULL )
+        {
+            KALDI_WARN << "GetRawLattice: no tokens active on frame " << f;
+            return;
+        }
+        TopSortTokens(frame_toks[f].toks, &token_list);
+        for( size_t i=0 ; i<token_list.size() ; i++ )
+        {
+            if (token_list[i] != NULL)
+                tok_map[token_list[i]] = ofst->AddState();
+        }
     }
 
-    std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
+    ofst->SetStart(0);// sets the start state
 
-//    for( KdToken *tok=start ; tok!=end ; tok=tok->next )
-//    {
-//        if( tok==NULL )
-//        {
-//            break;
-//        }
-//        if( tok->links )
-//        {
-//            LatticeWeight arc_weight(tok->links->graph_cost, tok->links->acoustic_cost);
-//            LatticeArc l_arc(tok->links->ilabel, tok->links->olabel,
-//                             arc_weight, 0/*tok->arc_.nextstate*/);
-
-//            arcs_reverse.push_back(l_arc);
-//        }
-//    }
-
-//    if(arcs_reverse.back().nextstate == fst_.Start())
-//    {
-//        arcs_reverse.pop_back();  // that was a "fake" token... gives no info.
-//    }
-
-    KdStateId cur_state = ofst->AddState();
-    ofst->SetStart(cur_state);
-    for( int i=arcs_reverse.size()-1; i>=0 ; i-- )
+    // Now create all arcs.
+    for( int f=start ; f<end ; f++ )
     {
-        LatticeArc arc = arcs_reverse[i];
-        arc.nextstate = ofst->AddState();
-        ofst->AddArc(cur_state, arc);
-        cur_state = arc.nextstate;
+        for (KdToken2 *tok = frame_toks[f].toks; tok != NULL; tok = tok->next)
+        {
+            KdStateId cur_state = tok_map[tok];
+            for ( KdFLink *l = tok->links; l != NULL; l = l->next )
+            {
+                typename unordered_map<KdToken2*, KdStateId>::const_iterator
+                        iter = tok_map.find(l->next_tok);
+                KdStateId nextstate = iter->second;
+                KALDI_ASSERT(iter != tok_map.end());
+                float cost_offset = 0.0;
+                if (l->ilabel != 0)
+                {  // emitting..
+                    KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
+                    cost_offset = cost_offsets[f];
+                }
+                LatticeArc::Weight arc_w(l->graph_cost, l->acoustic_cost - cost_offset);
+                LatticeArc arc(l->ilabel, l->olabel,arc_w, nextstate);
+                ofst->AddArc(cur_state, arc);
+            }
+            if( f==end-1 )
+            {
+                if( !final_costs.empty() )
+                {
+                    typename unordered_map<KdToken2*, float>::const_iterator
+                            iter = final_costs.find(tok);
+                    if (iter != final_costs.end())
+                        ofst->SetFinal(cur_state, LatticeWeight(iter->second, 0));
+                }
+                else
+                {
+                    ofst->SetFinal(cur_state, LatticeWeight::One());
+                }
+            }
+        }
     }
-
-    if (is_final)
-    {
-//        Weight final_weight = fst_.Final(start->);
-//        ofst->SetFinal(cur_state, LatticeWeight(final_weight.Value(), 0.0));
-    }
-    else
-    {
-        ofst->SetFinal(cur_state, LatticeWeight::One());
-    }
-//    GetRawLattice(&raw_fst);
 }
 
 void KdOnlineLDecoder::MakeLattice(int start, int end,
@@ -132,88 +166,20 @@ void KdOnlineLDecoder::MakeLattice(int start, int end,
     ConvertLattice(raw_fst, ofst);
     DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
 
-    raw_fst.DeleteStates();  // Free memory-- raw_fst no longer needed.
+    raw_fst.DeleteStates();  // Free memory
     Connect(ofst); //removing states and arcs that are not on successful paths.
-}
-
-void KdOnlineLDecoder::UpdateImmortalToken()
-{
-    QVector<KdToken2*> emitting;
-    for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
-    {
-        KdToken2* tok = e->val;
-        while( tok!=NULL ) //deal with non-emitting ones ...
-        {
-            if( tok->links )
-            {
-                if( tok->links->ilabel==0 )
-                {
-                    tok = tok->next;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            else
-            {
-                tok = tok->next;
-            }
-        }
-        if( tok==NULL )
-        {
-            continue;
-        }
-        if( emitting.contains(tok) )
-        {
-            continue;
-        }
-        emitting.push_back(tok);
-    }
-
-    QVector<KdToken2*> p_emitting;
-
-    while( emitting.size()>1 )
-    {
-        p_emitting.clear();
-        for( int i=0 ; i<emitting.size() ; i++ )
-        {
-            KdToken2 *p_token = emitting[i]->next;
-            while( ( p_token!=NULL ) && ( p_token->links->ilabel==0 ) )
-            {
-                p_token = p_token->next;
-            }
-            if ( p_token==NULL )
-            {
-                continue;
-            }
-            if( p_emitting.contains(p_token) )
-            {
-                continue;
-            }
-            p_emitting.push_back(p_token);
-        }
-        emitting = p_emitting;
-    }
-
-    if( emitting.size()==1 )
-    {
-        prev_immortal_tok_ = immortal_tok_;
-        immortal_tok_ = emitting[0];
-        return;
-    }
 }
 
 //Called if decoder is not in KdDecodeState::KD_EndUtt
 bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 {
-    UpdateImmortalToken();
-    if( immortal_tok_==prev_immortal_tok_ )
-    {
-        return false;
-    }
+//    UpdateImmortalToken();
+//    if( immortal_tok_==prev_immortal_tok_ )
+//    {
+//        return false;
+//    }
 
-//    MakeLattice(immortal_tok_, prev_immortal_tok_, out_fst);
+    MakeLattice(0, 0, out_fst);
     return true;
 }
 
@@ -221,26 +187,11 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 // to the last immortal token.
 double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 {
-    KdToken2 *best_tok = getBestTok();
-//    MakeLattice(best_tok, immortal_tok_, out_fst);
+//    KdToken2 *best_tok = getBestTok();
+    MakeLattice(0, 0, out_fst);
 
     return 1;
 }
-
-KdToken2 *KdOnlineLDecoder::getBestTok()
-{
-    KdToken2 *best_tok = NULL;
-    for( const Elem *e=toks_.GetList() ; e!=NULL ; e=e->tail )
-    {
-        if( best_tok==NULL || best_tok->tot_cost<e->val->tot_cost )
-        {
-            best_tok = e->val;
-        }
-    }
-
-    return best_tok;
-}
-
 
 void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 {
@@ -345,12 +296,23 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 
 }
 
-// Returns "true" if the best current hypothesis ends with long enough silence
+// Returns "true" if the current hypothesis ends with long silence
 bool KdOnlineLDecoder::HaveSilence()
 {
     Lattice trace;
-    int32 sil_frm = opts_.inter_utt_sil / (1 + utt_frames_ / opts_.max_utt_len_);
-    TracebackNFrames(sil_frm, &trace);
+    int32 sil_frm = opts_.inter_utt_sil; //50
+
+    RawLattice(-sil_frm, 0, &trace);
+    Invert(&trace);
+    fst::ILabelCompare<LatticeArc> ilabel_comp;
+    ArcSort(&trace, ilabel_comp);
+
+    fst::DeterminizeLatticePrunedOptions lat_opts;
+    lat_opts.max_mem = config_.det_opts.max_mem;
+
+    Connect(&trace); //removing states and arcs that are not on successful paths.
+
+
     std::vector<int32> isymbols;
     std::vector<int32> *osymbols = NULL;
     LatticeArc::Weight *oweight = NULL;

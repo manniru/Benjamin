@@ -29,7 +29,7 @@
 #define BT_REC_INPUT      "alsa:usbstream:CARD=Solo" //Microphone Input
 
 #define BT_DOUBLE_BUF     //If undefined encoded file not replaced
-#define BT_ONLINE2      //Use online2 decoding alghorithm
+//#define BT_ONLINE2      //Use online2 decoding alghorithm
 #define BT_LAT_ONLINE     //Use Lattices in online decoding
 #define BT_IMMDT_EXEC     0 //if is non-zero execute immediately commands on puase
 
