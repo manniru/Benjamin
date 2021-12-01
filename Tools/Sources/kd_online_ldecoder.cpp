@@ -147,27 +147,15 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
 void KdOnlineLDecoder::MakeLattice(int start, int end,
                                    CompactLattice *ofst)
 {
-    if (start == NULL)
-    {
-        return;
-    }
-
     Lattice raw_fst;
-    RawLattice(start, end, &raw_fst);
+    double lat_beam = config_.lattice_beam;
+//    RawLattice(start, end, &raw_fst);
 
-//    GetRawLattice(&raw_fst);
-    Invert(&raw_fst);
-    fst::ILabelCompare<LatticeArc> ilabel_comp;
-    ArcSort(&raw_fst, ilabel_comp);
+    GetRawLattice(&raw_fst);
+    PruneLattice(lat_beam, &raw_fst);
 
-    fst::DeterminizeLatticePrunedOptions lat_opts;
-    lat_opts.max_mem = config_.det_opts.max_mem;
-
-    ConvertLattice(raw_fst, ofst);
-    DeterminizeLatticePruned(raw_fst, config_.lattice_beam, ofst, lat_opts);
-
-    raw_fst.DeleteStates();  // Free memory
-    Connect(ofst); //removing states and arcs that are not on successful paths.
+    DeterminizeLatticePhonePrunedWrapper(trans_model_,
+            &raw_fst, lat_beam, ofst, config_.det_opts);
 }
 
 //Called if decoder is not in KdDecodeState::KD_EndUtt
@@ -347,42 +335,13 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 
     ProcessNonemitting(std::numeric_limits<float>::max());
     int frame_i;
-    Timer timer;
-    double64 tstart = timer.Elapsed();
-    float factor = -1;
     for ( frame_i=0 ; frame_i<opts_.batch_size; frame_i++)
     {
-        if( decodable->IsLastFrame(frame_num-1) )
+        if( frame_num>=decodable->NumFramesReady() )
         {
             break;
         }
 
-        if( frame_i>0 && (frame_i%opts_.update_interval)==0 )
-        {
-            // adjust the beam if needed
-            float tend = timer.Elapsed();
-            float elapsed = (tend - tstart) * 1000;
-            // warning: hardcoded 10ms frames assumption!
-            factor = elapsed / (opts_.rt_max * opts_.update_interval * 10);
-            float min_factor = (opts_.rt_min / opts_.rt_max);
-
-            if (factor > 1 || factor < min_factor)
-            {
-                float update_factor;
-                if (factor > 1)
-                {
-                    update_factor = -std::min(opts_.beam_update * factor, opts_.max_beam_update);
-                }
-                else
-                {
-                    update_factor = std::min(opts_.beam_update / factor, opts_.max_beam_update);
-                }
-                effective_beam_ += effective_beam_ * update_factor;
-                effective_beam_ = std::min(effective_beam_, max_beam_);
-            }
-
-            tstart = tend;
-        }
 
         if ((frame_num+1) % config_.prune_interval == 0)
         {
@@ -394,7 +353,7 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
         utt_frames_++;
         frame_++;
     }
-    if( frame_i == opts_.batch_size && !decodable->IsLastFrame(frame_ - 1) )
+    if( frame_i==opts_.batch_size )
     {
         //FinalizeDecoding();
         if( HaveSilence() )
@@ -405,11 +364,6 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
         {
             state_ = KD_EndBatch;
         }
-    }
-    else
-    {
-        state_ = KD_EndFeats;
-        qDebug() << "we are here";
     }
     return state_;
 }

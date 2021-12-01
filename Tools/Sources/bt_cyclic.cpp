@@ -63,7 +63,8 @@ int BtCyclic::read(kaldi::Vector<float> *data, int size)
         num++;
     }
 
-//    qDebug() << "raad bds" << size;
+//    qDebug() << "raad" << size << "bds"
+//             << getDataSize();
     return num;
 }
 

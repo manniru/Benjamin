@@ -129,7 +129,8 @@ void KdOnline::startDecode()
         start = clock();
 
 #ifdef BT_LAT_ONLINE
-        decodable.features->AcceptWaveform(cy_buf, 0);
+        decodable.features->AcceptWaveform(cy_buf);
+        qDebug() << "buf size" << decodable.features->NumFramesReady();
 #endif
         KdDecodeState dstate = o_decoder->Decode(&decodable);
 
@@ -171,6 +172,10 @@ void KdOnline::printTime(clock_t start)
 void KdOnline::execute(std::vector<int32_t> word)
 {
     QString cmd = KAL_SI_DIR"main.sh \"";
+
+#ifdef BT_LAT_ONLINE
+    history.clear();
+#endif
     for( int i=0 ; i<word.size() ; i++ )
     {
         QString word_str = lexicon[word[i]];
@@ -178,10 +183,12 @@ void KdOnline::execute(std::vector<int32_t> word)
         cmd += " ";
         history.push_back(word_str);
 
+#ifndef BT_LAT_ONLINE
         if( history.size()>10 )
         {
             history.pop_front();
         }
+#endif
     }
     cmd += "\"";
     system(cmd.toStdString().c_str());
@@ -189,21 +196,21 @@ void KdOnline::execute(std::vector<int32_t> word)
 
 void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
 {
-//    MinimumBayesRiskOptions mbr_opts;
-//    MinimumBayesRisk *mbr = NULL;
-//    mbr_opts.decode_mbr = true;
-
+    if( clat->Start() )
+    {
+        return;
+    }
     vector<int32> word_ids;
     vector<int32> *isymbols_out = NULL;
     LatticeArc::Weight *w_out = NULL;
     QVector<BtWord> result;
 
 #ifdef BT_LAT_ONLINE
-    Lattice lat;
-    ConvertLattice(*clat, &lat);
-    o_decoder->GetBestPath(&lat);
-    GetLinearSymbolSequence(lat, isymbols_out,
-                            &word_ids, w_out);
+    MinimumBayesRiskOptions mbr_opts;
+    MinimumBayesRisk *mbr = NULL;
+    mbr = new MinimumBayesRisk(*clat, mbr_opts);
+    mbr_opts.decode_mbr = true;
+    word_ids = mbr->GetOneBest();
 #else
     GetLinearSymbolSequence(*clat, isymbols_out,
                             &word_ids, w_out);

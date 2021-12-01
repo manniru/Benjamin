@@ -1,6 +1,6 @@
 #include "kd_online2.h"
 
-#ifdef BT_ONLINE2
+//#ifdef BT_ONLINE2
 #include "feat/wave-reader.h"
 #include "online2/online-feature-pipeline.h"
 #include "online2/online-gmm-decoding.h"
@@ -211,7 +211,7 @@ void KdOnline2::processData(int len)
 
 //    printTime(start);
     g_decoder->AdvanceDecoding();
-    g_decoder->FinalizeDecoding();
+//    g_decoder->FinalizeDecoding();
     CompactLattice clat;
     bool ret = g_decoder->GetLattice(true, &clat);
 
@@ -221,4 +221,4 @@ void KdOnline2::processData(int len)
     }
 }
 
-#endif
+//#endif

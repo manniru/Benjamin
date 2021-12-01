@@ -3,7 +3,7 @@
 
 #include "bt_config.h"
 
-#ifdef BT_ONLINE2
+//#ifdef BT_ONLINE2
 #include <QObject>
 #include <QTimer>
 #include <QDebug>
@@ -62,4 +62,4 @@ private:
 };
 #endif
 
-#endif // KD_ONLINE2_GMM_H
+//#endif // KD_ONLINE2_GMM_H

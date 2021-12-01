@@ -3,7 +3,7 @@
 
 #include "bt_config.h"
 
-#ifdef BT_ONLINE2
+//#ifdef BT_ONLINE2
 
 #include <QObject>
 #include <QThread>
@@ -57,4 +57,4 @@ private:
 
 #endif
 
-#endif // KD_ONLINE2_H
+//#endif // KD_ONLINE2_H
