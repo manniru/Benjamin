@@ -14,6 +14,7 @@
 #include "kd_online2_model.h"
 #include "kd_online2_decodable.h"
 #include "kd_online_ldecoder.h"
+#include "kd_mbr.h"
 #define  BT_ONLINE_DECODER   KdOnlineLDecoder
 #define  BT_ONLINE_DECODABLE KdOnline2Decodable
 #define  BT_ONLINE_OPTS      KdOnlineLDecoderOpts

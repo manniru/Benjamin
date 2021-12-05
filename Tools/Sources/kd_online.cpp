@@ -202,16 +202,15 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     }
     vector<int32> word_ids;
     vector<float> conf;
+    vector<pair<float, float>> times;
     QVector<BtWord> result;
 
 #ifdef BT_LAT_ONLINE
-    MinimumBayesRiskOptions mbr_opts;
-    MinimumBayesRisk *mbr = NULL;
-    mbr = new MinimumBayesRisk(*clat, mbr_opts);
-    mbr_opts.decode_mbr = true;
+    KdMBR *mbr = NULL;
+    mbr = new KdMBR(clat);
     word_ids = mbr->GetOneBest();
     conf = mbr->GetOneBestConfidences();
-    const vector<pair<float, float>> &times = mbr->GetOneBestTimes();
+    times = mbr->GetOneBestTimes();
 #else
     GetLinearSymbolSequence(*clat, isymbols_out,
                             &word_ids, w_out);

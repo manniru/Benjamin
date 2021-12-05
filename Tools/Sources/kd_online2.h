@@ -13,6 +13,7 @@
 #include "bt_state.h"
 #include "bt_recorder.h"
 #include "bt_captain.h" //For BtWord
+#include "kd_mbr.h"
 #include "backend.h"
 
 class KdOnline2 : public QObject

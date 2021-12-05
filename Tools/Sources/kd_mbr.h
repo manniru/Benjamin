@@ -1,59 +1,27 @@
 #ifndef KD_MBR_H
 #define KD_MBR_H
 
+// described in "Minimum Bayes Risk decoding and system combination based on a recursion for
+// edit distance", Haihua Xu, Daniel Povey, Lidia Mangu and Jie Zhu,
+
 #include "lat/sausages.h"
 #include "lat/lattice-functions.h"
 
 class KdMBR
 {
 public:
-    KdMBR(kaldi::CompactLattice *clat,
-          kaldi::MinimumBayesRiskOptions opts);
+    KdMBR(kaldi::CompactLattice *clat);
 
-    const std::vector<int32> &GetOneBest() const { // gets one-best (with no epsilons)
-        return R_;
-    }
-
-    const std::vector<std::vector<std::pair<float, float> > > GetTimes() const {
-        return times_; // returns average (start,end) times for each word in each
-        // bin. These are raw averages without any processing, i.e. time intervals
-        // from different bins can overlap.
-    }
-
-    const std::vector<std::pair<float, float> > GetSausageTimes() const {
-        return sausage_times_; // returns average (start,end) times for each bin.
-        // This is typically the weighted average of the times in GetTimes() but can
-        // be slightly different if the times for the bins overlap, in which case
-        // the times returned by this method do not overlap unlike the times
-        // returned by GetTimes().
-    }
-
-    const std::vector<std::pair<float, float> > &GetOneBestTimes() const {
-        return one_best_times_; // returns average (start,end) times for each word
-        // corresponding to an entry in the one-best output.  This is typically the
-        // appropriate subset of the times in GetTimes() but can be slightly
-        // different if the times for the one-best words overlap, in which case
-        // the times returned by this method do not overlap unlike the times
-        // returned by GetTimes().
-    }
-
-    /// Outputs the confidences for the one-best transcript.
-    const std::vector<float> &GetOneBestConfidences() const {
-        return one_best_confidences_;
-    }
-
-    /// Returns the expected WER over this sentence (assuming model correctness).
-    float GetBayesRisk() const { return L_; }
-
-    const std::vector<std::vector<std::pair<int32, float> > > &GetSausageStats() const {
-        return gamma_;
-    }
+    std::vector<int32> GetOneBest();
+    std::vector<std::vector<std::pair<float, float> > > GetTimes();
+    std::vector<std::pair<float, float> > GetSausageTimes();
+    std::vector<std::pair<float, float> > GetOneBestTimes();
+    std::vector<float> GetOneBestConfidences();
 
 private:
     void PrepareLatticeAndInitStats(kaldi::CompactLattice *clat);
 
-    /// Minimum-Bayes-Risk Decode. Top-level algorithm.  Figure 6 of the paper.
-    void MbrDecode();
+    void MbrDecode(); // Figure 6 of the paper.
 
     /// Without the 'penalize' argument this gives us the basic edit-distance
     /// function l(a,b), as in the paper.
@@ -63,7 +31,8 @@ private:
     /// zero.  This bug-fix was necessary in order to force all the stats to show
     /// up, that should show up, and applying the bug-fix makes the sausage stats
     /// significantly less sparse.
-    inline double l(int32 a, int32 b, bool penalize = false) {
+    inline double l(int32 a, int32 b, bool penalize = false)
+    {
         if (a == b) return 0.0;
         else return (penalize ? 1.0 + delta() : 1.0);
     }
@@ -98,7 +67,8 @@ private:
 
 
     /// Function used to increment map.
-    static inline void AddToMap(int32 i, double d, std::map<int32, double> *gamma) {
+    static inline void AddToMap(int32 i, double d, std::map<int32, double> *gamma)
+    {
         if (d == 0) return;
         std::pair<const int32, double> pr(i, d);
         std::pair<std::map<int32, double>::iterator, bool> ret = gamma->insert(pr);
@@ -106,14 +76,15 @@ private:
             ret.first->second += d;
     }
 
-    struct Arc {
+    struct Arc
+    {
         int32 word;
         int32 start_node;
         int32 end_node;
         float loglike;
     };
 
-    kaldi::MinimumBayesRiskOptions opts_;
+    kaldi::MinimumBayesRiskOptions opts;
 
 
     /// Arcs in the topologically sorted acceptor form of the word-level lattice,
@@ -137,41 +108,15 @@ private:
 
     std::vector<std::vector<std::pair<int32, float> > > gamma_;
     // The stats we accumulate; these are pairs of (posterior, word-id), and note
-    // that word-id may be epsilon.  Caution: indexed from zero, not from 1 as in
-    // paper.  We sort in reverse order on the second member (posterior), so more
-    // likely word is first.
+    // that word-id may be epsilon.
 
+    // Appendix C of the paper.
     std::vector<std::vector<std::pair<float, float> > > times_;
-    // The average start and end times for words in each confusion-network bin.
-    // This is like an average over arcs, of the tau_b and tau_e quantities in
-    // Appendix C of the paper.  Indexed from zero, like gamma_ and R_.
-
     std::vector<std::pair<float, float> > sausage_times_;
-    // The average start and end times for each confusion-network bin.  This
-    // is like an average over words, of the tau_b and tau_e quantities in
-    // Appendix C of the paper.  Indexed from zero, like gamma_ and R_.
-
     std::vector<std::pair<float, float> > one_best_times_;
-    // The average start and end times for words in the one best output.  This
-    // is like an average over the arcs, of the tau_b and tau_e quantities in
-    // Appendix C of the paper. Indexed from zero, like gamma_ and R_.
 
     std::vector<float> one_best_confidences_;
-    // vector of confidences for the 1-best output (which could be
-    // the MAP output if opts_.decode_mbr == false, or the MBR output otherwise).
-    // Indexed by the same index as one_best_times_.
 
-    struct GammaCompare{
-        // should be like operator <.  But we want reverse order
-        // on the 2nd element (posterior), so it'll be like operator
-        // > that looks first at the posterior.
-        bool operator () (const std::pair<int32, float> &a,
-                          const std::pair<int32, float> &b) const {
-            if (a.second > b.second) return true;
-            else if (a.second < b.second) return false;
-            else return a.first > b.first;
-        }
-    };
 };
 
 #endif // KD_MBR_H

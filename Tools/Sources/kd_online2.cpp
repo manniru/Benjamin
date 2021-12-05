@@ -9,7 +9,6 @@
 #include "online2/online-endpoint.h"
 #include "fstext/fstext-lib.h"
 #include "lat/lattice-functions.h"
-#include "lat/sausages.h"  //MBR
 
 using namespace kaldi;
 using namespace fst;
@@ -150,15 +149,13 @@ void KdOnline2::parseWords(QString filename)
 
 void KdOnline2::print(CompactLattice *clat)
 {
-    MinimumBayesRiskOptions mbr_opts;
-    MinimumBayesRisk *mbr = NULL;
-    mbr_opts.decode_mbr = true;
+    KdMBR *mbr = NULL;
     QVector<BtWord> result;
 
-    mbr = new MinimumBayesRisk(*clat, mbr_opts);
+    mbr = new KdMBR(clat);
     vector<float> conf = mbr->GetOneBestConfidences();
-    const vector<int32> &words = mbr->GetOneBest();
-    const vector<pair<float, float>> &times = mbr->GetOneBestTimes();
+    vector<int32> words = mbr->GetOneBest();
+    vector<pair<float, float>> times = mbr->GetOneBestTimes();
     history.clear();
 
     QString message;

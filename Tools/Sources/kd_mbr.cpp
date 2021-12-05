@@ -3,9 +3,24 @@
 
 using namespace kaldi;
 
-void KdMBR::MbrDecode() {
 
-    for (size_t counter = 0; ; counter++) {
+struct GammaCompare
+{
+    // should be like operator <.  But we want reverse order
+    // on the 2nd element (posterior), so it'll be like operator
+    // > that looks first at the posterior.
+    bool operator () (const std::pair<int32, float> &a,
+                      const std::pair<int32, float> &b) const {
+        if (a.second > b.second) return true;
+        else if (a.second < b.second) return false;
+        else return a.first > b.first;
+    }
+};
+
+void KdMBR::MbrDecode()
+{
+    for( size_t counter=0 ; ; counter++ )
+    {
         NormalizeEps(&R_);
         AccStats(); // writes to gamma_
         double delta_Q = 0.0; // change in objective function.
@@ -15,8 +30,10 @@ void KdMBR::MbrDecode() {
 
         // Caution: q in the line below is (q-1) in the algorithm
         // in the paper; both R_ and gamma_ are indexed by q-1.
-        for (size_t q = 0; q < R_.size(); q++) {
-            if (opts_.decode_mbr) { // This loop updates R_ [indexed same as gamma_].
+        for (size_t q = 0; q < R_.size(); q++)
+        {
+            if (opts.decode_mbr)
+            { // This loop updates R_ [indexed same as gamma_].
                 // gamma_[i] is sorted in reverse order so most likely one is first.
                 const std::vector<std::pair<int32, BaseFloat> > &this_gamma = gamma_[q];
                 double old_gamma = 0, new_gamma = this_gamma[0].second;
@@ -30,7 +47,8 @@ void KdMBR::MbrDecode() {
                 R_[q] = rhat;
             }
             // build the outputs (time, confidences),
-            if (R_[q] != 0 || opts_.print_silence) {
+            if (R_[q] != 0 || opts.print_silence)
+            {
                 // see which 'item' from the sausage-bin should we select,
                 // (not necessarily the 1st one when MBR decoding disabled)
                 int32 s = 0;
@@ -43,27 +61,28 @@ void KdMBR::MbrDecode() {
                 one_best_times_.push_back(times_[q][s]);
                 // post-process the times,
                 size_t i = one_best_times_.size();
-                if (i > 1 && one_best_times_[i-2].second > one_best_times_[i-1].first) {
+                if (i > 1 && one_best_times_[i-2].second > one_best_times_[i-1].first)
+                {
                     // It's quite possible for this to happen, but it seems like it would
                     // have a bad effect on the downstream processing, so we fix it here.
                     // We resolve overlaps by redistributing the available time interval.
-                    BaseFloat prev_right = i > 2 ? one_best_times_[i-3].second : 0.0;
-                    BaseFloat left = std::max(prev_right,
+                    float prev_right = i > 2 ? one_best_times_[i-3].second : 0.0;
+                    float left = std::max(prev_right,
                                               std::min(one_best_times_[i-2].first,
                                               one_best_times_[i-1].first));
-                    BaseFloat right = std::max(one_best_times_[i-2].second,
+                    float right = std::max(one_best_times_[i-2].second,
                             one_best_times_[i-1].second);
-                    BaseFloat first_dur =
+                    float first_dur =
                             one_best_times_[i-2].second - one_best_times_[i-2].first;
-                    BaseFloat second_dur =
+                    float second_dur =
                             one_best_times_[i-1].second - one_best_times_[i-1].first;
-                    BaseFloat mid = first_dur > 0 ? left + (right - left) * first_dur /
+                    float mid = first_dur > 0 ? left + (right - left) * first_dur /
                                                     (first_dur + second_dur) : left;
                     one_best_times_[i-2].first = left;
                     one_best_times_[i-2].second = one_best_times_[i-1].first = mid;
                     one_best_times_[i-1].second = right;
                 }
-                BaseFloat confidence = 0.0;
+                float confidence = 0.0;
                 for (int32 j = 0; j < gamma_[q].size(); j++) {
                     if (gamma_[q][j].first == R_[q]) {
                         confidence = gamma_[q][j].second;
@@ -75,30 +94,39 @@ void KdMBR::MbrDecode() {
         }
         KALDI_VLOG(2) << "Iter = " << counter << ", delta-Q = " << delta_Q;
         if (delta_Q == 0) break;
-        if (counter > 100) {
+        if (counter > 100)
+        {
             KALDI_WARN << "Iterating too many times in MbrDecode; stopping.";
             break;
         }
     }
-    if (!opts_.print_silence) RemoveEps(&R_);
+
+    if( !opts.print_silence )
+    {
+        RemoveEps(&R_);
+    }
 }
 
-struct Int32IsZero {
-    bool operator() (int32 i) { return (i == 0); }
-};
-// static
-void KdMBR::RemoveEps(std::vector<int32> *vec) {
-    Int32IsZero pred;
-    vec->erase(std::remove_if (vec->begin(), vec->end(), pred),
-               vec->end());
+void KdMBR::RemoveEps(std::vector<int32> *vec)
+{
+    for( int i=0 ; i<vec->size() ; i++ )
+    {
+        if( vec->at(i)==0 )
+        {
+            vec->erase(vec->begin()+i);
+            i--;
+        }
+    }
 }
 
 // static
-void KdMBR::NormalizeEps(std::vector<int32> *vec) {
+void KdMBR::NormalizeEps(std::vector<int32> *vec)
+{
     RemoveEps(vec);
     vec->resize(1 + vec->size() * 2);
     int32 s = vec->size();
-    for (int32 i = s/2 - 1; i >= 0; i--) {
+    for (int32 i = s/2 - 1; i >= 0; i--)
+    {
         (*vec)[i*2 + 1] = (*vec)[i];
         (*vec)[i*2 + 2] = 0;
     }
@@ -108,12 +136,14 @@ void KdMBR::NormalizeEps(std::vector<int32> *vec) {
 double KdMBR::EditDistance(int32 N, int32 Q,
                                       Vector<double> &alpha,
                                       Matrix<double> &alpha_dash,
-                                      Vector<double> &alpha_dash_arc) {
+                                      Vector<double> &alpha_dash_arc)
+{
     alpha(1) = 0.0; // = log(1).  Line 5.
     alpha_dash(1, 0) = 0.0; // Line 5.
     for (int32 q = 1; q <= Q; q++)
         alpha_dash(1, q) = alpha_dash(1, q-1) + l(0, r(q)); // Line 7.
-    for (int32 n = 2; n <= N; n++) {
+    for (int32 n = 2; n <= N; n++)
+    {
         double alpha_n = kLogZeroDouble;
         for (size_t i = 0; i < pre_[n].size(); i++) {
             const Arc &arc = arcs_[pre_[n][i]];
@@ -145,7 +175,8 @@ double KdMBR::EditDistance(int32 N, int32 Q,
 }
 
 // Figure 5 in the paper.
-void KdMBR::AccStats() {
+void KdMBR::AccStats()
+{
     using std::map;
 
     int32 N = static_cast<int32>(pre_.size()) - 1,
@@ -295,7 +326,36 @@ void KdMBR::AccStats() {
     }
 }
 
-void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat) {
+std::vector<int32> KdMBR::GetOneBest()
+{
+    return R_;
+}
+
+// These time intervals may overlap.
+std::vector<std::vector<std::pair<float, float> > > KdMBR::GetTimes()
+{
+    return times_;
+}
+
+//the times returned by this method do not overlap
+std::vector<std::pair<float, float> > KdMBR::GetSausageTimes()
+{
+    return sausage_times_;
+}
+
+// returns times for entry in the one-best output.
+std::vector<std::pair<float, float> > KdMBR::GetOneBestTimes()
+{
+    return one_best_times_;
+}
+
+std::vector<float> KdMBR::GetOneBestConfidences()
+{
+    return one_best_confidences_;
+}
+
+void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat)
+{
     KALDI_ASSERT(clat != NULL);
 
     CreateSuperFinal(clat); // Add super-final state to clat... this is
@@ -344,10 +404,10 @@ void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat) {
     }
 }
 
-KdMBR::KdMBR(CompactLattice *clat_in,
-             MinimumBayesRiskOptions opts) : opts_(opts)
+KdMBR::KdMBR(CompactLattice *clat_in)
 {
     CompactLattice clat(*clat_in); // copy.
+    opts.decode_mbr = true;
 
     PrepareLatticeAndInitStats(&clat);
 
