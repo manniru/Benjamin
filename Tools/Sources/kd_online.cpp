@@ -201,8 +201,7 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
         return;
     }
     vector<int32> word_ids;
-    vector<int32> *isymbols_out = NULL;
-    LatticeArc::Weight *w_out = NULL;
+    vector<float> conf;
     QVector<BtWord> result;
 
 #ifdef BT_LAT_ONLINE
@@ -211,28 +210,16 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     mbr = new MinimumBayesRisk(*clat, mbr_opts);
     mbr_opts.decode_mbr = true;
     word_ids = mbr->GetOneBest();
+    conf = mbr->GetOneBestConfidences();
+    const vector<pair<float, float>> &times = mbr->GetOneBestTimes();
 #else
     GetLinearSymbolSequence(*clat, isymbols_out,
                             &word_ids, w_out);
 #endif
-//    ScaleLattice(LatticeScale(1.0, 0.00001), clat);
-
-//    mbr = new MinimumBayesRisk(clat, mbr_opts);
-
-//    vector<float> conf = mbr->GetOneBestConfidences();
 
     for( int i=0 ; i<word_ids.size() ; i++ )
     {
         qDebug() << lexicon[word_ids[i]];// << conf[i];
-//        if( clat->NumStates()>2000 )
-//        {
-//            CompactLatticeWriter clat_writer("ark:b.ark");
-//            clat_writer.Write("f", *clat);
-//    //            TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
-//    //            fst_writer.Write("f", *fst_in);
-
-//            exit(0);
-//        }
     }
 
     if( word_ids.size() )
