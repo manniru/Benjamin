@@ -141,29 +141,37 @@ double KdMBR::EditDistance(int32 N, int32 Q,
     alpha(1) = 0.0; // = log(1).  Line 5.
     alpha_dash(1, 0) = 0.0; // Line 5.
     for (int32 q = 1; q <= Q; q++)
-        alpha_dash(1, q) = alpha_dash(1, q-1) + l(0, r(q)); // Line 7.
+    {
+        alpha_dash(1, q) = alpha_dash(1, q-1) + l_distance(0, r(q)); // Line 7.
+    }
     for (int32 n = 2; n <= N; n++)
     {
         double alpha_n = kLogZeroDouble;
-        for (size_t i = 0; i < pre_[n].size(); i++) {
+        for (size_t i = 0; i < pre_[n].size(); i++)
+        {
             const Arc &arc = arcs_[pre_[n][i]];
             alpha_n = LogAdd(alpha_n, alpha(arc.start_node) + arc.loglike);
         }
         alpha(n) = alpha_n; // Line 10.
         // Line 11 omitted: matrix was initialized to zero.
-        for (size_t i = 0; i < pre_[n].size(); i++) {
+        for (size_t i = 0; i < pre_[n].size(); i++)
+        {
             const Arc &arc = arcs_[pre_[n][i]];
             int32 s_a = arc.start_node, w_a = arc.word;
             BaseFloat p_a = arc.loglike;
-            for (int32 q = 0; q <= Q; q++) {
-                if (q == 0) {
+            for (int32 q = 0; q <= Q; q++)
+            {
+                if (q == 0)
+                {
                     alpha_dash_arc(q) = // line 15.
-                            alpha_dash(s_a, q) + l(w_a, 0, true);
-                } else {  // a1,a2,a3 are the 3 parts of min expression of line 17.
+                            alpha_dash(s_a, q) + l_distance(w_a, 0, true);
+                }
+                else
+                {  // a1,a2,a3 are the 3 parts of min expression of line 17.
                     int32 r_q = r(q);
-                    double a1 = alpha_dash(s_a, q-1) + l(w_a, r_q),
-                            a2 = alpha_dash(s_a, q) + l(w_a, 0, true),
-                            a3 = alpha_dash_arc(q-1) + l(0, r_q);
+                    double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
+                            a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
+                            a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
                     alpha_dash_arc(q) = std::min(a1, std::min(a2, a3));
                 }
                 // line 19:
@@ -211,25 +219,46 @@ void KdMBR::AccStats()
             const Arc &arc = arcs_[pre_[n][i]];
             int32 s_a = arc.start_node, w_a = arc.word;
             BaseFloat p_a = arc.loglike;
-            alpha_dash_arc(0) = alpha_dash(s_a, 0) + l(w_a, 0, true); // line 14.
+            alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(w_a, 0, true); // line 14.
             for (int32 q = 1; q <= Q; q++) { // this loop == lines 15-18.
                 int32 r_q = r(q);
-                double a1 = alpha_dash(s_a, q-1) + l(w_a, r_q),
-                        a2 = alpha_dash(s_a, q) + l(w_a, 0, true),
-                        a3 = alpha_dash_arc(q-1) + l(0, r_q);
-                if (a1 <= a2) {
-                    if (a1 <= a3) { b_arc[q] = 1; alpha_dash_arc(q) = a1; }
-                    else { b_arc[q] = 3; alpha_dash_arc(q) = a3; }
-                } else {
-                    if (a2 <= a3) { b_arc[q] = 2; alpha_dash_arc(q) = a2; }
-                    else { b_arc[q] = 3; alpha_dash_arc(q) = a3; }
+                double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
+                        a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
+                        a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
+                if (a1 <= a2)
+                {
+                    if (a1 <= a3)
+                    {
+                        b_arc[q] = 1;
+                        alpha_dash_arc(q) = a1;
+                    }
+                    else
+                    {
+                        b_arc[q] = 3;
+                        alpha_dash_arc(q) = a3;
+                    }
+                }
+                else
+                {
+                    if (a2 <= a3)
+                    {
+                        b_arc[q] = 2;
+                        alpha_dash_arc(q) = a2;
+                    }
+                    else
+                    {
+                        b_arc[q] = 3;
+                        alpha_dash_arc(q) = a3;
+                    }
                 }
             }
             beta_dash_arc.SetZero(); // line 19.
-            for (int32 q = Q; q >= 1; q--) {
+            for (int32 q = Q; q >= 1; q--)
+            {
                 // line 21:
                 beta_dash_arc(q) += Exp(alpha(s_a) + p_a - alpha(n)) * beta_dash(n, q);
-                switch (static_cast<int>(b_arc[q])) { // lines 22 and 23:
+                switch (static_cast<int>(b_arc[q]))
+                { // lines 22 and 23:
                 case 1:
                     beta_dash(s_a, q-1) += beta_dash_arc(q);
                     // next: gamma(q, w(a)) += beta_dash_arc(q)
@@ -261,7 +290,8 @@ void KdMBR::AccStats()
         }
     }
     beta_dash_arc.SetZero(); // line 29.
-    for (int32 q = Q; q >= 1; q--) {
+    for (int32 q = Q; q >= 1; q--)
+    {
         beta_dash_arc(q) += beta_dash(1, q);
         beta_dash_arc(q-1) += beta_dash_arc(q);
         AddToMap(0, beta_dash_arc(q), &(gamma[q]));
@@ -270,7 +300,8 @@ void KdMBR::AccStats()
         AddToMap(0, state_times_[1] * beta_dash_arc(q), &(tau_b[q]));
         AddToMap(0, state_times_[1] * beta_dash_arc(q), &(tau_e[q]));
     }
-    for (int32 q = 1; q <= Q; q++) { // a check (line 35)
+    for (int32 q = 1; q <= Q; q++)
+    { // a check (line 35)
         double sum = 0.0;
         for (map<int32, double>::iterator iter = gamma[q].begin();
              iter != gamma[q].end(); ++iter) sum += iter->second;
@@ -298,7 +329,8 @@ void KdMBR::AccStats()
     times_.resize(Q);
     sausage_times_.clear();
     sausage_times_.resize(Q);
-    for (int32 q = 1; q <= Q; q++) {
+    for (int32 q = 1; q <= Q; q++)
+    {
         double t_b = 0.0, t_e = 0.0;
         for (std::vector<std::pair<int32, BaseFloat>>::iterator iter = gamma_[q-1].begin();
              iter != gamma_[q-1].end(); ++iter) {
@@ -329,6 +361,32 @@ void KdMBR::AccStats()
 std::vector<int32> KdMBR::GetOneBest()
 {
     return R_;
+}
+
+void KdMBR::AddToMap(int32 i, double d, std::map<int32, double> *gamma)
+{
+    if (d == 0) return;
+    std::pair<const int32, double> pr(i, d);
+    std::pair<std::map<int32, double>::iterator, bool> ret = gamma->insert(pr);
+    if (!ret.second) // not inserted, so add to contents.
+        ret.first->second += d;
+}
+
+// gives edit-distance function l(a,b)
+double KdMBR::l_distance(int32 a, int32 b, bool penalize)
+{
+    if (a == b)
+    {
+        return 0.0;
+    }
+    else if( penalize )
+    {
+        return 1.0 + KD_MBR_DELTA;
+    }
+    else
+    {
+        return 1.0;
+    }
 }
 
 // These time intervals may overlap.

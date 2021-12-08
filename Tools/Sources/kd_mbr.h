@@ -1,6 +1,8 @@
 #ifndef KD_MBR_H
 #define KD_MBR_H
 
+#define KD_MBR_DELTA 1.0e-05 // Defined in paper
+
 // described in "Minimum Bayes Risk decoding and system combination based on a recursion for
 // edit distance", Haihua Xu, Daniel Povey, Lidia Mangu and Jie Zhu,
 
@@ -23,19 +25,8 @@ private:
 
     void MbrDecode(); // Figure 6 of the paper.
 
-    /// Without the 'penalize' argument this gives us the basic edit-distance
-    /// function l(a,b), as in the paper.
-    /// With the 'penalize' argument it can be interpreted as the edit distance
-    /// plus the 'delta' from the paper, except that we make a kind of conceptual
-    /// bug-fix and only apply the delta if the edit-distance was not already
-    /// zero.  This bug-fix was necessary in order to force all the stats to show
-    /// up, that should show up, and applying the bug-fix makes the sausage stats
-    /// significantly less sparse.
-    inline double l(int32 a, int32 b, bool penalize = false)
-    {
-        if (a == b) return 0.0;
-        else return (penalize ? 1.0 + delta() : 1.0);
-    }
+    // gives edit-distance function l(a,b)
+    double l_distance(int32 a, int32 b, bool penalize = false);
 
     /// returns r_q, in one-based indexing, as in the paper.
     inline int32 r(int32 q) { return R_[q-1]; }
@@ -57,24 +48,8 @@ private:
     // epsilon (0).  (But if no words in vec, just one epsilon)
     static void NormalizeEps(std::vector<int32> *vec);
 
-    // delta() is a constant used in the algorithm, which penalizes
-    // the use of certain epsilon transitions in the edit-distance which would cause
-    // words not to show up in the accumulated edit-distance statistics.
-    // There has been a conceptual bug-fix versus the way it was presented in
-    // the paper: we now add delta only if the edit-distance was not already
-    // zero.
-    static inline float delta() { return 1.0e-05; }
 
-
-    /// Function used to increment map.
-    static inline void AddToMap(int32 i, double d, std::map<int32, double> *gamma)
-    {
-        if (d == 0) return;
-        std::pair<const int32, double> pr(i, d);
-        std::pair<std::map<int32, double>::iterator, bool> ret = gamma->insert(pr);
-        if (!ret.second) // not inserted, so add to contents.
-            ret.first->second += d;
-    }
+    void AddToMap(int32 i, double d, std::map<int32, double> *gamma);
 
     struct Arc
     {
