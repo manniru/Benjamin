@@ -34,7 +34,6 @@ signals:
     void resultReady(QVector<BtWord> result);
 
 private:
-    void writeBarResult(QVector<BtWord> result);
     void parseWords(QString filename);
     void execute(std::vector<int32_t> word);
 

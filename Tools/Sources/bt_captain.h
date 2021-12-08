@@ -6,17 +6,10 @@
 #include <QTimer>
 #include <QVector>
 #include <QTime>
+#include <QTextStream>
 
 #include "bt_config.h"
-
-typedef struct BtWord
-{
-    QString word;
-    double  time;
-    double  start;
-    double  end;
-    double  conf;
-}BtWord;
+#include "kd_mbr.h"
 
 #define BT_TIME_NOW QTime::currentTime().toString("hh:mm:ss")
 
@@ -37,7 +30,6 @@ private:
     double  getAvgConfidence();
     double  getAvgDetection();
     void    addWord(BtWord word);
-    void writeBarResult();
     bool isValidTime(BtWord word);
     int  lastWordIndex(QVector<BtWord> in_words);
     int  lastWordIndex(double min, double max,
@@ -50,5 +42,8 @@ private:
     QString utterance;
     BtWord  lastword;
 };
+
+void bt_writeBarResult(QVector<QString> result);
+void bt_writeBarResult(QVector<BtWord> result);
 
 #endif // BT_CAPTAIN_H

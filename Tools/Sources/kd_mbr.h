@@ -8,6 +8,25 @@
 
 #include "lat/sausages.h"
 #include "lat/lattice-functions.h"
+#include <QString>
+
+
+struct KdMBRArc
+{
+    int32 word;
+    int32 start_node;
+    int32 end_node;
+    float loglike;
+};
+
+typedef struct BtWord
+{
+    QString word;
+    double  time;
+    double  start;
+    double  end;
+    double  conf;
+}BtWord;
 
 class KdMBR
 {
@@ -19,6 +38,7 @@ public:
     std::vector<std::pair<float, float> > GetSausageTimes();
     std::vector<std::pair<float, float> > GetOneBestTimes();
     std::vector<float> GetOneBestConfidences();
+    QVector<BtWord>    getResult(QVector<QString> lexicon);
 
 private:
     void PrepareLatticeAndInitStats(kaldi::CompactLattice *clat);
@@ -27,10 +47,6 @@ private:
 
     // gives edit-distance function l(a,b)
     double l_distance(int32 a, int32 b, bool penalize = false);
-
-    /// returns r_q, in one-based indexing, as in the paper.
-    inline int32 r(int32 q) { return R_[q-1]; }
-
 
     /// Figure 4 of the paper; called from AccStats (Fig. 5)
     double EditDistance(int32 N, int32 Q,
@@ -42,30 +58,21 @@ private:
     void AccStats();
 
     /// Removes epsilons (symbol 0) from a vector
-    static void RemoveEps(std::vector<int32> *vec);
+    void RemoveEps(std::vector<int32> *vec);
 
     // Ensures that between each word in "vec" and at the beginning and end, is
     // epsilon (0).  (But if no words in vec, just one epsilon)
-    static void NormalizeEps(std::vector<int32> *vec);
+    void NormalizeEps(std::vector<int32> *vec);
 
 
     void AddToMap(int32 i, double d, std::map<int32, double> *gamma);
 
-    struct Arc
-    {
-        int32 word;
-        int32 start_node;
-        int32 end_node;
-        float loglike;
-    };
-
     kaldi::MinimumBayesRiskOptions opts;
-
 
     /// Arcs in the topologically sorted acceptor form of the word-level lattice,
     /// with one final-state.  Contains (word-symbol, log-likelihood on arc ==
     /// negated cost).  Indexed from zero.
-    std::vector<Arc> arcs_;
+    std::vector<KdMBRArc> arcs_;
 
     /// For each node in the lattice, a list of arcs entering that node. Indexed
     /// from 1 (first node == 1).

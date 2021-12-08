@@ -134,29 +134,29 @@ void KdMBR::NormalizeEps(std::vector<int32> *vec)
 }
 
 double KdMBR::EditDistance(int32 N, int32 Q,
-                                      Vector<double> &alpha,
-                                      Matrix<double> &alpha_dash,
-                                      Vector<double> &alpha_dash_arc)
+                           Vector<double> &alpha,
+                           Matrix<double> &alpha_dash,
+                           Vector<double> &alpha_dash_arc)
 {
     alpha(1) = 0.0; // = log(1).  Line 5.
     alpha_dash(1, 0) = 0.0; // Line 5.
     for (int32 q = 1; q <= Q; q++)
     {
-        alpha_dash(1, q) = alpha_dash(1, q-1) + l_distance(0, r(q)); // Line 7.
+        alpha_dash(1, q) = alpha_dash(1, q-1) + l_distance(0, R_[q-1]); // Line 7.
     }
     for (int32 n = 2; n <= N; n++)
     {
         double alpha_n = kLogZeroDouble;
         for (size_t i = 0; i < pre_[n].size(); i++)
         {
-            const Arc &arc = arcs_[pre_[n][i]];
+            const KdMBRArc &arc = arcs_[pre_[n][i]];
             alpha_n = LogAdd(alpha_n, alpha(arc.start_node) + arc.loglike);
         }
         alpha(n) = alpha_n; // Line 10.
         // Line 11 omitted: matrix was initialized to zero.
         for (size_t i = 0; i < pre_[n].size(); i++)
         {
-            const Arc &arc = arcs_[pre_[n][i]];
+            const KdMBRArc &arc = arcs_[pre_[n][i]];
             int32 s_a = arc.start_node, w_a = arc.word;
             BaseFloat p_a = arc.loglike;
             for (int32 q = 0; q <= Q; q++)
@@ -168,7 +168,7 @@ double KdMBR::EditDistance(int32 N, int32 Q,
                 }
                 else
                 {  // a1,a2,a3 are the 3 parts of min expression of line 17.
-                    int32 r_q = r(q);
+                    int32 r_q = R_[q-1];;
                     double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
                             a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
                             a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
@@ -216,12 +216,13 @@ void KdMBR::AccStats()
     beta_dash(N, Q) = 1.0; // Line 11.
     for (int32 n = N; n >= 2; n--) {
         for (size_t i = 0; i < pre_[n].size(); i++) {
-            const Arc &arc = arcs_[pre_[n][i]];
+            const KdMBRArc &arc = arcs_[pre_[n][i]];
             int32 s_a = arc.start_node, w_a = arc.word;
             BaseFloat p_a = arc.loglike;
             alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(w_a, 0, true); // line 14.
-            for (int32 q = 1; q <= Q; q++) { // this loop == lines 15-18.
-                int32 r_q = r(q);
+            for (int32 q = 1; q <= Q; q++)
+            { // this loop == lines 15-18.
+                int32 r_q = R_[q-1];;
                 double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
                         a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
                         a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
@@ -313,7 +314,8 @@ void KdMBR::AccStats()
     // data structure and indexed from zero, not one.
     gamma_.clear();
     gamma_.resize(Q);
-    for (int32 q = 1; q <= Q; q++) {
+    for (int32 q = 1; q <= Q; q++)
+    {
         for (map<int32, double>::iterator iter = gamma[q].begin();
              iter != gamma[q].end(); ++iter)
             gamma_[q-1].push_back(
@@ -407,6 +409,28 @@ std::vector<std::pair<float, float> > KdMBR::GetOneBestTimes()
     return one_best_times_;
 }
 
+QVector<BtWord> KdMBR::getResult(QVector<QString> lexicon)
+{
+    QVector<BtWord> result;
+    std::vector<float> conf = GetOneBestConfidences();
+    std::vector<int32> words = GetOneBest();
+    std::vector<std::pair<float, float>> times = GetOneBestTimes();
+
+    for( int i = 0; i<words.size() ; i++ )
+    {
+        BtWord word_buf;
+        word_buf.conf = conf[i];
+        word_buf.start = times[i].first/100.0;
+        word_buf.end = times[i].second/100.0;
+        word_buf.time = (word_buf.start+word_buf.end)/2;
+        word_buf.word = lexicon[words[i]];
+
+        result.push_back(word_buf);
+    }
+
+    return result;
+}
+
 std::vector<float> KdMBR::GetOneBestConfidences()
 {
     return one_best_confidences_;
@@ -442,12 +466,13 @@ void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat)
 
     // Careful: "Arc" is a class-member struct, not an OpenFst type of arc as one
     // would normally assume.
-    for (int32 n = 1; n <= N; n++) {
+    for (int32 n = 1; n <= N; n++)
+    {
         for (fst::ArcIterator<CompactLattice> aiter(*clat, n-1);
-             !aiter.Done();
-             aiter.Next()) {
+             !aiter.Done(); aiter.Next())
+        {
             const CompactLatticeArc &carc = aiter.Value();
-            Arc arc; // in our local format.
+            KdMBRArc arc; // in our local format.
             arc.word = carc.ilabel; // == carc.olabel
             arc.start_node = n;
             arc.end_node = carc.nextstate + 1; // convert to 1-based.

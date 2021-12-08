@@ -50,7 +50,7 @@ void BtCaptain::parse(QVector<BtWord> in_words)
         }
     }
 
-    writeBarResult();
+    bt_writeBarResult(history);
 }
 
 void BtCaptain::processUtterance(BtWord word)
@@ -61,54 +61,6 @@ void BtCaptain::processUtterance(BtWord word)
         printf("%s-%.2f(%.2f->%.2f) ", word.word.toStdString().c_str()
                , word.conf, word.start, word.end);
     }
-}
-
-void BtCaptain::writeBarResult()
-{
-    QFile bar_file(BT_BAR_RESULT);
-
-    if (!bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Error opening" << BT_BAR_RESULT;
-        return;
-    }
-
-    QTextStream out(&bar_file);
-
-    for( int i=0 ; i<history.length() ; i++ )
-    {
-        if( history[i].conf<KAL_CONF_TRESHOLD )
-        {
-            out << "%{F#777}";
-        }
-        else
-        {
-            out << "%{F#ddd}";
-        }
-
-        if( history[i].conf<KAL_HARD_TRESHOLD )
-        {
-            out << "%{u#f00}%{+u}";
-        }
-        else if( history[i].conf==1.00 )
-        {
-            out << "%{u#1d1}%{+u}";
-        }
-        else if( history[i].conf>KAL_CONF_TRESHOLD )
-        {
-            out << "%{u#16A1CF}%{+u}";
-        }
-        else
-        {
-            out << "%{u#CF8516}%{+u}";
-        }
-        out << history[i].word;
-
-        out << "%{-u} ";
-    }
-    out << "\n";
-
-    bar_file.close();
 }
 
 bool BtCaptain::isValidUtterance()
@@ -302,4 +254,76 @@ double BtCaptain::getAvgDetection()
     }
 
     return detection/history.length();
+}
+
+void bt_writeBarResult(QVector<QString> result)
+{
+    QFile bar_file(BT_BAR_RESULT);
+
+    if (!bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error opening" << BT_BAR_RESULT;
+        return;
+    }
+
+    QTextStream out(&bar_file);
+
+    for( int i=0 ; i<result.length() ; i++ )
+    {
+        out << "%{u#1d1}%{+u}";
+        out << result[i];
+
+        out << "%{-u} ";
+    }
+    out << "\n";
+
+    bar_file.close();
+}
+
+void bt_writeBarResult(QVector<BtWord> result)
+{
+    QFile bar_file(BT_BAR_RESULT);
+
+    if (!bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Error opening" << BT_BAR_RESULT;
+        return;
+    }
+
+    QTextStream out(&bar_file);
+
+    for( int i=0 ; i<result.length() ; i++ )
+    {
+        if( result[i].conf<KAL_CONF_TRESHOLD )
+        {
+            out << "%{F#777}";
+        }
+        else
+        {
+            out << "%{F#ddd}";
+        }
+
+        if( result[i].conf<KAL_HARD_TRESHOLD )
+        {
+            out << "%{u#f00}%{+u}";
+        }
+        else if( result[i].conf==1.00 )
+        {
+            out << "%{u#1d1}%{+u}";
+        }
+        else if( result[i].conf>KAL_CONF_TRESHOLD )
+        {
+            out << "%{u#16A1CF}%{+u}";
+        }
+        else
+        {
+            out << "%{u#CF8516}%{+u}";
+        }
+        out << result[i].word;
+
+        out << "%{-u} ";
+    }
+    out << "\n";
+
+    bar_file.close();
 }

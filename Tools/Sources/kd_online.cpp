@@ -200,22 +200,17 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     {
         return;
     }
-    vector<int32> word_ids;
-    vector<float> conf;
-    vector<pair<float, float>> times;
     QVector<BtWord> result;
 
 #ifdef BT_LAT_ONLINE
     KdMBR *mbr = NULL;
     mbr = new KdMBR(clat);
-    word_ids = mbr->GetOneBest();
-    conf = mbr->GetOneBestConfidences();
-    times = mbr->GetOneBestTimes();
+    result = mbr->getResult(lexicon);
+    bt_writeBarResult(result);
 #else
+    vector<int32> word_ids;
     GetLinearSymbolSequence(*clat, isymbols_out,
                             &word_ids, w_out);
-#endif
-
     for( int i=0 ; i<word_ids.size() ; i++ )
     {
         qDebug() << lexicon[word_ids[i]];// << conf[i];
@@ -224,33 +219,11 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     if( word_ids.size() )
     {
         execute(word_ids);
-//        printTime(start);
-        writeBarResult();
+        bt_writeBarResult(history);
     }
-}
+#endif
 
-void KdOnline::writeBarResult()
-{
-    QFile bar_file(BT_BAR_RESULT);
 
-    if (!bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        qDebug() << "Error opening" << BT_BAR_RESULT;
-        return;
-    }
-
-    QTextStream out(&bar_file);
-
-    for( int i=0 ; i<history.length() ; i++ )
-    {
-        out << "%{u#1d1}%{+u}";
-        out << history[i];
-
-        out << "%{-u} ";
-    }
-    out << "\n";
-
-    bar_file.close();
 }
 
 void KdOnline::parseWords(QString filename)

@@ -45,7 +45,6 @@ signals:
 
 private:
     void printTime(clock_t start);
-    void writeBarResult();
     void parseWords(QString filename);
     void execute(std::vector<int32_t> word);
 
