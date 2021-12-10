@@ -102,45 +102,32 @@ void KdOnline2::parseWords(QString filename)
 void KdOnline2::print(CompactLattice *clat)
 {
     KdMBR *mbr = NULL;
-    QVector<BtWord> result;
 
     mbr = new KdMBR(clat);
-    vector<float> conf = mbr->GetOneBestConfidences();
-    vector<int32> words = mbr->GetOneBest();
-    vector<pair<float, float>> times = mbr->GetOneBestTimes();
+    QVector<BtWord> result = mbr->getResult(lexicon);
     history.clear();
 
     QString message;
-    for( int i = 0; i<words.size() ; i++ )
+    for( int i = 0; i<result.size() ; i++ )
     {
-        BtWord word_buf;
-        word_buf.conf = conf[i];
-        word_buf.start = times[i].first/100.0;
-        word_buf.end = times[i].second/100.0;
-        word_buf.time = (word_buf.start+word_buf.end)/2;
-        word_buf.word = lexicon[words[i]];
-
-        result.push_back(word_buf);
-        message += lexicon[words[i]];
+        message += result[i].word;
         message +=  "[";
-        message += QString::number(conf[i]);
+        message += QString::number(result[i].conf);
         message +=  ", ";
-        message += QString::number(word_buf.start,'g', 3);
+        message += QString::number(result[i].start,'g', 3);
         message +=  "-";
-//        message += QString::number(word_buf.time,'g', 3);
-//        message +=  "-";
-        message += QString::number(word_buf.end,'g', 3);
+        message += QString::number(result[i].end,'g', 3);
         message +=  " ]";
     }
 
-    if( words.size()>10 )
+    if( result.size()>10 )
     {
         CompactLatticeWriter clat_writer("ark:b.ark");
         clat_writer.Write("f", *clat);
         exit(0);
     }
 
-    if( words.size() )
+    if( result.size() )
     {
 //        execute(words);
 //        printTime(start);
@@ -156,11 +143,10 @@ void KdOnline2::processData(int len)
     g_decoder->init(NULL); ///FIXME: Replace with rec_src
     g_decoder->decodable->features->AcceptWaveform(cy_buf, len);
 //    clock_t start = clock();
-//    g_decoder->decodable->features->AcceptWaveform(wav_data, len);
 
-//    printTime(start);
     g_decoder->AdvanceDecoding();
 //    g_decoder->FinalizeDecoding();
+//    printTime(start);
     CompactLattice clat;
     bool ret = g_decoder->GetLattice(true, &clat);
 

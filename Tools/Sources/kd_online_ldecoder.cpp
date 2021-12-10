@@ -16,13 +16,14 @@ KdOnlineLDecoder::KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
     trans_model_(trans_model), max_beam_(opts.beam)
 {
     silence_set = sil_phones;
-    frame_ = 0;
+    frame = 0;
     utt_frames_ = 0;
-    state_ = KD_EndFeats;
+    state_ = KD_STATE_NORMAL;
     effective_beam_ = opts.beam;
 }
 
-void KdOnlineLDecoder::ResetDecoder(bool full)
+//frame num would not reset
+void KdOnlineLDecoder::ResetDecoder()
 {
 //    qDebug() << "Reset Kaldi" << full << frame_toks.size();
     DeleteElems(toks_.Clear()); //replaced ClearToks
@@ -44,11 +45,6 @@ void KdOnlineLDecoder::ResetDecoder(bool full)
     prev_immortal_tok_ = immortal_tok_ = dummy_token;
     utt_frames_ = 0;
     ProcessNonemitting(config_.beam);
-
-    if( full )
-    {
-        frame_ = 0;
-    }
 }
 
 
@@ -66,10 +62,12 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
 
     if( end<=0 )
     {
+        qDebug() << "hey2";
         return;
     }
     if( start<0 )
     {
+        qDebug() << "hey1" << frame_toks.size();
         return;
     }
 
@@ -87,7 +85,7 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
     unordered_map<KdToken2*, KdStateId> tok_map(bucket_count);
     // First create all states.
     std::vector<KdToken2*> token_list;
-    for( int32 f=0 ; f<end ; f++ )
+    for( int32 f=start ; f<end ; f++ )
     {
         if( frame_toks[f].toks==NULL )
         {
@@ -149,9 +147,9 @@ void KdOnlineLDecoder::MakeLattice(int start, int end,
 {
     Lattice raw_fst;
     double lat_beam = config_.lattice_beam;
-//    RawLattice(start, end, &raw_fst);
+    RawLattice(start, end, &raw_fst);
 
-    GetRawLattice(&raw_fst);
+//    GetRawLattice(&raw_fst);
     PruneLattice(lat_beam, &raw_fst);
 
     DeterminizeLatticePhonePrunedWrapper(trans_model_,
@@ -287,26 +285,25 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 // Returns "true" if the current hypothesis ends with long silence
 bool KdOnlineLDecoder::HaveSilence()
 {
-    Lattice trace;
-    int32 sil_frm = opts_.inter_utt_sil; //50
+    CompactLattice trace;
+    int32 sil_frm = 100;//opts_.inter_utt_sil; //50
+    if( sil_frm>frame_toks.size() )
+    {
+        return false;
+    }
 
-    RawLattice(-sil_frm, 0, &trace);
-    Invert(&trace);
-    fst::ILabelCompare<LatticeArc> ilabel_comp;
-    ArcSort(&trace, ilabel_comp);
-
-    fst::DeterminizeLatticePrunedOptions lat_opts;
-    lat_opts.max_mem = config_.det_opts.max_mem;
-
-    Connect(&trace); //removing states and arcs that are not on successful paths.
-
+    MakeLattice(0, 0, &trace);
 
     std::vector<int32> isymbols;
     std::vector<int32> *osymbols = NULL;
     LatticeArc::Weight *oweight = NULL;
 
+    CompactLattice best_path_clat;
+    CompactLatticeShortestPath(trace, &best_path_clat);
+
     Lattice lat;
-    ShortestPath(trace, &lat);
+    ConvertLattice(best_path_clat, &lat);
+
     fst::GetLinearSymbolSequence(lat, &isymbols, osymbols, oweight);
 
     std::vector<std::vector<int32> > split;
@@ -318,19 +315,20 @@ bool KdOnlineLDecoder::HaveSilence()
         int32 phone = trans_model_.TransitionIdToPhone(tid);
         if( !silence_set.contains(phone) )
         {
+            qDebug() << "split" << split.size();
             return false;
         }
     }
 
-    return false; ///shit! change this to true
+    return true; ///shit! change this to true
 }
 
-KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
+int KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 {
-    if( state_==KD_EndFeats || state_==KD_EndUtt ) // new utterance
+    if( state_==KD_STATE_SILENCE )
     {
-//        ResetDecoder(state_ == KD_EndFeats);
-//        qDebug() << "reset";
+        ResetDecoder();
+        qDebug() << "reset";
     }
 
     ProcessNonemitting(std::numeric_limits<float>::max());
@@ -351,20 +349,18 @@ KdDecodeState KdOnlineLDecoder::Decode(DecodableInterface *decodable)
         ProcessNonemitting(weight_cutoff);
 
         utt_frames_++;
-        frame_++;
+        frame++;
     }
-    if( frame_i==opts_.batch_size )
+
+    if( HaveSilence() )
     {
-        //FinalizeDecoding();
-        if( HaveSilence() )
-        {
-            state_ = KD_EndUtt; //End of Utterance
-        }
-        else
-        {
-            state_ = KD_EndBatch;
-        }
+        state_ = KD_STATE_SILENCE; //see silence
     }
+    else
+    {
+        state_ = KD_STATE_NORMAL;
+    }
+
     return state_;
 }
 

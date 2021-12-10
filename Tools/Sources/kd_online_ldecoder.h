@@ -17,6 +17,9 @@
 #include "lat/kaldi-lattice.h"
 #include "lat/lattice-functions.h"
 
+#define KD_STATE_SILENCE 1
+#define KD_STATE_NORMAL  2
+
 struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
 {
     float rt_min = 0.7;          // minimum decoding runtime factor
@@ -29,14 +32,6 @@ struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
     float max_beam_update = 0.05;// maximum rate of beam adjustment
 };
 
-// Codes returned by Decode() to show the current state of the decoder
-enum KdDecodeState
-{
-    KD_EndFeats = 1,// No more scores are available from the Decodable
-    KD_EndUtt   = 2,// End of utterance, caused by e.g. a sufficiently long silence
-    KD_EndBatch = 4 // End of batch - end of utterance not reached yet
-};
-
 class KdOnlineLDecoder : public KdLatticeDecoder
 {
 public:
@@ -45,7 +40,7 @@ public:
                      QVector<int> sil_phones, kaldi::TransitionModel &trans_model);
 
 
-    KdDecodeState Decode(kaldi::DecodableInterface *decodable);
+    int Decode(kaldi::DecodableInterface *decodable);
 
     void RawLattice(int start, int end, kaldi::Lattice *ofst);
     void MakeLattice(int start, int end, kaldi::CompactLattice *ofst);
@@ -61,11 +56,10 @@ public:
 
     // Returns "true" if the best current hypothesis ends with long enough silence
     bool HaveSilence();
-
-    int32 frame() { return frame_; }
+    int32 frame; // the next frame to be processed
 
 private:
-    void ResetDecoder(bool full);
+    void ResetDecoder();
 
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token
@@ -80,8 +74,7 @@ private:
     const kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
     float max_beam_; // the maximum allowed beam
     float effective_beam_; // the currently used beam
-    KdDecodeState state_; // the current state of the decoder
-    int32 frame_; // the next frame to be processed
+    int   state_; // the current state of the decoder
     int32 utt_frames_; // # frames processed from the current utterance
     KdToken2 *immortal_tok_;      // "immortal" token means it's an ancestor of ...
     KdToken2 *prev_immortal_tok_; // ... all currently active tokens

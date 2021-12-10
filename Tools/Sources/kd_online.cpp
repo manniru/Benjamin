@@ -130,11 +130,11 @@ void KdOnline::startDecode()
 
 #ifdef BT_LAT_ONLINE
         decodable.features->AcceptWaveform(cy_buf);
-        qDebug() << "buf size" << decodable.features->NumFramesReady();
+//        qDebug() << "buf size" << decodable.features->NumFramesReady();
 #endif
-        KdDecodeState dstate = o_decoder->Decode(&decodable);
+        int dstate = o_decoder->Decode(&decodable);
 
-        if( dstate==KdDecodeState::KD_EndUtt )
+        if( dstate==KD_STATE_SILENCE )
         {
             tok_count = o_decoder->FinishTraceBack(&out_fst);
 //            qDebug() << "TokCound1" << tok_count;
