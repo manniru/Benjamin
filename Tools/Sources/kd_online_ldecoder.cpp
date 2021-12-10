@@ -77,9 +77,7 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
 
     ComputeFinalCosts(&final_costs_local, NULL, NULL);
 
-
     ofst->DeleteStates();
-
 
     const int32 bucket_count = num_toks_/2 + 3;
     unordered_map<KdToken2*, KdStateId> tok_map(bucket_count);
@@ -105,7 +103,7 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
     // Now create all arcs.
     for( int f=start ; f<end ; f++ )
     {
-        for (KdToken2 *tok = frame_toks[f].toks; tok != NULL; tok = tok->next)
+        for( KdToken2 *tok=frame_toks[f].toks ; tok != NULL ; tok = tok->next )
         {
             KdStateId cur_state = tok_map[tok];
             for ( KdFLink *l = tok->links; l != NULL; l = l->next )
@@ -115,7 +113,7 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
                 KdStateId nextstate = iter->second;
                 KALDI_ASSERT(iter != tok_map.end());
                 float cost_offset = 0.0;
-                if (l->ilabel != 0)
+                if( l->ilabel!=0 )
                 {  // emitting..
                     KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
                     cost_offset = cost_offsets[f];
@@ -177,6 +175,59 @@ double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
     MakeLattice(0, 0, out_fst);
 
     return 1;
+}
+
+bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
+                             std::vector<int32> *isymbols_out)
+{
+  typedef typename LatticeArc::StateId StateId;
+  typedef typename LatticeArc::Weight Weight;
+
+  Weight tot_weight = Weight::One();
+  std::vector<int32> ilabel_seq;
+
+  StateId cur_state = fst->Start();
+  if( cur_state ==-1 ) // Not a valid state ID.
+  {
+      isymbols_out->clear();
+      return true;
+  }
+  qDebug() << "hello";//THIS LINE NEVER RUN!
+
+  int i = 0;
+  while( 1 )
+  {
+      i++;
+      Weight w = fst->Final(cur_state);
+      if( w!= Weight::Zero() )
+      {  // is final..
+          qDebug() << "-----------" << i;//THIS LINE NEVER RUN!
+          tot_weight = Times(w, tot_weight);
+          if( fst->NumArcs(cur_state)!=0 )
+          {
+              return false;
+          }
+          *isymbols_out = ilabel_seq;
+          return true;
+      }
+      else
+      {
+          qDebug() << "Flag #2" << i;
+          if( fst->NumArcs(cur_state)!=1 )
+          {
+              return false;
+          }
+
+          fst::ArcIterator<Lattice > iter(*fst, cur_state);  // get the only arc.
+          const LatticeArc &arc = iter.Value();
+          tot_weight = Times(arc.weight, tot_weight);
+          if (arc.ilabel != 0)
+          {
+              ilabel_seq.push_back(arc.ilabel);
+          }
+          cur_state = arc.nextstate;
+      }
+  }
 }
 
 void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
@@ -285,26 +336,21 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 // Returns "true" if the current hypothesis ends with long silence
 bool KdOnlineLDecoder::HaveSilence()
 {
-    CompactLattice trace;
     int32 sil_frm = 100;//opts_.inter_utt_sil; //50
     if( sil_frm>frame_toks.size() )
     {
         return false;
     }
 
-    MakeLattice(0, 0, &trace);
+    Lattice raw_fst;
+    double lat_beam = config_.lattice_beam;
+    RawLattice(0, 0, &raw_fst);
+    PruneLattice(lat_beam, &raw_fst);
+    Lattice lat;
+    fst::ShortestPath(raw_fst, &lat);
 
     std::vector<int32> isymbols;
-    std::vector<int32> *osymbols = NULL;
-    LatticeArc::Weight *oweight = NULL;
-
-    CompactLattice best_path_clat;
-    CompactLatticeShortestPath(trace, &best_path_clat);
-
-    Lattice lat;
-    ConvertLattice(best_path_clat, &lat);
-
-    fst::GetLinearSymbolSequence(lat, &isymbols, osymbols, oweight);
+    GetiSymbol(&lat, &isymbols);
 
     std::vector<std::vector<int32> > split;
     SplitToPhones(trans_model_, isymbols, &split);
@@ -313,9 +359,9 @@ bool KdOnlineLDecoder::HaveSilence()
     {
         int32 tid = split[i][0];
         int32 phone = trans_model_.TransitionIdToPhone(tid);
+        qDebug() << "split" << split.size();
         if( !silence_set.contains(phone) )
         {
-            qDebug() << "split" << split.size();
             return false;
         }
     }

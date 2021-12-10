@@ -60,6 +60,7 @@ public:
 
 private:
     void ResetDecoder();
+    bool GetiSymbol(kaldi::Lattice *fst, std::vector<int32> *isymbols_out);
 
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token
