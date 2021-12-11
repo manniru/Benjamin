@@ -190,6 +190,7 @@ bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
   if( cur_state ==-1 ) // Not a valid state ID.
   {
       isymbols_out->clear();
+      qDebug() << "Not a valid state ID";
       return true;
   }
   qDebug() << "hello";//THIS LINE NEVER RUN!
@@ -344,10 +345,10 @@ bool KdOnlineLDecoder::HaveSilence()
 
     Lattice raw_fst;
     double lat_beam = config_.lattice_beam;
-    RawLattice(0, 0, &raw_fst);
+    RawLattice(-sil_frm, 0, &raw_fst);
     PruneLattice(lat_beam, &raw_fst);
     Lattice lat;
-    fst::ShortestPath(raw_fst, &lat);
+    kd_fstShortestPath(&raw_fst, &lat);
 
     std::vector<int32> isymbols;
     GetiSymbol(&lat, &isymbols);

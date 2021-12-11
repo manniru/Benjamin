@@ -14,8 +14,8 @@
 #include "util/stl-utils.h"
 #include "kd_lattice_decoder.h"
 #include "hmm/transition-model.h"
-#include "lat/kaldi-lattice.h"
 #include "lat/lattice-functions.h"
+#include "kd_lattice.h"
 
 #define KD_STATE_SILENCE 1
 #define KD_STATE_NORMAL  2

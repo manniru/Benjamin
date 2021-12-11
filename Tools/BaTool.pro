@@ -46,6 +46,7 @@ HEADERS += \
     Sources/kd_cmvn.h \
     Sources/kd_f_token.h \
     Sources/kd_faster_decoder.h \
+    Sources/kd_lattice.h \
     Sources/kd_lattice_decoder.h \
     Sources/kd_mbr.h \
     Sources/kd_online2_decodable.h \
@@ -70,6 +71,7 @@ SOURCES += \
     Sources/kd_cmvn.cpp \
     Sources/kd_f_token.cpp \
     Sources/kd_faster_decoder.cpp \
+    Sources/kd_lattice.cpp \
     Sources/kd_lattice_decoder.cpp \
     Sources/kd_mbr.cpp \
     Sources/kd_online2_decodable.cpp \

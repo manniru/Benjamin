@@ -4,6 +4,7 @@
 #include<QVector>
 #include "decoder/lattice-faster-decoder.h"
 #include "kd_token2.h"
+#include "kd_lattice.h"
 
 /*extra_cost is used in pruning tokens, to save memory.
 
@@ -20,9 +21,6 @@
   (Note: we don't update all the extra_costs every time we update a frame; we
   only do it every 'config_.prune_interval' frames).*/
 
-typedef fst::StdFst                           KdFST;
-typedef fst::StdFst::Arc                      KdArc;
-typedef KdArc::StateId                        KdStateId;
 typedef kaldi::decoder::ForwardLink<KdToken2> KdFLink;
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
