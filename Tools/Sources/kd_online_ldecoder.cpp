@@ -344,9 +344,11 @@ bool KdOnlineLDecoder::HaveSilence()
     }
 
     Lattice raw_fst;
-    double lat_beam = config_.lattice_beam;
     RawLattice(-sil_frm, 0, &raw_fst);
-    PruneLattice(lat_beam, &raw_fst);
+
+//    double lat_beam = config_.lattice_beam;
+//    PruneLattice(lat_beam, &raw_fst);
+
     Lattice lat;
     kd_fstShortestPath(&raw_fst, &lat);
 
@@ -360,9 +362,9 @@ bool KdOnlineLDecoder::HaveSilence()
     {
         int32 tid = split[i][0];
         int32 phone = trans_model_.TransitionIdToPhone(tid);
-        qDebug() << "split" << split.size();
         if( !silence_set.contains(phone) )
         {
+            qDebug() << "split" << split.size();
             return false;
         }
     }
