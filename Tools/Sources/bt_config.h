@@ -7,6 +7,7 @@
 #define KAL_DECODE_DIR    KAL_NATO_DIR"decode/"
 #define KAL_SI_DIR        KAL_NATO_DIR"scripts/interpreter/"
 #define KAL_SD_DIR        KAL_NATO_DIR"scripts/decode/"
+#define KAL_SK_DIR        KAL_NATO_DIR"scripts/kaldi/"
 #define KAL_RESULT_DIR    KAL_DECODE_DIR"result/"
 #define KAL_WAV_DIR       KAL_DECODE_DIR"wav/"
 #define KAL_MODE          "tri1"

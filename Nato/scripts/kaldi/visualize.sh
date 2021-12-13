@@ -1,4 +1,4 @@
-# Setting local system jobs (local CPU - no external clusters)
+# ./visualize.sh out.ark .
 # cd ../..;source path.sh; cd scripts/kaldi/
 # exp/$MODE/graph/words.txt
 LAT_INPUT=$1
@@ -7,6 +7,7 @@ RESULT_PATH=$2
 MODE="tri1"
 #WORD_TABLE="exp/$MODE/graph/words.txt"
 WORD_TABLE="../../exp/$MODE/graph/words.txt"
+cd ../..;source path.sh; cd scripts/kaldi/
 
 VIS_ARK="$RESULT_PATH/vis.ark"
 VIS_FST="$RESULT_PATH/vis.fst"

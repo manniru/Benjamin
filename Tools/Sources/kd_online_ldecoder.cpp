@@ -51,12 +51,14 @@ void KdOnlineLDecoder::ResetDecoder()
 void KdOnlineLDecoder::RawLattice(int start, int end,
                                   Lattice *ofst)
 {
+    int dbg = 0;
     if( end==0 )
     {
         end = frame_toks.size();
     }
     if( start<0 )
     {
+        dbg = 1;
         start = frame_toks.size()+start;
     }
 
@@ -79,11 +81,9 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
 
     ofst->DeleteStates();
 
-    const int32 bucket_count = num_toks_/2 + 3;
-    unordered_map<KdToken2*, KdStateId> tok_map(bucket_count);
     // First create all states.
     std::vector<KdToken2*> token_list;
-    for( int32 f=start ; f<end ; f++ )
+    for( int32 f=0 ; f<end ; f++ )
     {
         if( frame_toks[f].toks==NULL )
         {
@@ -91,10 +91,14 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
             return;
         }
         TopSortTokens(frame_toks[f].toks, &token_list);
+//        if( dbg )
+//            qDebug() << "token_list" << f << token_list.size() << start;
         for( size_t i=0 ; i<token_list.size() ; i++ )
         {
-            if (token_list[i] != NULL)
-                tok_map[token_list[i]] = ofst->AddState();
+            if( token_list[i]!=NULL )
+            {
+                token_list[i]->state = ofst->AddState();
+            }
         }
     }
 
@@ -105,16 +109,15 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
     {
         for( KdToken2 *tok=frame_toks[f].toks ; tok != NULL ; tok = tok->next )
         {
-            KdStateId cur_state = tok_map[tok];
-            for ( KdFLink *l = tok->links; l != NULL; l = l->next )
+            KdStateId cur_state = tok->state;
+            KdFLink *link;
+            for ( link=tok->links; link!=NULL; link=link->next )
             {
-                typename unordered_map<KdToken2*, KdStateId>::const_iterator
-                        iter = tok_map.find(l->next_tok);
-                KdStateId nextstate = iter->second;
-                KALDI_ASSERT(iter != tok_map.end());
+                KdStateId nextstate = link->next_tok->state;
+
                 float cost_offset = 0.0;
-                if( l->ilabel!=0 )
-                {  // emitting..
+                if( l->ilabel!=0 ) // emitting
+                {
                     KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
                     cost_offset = cost_offsets[f];
                 }
@@ -126,10 +129,13 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
             {
                 if( !final_costs.empty() )
                 {
-                    typename unordered_map<KdToken2*, float>::const_iterator
+                    unordered_map<KdToken2*, float>::const_iterator
                             iter = final_costs.find(tok);
-                    if (iter != final_costs.end())
+                    if( iter!=final_costs.end() )
+                    {
+//                        LatticeWeight w = LatticeWeight(iter->second, 0);
                         ofst->SetFinal(cur_state, LatticeWeight(iter->second, 0));
+                    }
                 }
                 else
                 {
@@ -213,7 +219,7 @@ bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
       }
       else
       {
-          qDebug() << "Flag #2" << i;
+//          qDebug() << "Flag #2" << i;
           if( fst->NumArcs(cur_state)!=1 )
           {
               return false;
@@ -345,6 +351,7 @@ bool KdOnlineLDecoder::HaveSilence()
 
     Lattice raw_fst;
     RawLattice(-sil_frm, 0, &raw_fst);
+//    kd_writeLat(&raw_fst);
 
 //    double lat_beam = config_.lattice_beam;
 //    PruneLattice(lat_beam, &raw_fst);
@@ -369,7 +376,7 @@ bool KdOnlineLDecoder::HaveSilence()
         }
     }
 
-    return true; ///shit! change this to true
+    return false; ///shit! change this to true
 }
 
 int KdOnlineLDecoder::Decode(DecodableInterface *decodable)

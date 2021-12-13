@@ -21,8 +21,6 @@
   (Note: we don't update all the extra_costs every time we update a frame; we
   only do it every 'config_.prune_interval' frames).*/
 
-typedef kaldi::decoder::ForwardLink<KdToken2> KdFLink;
-
 #define KD_INFINITY std::numeric_limits<double>::infinity()
 
 // head of per-frame list of Tokens (list is in topological order),

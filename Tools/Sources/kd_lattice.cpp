@@ -1,4 +1,4 @@
-#include "kd_lattice.h"
+﻿#include "kd_lattice.h"
 
 using namespace kaldi;
 
@@ -10,8 +10,9 @@ void kd_fstSSPathBacktrace(Lattice *ifst, Lattice *ofst,
     ofst->SetOutputSymbols(ifst->OutputSymbols());
     KdStateId s_p = KD_INVALID_STATE;
     KdStateId d_p = KD_INVALID_STATE;
-    for( KdStateId state = f_parent, d = KD_INVALID_STATE; state!=KD_INVALID_STATE;
-         d = state, state=parent[state].first )
+    KdStateId d   = KD_INVALID_STATE;
+
+    for( KdStateId state = f_parent ; state!=KD_INVALID_STATE ; state=parent[state].first )
     {
         d_p = s_p;
         s_p = ofst->AddState();
@@ -27,10 +28,12 @@ void kd_fstSSPathBacktrace(Lattice *ifst, Lattice *ofst,
             arc.nextstate = d_p;
             ofst->AddArc(s_p, std::move(arc));
         }
+        d = state;
     }
     ofst->SetStart(s_p);
     if( ifst->Properties(FST_ERROR, false) )
     {
+        qDebug() << "kd_fstSSPathBacktrace FST_ERROR";
         ofst->SetProperties(FST_ERROR, FST_ERROR);
     }
     uint64 ofst_property = ofst->Properties(FST_PROPERTY, false);
@@ -53,7 +56,6 @@ bool kd_SingleShortestPath(Lattice *ifst, KdStateId *f_parent,
     }
     std::vector<bool> enqueued;
     KdStateId source = ifst->Start();
-    bool final_seen = false;
     LatticeArc::Weight f_distance = LatticeArc::Weight::Zero();
     distance.clear();
     state_queue.Clear();
@@ -69,17 +71,19 @@ bool kd_SingleShortestPath(Lattice *ifst, KdStateId *f_parent,
     parent->emplace_back(KD_INVALID_STATE, KD_INVALID_ARC);
     state_queue.Enqueue(source);
     enqueued.push_back(true);
-    while (!state_queue.Empty())
+    while( !state_queue.Empty() )
     {
-        const auto s = state_queue.Head();
+        const KdStateId s = state_queue.Head();
+//        qDebug() << "state_queue" << s;
         state_queue.Dequeue();
         enqueued[s] = false;
         const auto sd = distance[s];
         // If we are using a shortest queue, no other path is going to be shorter
         // than f_distance at this point.
 
-        if (ifst->Final(s) != LatticeArc::Weight::Zero())
+        if( ifst->Final(s)!=LatticeArc::Weight::Zero() )
         {
+            qDebug() << "hhhhhhhhhhhhhhhhhhhhhhhhhh";
             const auto plus = Plus(f_distance, Times(sd, ifst->Final(s)));
             if( f_distance!=plus )
             {
@@ -88,10 +92,9 @@ bool kd_SingleShortestPath(Lattice *ifst, KdStateId *f_parent,
             }
             if( !f_distance.Member() )
                 return false;
-            final_seen = true;
         }
 
-        for( fst::ArcIterator<fst::Fst<LatticeArc>> aiter(*ifst, s); !aiter.Done(); aiter.Next() )
+        for( fst::ArcIterator<fst::Fst<LatticeArc>> aiter(*ifst, s) ; !aiter.Done() ; aiter.Next() )
         {
             const auto &arc = aiter.Value();
             while (distance.size() <= arc.nextstate)
@@ -139,4 +142,22 @@ void kd_fstShortestPath(Lattice *ifst, Lattice *ofst)
         qDebug() << "kd_ShortestPath is fucked";
     }
     return;
+}
+
+void kd_writeLat(Lattice *ifst)
+{
+//    LatticeWriter lat_writer("ark:" KAL_SK_DIR "out.ark");
+//    lat_writer.Write("f", *ifst);
+    fst::RemoveEpsLocal(ifst);
+    CompactLattice clat;
+    ConvertLattice(*ifst, &clat);
+    CompactLatticeWriter lat_writer("ark:" KAL_SK_DIR "out.ark");
+    lat_writer.Write("f", clat);
+//    TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
+//    fst_writer.Write("f", *fst_in);
+
+    if( ifst->NumStates()> 10 )
+    {
+        exit(0);
+    }
 }
