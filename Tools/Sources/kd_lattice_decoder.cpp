@@ -162,13 +162,13 @@ void KdLatticeDecoder::PossiblyResizeHash(size_t num_toks)
 // Locates a token in toks_, or inserts a new, empty token
 // for the current frame. 'changed' true if a token created or cost changed.
 KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
-        KdStateId state, int32 frame_plus_one, float tot_cost, bool *changed)
+        KdStateId state, float tot_cost, bool *changed)
 {
-    KALDI_ASSERT(frame_plus_one < frame_toks.size());
+    int32 frame = frame_toks.size() - 1;
     Elem *e_found = toks_.Insert(state, NULL);
     if( e_found->val==NULL )
     {
-        KdTokenList *tok_list = &frame_toks[frame_plus_one];
+        KdTokenList *tok_list = &frame_toks[frame];
         const float extra_cost = 0.0;
         // tokens on the currently final frame have zero extra_cost
         // as any of them could end up on the winning path.
@@ -737,8 +737,8 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
                         next_cutoff = tot_cost + adaptive_beam; // prune by best current token
                     }
 
-                    Elem *e_next = FindOrAddToken(arc.nextstate,
-                                                  frame + 1, tot_cost, NULL);
+                    Elem *e_next = FindOrAddToken(arc.nextstate, tot_cost,
+                                                  NULL);
 
                     // Add ForwardLink from tok to next_tok (put on head of list tok->links)
                     tok->links = new KdFLink(e_next->val, arc.ilabel, arc.olabel,
@@ -758,9 +758,6 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 {
     KALDI_ASSERT(!frame_toks.empty());
-
-    queue_.clear();
-
     if( toks_.GetList()==NULL )
     {
         int32 frame = frame_toks.size() - 2;
@@ -769,6 +766,7 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
     }
 
     // need for reverse
+    queue_.clear();
     for (Elem *e = const_cast<Elem *>(toks_.GetList()); e != NULL;  e = e->tail)
     {
         KdStateId state = e->key;
@@ -801,18 +799,18 @@ void KdLatticeDecoder::PNonemittingElem(Elem *e, float cutoff)
     // of non-optimality (since most states are emitting it's not a huge issue.)
     DeleteForwardLinks(tok); // necessary when re-visiting
     tok->links = NULL;
-    for(fst::ArcIterator<KdFST> aiter(*fst_, state); !aiter.Done(); aiter.Next())
+    for( fst::ArcIterator<KdFST> aiter(*fst_, state) ; !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
-        if (arc.ilabel == 0) // nonemitting
+        if( arc.ilabel==0 ) // nonemitting
         {
             float graph_cost = arc.weight.Value();
             float tot_cost = cur_cost + graph_cost;
             if (tot_cost < cutoff)
             {
                 bool changed;
-                Elem *e_new = FindOrAddToken(arc.nextstate, frame + 1,
-                                             tot_cost, &changed);
+                Elem *e_new = FindOrAddToken(arc.nextstate, tot_cost,
+                                             &changed);
 
                 tok->links = new KdFLink(e_new->val, 0, arc.olabel,
                                          graph_cost, 0, tok->links);
@@ -825,9 +823,6 @@ void KdLatticeDecoder::PNonemittingElem(Elem *e, float cutoff)
         }
     }
 }
-
-
-
 
 // Deletes the elements of the singly linked list tok->links.
 void KdLatticeDecoder::DeleteForwardLinks(KdToken2 *tok)

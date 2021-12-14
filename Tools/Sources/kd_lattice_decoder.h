@@ -64,8 +64,8 @@ protected:
     inline static void DeleteForwardLinks(KdToken2 *tok);
 
     void PossiblyResizeHash(size_t num_toks);
-    Elem *FindOrAddToken(KdStateId state, int32 frame_plus_one,
-                         float  tot_cost, bool *changed);
+    Elem *FindOrAddToken(KdStateId state, float  tot_cost,
+                         bool *changed);
 
     bool PruneForwardLinks(int32 frame, bool *extra_costs_changed, float delta);
     void ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
