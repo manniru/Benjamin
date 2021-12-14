@@ -2,7 +2,7 @@
 #include <QDebug>
 
 using namespace kaldi;
-KdToken2::KdToken2(float total_cost, float e_cost, KdFLink *link, KdToken2 *next_tok)
+KdToken2::KdToken2(float total_cost, float e_cost, KdToken2 *next_tok)
 {
     tot_cost = total_cost;
     extra_cost = e_cost;
@@ -10,7 +10,7 @@ KdToken2::KdToken2(float total_cost, float e_cost, KdFLink *link, KdToken2 *next
     next = next_tok;
 }
 
-KdFLink::KdFLink(KdToken2 *n_tok, Label in_label, Label out_label,
+KdFLink::KdFLink(KdToken2 *n_tok, int in_label, int out_label,
                  float g_cost, float a_cost, KdFLink *n_link)
  {
       next_tok = n_tok;

@@ -38,7 +38,7 @@ void KdOnlineLDecoder::ResetDecoder()
     KALDI_ASSERT(start_state != fst::kNoStateId);
     frame_toks.resize(1);
     //Weight was Weight::One()
-    KdToken2 *dummy_token = new KdToken2(0.0, 0.0, NULL, NULL);
+    KdToken2 *dummy_token = new KdToken2(0.0, 0.0, NULL);
     frame_toks[0].toks = dummy_token;
     toks_.Insert(start_state, dummy_token);
     num_toks_++;
@@ -116,13 +116,13 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
                 KdStateId nextstate = link->next_tok->state;
 
                 float cost_offset = 0.0;
-                if( l->ilabel!=0 ) // emitting
+                if( link->ilabel!=0 ) // emitting
                 {
                     KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
                     cost_offset = cost_offsets[f];
                 }
-                LatticeArc::Weight arc_w(l->graph_cost, l->acoustic_cost - cost_offset);
-                LatticeArc arc(l->ilabel, l->olabel,arc_w, nextstate);
+                LatticeArc::Weight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
+                LatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
                 ofst->AddArc(cur_state, arc);
             }
             if( f==end-1 )

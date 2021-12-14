@@ -80,6 +80,7 @@ protected:
 
     float ProcessEmitting(kaldi::DecodableInterface *decodable);
     void ProcessNonemitting(float cost_cutoff);
+    void PNonemittingElem(Elem *e, float cutoff);
 
     // HashList is indexed by frame-index plus one.
     kaldi::HashList<KdStateId, KdToken2*> toks_;

@@ -30,7 +30,7 @@ void KdLatticeDecoder::InitDecoding()
     KdStateId start_state = fst_->Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
     frame_toks.resize(1);
-    KdToken2 *start_tok = new KdToken2(0.0, 0.0, NULL, NULL);
+    KdToken2 *start_tok = new KdToken2(0.0, 0.0, NULL);
     frame_toks[0].toks = start_tok;
     toks_.Insert(start_state, start_tok);
     num_toks_++;
@@ -172,7 +172,7 @@ KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
         const float extra_cost = 0.0;
         // tokens on the currently final frame have zero extra_cost
         // as any of them could end up on the winning path.
-        KdToken2 *new_tok = new KdToken2 (tot_cost, extra_cost, NULL, tok_list->toks);
+        KdToken2 *new_tok = new KdToken2 (tot_cost, extra_cost, tok_list->toks);
         // NULL: no forward links yet
         tok_list->toks = new_tok;
         num_toks_++;
@@ -758,28 +758,17 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 {
     KALDI_ASSERT(!frame_toks.empty());
-    int32 frame = static_cast<int32>(frame_toks.size()) - 2;
-    // Note: "frame" is the time-index we just processed, or -1 if
-    // we are processing the nonemitting transitions before the
-    // first frame (called from InitDecoding()).
 
-    // Processes nonemitting arcs for one frame.  Propagates within toks_.
-    // Note-- this queue structure is not very optimal as
-    // it may cause us to process states unnecessarily (e.g. more than once),
-    // but in the baseline code, turning this vector into a set to fix this
-    // problem did not improve overall speed.
+    queue_.clear();
 
-    KALDI_ASSERT(queue_.empty());
-
-    if (toks_.GetList() == NULL)
+    if( toks_.GetList()==NULL )
     {
-        if (!warned_)
-        {
-            KALDI_WARN << "Error, no surviving tokens: frame is " << frame;
-            warned_ = true;
-        }
+        int32 frame = frame_toks.size() - 2;
+        qDebug() << "Error, no surviving tokens: frame is " << frame;
+        return;
     }
 
+    // need for reverse
     for (Elem *e = const_cast<Elem *>(toks_.GetList()); e != NULL;  e = e->tail)
     {
         KdStateId state = e->key;
@@ -789,51 +778,56 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
         }
     }
 
-    while( !queue_.empty() )
+    int q_len = queue_.size();
+    for( int i=0 ; i<q_len ; i++ )
     {
-        const Elem *e = queue_.back();
-        queue_.pop_back();
+        PNonemittingElem(queue_[q_len-i-1], cutoff);
+    }
+}
 
-        KdStateId state = e->key;
-        KdToken2 *tok = e->val;  // would segfault if e is a NULL pointer but this can't happen.
-        float cur_cost = tok->tot_cost;
-        if( cur_cost>=cutoff ) // Don't bother processing successors.
+// Processes Single Non Emiting Elem
+void KdLatticeDecoder::PNonemittingElem(Elem *e, float cutoff)
+{
+    int32 frame = frame_toks.size() - 2;
+    KdStateId state = e->key;
+    KdToken2 *tok = e->val;
+    float cur_cost = tok->tot_cost;
+    if( cur_cost>=cutoff )
+    {
+        return;// Don't bother processing
+    }
+    // If "tok" has any existing forward links, delete them,
+    // because we're about to regenerate them.  This is a kind
+    // of non-optimality (since most states are emitting it's not a huge issue.)
+    DeleteForwardLinks(tok); // necessary when re-visiting
+    tok->links = NULL;
+    for(fst::ArcIterator<KdFST> aiter(*fst_, state); !aiter.Done(); aiter.Next())
+    {
+        const KdArc &arc = aiter.Value();
+        if (arc.ilabel == 0) // nonemitting
         {
-            continue;
-        }
-        // If "tok" has any existing forward links, delete them,
-        // because we're about to regenerate them.  This is a kind
-        // of non-optimality (remember, this is the simple decoder),
-        // but since most states are emitting it's not a huge issue.
-        DeleteForwardLinks(tok); // necessary when re-visiting
-        tok->links = NULL;
-        for(fst::ArcIterator<KdFST> aiter(*fst_, state); !aiter.Done(); aiter.Next())
-        {
-            const KdArc &arc = aiter.Value();
-            if (arc.ilabel == 0)
-            {  // propagate nonemitting only...
-                float graph_cost = arc.weight.Value();
-                float tot_cost = cur_cost + graph_cost;
-                if (tot_cost < cutoff)
+            float graph_cost = arc.weight.Value();
+            float tot_cost = cur_cost + graph_cost;
+            if (tot_cost < cutoff)
+            {
+                bool changed;
+                Elem *e_new = FindOrAddToken(arc.nextstate, frame + 1,
+                                             tot_cost, &changed);
+
+                tok->links = new KdFLink(e_new->val, 0, arc.olabel,
+                                         graph_cost, 0, tok->links);
+
+                if (changed && fst_->NumInputEpsilons(arc.nextstate) != 0)
                 {
-                    bool changed;
-                    Elem *e_new = FindOrAddToken(arc.nextstate, frame + 1,
-                                                 tot_cost, &changed);
-
-                    tok->links = new KdFLink(e_new->val, 0, arc.olabel,
-                                             graph_cost, 0, tok->links);
-
-                    // "changed" tells us whether the new token has a different
-                    // cost from before, or is new [if so, add into queue].
-                    if (changed && fst_->NumInputEpsilons(arc.nextstate) != 0)
-                    {
-                        queue_.push_back(e_new);
-                    }
+                    PNonemittingElem(e_new, cutoff);
                 }
             }
-        } // for all arcs
-    } // while queue not empty
+        }
+    }
 }
+
+
+
 
 // Deletes the elements of the singly linked list tok->links.
 void KdLatticeDecoder::DeleteForwardLinks(KdToken2 *tok)
