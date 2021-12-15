@@ -51,58 +51,9 @@ void KdOnlineLDecoder::ResetDecoder()
 void KdOnlineLDecoder::RawLattice(int start, int end,
                                   Lattice *ofst)
 {
-    int dbg = 0;
-    if( end==0 )
-    {
-        end = frame_toks.size();
-    }
-    if( start<0 )
-    {
-        dbg = 1;
-        start = frame_toks.size()+start;
-    }
-
-    if( end<=0 )
-    {
-        qDebug() << "hey2";
-        return;
-    }
-    if( start<0 )
-    {
-        qDebug() << "hey1" << frame_toks.size();
-        return;
-    }
-
-    unordered_map<KdToken2*, float> final_costs_local;
-
-    const unordered_map<KdToken2*, float> &final_costs = final_costs_local;
-
-    ComputeFinalCosts(&final_costs_local, NULL, NULL);
-
-    ofst->DeleteStates();
-
-    // First create all states.
-    std::vector<KdToken2*> token_list;
-    for( int32 f=0 ; f<end ; f++ )
-    {
-        if( frame_toks[f].toks==NULL )
-        {
-            KALDI_WARN << "GetRawLattice: no tokens active on frame " << f;
-            return;
-        }
-        TopSortTokens(frame_toks[f].toks, &token_list);
-//        if( dbg )
-//            qDebug() << "token_list" << f << token_list.size() << start;
-        for( size_t i=0 ; i<token_list.size() ; i++ )
-        {
-            if( token_list[i]!=NULL )
-            {
-                token_list[i]->state = ofst->AddState();
-            }
-        }
-    }
-
-    ofst->SetStart(0);// sets the start state
+    unordered_map<KdToken2*, float> final_costs;
+    ComputeFinalCosts(&final_costs, NULL, NULL);
+    createStates(ofst);
 
     // Now create all arcs.
     for( int f=start ; f<end ; f++ )
@@ -146,6 +97,35 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
     }
 }
 
+void KdOnlineLDecoder::createStates(Lattice *ofst)
+{
+    int end = frame_toks.size();
+    ofst->DeleteStates();
+
+    // First create all states.
+    std::vector<KdToken2*> token_list;
+    for( int32 f=0 ; f<end ; f++ )
+    {
+        if( frame_toks[f].toks==NULL )
+        {
+            KALDI_WARN << "GetRawLattice: no tokens active on frame " << f;
+            return;
+        }
+        TopSortTokens(frame_toks[f].toks, &token_list);
+//        if( dbg )
+//            qDebug() << "token_list" << f << token_list.size() << start;
+        for( size_t i=0 ; i<token_list.size() ; i++ )
+        {
+            if( token_list[i]!=NULL )
+            {
+                token_list[i]->state = ofst->AddState();
+            }
+        }
+    }
+
+    ofst->SetStart(0);// sets the start state
+}
+
 void KdOnlineLDecoder::MakeLattice(int start, int end,
                                    CompactLattice *ofst)
 {
@@ -169,7 +149,7 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 //        return false;
 //    }
 
-    MakeLattice(0, 0, out_fst);
+    MakeLattice(0, frame_toks.size(), out_fst);
     return true;
 }
 
@@ -178,7 +158,7 @@ bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 {
 //    KdToken2 *best_tok = getBestTok();
-    MakeLattice(0, 0, out_fst);
+    MakeLattice(0, frame_toks.size(), out_fst);
 
     return 1;
 }
@@ -344,13 +324,16 @@ void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
 bool KdOnlineLDecoder::HaveSilence()
 {
     int32 sil_frm = 100;//opts_.inter_utt_sil; //50
+    int end = frame_toks.size();
+    int start = 0;//end-sil_frm;
+
     if( sil_frm>frame_toks.size() )
     {
         return false;
     }
 
     Lattice raw_fst;
-    RawLattice(-sil_frm, 0, &raw_fst);
+    RawLattice(start, end, &raw_fst);
 //    kd_writeLat(&raw_fst);
 
 //    double lat_beam = config_.lattice_beam;

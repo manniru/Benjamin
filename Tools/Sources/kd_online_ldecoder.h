@@ -42,6 +42,7 @@ public:
 
     int Decode(kaldi::DecodableInterface *decodable);
 
+    void createStates(kaldi::Lattice *ofst);
     void RawLattice(int start, int end, kaldi::Lattice *ofst);
     void MakeLattice(int start, int end, kaldi::CompactLattice *ofst);
 

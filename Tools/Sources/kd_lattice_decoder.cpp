@@ -511,19 +511,26 @@ void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final
             (*final_costs)[tok] = final_cost;
         final_toks = next;
     }
-    if (final_relative_cost != NULL) {
-        if (best_cost == infinity && best_cost_with_final == infinity) {
+    if (final_relative_cost != NULL)
+    {
+        if (best_cost == infinity && best_cost_with_final == infinity)
+        {
             // Likely this will only happen if there are no tokens surviving.
             // This seems the least bad way to handle it.
             *final_relative_cost = infinity;
-        } else {
+        }
+        else
+        {
             *final_relative_cost = best_cost_with_final - best_cost;
         }
     }
-    if (final_best_cost != NULL) {
-        if (best_cost_with_final != infinity) { // final-state exists.
+    if (final_best_cost != NULL)
+    {
+        if (best_cost_with_final != infinity)
+        { // final-state exists.
             *final_best_cost = best_cost_with_final;
-        } else { // no final-state exists.
+        } else
+        { // no final-state exists.
             *final_best_cost = best_cost;
         }
     }
@@ -786,7 +793,6 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 // Processes Single Non Emiting Elem
 void KdLatticeDecoder::PNonemittingElem(Elem *e, float cutoff)
 {
-    int32 frame = frame_toks.size() - 2;
     KdStateId state = e->key;
     KdToken2 *tok = e->val;
     float cur_cost = tok->tot_cost;
