@@ -50,8 +50,6 @@ public:
     void  FinalizeDecoding();
     float FinalRelativeCost();
 
-    bool GetBestPath  (kaldi::Lattice *ofst, bool use_final_probs = true);
-    bool GetRawLattice(kaldi::Lattice *ofst, bool use_final_probs = true);
     double GetBestCutoff(Elem *best_elem,
                          kaldi::DecodableInterface *decodable);
 
@@ -70,16 +68,15 @@ protected:
     void ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
                            float *final_relative_cost, float *final_best_cost);
 
-    void PruneForwardLinksFinal();
     void PruneTokensForFrame(int32 frame);
     void PruneActiveTokens(float delta);
 
     float GetCutoff(Elem *list_head, size_t *tok_count, Elem **best_elem);
 
     float ProcessEmitting(kaldi::DecodableInterface *decodable);
-    void ProcessNonemitting(float cost_cutoff);
     float PEmittingElem(Elem *e, float next_cutoff, kaldi::DecodableInterface *decodable);
-    void PNonemittingElem(Elem *e, float cutoff);
+    void  ProcessNonemitting(float cost_cutoff);
+    void  PNonemittingElem(Elem *e, float cutoff);
 
     // HashList is indexed by frame-index plus one.
     kaldi::HashList<KdStateId, KdToken2*> toks_;
