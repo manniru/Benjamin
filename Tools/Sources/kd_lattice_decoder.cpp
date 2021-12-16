@@ -573,8 +573,9 @@ void KdLatticeDecoder::FinalizeDecoding()
                   << " to " << num_toks_;
 }
 
+// Get Cutoff and Also Update adaptive_beam
 float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
-                                  float *adaptive_beam, Elem **best_elem)
+                                  Elem **best_elem)
 {
     float best_weight = std::numeric_limits<float>::infinity();
     // positive == high cost == bad.
@@ -595,10 +596,7 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
         {
             *tok_count = count;
         }
-        if (adaptive_beam != NULL)
-        {
-            *adaptive_beam = config_.beam;
-        }
+        adaptive_beam = config_.beam;
         return best_weight + config_.beam;
     }
     else
@@ -636,10 +634,7 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
         if (max_active_cutoff < beam_cutoff)
         {
             // max_active is tighter than beam.
-            if (adaptive_beam)
-            {
-                *adaptive_beam = max_active_cutoff - best_weight + config_.beam_delta;
-            }
+            adaptive_beam = max_active_cutoff - best_weight + config_.beam_delta;
             return max_active_cutoff;
         }
         if (tmp_array_.size() > static_cast<size_t>(config_.min_active))
@@ -660,18 +655,18 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
         }
         if (min_active_cutoff > beam_cutoff)
         { // min_active is looser than beam.
-            if (adaptive_beam)
-                *adaptive_beam = min_active_cutoff - best_weight + config_.beam_delta;
+            adaptive_beam = min_active_cutoff - best_weight + config_.beam_delta;
             return min_active_cutoff;
-        } else {
-            *adaptive_beam = config_.beam;
+        }
+        else
+        {
+            adaptive_beam = config_.beam;
             return beam_cutoff;
         }
     }
 }
 
-double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *decodable,
-                                      float adaptive_beam)
+double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *decodable)
 {
     double cutoff = KD_INFINITY;
     int32 frame = cost_offsets.size();
@@ -706,52 +701,21 @@ double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *deco
 // Processes for one frame.
 float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 {
-    KALDI_ASSERT(frame_toks.size() > 0);
-    int32 frame = frame_toks.size() - 1;
     frame_toks.resize(frame_toks.size() + 1);
 
     Elem *final_toks = toks_.Clear();
     Elem *best_elem = NULL;
-    float adaptive_beam;
     size_t tok_cnt;
 
-    float cutoff = GetCutoff(final_toks, &tok_cnt, &adaptive_beam, &best_elem);
-    float next_cutoff = GetBestCutoff(best_elem, decodable, adaptive_beam);
+    float cutoff = GetCutoff(final_toks, &tok_cnt, &best_elem);
+    float next_cutoff = GetBestCutoff(best_elem, decodable);
 
     Elem *e_tail;
     for( Elem *e=final_toks ; e!=NULL ; e=e_tail )
     {
-        KdStateId state = e->key;
-        KdToken2 *tok = e->val;
-        if( tok->tot_cost<=cutoff )
+        if( e->val->tot_cost<=cutoff )
         {
-            for(fst::ArcIterator<KdFST> aiter(*fst_, state); !aiter.Done(); aiter.Next() )
-            {
-                const KdArc &arc = aiter.Value();
-                if( arc.ilabel!=0 )
-                {
-                    float new_weight = decodable->LogLikelihood(frame_num, arc.ilabel);
-                    float ac_cost = cost_offsets[frame] - new_weight;
-                    float graph_cost = arc.weight.Value();
-                    float tot_cost = tok->tot_cost + ac_cost + graph_cost;
-
-                    if( tot_cost>=next_cutoff )
-                    {
-                        continue;
-                    }
-                    else if( tot_cost+adaptive_beam<next_cutoff )
-                    {
-                        next_cutoff = tot_cost + adaptive_beam; // prune by best current token
-                    }
-
-                    Elem *e_next = FindOrAddToken(arc.nextstate, tot_cost,
-                                                  NULL);
-
-                    // Add ForwardLink from tok to next_tok (put on head of list tok->links)
-                    tok->links = new KdFLink(e_next->val, arc.ilabel, arc.olabel,
-                                             graph_cost , ac_cost,    tok->links);
-                }
-            }
+            next_cutoff = PEmittingElem(e, next_cutoff, decodable);
         }
         e_tail = e->tail;
         toks_.Delete(e);
@@ -789,6 +753,46 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
         PNonemittingElem(queue_[q_len-i-1], cutoff);
     }
 }
+
+// Processes Single Emiting Elem
+float KdLatticeDecoder::PEmittingElem(Elem *e, float next_cutoff,
+                                      DecodableInterface *decodable)
+{
+    int32 frame = frame_toks.size() - 2;
+
+    KdStateId e_state = e->key;
+    KdToken2 *e_tok = e->val;
+
+    for(fst::ArcIterator<KdFST> aiter(*fst_, e_state); !aiter.Done(); aiter.Next() )
+    {
+        const KdArc &arc = aiter.Value();
+        if( arc.ilabel!=0 )
+        {
+            float new_weight = decodable->LogLikelihood(frame_num, arc.ilabel);
+            float ac_cost = cost_offsets[frame] - new_weight;
+            float graph_cost = arc.weight.Value();
+            float tot_cost = e_tok->tot_cost + ac_cost + graph_cost;
+
+            if( tot_cost>=next_cutoff )
+            {
+                continue;
+            }
+            else if( tot_cost+adaptive_beam<next_cutoff )
+            {
+                next_cutoff = tot_cost + adaptive_beam; // prune by best current token
+            }
+
+            Elem *e_found = FindOrAddToken(arc.nextstate, tot_cost,
+                                          NULL);
+
+            // Add ForwardLink from tok to next_tok (put on head of list tok->links)
+            e_tok->links = new KdFLink(e_found->val, arc.ilabel, arc.olabel,
+                                       graph_cost , ac_cost, e_tok->links);
+        }
+    }
+    return next_cutoff;
+}
+
 
 // Processes Single Non Emiting Elem
 void KdLatticeDecoder::PNonemittingElem(Elem *e, float cutoff)

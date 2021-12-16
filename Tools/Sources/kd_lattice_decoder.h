@@ -53,8 +53,7 @@ public:
     bool GetBestPath  (kaldi::Lattice *ofst, bool use_final_probs = true);
     bool GetRawLattice(kaldi::Lattice *ofst, bool use_final_probs = true);
     double GetBestCutoff(Elem *best_elem,
-                         kaldi::DecodableInterface *decodable,
-                         float adaptive_beam);
+                         kaldi::DecodableInterface *decodable);
 
     long frame_num = 0; //number of decoded frame
 
@@ -75,11 +74,11 @@ protected:
     void PruneTokensForFrame(int32 frame);
     void PruneActiveTokens(float delta);
 
-    float GetCutoff(Elem *list_head, size_t *tok_count,
-                    float *adaptive_beam, Elem **best_elem);
+    float GetCutoff(Elem *list_head, size_t *tok_count, Elem **best_elem);
 
     float ProcessEmitting(kaldi::DecodableInterface *decodable);
     void ProcessNonemitting(float cost_cutoff);
+    float PEmittingElem(Elem *e, float next_cutoff, kaldi::DecodableInterface *decodable);
     void PNonemittingElem(Elem *e, float cutoff);
 
     // HashList is indexed by frame-index plus one.
@@ -104,6 +103,7 @@ protected:
     unordered_map<KdToken2*, float> final_costs_;
     float final_relative_cost_;
     float final_best_cost_;
+    float adaptive_beam; //updates in getcutoff
 
     void DeleteElems(Elem *list);
 

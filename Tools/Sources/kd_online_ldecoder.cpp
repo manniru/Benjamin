@@ -58,7 +58,7 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
     // Now create all arcs.
     for( int f=start ; f<end ; f++ )
     {
-        for( KdToken2 *tok=frame_toks[f].toks ; tok != NULL ; tok = tok->next )
+        for( KdToken2 *tok=frame_toks[f].toks ; tok!=NULL ; tok=tok->next )
         {
             KdStateId cur_state = tok->state;
             KdFLink *link;
