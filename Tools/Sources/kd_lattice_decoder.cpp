@@ -42,18 +42,9 @@ bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
 {
     InitDecoding();
     AdvanceDecoding(decodable);
-    FinalizeDecoding();
+//    FinalizeDecoding();
 
     return !frame_toks.empty() && frame_toks.back().toks != NULL;
-}
-
-void KdLatticeDecoder::PossiblyResizeHash(size_t num_toks)
-{
-    size_t new_sz = static_cast<size_t>(static_cast<float>(num_toks)
-                                        * config_.hash_ratio);
-    if (new_sz > toks_.Size()) {
-        toks_.SetSize(new_sz);
-    }
 }
 
 // Locates a token in toks_, or inserts a new,
@@ -148,8 +139,16 @@ bool KdLatticeDecoder::PruneForwardLinks(
                 if( link_extra_cost>config_.lattice_beam )  // delete link
                 {
                     KdFLink *next_link = link->next;
-                    if (prev_link != NULL) prev_link->next = next_link;
-                    else tok->links = next_link;
+                    if (prev_link != NULL)
+                    {
+                        prev_link->next = next_link;
+                        prev_link->next_tok->link_tok = next_link->next_tok;
+                    }
+                    else
+                    {
+                        tok->links = next_link;
+                        tok->link_tok = next_link->next_tok;
+                    }
                     delete link;
                     link = next_link;  // advance link but leave prev_link the same.
                     links_pruned = true;
@@ -357,24 +356,6 @@ void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable)
     }
 }
 
-// optionally called, does extra pruning
-void KdLatticeDecoder::FinalizeDecoding()
-{
-    int32 final_frame_plus_one = frame_toks.size()-1;
-    int32 num_toks_begin = num_toks_;
-
-    for (int32 f = final_frame_plus_one - 1; f >= 0; f--)
-    {
-        bool b1; // values not used.
-        float dontcare = 0.0; // delta of zero means we must always update
-        PruneForwardLinks(f, &b1, dontcare);
-        PruneTokensForFrame(f + 1);
-    }
-    PruneTokensForFrame(0);
-    KALDI_VLOG(4) << "pruned tokens from " << num_toks_begin
-                  << " to " << num_toks_;
-}
-
 // Get Cutoff and Also Update adaptive_beam
 float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
                                   Elem **best_elem)
@@ -503,7 +484,7 @@ double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *deco
 // Processes for one frame.
 float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
 {
-    frame_toks.resize(frame_toks.size() + 1);
+    frame_toks.push_back(KdTokenList()); //add new frame tok
 
     Elem *final_toks = toks_.Clear();
     Elem *best_elem = NULL;
@@ -513,6 +494,7 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
     float next_cutoff = GetBestCutoff(best_elem, decodable);
 
     Elem *e_tail;
+    int id_t = 0;
     for( Elem *e=final_toks ; e!=NULL ; e=e_tail )
     {
         if( e->val->tot_cost<=cutoff )
@@ -521,6 +503,8 @@ float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
         }
         e_tail = e->tail;
         toks_.Delete(e);
+//        qDebug() << "ProcessEmitting ID_T" << id_t;
+        id_t++;
     }
 
     frame_num++;
@@ -592,7 +576,7 @@ float KdLatticeDecoder::PEmittingElem(Elem *e, float next_cutoff,
             ef_tok->olabel = arc.olabel;
             ef_tok->graph_cost = graph_cost;
             ef_tok->acoustic_cost = ac_cost;
-            ef_tok->link_tok = e_tok->link_tok;
+//            ef_tok->link_tok = e_tok->link_tok;
             e_tok->link_tok = ef_tok;
             // Add ForwardLink from tok to next_tok (put on head of list tok->links)
             e_tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
@@ -619,6 +603,7 @@ void KdLatticeDecoder::PNonemittingElem(Elem *e, float cutoff)
     // because we're about to regenerate them.  This is a kind
     // of non-optimality (since most states are emitting it's not a huge issue.)
     DeleteForwardLinks(e_tok); // necessary when re-visiting
+
     for( fst::ArcIterator<KdFST> aiter(*fst_, e_state) ; !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
@@ -637,7 +622,7 @@ void KdLatticeDecoder::PNonemittingElem(Elem *e, float cutoff)
                 ef_tok->olabel = arc.olabel;
                 ef_tok->graph_cost = graph_cost;
                 ef_tok->acoustic_cost = 0;
-                ef_tok->link_tok = e_tok->link_tok;
+//                ef_tok->link_tok = e_tok->link_tok;
                 e_tok->link_tok = ef_tok;
 
                 e_tok->links = new KdFLink(ef_tok, 0, arc.olabel,
@@ -794,3 +779,32 @@ void KdLatticeDecoder::TopSortTokens(KdToken2 *tok_list, std::vector<KdToken2 *>
 }
 // FinalRelativeCost()!=KD_INFINITY --> ReachedFinal
 
+void KdLatticeDecoder::checkIntegrity(QString msg)
+{
+    int end = frame_toks.size();
+    for( int f=0 ; f<end ; f++ )
+    {
+        int id_t = 0;
+        for( KdToken2 *tok=frame_toks[f].toks ; tok!=NULL ; tok=tok->next )
+        {
+            int id_l = 0;
+            KdToken2 *link;
+            KdFLink *flink = tok->links;
+            for ( link=tok ; link!=NULL; link=link->link_tok )
+            {
+                if( link->link_tok==NULL )
+                {
+                    break;
+                }
+                if( link->link_tok!=flink->next_tok ) // emitting
+                {
+                    qDebug() << msg << "At frame" << f <<
+                             "ID_T" << id_t << "ID_L" << id_l;
+                }
+                flink = flink->next;
+                id_l++;
+            }
+            id_t++;
+        }
+    }
+}

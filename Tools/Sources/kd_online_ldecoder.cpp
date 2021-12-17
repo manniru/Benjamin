@@ -63,21 +63,21 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
             KdStateId cur_state = tok->state;
             KdToken2 *link;
             KdFLink *flink = tok->links;
-            for ( link=tok->link_tok; flink!=NULL; flink=flink->next )
+            for ( link=tok->link_tok; link!=NULL; link=link->link_tok )
             {
-//                KdStateId nextstate = link->state;
-                KdStateId nextstate = flink->next_tok->state;
+                KdStateId nextstate = link->state;
+                KdStateId fnextstate = flink->next_tok->state;
 
                 float cost_offset = 0.0;
-                if( flink->ilabel!=0 ) // emitting
+                if( link->ilabel!=0 ) // emitting
                 {
                     KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
                     cost_offset = cost_offsets[f];
                 }
-                LatticeArc::Weight arc_w(flink->graph_cost, flink->acoustic_cost - cost_offset);
-                LatticeArc arc(flink->ilabel, flink->olabel,arc_w, nextstate);
+                LatticeArc::Weight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
+                LatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
                 ofst->AddArc(cur_state, arc);
-//                flink = flink->next;
+                flink = flink->next;
             }
             if( f==end-1 )
             {
@@ -373,8 +373,9 @@ int KdOnlineLDecoder::Decode(DecodableInterface *decodable)
         ResetDecoder();
         qDebug() << "reset";
     }
-
+    checkIntegrity("(1)");
     ProcessNonemitting(std::numeric_limits<float>::max());
+    checkIntegrity("(2)");
     int frame_i;
     for ( frame_i=0 ; frame_i<opts_.batch_size; frame_i++)
     {
@@ -386,10 +387,12 @@ int KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 
         if ((frame_num+1) % config_.prune_interval == 0)
         {
-            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
+//            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
         float weight_cutoff = ProcessEmitting(decodable);
+        checkIntegrity("(3)");
         ProcessNonemitting(weight_cutoff);
+        checkIntegrity("(4)");
 
         utt_frames_++;
         frame++;

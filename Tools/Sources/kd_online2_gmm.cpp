@@ -65,7 +65,7 @@ void KdOnline2Gmm::AdvanceDecoding()
 
 void KdOnline2Gmm::FinalizeDecoding()
 {
-    o_decoder->FinalizeDecoding();
+//    o_decoder->FinalizeDecoding();
 }
 
 KdOnline2Gmm::~KdOnline2Gmm()

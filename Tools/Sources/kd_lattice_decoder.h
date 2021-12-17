@@ -47,7 +47,6 @@ public:
     bool Decode(kaldi::DecodableInterface *decodable);
     void AdvanceDecoding(kaldi::DecodableInterface *decodable);
 
-    void  FinalizeDecoding();
     float FinalRelativeCost();
 
     double GetBestCutoff(Elem *best_elem,
@@ -55,12 +54,12 @@ public:
 
     long frame_num = 0; //number of decoded frame
 
+    void checkIntegrity(QString msg);
 protected:
     // protected instead of private, so classes which inherits from this,
     // also can have access
     inline static void DeleteForwardLinks(KdToken2 *tok);
 
-    void PossiblyResizeHash(size_t num_toks);
     Elem *FindOrAddToken(KdStateId state, float  tot_cost,
                          bool *changed);
 
