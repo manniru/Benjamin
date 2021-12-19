@@ -25,7 +25,8 @@
 #define  BT_ONLINE_DECODER   KdOnlineDecoder
 #define  BT_ONLINE_DECODABLE KdOnlineDecodable
 #define  BT_ONLINE_OPTS      KdOnlineDecoderOpts
-#define  BT_ONLINE_LAT       fst::VectorFst<kaldi::LatticeArc>
+//#define  BT_ONLINE_LAT       fst::VectorFst<kaldi::LatticeArc>
+#define  BT_ONLINE_LAT       kaldi::CompactLattice
 #endif
 
 class KdOnline : public QObject

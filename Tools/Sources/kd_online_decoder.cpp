@@ -15,9 +15,10 @@ KdOnlineDecoder::KdOnlineDecoder(fst::Fst<fst::StdArc> &fst,
     KdFasterDecoder(fst, opts), opts_(opts),
     trans_model_(trans_model),
     max_beam_(opts.beam), effective_beam_(opts.beam),
-    state_(KD_EndFeats), frame_(0), utt_frames_(0)
+    frame_(0), utt_frames_(0)
 {
     silence_set = sil_phones;
+    state_ = KD_STATE_NORMAL;
 }
 
 void KdOnlineDecoder::ResetDecoder(bool full)
@@ -159,7 +160,7 @@ void KdOnlineDecoder::UpdateImmortalToken()
     }
 }
 
-int KdOnlineDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
+int KdOnlineDecoder::PartialTraceback(CompactLattice *ofst)
 {
     UpdateImmortalToken();
     if( immortal_tok_==prev_immortal_tok_ )
@@ -167,11 +168,16 @@ int KdOnlineDecoder::PartialTraceback(fst::MutableFst<LatticeArc> *out_fst)
         return 0; //no new word
     }
 
-    MakeLattice(immortal_tok_, prev_immortal_tok_, out_fst);
+    Lattice raw_fst;
+    MakeLattice(immortal_tok_, prev_immortal_tok_, &raw_fst);
+    float lat_beam = 16;
+    fst::DeterminizeLatticePhonePrunedOptions det_opts;
+    DeterminizeLatticePhonePrunedWrapper(trans_model_,
+            &raw_fst, lat_beam, ofst, det_opts);
     return 1;
 }
 
-int KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
+int KdOnlineDecoder::FinishTraceBack(CompactLattice *ofst)
 {
     KdFToken *best_tok = NULL;
 
@@ -185,7 +191,12 @@ int KdOnlineDecoder::FinishTraceBack(fst::MutableFst<LatticeArc> *out_fst)
         return -1;
     }
 
-    MakeLattice(best_tok, immortal_tok_, out_fst);
+    Lattice raw_fst;
+    MakeLattice(best_tok, immortal_tok_, &raw_fst);
+    float lat_beam = 16;
+    fst::DeterminizeLatticePhonePrunedOptions det_opts;
+    DeterminizeLatticePhonePrunedWrapper(trans_model_,
+            &raw_fst, lat_beam, ofst, det_opts);
     return 0;
 }
 
@@ -317,7 +328,7 @@ void KdOnlineDecoder::TracebackNFrames(int32 nframes,
 bool KdOnlineDecoder::HaveSilence()
 {
     fst::VectorFst<LatticeArc> trace;
-    int32 sil_frm = opts_.inter_utt_sil / (1 + utt_frames_ / opts_.max_utt_len_); //50
+    int32 sil_frm = opts_.inter_utt_sil; //50
     TracebackNFrames(sil_frm, &trace);
     std::vector<int32> isymbols;
     std::vector<int32> *osymbols = NULL;
@@ -337,11 +348,11 @@ bool KdOnlineDecoder::HaveSilence()
     return true;
 }
 
-KdDecodeState KdOnlineDecoder::Decode(DecodableInterface *decodable)
+int KdOnlineDecoder::Decode(DecodableInterface *decodable)
 {
-    if( state_==KD_EndFeats || state_==KD_EndUtt ) // new utterance
+    if( state_==KD_STATE_SILENCE )
     {
-        ResetDecoder(state_ == KD_EndFeats);
+        ResetDecoder(false); //do not reset frame num
     }
 
     ProcessNonemitting(std::numeric_limits<float>::max());
@@ -365,21 +376,13 @@ KdDecodeState KdOnlineDecoder::Decode(DecodableInterface *decodable)
         ++frame_, ++utt_frames_;
     }
 
-    if( decodable->IsLastFrame(frame_-1) )
+    if( HaveSilence() )
     {
-        qDebug() << "-----------";//THIS LINE NEVER RUN!
-        state_ = KdDecodeState::KD_EndFeats;
+        state_ = KD_STATE_SILENCE;
     }
     else
     {
-        if( HaveSilence() )
-        {
-            state_ = KdDecodeState::KD_EndUtt;
-        }
-        else
-        {
-            state_ = KdDecodeState::KD_EndBatch;
-        }
+        state_ = KD_STATE_NORMAL;
     }
 
     return state_;

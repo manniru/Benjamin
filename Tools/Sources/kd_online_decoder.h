@@ -3,6 +3,7 @@
 
 #include <QVector>
 #include "bt_config.h"
+#include "backend.h"
 #include "kd_faster_decoder.h"
 
 #ifndef BT_LAT_ONLINE2
@@ -10,6 +11,7 @@
 #include "util/stl-utils.h"
 #include "decoder/faster-decoder.h"
 #include "hmm/transition-model.h"
+#include "lat/determinize-lattice-pruned.h"
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
 
@@ -25,14 +27,6 @@ struct KdOnlineDecoderOpts: public kaldi::FasterDecoderOptions
     float max_beam_update = 0.05;// maximum rate of beam adjustment
 };
 
-// Codes returned by Decode() to show the current state of the decoder
-enum KdDecodeState
-{
-    KD_EndFeats = 1,// No more scores are available from the Decodable
-    KD_EndUtt   = 2,// End of utterance, caused by e.g. a sufficiently long silence
-    KD_EndBatch = 4 // End of batch - end of samples not the utterance
-};
-
 class KdOnlineDecoder : public KdFasterDecoder
 {
 public:
@@ -41,16 +35,10 @@ public:
                     const kaldi::TransitionModel &trans_model);
 
 
-    KdDecodeState Decode(kaldi::DecodableInterface *decodable);
+    int Decode(kaldi::DecodableInterface *decodable);
 
-    // Makes a linear graph, by tracing back from the last "immortal" token
-    // to the previous one
-    int  PartialTraceback(fst::MutableFst<kaldi::LatticeArc> *out_fst);
-
-    // Makes a linear graph, by tracing back from the best currently active token
-    // to the last immortal token. This method is meant to be invoked at the end
-    // of an utterance in order to get the last chunk of the hypothesis
-    int  FinishTraceBack (fst::MutableFst<kaldi::LatticeArc> *out_fst);
+    int  PartialTraceback(kaldi::CompactLattice *ofst);
+    int  FinishTraceBack (kaldi::CompactLattice *ofst);
     bool HaveSilence();
 
 private:
@@ -76,7 +64,7 @@ private:
     const kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
     float max_beam_; // the maximum allowed beam
     float effective_beam_; // the currently used beam
-    KdDecodeState state_; // the current state of the decoder
+    int state_; // the current state of the decoder
     int32 frame_; // the next frame to be processed
     int32 utt_frames_; // # frames processed from the current utterance
     KdFToken *immortal_tok_;      // "immortal" token means it's an ancestor of ...

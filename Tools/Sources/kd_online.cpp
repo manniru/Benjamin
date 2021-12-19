@@ -92,8 +92,7 @@ void KdOnline::init()
 
 void KdOnline::startDecode()
 {
-    BaseFloat acoustic_scale = 0.08;
-    // feature_reading_opts contains number of retries, batch size.
+    float acoustic_scale = 0.08;
 
 #ifdef BT_LAT_ONLINE
     KdOnline2Decodable decodable(ab_src,
@@ -202,28 +201,30 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     }
     QVector<BtWord> result;
 
-#ifdef BT_LAT_ONLINE
     KdMBR *mbr = NULL;
     mbr = new KdMBR(clat);
     result = mbr->getResult(lexicon);
     bt_writeBarResult(result);
-#else
-    vector<int32> word_ids;
-    GetLinearSymbolSequence(*clat, isymbols_out,
-                            &word_ids, w_out);
-    for( int i=0 ; i<word_ids.size() ; i++ )
+    for( int i=0 ; i<result.size() ; i++ )
     {
-        qDebug() << lexicon[word_ids[i]];// << conf[i];
+        qDebug() << result[i].word << result[i].conf;// << conf[i];
     }
 
-    if( word_ids.size() )
-    {
-        execute(word_ids);
-        bt_writeBarResult(history);
-    }
-#endif
+//    vector<int32> word_ids;
+//    vector<int32> *isymbols_out = NULL;
+//    LatticeArc::Weight *w_out = NULL;
+//    GetLinearSymbolSequence(*clat, isymbols_out,
+//                            &word_ids, w_out);
+//    for( int i=0 ; i<word_ids.size() ; i++ )
+//    {
+//        qDebug() << lexicon[word_ids[i]];// << conf[i];
+//    }
 
-
+//    if( word_ids.size() )
+//    {
+//        execute(word_ids);
+//        bt_writeBarResult(history);
+//    }
 }
 
 void KdOnline::parseWords(QString filename)
