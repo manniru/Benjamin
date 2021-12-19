@@ -3,6 +3,7 @@
 
 #include <QVector>
 #include "bt_config.h"
+#include "backend.h"
 
 #ifdef BT_LAT_ONLINE
 
@@ -16,9 +17,6 @@
 #include "hmm/transition-model.h"
 #include "lat/lattice-functions.h"
 #include "kd_lattice.h"
-
-#define KD_STATE_SILENCE 1
-#define KD_STATE_NORMAL  2
 
 struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
 {

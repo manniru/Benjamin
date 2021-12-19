@@ -20,6 +20,7 @@ public:
 
     ForwardLinkT *links;
     KdToken2 *link_tok;
+    int is_linked;
     KdToken2 *next;
     KdStateId state = KD_INVALID_STATE;
     int ilabel;  // ilabel on arc

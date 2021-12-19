@@ -61,12 +61,10 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
         for( KdToken2 *tok=frame_toks[f].toks ; tok!=NULL ; tok=tok->next )
         {
             KdStateId cur_state = tok->state;
-            KdToken2 *link;
-            KdFLink *flink = tok->links;
-            for ( link=tok->link_tok; link!=NULL; link=link->link_tok )
+            KdFLink *link;
+            for ( link=tok->links; link!=NULL; link=link->next )
             {
-                KdStateId nextstate = link->state;
-                KdStateId fnextstate = flink->next_tok->state;
+                KdStateId nextstate = link->next_tok->state;
 
                 float cost_offset = 0.0;
                 if( link->ilabel!=0 ) // emitting
@@ -77,7 +75,6 @@ void KdOnlineLDecoder::RawLattice(int start, int end,
                 LatticeArc::Weight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
                 LatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
                 ofst->AddArc(cur_state, arc);
-                flink = flink->next;
             }
             if( f==end-1 )
             {
@@ -140,7 +137,7 @@ void KdOnlineLDecoder::MakeLattice(int start, int end,
 //    GetRawLattice(&raw_fst);
     PruneLattice(lat_beam, &raw_fst);
 
-    DeterminizeLatticePhonePrunedWrapper(trans_model_,
+    fst::DeterminizeLatticePhonePrunedWrapper(trans_model_,
             &raw_fst, lat_beam, ofst, config_.det_opts);
 }
 

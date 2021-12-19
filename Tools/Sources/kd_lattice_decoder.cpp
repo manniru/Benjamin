@@ -47,7 +47,7 @@ bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
     return !frame_toks.empty() && frame_toks.back().toks != NULL;
 }
 
-// Locates a token in toks_, or inserts a new,
+// Locates a token in toks_ or inserts a new to frame_toks[frame]->toks
 // 'changed' true if a token created or cost changed.
 KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
         KdStateId state, float tot_cost, bool *changed)
@@ -576,8 +576,9 @@ float KdLatticeDecoder::PEmittingElem(Elem *e, float next_cutoff,
             ef_tok->olabel = arc.olabel;
             ef_tok->graph_cost = graph_cost;
             ef_tok->acoustic_cost = ac_cost;
-//            ef_tok->link_tok = e_tok->link_tok;
+            ef_tok->link_tok = e_tok->link_tok;
             e_tok->link_tok = ef_tok;
+            e_tok->is_linked = 1;
             // Add ForwardLink from tok to next_tok (put on head of list tok->links)
             e_tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
                                        graph_cost , ac_cost, e_tok->links);
@@ -622,8 +623,9 @@ void KdLatticeDecoder::PNonemittingElem(Elem *e, float cutoff)
                 ef_tok->olabel = arc.olabel;
                 ef_tok->graph_cost = graph_cost;
                 ef_tok->acoustic_cost = 0;
-//                ef_tok->link_tok = e_tok->link_tok;
+                ef_tok->link_tok = e_tok->link_tok;
                 e_tok->link_tok = ef_tok;
+                e_tok->is_linked = 1;
 
                 e_tok->links = new KdFLink(ef_tok, 0, arc.olabel,
                                          graph_cost, 0, e_tok->links);
@@ -781,30 +783,34 @@ void KdLatticeDecoder::TopSortTokens(KdToken2 *tok_list, std::vector<KdToken2 *>
 
 void KdLatticeDecoder::checkIntegrity(QString msg)
 {
-    int end = frame_toks.size();
-    for( int f=0 ; f<end ; f++ )
-    {
-        int id_t = 0;
-        for( KdToken2 *tok=frame_toks[f].toks ; tok!=NULL ; tok=tok->next )
-        {
-            int id_l = 0;
-            KdToken2 *link;
-            KdFLink *flink = tok->links;
-            for ( link=tok ; link!=NULL; link=link->link_tok )
-            {
-                if( link->link_tok==NULL )
-                {
-                    break;
-                }
-                if( link->link_tok!=flink->next_tok ) // emitting
-                {
-                    qDebug() << msg << "At frame" << f <<
-                             "ID_T" << id_t << "ID_L" << id_l;
-                }
-                flink = flink->next;
-                id_l++;
-            }
-            id_t++;
-        }
-    }
+//    int end = frame_toks.size();
+//    for( int f=0 ; f<end ; f++ )
+//    {
+//        int id_t = 0;
+//        for( KdToken2 *tok=frame_toks[f].toks ; tok!=NULL ; tok=tok->next )
+//        {
+//            int id_l = 0;
+//            KdToken2 *link;
+//            KdFLink *flink = tok->links;
+//            if( tok->is_linked==0 )
+//            {
+//                continue;
+//            }
+//            for ( link=tok->link_tok ; link!=NULL; link=link->link_tok )
+//            {
+//                if( link==NULL )
+//                {
+//                    break;
+//                }
+//                if( link!=flink->next_tok ) // emitting
+//                {
+//                    qDebug() << msg << "At frame" << f <<
+//                             "ID_T" << id_t << "ID_L" << id_l;
+//                }
+//                flink = flink->next;
+//                id_l++;
+//            }
+//            id_t++;
+//        }
+//    }
 }
