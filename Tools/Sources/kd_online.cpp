@@ -1,9 +1,7 @@
 #include "kd_online.h"
+#include "online/onlinebin-util.h"
 #include "online/online-decodable.h"
 #include "online/online-faster-decoder.h"
-#include "online/onlinebin-util.h"
-#include "lat/sausages.h" //MBR
-#include "kd_online_feinput.h"
 // calc conf
 
 using namespace kaldi;
@@ -12,7 +10,6 @@ using namespace fst;
 typedef kaldi::int32 int32;
 typedef OnlineDecodableDiagGmmScaled KdGmmDecodable;
 
-OnlineFeatInputItf    *feat_transform;
 fst::Fst<fst::StdArc> *decode_fst;
 AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
@@ -29,7 +26,6 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
 
 KdOnline::~KdOnline()
 {
-    delete feat_transform;
     delete decode_fst;
     delete o_decoder;
     delete am_gmm;
@@ -54,9 +50,6 @@ void KdOnline::init()
 
     decode_fst = ReadDecodeGraph(fst_rxfilename);
 
-    MfccOptions mfcc_opts;
-    mfcc_opts.use_energy = false;
-
     decoder_opts.max_active = 7000;
     decoder_opts.beam = 13.0;
 
@@ -68,18 +61,7 @@ void KdOnline::init()
 #ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
 #else
-    int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 20;
-    int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 5;
-    Mfcc mfcc(mfcc_opts);
-    KdOnlineFeInput fe_input(ab_src, &mfcc,
-                     frame_length * (kSampleFreq / 1000),
-                     frame_shift * (kSampleFreq / 1000));
-    OnlineCmnInput cmn_input(&fe_input, cmn_window, min_cmn_window);
-    feat_transform = 0;
 
-    DeltaFeaturesOptions opts;
-    opts.order = kDeltaOrder;
-    feat_transform = new OnlineDeltaInput(opts, &cmn_input);
 #endif
 
     o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
@@ -93,28 +75,15 @@ void KdOnline::startDecode()
 {
     float acoustic_scale = 0.08;
 
+    BT_ONLINE_DECODABLE decodable(ab_src, o2_model,
+                             acoustic_scale);
+
+    ab_src->startStream();
 #ifdef BT_LAT_ONLINE
     KdOnline2Decodable decodable(ab_src,
                                  o2_model, acoustic_scale);
-
-    int16_t raw[BT_REC_SIZE*BT_REC_RATE];
-
-    ab_src->startStream();
-//    emit startRecord();
-
-    while( cy_buf->getDataSize()<BT_REC_SIZE*BT_REC_RATE )
-    {
-        QThread::msleep(2);
-    }
-    cy_buf->read(raw, (BT_REC_SIZE-BT_DEC_TIMEOUT)*BT_REC_RATE);
-#else
-    OnlineFeatureMatrixOptions feature_reading_opts;
-    OnlineFeatureMatrix *feature_matrix;
-    feature_matrix = new OnlineFeatureMatrix(feature_reading_opts,
-                                             feat_transform);
-    BT_ONLINE_DECODABLE decodable(o2_model,
-                             acoustic_scale, feature_matrix);
 #endif
+
     o_decoder->InitDecoding();
     BT_ONLINE_LAT out_fst;
     int tok_count;
@@ -128,14 +97,11 @@ void KdOnline::startDecode()
 #ifdef BT_LAT_ONLINE
         decodable.features->AcceptWaveform(cy_buf);
 #endif
-//        qDebug() << "buf size" << decodable.features->NumFramesReady() << cy_buf->getDataSize();
-
         int dstate = o_decoder->Decode(&decodable);
 
         if( dstate==KD_STATE_SILENCE )
         {
             tok_count = o_decoder->FinishTraceBack(&out_fst);
-//            qDebug() << "TokCound1" << tok_count;
             processLat(&out_fst, start);
 
             if( 1 )
@@ -203,27 +169,14 @@ void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
     KdMBR *mbr = NULL;
     mbr = new KdMBR(clat);
     result = mbr->getResult(lexicon);
-    bt_writeBarResult(result);
+
+#ifndef BT_LAT_ONLINE
     for( int i=0 ; i<result.size() ; i++ )
     {
         qDebug() << result[i].word << result[i].conf;// << conf[i];
     }
-
-//    vector<int32> word_ids;
-//    vector<int32> *isymbols_out = NULL;
-//    LatticeArc::Weight *w_out = NULL;
-//    GetLinearSymbolSequence(*clat, isymbols_out,
-//                            &word_ids, w_out);
-//    for( int i=0 ; i<word_ids.size() ; i++ )
-//    {
-//        qDebug() << lexicon[word_ids[i]];// << conf[i];
-//    }
-
-//    if( word_ids.size() )
-//    {
-//        execute(word_ids);
-//        bt_writeBarResult(history);
-//    }
+#endif
+    bt_writeBarResult(result);
 }
 
 void KdOnline::parseWords(QString filename)

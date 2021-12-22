@@ -3,21 +3,42 @@
 using namespace kaldi;
 using namespace fst;
 
-KdOnlineDecodable::KdOnlineDecodable(KdOnline2Model *mdl,
-                    float scale, OnlineFeatureMatrix *input_feats)
+KdOnlineDecodable::KdOnlineDecodable(BtRecorder *au_src, KdOnline2Model *mdl,
+                    float scale)
 {
+    MfccOptions mfcc_opts;
+    mfcc_opts.use_energy = false;
+    mfcc_opts.frame_opts.frame_length_ms = KD_FRAME_LENGTH;
+    mfcc_opts.frame_opts.frame_shift_ms = KD_FRAME_SHIFT;
+    mfcc = new Mfcc(mfcc_opts);
+    fe_input = new KdOnlineFeInput(au_src, mfcc,
+                     KD_WINDOW_SIZE, KD_FEAT_SIZE);
+    cmn_input = new OnlineCmnInput(fe_input, cmn_window, min_cmn_window);
+
+    DeltaFeaturesOptions opts;
+    opts.order = kDeltaOrder;
+    feat_transform = new OnlineDeltaInput(opts, cmn_input);
+
+    OnlineFeatureMatrixOptions feature_reading_opts;
+    features = new OnlineFeatureMatrix(feature_reading_opts,
+                                             feat_transform);
+
     ac_scale_ = scale;
-    feat_dim = input_feats->Dim();
+    feat_dim = features->Dim();
     cur_feats_.Resize(feat_dim);
     cur_frame_ = -1;
 
     ac_model = mdl->GetOnlineAlignmentModel();
     trans_model = mdl->GetTransitionModel();
 
-    features = input_feats;
-
     int32 num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int32,BaseFloat>(-1, 0.0f));
+}
+
+KdOnlineDecodable::~KdOnlineDecodable()
+{
+    delete feat_transform;
+    delete cmn_input;
 }
 
 void KdOnlineDecodable::CacheFrame(int32 frame)

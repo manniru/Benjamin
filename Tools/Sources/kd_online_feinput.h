@@ -13,7 +13,7 @@
 class KdOnlineFeInput : public kaldi::OnlineFeatInputItf
 {
 public:
-    // "frame_size" - frame extraction window size in audio samples
+    // "frame_size" - window size in audio samples
     // "frame_shift" - feature frame width in audio samples
     KdOnlineFeInput(BtRecorder *au_src, kaldi::Mfcc *fe,
                     const int32 frame_size, const int32 frame_shift,

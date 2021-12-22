@@ -51,11 +51,6 @@ private:
 
     void processLat(BT_ONLINE_LAT *clat, clock_t start);
 
-    int kDeltaOrder = 2; // delta-delta derivative order
-    int kSampleFreq = 16000; // fixed to 16KHz
-    // Report interval for PortAudio buffer overflows in number of feat. batches
-    int cmn_window = 600, min_cmn_window = 100;
-
     BtRecorder   *ab_src;
     QVector<QString>  history;
     QVector<QString>  lexicon;
