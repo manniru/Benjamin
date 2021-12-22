@@ -119,7 +119,6 @@ void KdMBR::RemoveEps(std::vector<int32> *vec)
     }
 }
 
-// static
 void KdMBR::NormalizeEps(std::vector<int32> *vec)
 {
     RemoveEps(vec);
@@ -438,23 +437,21 @@ std::vector<float> KdMBR::GetOneBestConfidences()
 
 void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat)
 {
-    KALDI_ASSERT(clat != NULL);
-
-    CreateSuperFinal(clat); // Add super-final state to clat... this is
-    // one of the requirements of the MBR algorithm, as mentioned in the
-    // paper (i.e. just one final state).
+    CreateSuperFinal(clat); // Add super-final state (i.e. just one final state).
 
     // Topologically sort the lattice, if not already sorted.
     kaldi::uint64 props = clat->Properties(fst::kFstProperties, false);
-    if (!(props & fst::kTopSorted)) {
+    if( !(props & fst::kTopSorted) )
+    {
         if (fst::TopSort(clat) == false)
             KALDI_ERR << "Cycles detected in lattice.";
     }
-    CompactLatticeStateTimes(*clat, &state_times_); // work out times of
-    // the states in clat
+    CompactLatticeStateTimes(*clat, &state_times_); // work out times of the states in clat
     state_times_.push_back(0); // we'll convert to 1-based numbering.
     for (size_t i = state_times_.size()-1; i > 0; i--)
+    {
         state_times_[i] = state_times_[i-1];
+    }
 
     // Now we convert the information in "clat" into a special internal
     // format (pre_, post_ and arcs_) which allows us to access the
@@ -494,29 +491,21 @@ KdMBR::KdMBR(CompactLattice *clat_in)
 
     PrepareLatticeAndInitStats(&clat);
 
-    // We don't need to look at clat.Start() or clat.Final(state):
-    // we know clat.Start() == 0 since it's topologically sorted,
-    // and clat.Final(state) is Zero() except for One() at the last-
-    // numbered state, thanks to CreateSuperFinal and the topological
-    // sorting.
-
-    { // Now set R_ to one best in the FST.
-        RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
-        // in best-path if we do this.
-        Lattice lat;
-        ConvertLattice(clat, &lat); // convert from CompactLattice to Lattice.
-        fst::VectorFst<fst::StdArc> fst;
-        ConvertLattice(lat, &fst); // convert from lattice to normal FST.
-        fst::VectorFst<fst::StdArc> fst_shortest_path;
-        fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
-        std::vector<int32> alignment, words;
-        fst::TropicalWeight weight;
-        GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
-        KALDI_ASSERT(alignment.empty()); // we removed the alignment.
-        R_ = words;
-        L_ = 0.0; // Set current edit-distance to 0 [just so we know
-        // when we're on the 1st iter.]
-    }
+    RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
+    // in best-path if we do this.
+    Lattice lat;
+    ConvertLattice(clat, &lat); // convert from CompactLattice to Lattice.
+    fst::VectorFst<fst::StdArc> fst;
+    ConvertLattice(lat, &fst); // convert from lattice to normal FST.
+    fst::VectorFst<fst::StdArc> fst_shortest_path;
+    fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
+    std::vector<int32> alignment, words;
+    fst::TropicalWeight weight;
+    GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
+    KALDI_ASSERT(alignment.empty()); // we removed the alignment.
+    R_ = words;
+    L_ = 0.0; // Set current edit-distance to 0 [just so we know
+    // when we're on the 1st iter.]
 
     MbrDecode();
 

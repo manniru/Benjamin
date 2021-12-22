@@ -17,6 +17,7 @@
 #include "hmm/transition-model.h"
 #include "lat/lattice-functions.h"
 #include "kd_lattice.h"
+#include "kd_lattice_functions.h"
 
 struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
 {

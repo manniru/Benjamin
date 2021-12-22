@@ -95,25 +95,19 @@ KdLatticeDecoder::Elem* KdLatticeDecoder::FindOrAddToken(
     }
 }
 
-// prunes outgoing links for all tokens in frame_toks[frame]
-// PruneActiveTokens
+// remove all links in frame_toks[frame].toks
+// based on link_extra_cost>config_.lattice_beam
 bool KdLatticeDecoder::PruneForwardLinks(
         int32 frame, bool *extra_costs_changed, float delta)
 {
-    // If delta is larger,  we'll go back less toward the beginning
-
     *extra_costs_changed = false;
     bool links_pruned = false;
     KALDI_ASSERT(frame>=0 && frame<frame_toks.size());
     KdToken2 *start_tok = frame_toks[frame].toks;
 
-    if( frame_toks[frame].toks==NULL )
-    {  // empty list; should not happen.
-        if( !warned_ )
-        {
-            qDebug() << "PruneForwardLinks: No tokens alive @ " << frame;
-            warned_ = true;
-        }
+    if( start_tok==NULL )
+    {
+        qDebug() << "PruneForwardLinks: No tokens alive @ " << frame;
     }
 
     bool changed = true;  // difference new minus old extra cost >= delta ?
@@ -123,12 +117,10 @@ bool KdLatticeDecoder::PruneForwardLinks(
         for( KdToken2 *tok=start_tok ; tok!=NULL; tok=tok->next )
         {
             KdFLink *link, *prev_link = NULL;
-            // will recompute tok_extra_cost for tok.
             float tok_extra_cost = std::numeric_limits<float>::infinity();
             // tok_extra_cost is the best (min) of link_extra_cost of outgoing links
-            for( link = tok->links; link != NULL; )
+            for( link=tok->links ; link!=NULL; )
             {
-                // See if we need to excise this link...
                 KdToken2 *next_tok = link->next_tok;
                 float link_extra_cost = next_tok->extra_cost +
                         ((tok->tot_cost + link->acoustic_cost + link->graph_cost)
@@ -153,8 +145,8 @@ bool KdLatticeDecoder::PruneForwardLinks(
                     link = next_link;  // advance link but leave prev_link the same.
                     links_pruned = true;
                 }
-                else
-                {   // keep the link and update the tok_extra_cost if needed.
+                else // update the tok_extra_cost if needed.
+                {
                     if (link_extra_cost < 0.0)
                     {
                         if (link_extra_cost < -0.01)
@@ -166,8 +158,8 @@ bool KdLatticeDecoder::PruneForwardLinks(
                     prev_link = link;  // move to next link
                     link = link->next;
                 }
-            }  // for all outgoing links
-            if( fabs(tok_extra_cost-tok->extra_cost ) > delta)
+            }
+            if( fabs(tok_extra_cost-tok->extra_cost)>delta )
                 changed = true;   // difference new minus old is bigger than delta
             if( tok_extra_cost!=std::numeric_limits<float>::infinity() )
             {
@@ -179,12 +171,11 @@ bool KdLatticeDecoder::PruneForwardLinks(
             }
             // will be +infinity or <= lattice_beam_.
             // infinity indicates, that no forward link survived pruning
-        }  // for all KdToken on frame_toks[frame]
+        }
         if (changed)
         {
             *extra_costs_changed = true;
         }
-
     }
 
     return links_pruned;

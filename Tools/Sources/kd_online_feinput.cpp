@@ -1,7 +1,5 @@
 #include "kd_online_feinput.h"
 
-//#ifndef BT_LAT_ONLINE
-
 #include "QDebug"
 
 using namespace kaldi;
@@ -65,4 +63,3 @@ bool KdOnlineFeInput::Compute(Matrix<float> *output)
 
     return ans;
 }
-//#endif // BT_LAT_ONLINE
