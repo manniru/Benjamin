@@ -56,8 +56,6 @@ void KdOnline::init()
 
     MfccOptions mfcc_opts;
     mfcc_opts.use_energy = false;
-    int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 20;
-    int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 5;
 
     decoder_opts.max_active = 7000;
     decoder_opts.beam = 13.0;
@@ -69,8 +67,9 @@ void KdOnline::init()
 
 #ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
-    decode_fst = ReadFstKaldiGeneric(fst_rxfilename); ///May replace with ReadDecodeGraph
 #else
+    int32 frame_length = mfcc_opts.frame_opts.frame_length_ms = 20;
+    int32 frame_shift = mfcc_opts.frame_opts.frame_shift_ms = 5;
     Mfcc mfcc(mfcc_opts);
     KdOnlineFeInput fe_input(ab_src, &mfcc,
                      frame_length * (kSampleFreq / 1000),
@@ -103,7 +102,7 @@ void KdOnline::startDecode()
     ab_src->startStream();
 //    emit startRecord();
 
-    while( cy_buf->getDataSize()>BT_REC_SIZE*BT_REC_RATE )
+    while( cy_buf->getDataSize()<BT_REC_SIZE*BT_REC_RATE )
     {
         QThread::msleep(2);
     }
@@ -116,7 +115,6 @@ void KdOnline::startDecode()
     BT_ONLINE_DECODABLE decodable(o2_model,
                              acoustic_scale, feature_matrix);
 #endif
-
     o_decoder->InitDecoding();
     BT_ONLINE_LAT out_fst;
     int tok_count;
@@ -129,8 +127,9 @@ void KdOnline::startDecode()
 
 #ifdef BT_LAT_ONLINE
         decodable.features->AcceptWaveform(cy_buf);
-//        qDebug() << "buf size" << decodable.features->NumFramesReady();
 #endif
+//        qDebug() << "buf size" << decodable.features->NumFramesReady() << cy_buf->getDataSize();
+
         int dstate = o_decoder->Decode(&decodable);
 
         if( dstate==KD_STATE_SILENCE )

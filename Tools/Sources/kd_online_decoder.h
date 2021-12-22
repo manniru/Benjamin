@@ -6,8 +6,6 @@
 #include "backend.h"
 #include "kd_faster_decoder.h"
 
-#ifndef BT_LAT_ONLINE2
-
 #include "util/stl-utils.h"
 #include "decoder/faster-decoder.h"
 #include "hmm/transition-model.h"
@@ -65,12 +63,10 @@ private:
     float max_beam_; // the maximum allowed beam
     float effective_beam_; // the currently used beam
     int state_; // the current state of the decoder
-    int32 frame_; // the next frame to be processed
+    int32 frame_num; // the next frame to be processed
     int32 utt_frames_; // # frames processed from the current utterance
     KdFToken *immortal_tok_;      // "immortal" token means it's an ancestor of ...
     KdFToken *prev_immortal_tok_; // ... all currently active tokens
 };
-
-#endif // BT_LAT_ONLINE
 
 #endif // KD_ONLINE_DECODER_H

@@ -9,12 +9,12 @@
 #include "bt_state.h"
 #include "bt_recorder.h"
 #include "bt_captain.h" //For BtWord
-
-#ifdef BT_LAT_ONLINE
 #include "kd_online2_model.h"
 #include "kd_online2_decodable.h"
 #include "kd_online_ldecoder.h"
 #include "kd_mbr.h"
+
+#ifdef BT_LAT_ONLINE
 #define  BT_ONLINE_DECODER   KdOnlineLDecoder
 #define  BT_ONLINE_DECODABLE KdOnline2Decodable
 #define  BT_ONLINE_OPTS      KdOnlineLDecoderOpts

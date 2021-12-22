@@ -1,7 +1,5 @@
 #include "kd_online_decoder.h"
 
-#ifndef BT_LAT_ONLINE2
-
 #include "base/timer.h"
 #include "fstext/fstext-utils.h"
 #include "hmm/hmm-utils.h"
@@ -14,11 +12,11 @@ KdOnlineDecoder::KdOnlineDecoder(fst::Fst<fst::StdArc> &fst,
                                  const kaldi::TransitionModel &trans_model):
     KdFasterDecoder(fst, opts), opts_(opts),
     trans_model_(trans_model),
-    max_beam_(opts.beam), effective_beam_(opts.beam),
-    frame_(0), utt_frames_(0)
+    max_beam_(opts.beam), effective_beam_(opts.beam), utt_frames_(0)
 {
     silence_set = sil_phones;
     state_ = KD_STATE_NORMAL;
+    frame_num = 0;
 }
 
 void KdOnlineDecoder::ResetDecoder(bool full)
@@ -35,7 +33,7 @@ void KdOnlineDecoder::ResetDecoder(bool full)
 
     if( full )
     {
-        frame_ = 0;
+        frame_num = 0;
     }
 }
 
@@ -189,6 +187,11 @@ int KdOnlineDecoder::FinishTraceBack(CompactLattice *ofst)
     {
         qDebug() << "FinishTraceBack: false on ReachedFinal";
         return -1;
+    }
+
+    if( immortal_tok_==best_tok )
+    {
+        return 0; //no new word
     }
 
     Lattice raw_fst;
@@ -353,6 +356,7 @@ int KdOnlineDecoder::Decode(DecodableInterface *decodable)
     if( state_==KD_STATE_SILENCE )
     {
         ResetDecoder(false); //do not reset frame num
+        qDebug() << "reset";
     }
 
     ProcessNonemitting(std::numeric_limits<float>::max());
@@ -366,14 +370,19 @@ int KdOnlineDecoder::Decode(DecodableInterface *decodable)
             tstart = updateBeam(tstart);
         }
 
-        if( decodable->IsLastFrame(frame_ - 1) )
+//        if( (frame_num+1)>=decodable->NumFramesReady() )
+//        {
+//            break;
+//        }
+
+        if( decodable->IsLastFrame(frame_num - 1) )
         {
             break;
         }
 
         float weight_cutoff = ProcessEmitting(decodable);
         ProcessNonemitting(weight_cutoff);
-        ++frame_, ++utt_frames_;
+        ++frame_num, ++utt_frames_;
     }
 
     if( HaveSilence() )
@@ -387,5 +396,3 @@ int KdOnlineDecoder::Decode(DecodableInterface *decodable)
 
     return state_;
 }
-
-#endif // BT_LAT_ONLINE

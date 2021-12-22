@@ -167,27 +167,23 @@ double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
                              std::vector<int32> *isymbols_out)
 {
-  typedef typename LatticeArc::StateId StateId;
-  typedef typename LatticeArc::Weight Weight;
-
-  Weight tot_weight = Weight::One();
+  LatticeArc::Weight tot_weight = LatticeArc::Weight::One();
   std::vector<int32> ilabel_seq;
 
-  StateId cur_state = fst->Start();
+  KdStateId cur_state = fst->Start();
   if( cur_state ==-1 ) // Not a valid state ID.
   {
       isymbols_out->clear();
       qDebug() << "Not a valid state ID";
       return true;
   }
-  qDebug() << "hello";//THIS LINE NEVER RUN!
 
   int i = 0;
   while( 1 )
   {
       i++;
-      Weight w = fst->Final(cur_state);
-      if( w!= Weight::Zero() )
+      LatticeArc::Weight w = fst->Final(cur_state);
+      if( w!= LatticeArc::Weight::Zero() )
       {  // is final..
           qDebug() << "-----------" << i;//THIS LINE NEVER RUN!
           tot_weight = Times(w, tot_weight);
@@ -209,7 +205,7 @@ bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
           fst::ArcIterator<Lattice > iter(*fst, cur_state);  // get the only arc.
           const LatticeArc &arc = iter.Value();
           tot_weight = Times(arc.weight, tot_weight);
-          if (arc.ilabel != 0)
+          if( arc.ilabel!=0 )
           {
               ilabel_seq.push_back(arc.ilabel);
           }
@@ -340,25 +336,47 @@ bool KdOnlineLDecoder::HaveSilence()
 //    double lat_beam = config_.lattice_beam;
 //    PruneLattice(lat_beam, &raw_fst);
 
-    Lattice lat;
-    kd_fstShortestPath(&raw_fst, &lat);
+//    Lattice lat;
+//    kd_fstShortestPath(&raw_fst, &lat);
+
+//    std::vector<int32> isymbols;
+//    GetiSymbol(&lat, &isymbols);
+
+//    std::vector<std::vector<int32> > split;
+//    SplitToPhones(trans_model_, isymbols, &split);
+
+//    for( int i = 0; i<split.size(); i++)
+//    {
+//        int32 tid = split[i][0];
+//        int32 phone = trans_model_.TransitionIdToPhone(tid);
+//        if( !silence_set.contains(phone) )
+//        {
+//            qDebug() << "split" << split.size();
+//            return false;
+//        }
+//    }
+
+//    CompactLattice clat;
+//    MakeLattice(start, end, &clat);
+
+//    fst::CreateSuperFinal(&clat); // Add super-final state (i.e. just one final state).
+
+//    // Topologically sort the lattice, if not already sorted.
+//    kaldi::uint64 props = clat.Properties(fst::kFstProperties, false);
+//    if( !(props & fst::kTopSorted) )
+//    {
+//        if (fst::TopSort(&clat) == false)
+//            KALDI_ERR << "Cycles detected in lattice.";
+//    }
+    std::vector<int32> state_times_; // time of each state in the word lattice,
+//    int f = CompactLatticeStateTimes(clat, &state_times_); // get times of the states
+    PruneLattice(config_.lattice_beam, &raw_fst);
+    kd_latticeGetTimes(&raw_fst, &state_times_);
+
+    qDebug() << state_times_.size() << raw_fst.NumStates();// << f;
 
     std::vector<int32> isymbols;
-    GetiSymbol(&lat, &isymbols);
-
-    std::vector<std::vector<int32> > split;
-    SplitToPhones(trans_model_, isymbols, &split);
-
-    for( int i = 0; i<split.size(); i++)
-    {
-        int32 tid = split[i][0];
-        int32 phone = trans_model_.TransitionIdToPhone(tid);
-        if( !silence_set.contains(phone) )
-        {
-            qDebug() << "split" << split.size();
-            return false;
-        }
-    }
+    GetiSymbol(&raw_fst, &isymbols);
 
     return false; ///shit! change this to true
 }
