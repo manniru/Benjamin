@@ -13,13 +13,6 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
     ReadKaldiObject(global_cmvn_stats_rxfilename,
                     &global_cmvn_stats_);
     Init();
-
-    if( rec_src )
-    {
-//        rec_thread = new QThread;
-//        rec_src->moveToThread(rec_thread);
-//        rec_thread->start();
-    }
 }
 
 // Init() is to be called from the constructor; it assumes the pointer

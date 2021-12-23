@@ -16,9 +16,17 @@ BtCyclic::BtCyclic(int size, QObject *parent) : QObject(parent)
 }
 
 // return negative on erorr
-int BtCyclic::read(int16_t *data, int size)
+// can be read without changing read_p to be used
+// in multicore mode
+int BtCyclic::read(int16_t *data, int size, int *fake)
 {
     int num = 0;
+    int read_pf = read_p;//fake read pointer
+
+    if( fake!=NULL )
+    {
+        read_pf = *fake;
+    }
 
     if( size>getDataSize() )
     {
@@ -27,14 +35,23 @@ int BtCyclic::read(int16_t *data, int size)
 
     for( int i=0 ; i<size ; i++ )
     {
-        data[i] = buffer[read_p];
-        read_p++;
+        data[i] = buffer[read_pf];
+        read_pf++;
 
-        if( read_p>buff_size)
+        if( read_pf>buff_size)
         {
-            read_p = 0;
+            read_pf = 0;
         }
         num++;
+    }
+
+    if( fake==NULL )
+    {
+        read_p = read_pf;
+    }
+    else
+    {
+        *fake = read_pf;
     }
 
     return num;
@@ -118,19 +135,26 @@ void BtCyclic::rewind(int count)
     //    qDebug() << "buff_data_size" << buff_data_size/BT_REC_RATE;
 }
 
-int BtCyclic::getDataSize()
+int BtCyclic::getDataSize(int *fake)
 {
-    if( read_p<write_p )
+    int read_pf = read_p;//fake read pointer
+
+    if( fake!=NULL )
     {
-        return write_p-read_p;
+        read_pf = *fake;
     }
-    else if( read_p==write_p )
+
+    if( read_pf<write_p )
+    {
+        return write_p-read_pf;
+    }
+    else if( read_pf==write_p )
     {
         return 0;
     }
     else
     {
-        return (buff_size-read_p) + write_p;
+        return (buff_size-read_pf) + write_p;
     }
 }
 

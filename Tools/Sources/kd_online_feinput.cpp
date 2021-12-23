@@ -7,8 +7,7 @@ using namespace kaldi;
 
 KdOnlineFeInput::KdOnlineFeInput(BtRecorder *au_src, Mfcc *fe, int32 frame_size,
                                  int32 frame_shift, bool snip_edges)
-    : source_(au_src), extractor_(fe),
-      frame_size_(frame_size), frame_shift_(frame_shift)
+    : extractor_(fe), frame_size_(frame_size), frame_shift_(frame_shift)
 {
       // we need a FrameExtractionOptions to call NumFrames()
       // 1000 is just a fake sample rate which equates ms and samples
@@ -16,6 +15,7 @@ KdOnlineFeInput::KdOnlineFeInput(BtRecorder *au_src, Mfcc *fe, int32 frame_size,
       frame_opts_.frame_shift_ms = frame_shift;
       frame_opts_.frame_length_ms = frame_size;
       frame_opts_.snip_edges = snip_edges;
+      source_ = au_src;
 }
 
 bool KdOnlineFeInput::Compute(Matrix<float> *output)

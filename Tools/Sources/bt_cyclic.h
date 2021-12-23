@@ -15,12 +15,12 @@ class BtCyclic : public QObject
 public:
     explicit BtCyclic(int size, QObject *parent = nullptr);
 
-    int  read(int16_t *data, int size);
+    int  read(int16_t *data, int size, int *fake=NULL);
     int  read(kaldi::Vector<float> *data, int size);
     void write(int16_t *data, int size);
     void constWrite(int16_t data, int size);
     void rewind(int count);
-    int  getDataSize(); // Get Data size that are in Buf
+    int  getDataSize(int *fake=NULL); // Get Data size that are in Buf
     int  getFreeSize(); // Get Availible Byte to Write in Buf
 
 private:

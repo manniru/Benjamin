@@ -3,7 +3,8 @@
 
 BtRecorder::BtRecorder(BtCyclic *buffer, QObject *parent): QObject(parent)
 {
-    cy_buf = buffer;
+    cy_buf  = buffer;
+    read_pf = 0;
 
     // Done to skip shitty alsa messages
     int saved_stdout = dup(STDERR_FILENO);
@@ -71,13 +72,13 @@ bool BtRecorder::Read(kaldi::Vector<float> *data)
     while( true )
     {
         QThread::msleep(2);
-        if( req<cy_buf->getDataSize() )
+        if( req<cy_buf->getDataSize(&read_pf) )
         {
             break;
         }
     }
 
-    int nsamples = cy_buf->read(raw, req);
+    int nsamples = cy_buf->read(raw, req, &read_pf);
     data->Resize(nsamples);
 //    qDebug() << req << nsamples;
 
