@@ -39,14 +39,6 @@ private:
 
     void print(kaldi::CompactLattice *clat);
 
-    int kDeltaOrder = 2; // delta-delta derivative order
-    int kTimeout = 500; // for the PortAudio (half second)
-    int kSampleFreq = 16000; // fixed to 16KHz
-    int kPaRingSize = 32768; // PortAudio's ring buffer size in bytes
-    // Report interval for PortAudio buffer overflows in number of feat. batches
-    int kPaReportInt = 4;
-    float acoustic_scale = 0.05;
-
     QVector<QString>  history;
     QVector<QString>  lexicon;
     KdOnline2Gmm     *g_decoder;

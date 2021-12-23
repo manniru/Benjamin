@@ -3,8 +3,6 @@
 
 #include "bt_config.h"
 
-//#ifndef BT_LAT_ONLINE
-
 #include "online/online-feat-input.h"
 #include "feat/feature-mfcc.h"
 #include "bt_recorder.h"
@@ -33,8 +31,5 @@ private:
     // feature batch
     kaldi::FrameExtractionOptions frame_opts_;
 };
-
-
-//#endif // BT_LAT_ONLINE
 
 #endif // KD_ONLINE_FEINPUT_H

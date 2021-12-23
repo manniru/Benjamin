@@ -45,14 +45,9 @@ public:
     void RawLattice(int start, int end, kaldi::Lattice *ofst);
     void MakeLattice(int start, int end, kaldi::CompactLattice *ofst);
 
-    // Makes a linear graph, by tracing back from the last "immortal" token
-    // to the previous one
-    bool PartialTraceback(kaldi::CompactLattice *out_fst);
-
-    // Makes a linear graph, by tracing back from the best currently active token
-    // to the last immortal token. This method is meant to be invoked at the end
-    // of an utterance in order to get the last chunk of the hypothesis
-    double FinishTraceBack(kaldi::CompactLattice *fst_out);
+    // Same functions just to make compatible with OnlineDecoder
+    int PartialTraceback(kaldi::CompactLattice *out_fst);
+    int FinishTraceBack (kaldi::CompactLattice *fst_out);
 
     // Returns "true" if the best current hypothesis ends with long enough silence
     bool HaveSilence();

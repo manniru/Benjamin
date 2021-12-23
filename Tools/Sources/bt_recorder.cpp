@@ -72,13 +72,13 @@ bool BtRecorder::Read(kaldi::Vector<float> *data)
     while( true )
     {
         QThread::msleep(2);
-        if( req<cy_buf->getDataSize(&read_pf) )
+        if( req<cy_buf->getDataSize() ) //&read_pf
         {
             break;
         }
     }
 
-    int nsamples = cy_buf->read(raw, req, &read_pf);
+    int nsamples = cy_buf->read(raw, req);
     data->Resize(nsamples);
 //    qDebug() << req << nsamples;
 

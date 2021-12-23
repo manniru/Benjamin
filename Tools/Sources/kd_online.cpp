@@ -60,8 +60,6 @@ void KdOnline::init()
 
 #ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
-#else
-
 #endif
 
     o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
@@ -79,10 +77,6 @@ void KdOnline::startDecode()
                              acoustic_scale);
 
     ab_src->startStream();
-#ifdef BT_LAT_ONLINE
-    KdOnline2Decodable decodable(ab_src,
-                                 o2_model, acoustic_scale);
-#endif
 
     o_decoder->InitDecoding();
     BT_ONLINE_LAT out_fst;

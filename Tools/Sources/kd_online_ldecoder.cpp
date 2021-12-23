@@ -144,23 +144,12 @@ void KdOnlineLDecoder::MakeLattice(int start, int end,
 //Called if decoder is not in KdDecodeState::KD_EndUtt
 bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
 {
-//    UpdateImmortalToken();
-//    if( immortal_tok_==prev_immortal_tok_ )
-//    {
-//        return false;
-//    }
-
-    MakeLattice(0, frame_toks.size(), out_fst);
-    return true;
+    return FinishTraceBack(out_fst);
 }
 
-// Makes graph, by tracing back from the best currently active token
-// to the last immortal token.
-double KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
+int KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
 {
-//    KdToken2 *best_tok = getBestTok();
     MakeLattice(0, frame_toks.size(), out_fst);
-
     return 1;
 }
 
@@ -214,109 +203,6 @@ bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
   }
 }
 
-void KdOnlineLDecoder::TracebackNFrames(int32 nframes, Lattice *out_fst)
-{
-    KdToken2 *best_tok = NULL;
-
-    //Find token with the maximum cost->best_tok
-    for (const Elem *e = toks_.GetList(); e != NULL; e = e->tail)
-    {
-        float elem_cost = e->val->tot_cost;
-        if( best_tok==NULL || best_tok->tot_cost<elem_cost )
-        {
-            best_tok = e->val;
-        }
-    }
-    if (best_tok == NULL)
-    {
-        out_fst->DeleteStates();
-        return;
-    }
-
-    int active_count = frame_toks.size();
-    int bucket_count = num_toks_/2 + 3;
-
-    unordered_map<KdToken2*, KdStateId> tok_map(bucket_count);
-    unordered_map<KdToken2*, float> final_costs_local;
-
-    unordered_map<KdToken2*, float> final_costs;
-    if (decoding_finalized_)
-    {
-        final_costs = final_costs_;
-    }
-    else
-    {
-        ComputeFinalCosts(&final_costs_local, NULL, NULL);
-        final_costs = final_costs_local;
-    }
-
-    std::vector<KdToken2*> token_list;
-    for ( int i=0; i<active_count; i++)
-    {
-        if (frame_toks[i].toks == NULL)
-        {
-            return;
-        }
-        TopSortTokens(frame_toks[i].toks, &token_list);
-
-        for( int j=0; j<token_list.size() ; j++ )
-        {
-            if( token_list[j]!=NULL )
-            {
-                tok_map[token_list[j]] = out_fst->AddState();
-            }
-        }
-    }
-
-    out_fst->SetStart(0);
-    KdStateId cur_state;
-
-    KdToken2 *tok;
-    for( tok=best_tok ; (tok!=NULL) ; tok = tok->next )
-    {
-        cur_state = tok_map[tok];
-        for ( KdFLink *l = tok->links; (l!=NULL) && (nframes>0); l=l->next )
-        {
-            if (l->ilabel != 0) // count only the non-epsilon arcs
-            {
-                --nframes;
-            }
-
-            float next_cost = 0;
-            if ( tok->next )
-            {
-                next_cost = tok->next->tot_cost;
-            }
-
-            float tot_cost = tok->tot_cost - next_cost;
-            float graph_cost = l->graph_cost;
-            float ac_cost = tot_cost - graph_cost;
-            typename unordered_map<KdToken2*, KdStateId>::const_iterator
-                    iter = tok_map.find(l->next_tok);
-            KdStateId nextstate = iter->second;
-            LatticeArc larc(l->ilabel, l->olabel,
-                            LatticeWeight(graph_cost, ac_cost), nextstate);
-
-            larc.nextstate = out_fst->AddState();
-            out_fst->AddArc(cur_state, larc);
-        }
-    }
-
-    if (!final_costs.empty())
-    {
-        typename unordered_map<KdToken2*, BaseFloat>::const_iterator
-                iter = final_costs.find(tok);
-        if (iter != final_costs.end())
-            out_fst->SetFinal(cur_state, LatticeWeight(iter->second, 0));
-    }
-    else
-    {
-        out_fst->SetFinal(cur_state, LatticeWeight::One());
-    }
-    RemoveEpsLocal(out_fst);
-
-}
-
 // Returns "true" if the current hypothesis ends with long silence
 bool KdOnlineLDecoder::HaveSilence()
 {
@@ -331,52 +217,6 @@ bool KdOnlineLDecoder::HaveSilence()
 
     Lattice raw_fst;
     RawLattice(start, end, &raw_fst);
-//    kd_writeLat(&raw_fst);
-
-//    double lat_beam = config_.lattice_beam;
-//    PruneLattice(lat_beam, &raw_fst);
-
-//    Lattice lat;
-//    kd_fstShortestPath(&raw_fst, &lat);
-
-//    std::vector<int32> isymbols;
-//    GetiSymbol(&lat, &isymbols);
-
-//    std::vector<std::vector<int32> > split;
-//    SplitToPhones(trans_model_, isymbols, &split);
-
-//    for( int i = 0; i<split.size(); i++)
-//    {
-//        int32 tid = split[i][0];
-//        int32 phone = trans_model_.TransitionIdToPhone(tid);
-//        if( !silence_set.contains(phone) )
-//        {
-//            qDebug() << "split" << split.size();
-//            return false;
-//        }
-//    }
-
-//    CompactLattice clat;
-//    MakeLattice(start, end, &clat);
-
-//    fst::CreateSuperFinal(&clat); // Add super-final state (i.e. just one final state).
-
-//    // Topologically sort the lattice, if not already sorted.
-//    kaldi::uint64 props = clat.Properties(fst::kFstProperties, false);
-//    if( !(props & fst::kTopSorted) )
-//    {
-//        if (fst::TopSort(&clat) == false)
-//            KALDI_ERR << "Cycles detected in lattice.";
-//    }
-    std::vector<int32> state_times_; // time of each state in the word lattice,
-//    int f = CompactLatticeStateTimes(clat, &state_times_); // get times of the states
-    PruneLattice(config_.lattice_beam, &raw_fst);
-    kd_latticeGetTimes(&raw_fst, &state_times_);
-
-    qDebug() << state_times_.size() << raw_fst.NumStates();// << f;
-
-    std::vector<int32> isymbols;
-    GetiSymbol(&raw_fst, &isymbols);
 
     return false; ///shit! change this to true
 }
