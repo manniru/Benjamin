@@ -80,14 +80,10 @@ void KdOnline::startDecode()
 
     o_decoder->InitDecoding();
     BT_ONLINE_LAT out_fst;
-    int tok_count;
-
-    clock_t start;
     QVector<BtWord> result;
 
     while(1)
     {
-        start = clock();
 
 #ifdef BT_LAT_ONLINE
         decodable.features->AcceptWaveform(cy_buf);

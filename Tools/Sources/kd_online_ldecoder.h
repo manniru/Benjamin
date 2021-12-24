@@ -49,15 +49,13 @@ public:
     int Decode(kaldi::DecodableInterface *decodable);
 
     void createStates(kaldi::Lattice *ofst);
-    void RawLattice(int start, int end, kaldi::Lattice *ofst);
-    void MakeLattice(int start, int end, kaldi::CompactLattice *ofst);
+    void RawLattice(kaldi::Lattice *ofst);
+    void MakeLattice(kaldi::CompactLattice *ofst);
 
     QVector<BtWord> getResult(kaldi::CompactLattice *out_fst,
                               QVector<QString> lexicon);
 
-    // Returns "true" if the best current hypothesis ends with long enough silence
-    bool HaveSilence();
-    int32 frame; // the next frame to be processed
+    void HaveSilence(QVector<BtWord> result);
 
 private:
     void ResetDecoder();
@@ -77,9 +75,8 @@ private:
     float max_beam_; // the maximum allowed beam
     KdOnlineStatus status;
     float effective_beam_; // the currently used beam
-    int32 utt_frames_; // # frames processed from the current utterance
-    KdToken2 *immortal_tok_;      // "immortal" token means it's an ancestor of ...
-    KdToken2 *prev_immortal_tok_; // ... all currently active tokens
+    int   uframe;          // reset on ResetDecoder(utterance)
+    clock_t start_t;
 };
 #endif // BT_LAT_ONLINE
 

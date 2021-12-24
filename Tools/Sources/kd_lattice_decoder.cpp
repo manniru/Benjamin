@@ -131,15 +131,15 @@ bool KdLatticeDecoder::PruneForwardLinks(
                 if( link_extra_cost>config_.lattice_beam )  // delete link
                 {
                     KdFLink *next_link = link->next;
-                    if (prev_link != NULL)
+                    if( prev_link!=NULL )
                     {
                         prev_link->next = next_link;
-                        prev_link->next_tok->link_tok = next_link->next_tok;
+//                        prev_link->next_tok->link_tok = next_link->next_tok;
                     }
                     else
                     {
                         tok->links = next_link;
-                        tok->link_tok = next_link->next_tok;
+//                        tok->link_tok = next_link->next_tok;
                     }
                     delete link;
                     link = next_link;  // advance link but leave prev_link the same.

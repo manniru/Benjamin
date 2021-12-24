@@ -16,12 +16,12 @@ KdOnlineLDecoder::KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
     trans_model_(trans_model), max_beam_(opts.beam)
 {
     silence_set = sil_phones;
-    frame = 0;
-    utt_frames_ = 0;
+    uframe = 0;
     effective_beam_ = opts.beam;
+    start_t = clock();
 }
 
-//frame num would not reset
+//frame_num would not reset
 void KdOnlineLDecoder::ResetDecoder()
 {
 //    qDebug() << "Reset Kaldi" << full << frame_toks.size();
@@ -41,21 +41,20 @@ void KdOnlineLDecoder::ResetDecoder()
     frame_toks[0].toks = dummy_token;
     toks_.Insert(start_state, dummy_token);
     num_toks_++;
-    prev_immortal_tok_ = immortal_tok_ = dummy_token;
-    utt_frames_ = 0;
+    uframe = 0;
     ProcessNonemitting(config_.beam);
 }
 
 
-void KdOnlineLDecoder::RawLattice(int start, int end,
-                                  Lattice *ofst)
+void KdOnlineLDecoder::RawLattice(Lattice *ofst)
 {
+    int end = frame_toks.size();
     unordered_map<KdToken2*, float> final_costs;
     ComputeFinalCosts(&final_costs, NULL, NULL);
     createStates(ofst);
 
     // Now create all arcs.
-    for( int f=start ; f<end ; f++ )
+    for( int f=0 ; f<end ; f++ )
     {
         for( KdToken2 *tok=frame_toks[f].toks ; tok!=NULL ; tok=tok->next )
         {
@@ -126,12 +125,11 @@ void KdOnlineLDecoder::createStates(Lattice *ofst)
     ofst->SetStart(0);// sets the start state
 }
 
-void KdOnlineLDecoder::MakeLattice(int start, int end,
-                                   CompactLattice *ofst)
+void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
 {
     Lattice raw_fst;
     double lat_beam = config_.lattice_beam;
-    RawLattice(start, end, &raw_fst);
+    RawLattice(&raw_fst);
 
 //    GetRawLattice(&raw_fst);
     PruneLattice(lat_beam, &raw_fst);
@@ -144,7 +142,7 @@ QVector<BtWord> KdOnlineLDecoder::getResult(CompactLattice *out_fst,
                                             QVector<QString> lexicon)
 {
     QVector<BtWord> result;
-    MakeLattice(0, frame_toks.size(), out_fst);
+    MakeLattice(out_fst);
     if( out_fst->Start() )
     {
         return result;
@@ -154,7 +152,7 @@ QVector<BtWord> KdOnlineLDecoder::getResult(CompactLattice *out_fst,
     mbr = new KdMBR(out_fst);
     result = mbr->getResult(lexicon);
 
-    HaveSilence();
+    HaveSilence(result);
     return result;
 }
 
@@ -209,58 +207,71 @@ bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
 }
 
 // Returns "true" if the current hypothesis ends with long silence
-bool KdOnlineLDecoder::HaveSilence()
+void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
 {
-    int32 sil_frm = 100;//opts_.inter_utt_sil; //50
-    int end = frame_toks.size();
-    int start = 0;//end-sil_frm;
+    int sil_frm = 100;//opts_.inter_utt_sil; //50
+    int word_count = result.size();
 
-    if( sil_frm>frame_toks.size() )
+    if( word_count )
     {
-        return false;
+        BtWord last = result.last();
+        qDebug() << "word_count" << uframe-status.max_frame << uframe;
+
+        if( status.word_count!=word_count )
+        {
+            status.word_count = word_count;
+            status.last_word = last.word;
+            status.max_frame = last.end;
+            status.state = KD_STATE_NORMAL;
+        }
+        else if( status.last_word!=last.word )
+        {
+            status.last_word = last.word;
+            status.max_frame = last.end*100;
+            status.state = KD_STATE_NORMAL;
+        }
+        else if( (uframe-(status.max_frame))>200 )
+        {
+            status.state = KD_STATE_SILENCE;
+        }
     }
-
-    Lattice raw_fst;
-    RawLattice(start, end, &raw_fst);
-
-    if( 1)
+    else if( uframe>200 )
     {
-        status.state = KD_STATE_SILENCE; //see silence
+        status.state = KD_STATE_SILENCE; //reset decoder
     }
     else
     {
-        status.state = KD_STATE_NORMAL;
+        status.state = KD_STATE_NORMAL; //reset decoder
     }
-
-    return false; ///shit! change this to true
+//    qDebug() << uframe;
 }
 
 int KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 {
     if( status.state==KD_STATE_SILENCE )
     {
+        printTime(start_t);
+        start_t = clock();
         ResetDecoder();
         qDebug() << "reset";
     }
     ProcessNonemitting(std::numeric_limits<float>::max());
-    int frame_i;
-    for ( frame_i=0 ; frame_i<opts_.batch_size; frame_i++)
+    int frame;
+    for ( frame=0 ; frame<opts_.batch_size; frame++)
     {
         if( frame_num>=decodable->NumFramesReady() )
         {
             break;
         }
 
-
-        if ( (frame_num+1)%config_.prune_interval==0 )
+        if ( (frame_num%config_.prune_interval)==0 )
         {
 //            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
         float weight_cutoff = ProcessEmitting(decodable);
         ProcessNonemitting(weight_cutoff);
 
-        utt_frames_++;
-        frame++;
+        uframe++;
     }
 }
 
