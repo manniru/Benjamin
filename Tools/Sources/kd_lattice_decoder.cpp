@@ -249,7 +249,7 @@ void KdLatticeDecoder::PruneActiveTokens(float delta)
         // (1) we have never pruned them (new TokenList)
         // (2) we have not yet pruned the forward links to the next f,
         // after any of those tokens have changed their extra_cost.
-        if( frame_toks[f].must_prune_forward_links )
+        if( frame_toks[f].prune_forward_links )
         {
             bool extra_costs_changed = false;
             bool links_pruned;
@@ -257,19 +257,19 @@ void KdLatticeDecoder::PruneActiveTokens(float delta)
 
             if( extra_costs_changed && f>0 ) // any token has changed extra_cost
             {
-                frame_toks[f-1].must_prune_forward_links = true;
+                frame_toks[f-1].prune_forward_links = true;
             }
             if (links_pruned) // any link was pruned
             {
-                frame_toks[f].must_prune_tokens = true;
+                frame_toks[f].prune_tokens = true;
             }
-            frame_toks[f].must_prune_forward_links = false; // job done
+            frame_toks[f].prune_forward_links = false; // job done
         }
 
-        if( f+1<cur_frame_plus_one && frame_toks[f+1].must_prune_tokens )
+        if( f+1<cur_frame_plus_one && frame_toks[f+1].prune_tokens )
         {
             PruneTokensForFrame(f+1);
-            frame_toks[f+1].must_prune_tokens = false;
+            frame_toks[f+1].prune_tokens = false;
         }
     }
     KALDI_VLOG(4) << "PruneActiveTokens: pruned tokens from " << num_toks_begin

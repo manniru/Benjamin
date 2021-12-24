@@ -12,7 +12,6 @@
 #include "kd_online2_model.h"
 #include "kd_online2_decodable.h"
 #include "kd_online_ldecoder.h"
-#include "kd_mbr.h"
 
 #ifdef BT_LAT_ONLINE
 #define  BT_ONLINE_DECODER   KdOnlineLDecoder

@@ -83,6 +83,7 @@ void KdOnline::startDecode()
     int tok_count;
 
     clock_t start;
+    QVector<BtWord> result;
 
     while(1)
     {
@@ -91,32 +92,9 @@ void KdOnline::startDecode()
 #ifdef BT_LAT_ONLINE
         decodable.features->AcceptWaveform(cy_buf);
 #endif
-        int dstate = o_decoder->Decode(&decodable);
-
-        if( dstate==KD_STATE_SILENCE )
-        {
-            tok_count = o_decoder->FinishTraceBack(&out_fst);
-            processLat(&out_fst, start);
-
-            if( 1 )
-            {
-                system("dbus-send --session --dest=com.binaee.rebound / "
-                       "com.binaee.rebound.exec  string:\"\"");
-            }
-        }
-        else
-        {
-            tok_count = o_decoder->PartialTraceback(&out_fst);
-            if( tok_count )
-            {
-                processLat(&out_fst, start);
-            }
-            else if( BT_IMMDT_EXEC )
-            {
-                system("dbus-send --session --dest=com.binaee.rebound / "
-                               "com.binaee.rebound.exec  string:\"\"");
-            }
-        }
+        o_decoder->Decode(&decodable);
+        result = o_decoder->getResult(&out_fst, lexicon);
+        bt_writeBarResult(result);
     }
 }
 
@@ -150,27 +128,6 @@ void KdOnline::execute(std::vector<int32_t> word)
     }
     cmd += "\"";
     system(cmd.toStdString().c_str());
-}
-
-void KdOnline::processLat(BT_ONLINE_LAT *clat, clock_t start)
-{
-    if( clat->Start() )
-    {
-        return;
-    }
-    QVector<BtWord> result;
-
-    KdMBR *mbr = NULL;
-    mbr = new KdMBR(clat);
-    result = mbr->getResult(lexicon);
-
-#ifndef BT_LAT_ONLINE
-    for( int i=0 ; i<result.size() ; i++ )
-    {
-        qDebug() << result[i].word << result[i].conf;// << conf[i];
-    }
-#endif
-    bt_writeBarResult(result);
 }
 
 void KdOnline::parseWords(QString filename)

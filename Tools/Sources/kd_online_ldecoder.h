@@ -18,17 +18,24 @@
 #include "lat/lattice-functions.h"
 #include "kd_lattice.h"
 #include "kd_lattice_functions.h"
+#include "kd_mbr.h"
 
 struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
 {
-    float rt_min = 0.7;          // minimum decoding runtime factor
-    float rt_max = 0.75;         // maximum decoding runtime factor
     int32 batch_size = 27;       // number of features decoded in one go
     int32 inter_utt_sil = 50;    // minimum silence (#frames) to trigger end of utterance
     int32 max_utt_len_  = 1500;  // if utt. is longer, we accept shorter silence as utt. separators
     int32 update_interval = 3;   // beam update period in # of frames
     float beam_update = 0.01;    // rate of adjustment of the beam
     float max_beam_update = 0.05;// maximum rate of beam adjustment
+};
+
+struct KdOnlineStatus
+{
+    int state = KD_STATE_NORMAL;
+    int max_frame = -1;
+    int word_count = -1;
+    QString last_word;
 };
 
 class KdOnlineLDecoder : public KdLatticeDecoder
@@ -45,9 +52,8 @@ public:
     void RawLattice(int start, int end, kaldi::Lattice *ofst);
     void MakeLattice(int start, int end, kaldi::CompactLattice *ofst);
 
-    // Same functions just to make compatible with OnlineDecoder
-    int PartialTraceback(kaldi::CompactLattice *out_fst);
-    int FinishTraceBack (kaldi::CompactLattice *fst_out);
+    QVector<BtWord> getResult(kaldi::CompactLattice *out_fst,
+                              QVector<QString> lexicon);
 
     // Returns "true" if the best current hypothesis ends with long enough silence
     bool HaveSilence();
@@ -69,8 +75,8 @@ private:
     QVector<int> silence_set; // silence phones IDs
     const kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
     float max_beam_; // the maximum allowed beam
+    KdOnlineStatus status;
     float effective_beam_; // the currently used beam
-    int   state_; // the current state of the decoder
     int32 utt_frames_; // # frames processed from the current utterance
     KdToken2 *immortal_tok_;      // "immortal" token means it's an ancestor of ...
     KdToken2 *prev_immortal_tok_; // ... all currently active tokens

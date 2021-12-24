@@ -23,13 +23,11 @@
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
 
-// head of per-frame list of Tokens (list is in topological order),
-// and something saying whether we ever pruned it using PruneForwardLinks.
 struct KdTokenList
 {
     KdToken2 *toks = NULL;
-    bool must_prune_forward_links = true;
-    bool must_prune_tokens = true;
+    bool prune_forward_links = true;
+    bool prune_tokens = true;
 };
 
 class KdLatticeDecoder

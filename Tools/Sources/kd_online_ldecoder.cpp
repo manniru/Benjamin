@@ -18,7 +18,6 @@ KdOnlineLDecoder::KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
     silence_set = sil_phones;
     frame = 0;
     utt_frames_ = 0;
-    state_ = KD_STATE_NORMAL;
     effective_beam_ = opts.beam;
 }
 
@@ -141,16 +140,22 @@ void KdOnlineLDecoder::MakeLattice(int start, int end,
             &raw_fst, lat_beam, ofst, config_.det_opts);
 }
 
-//Called if decoder is not in KdDecodeState::KD_EndUtt
-bool KdOnlineLDecoder::PartialTraceback(CompactLattice *out_fst)
+QVector<BtWord> KdOnlineLDecoder::getResult(CompactLattice *out_fst,
+                                            QVector<QString> lexicon)
 {
-    return FinishTraceBack(out_fst);
-}
-
-int KdOnlineLDecoder::FinishTraceBack(CompactLattice *out_fst)
-{
+    QVector<BtWord> result;
     MakeLattice(0, frame_toks.size(), out_fst);
-    return 1;
+    if( out_fst->Start() )
+    {
+        return result;
+    }
+
+    KdMBR *mbr = NULL;
+    mbr = new KdMBR(out_fst);
+    result = mbr->getResult(lexicon);
+
+    HaveSilence();
+    return result;
 }
 
 bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
@@ -218,19 +223,26 @@ bool KdOnlineLDecoder::HaveSilence()
     Lattice raw_fst;
     RawLattice(start, end, &raw_fst);
 
+    if( 1)
+    {
+        status.state = KD_STATE_SILENCE; //see silence
+    }
+    else
+    {
+        status.state = KD_STATE_NORMAL;
+    }
+
     return false; ///shit! change this to true
 }
 
 int KdOnlineLDecoder::Decode(DecodableInterface *decodable)
 {
-    if( state_==KD_STATE_SILENCE )
+    if( status.state==KD_STATE_SILENCE )
     {
         ResetDecoder();
         qDebug() << "reset";
     }
-    checkIntegrity("(1)");
     ProcessNonemitting(std::numeric_limits<float>::max());
-    checkIntegrity("(2)");
     int frame_i;
     for ( frame_i=0 ; frame_i<opts_.batch_size; frame_i++)
     {
@@ -240,29 +252,16 @@ int KdOnlineLDecoder::Decode(DecodableInterface *decodable)
         }
 
 
-        if ((frame_num+1) % config_.prune_interval == 0)
+        if ( (frame_num+1)%config_.prune_interval==0 )
         {
 //            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
         float weight_cutoff = ProcessEmitting(decodable);
-        checkIntegrity("(3)");
         ProcessNonemitting(weight_cutoff);
-        checkIntegrity("(4)");
 
         utt_frames_++;
         frame++;
     }
-
-    if( HaveSilence() )
-    {
-        state_ = KD_STATE_SILENCE; //see silence
-    }
-    else
-    {
-        state_ = KD_STATE_NORMAL;
-    }
-
-    return state_;
 }
 
 #endif
