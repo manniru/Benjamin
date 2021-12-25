@@ -24,7 +24,7 @@ KdOnline2Decodable::~KdOnline2Decodable()
     delete features;
 }
 
-void KdOnline2Decodable::CacheFrame(int32 frame)
+void KdOnline2Decodable::CacheFrame(int frame)
 {
     // The call below will fail if "frame" is an invalid index, i.e. <0
     // or >= features_->NumFramesReady(), so there
@@ -33,7 +33,7 @@ void KdOnline2Decodable::CacheFrame(int32 frame)
     cur_frame_ = frame;
 }
 
-BaseFloat KdOnline2Decodable::LogLikelihood(int32 frame, int32 index)
+float KdOnline2Decodable::LogLikelihood(int32 frame, int index)
 {
     if (frame != cur_frame_)
     {
@@ -52,19 +52,12 @@ BaseFloat KdOnline2Decodable::LogLikelihood(int32 frame, int32 index)
     return ans;
 }
 
-
-bool KdOnline2Decodable::IsLastFrame(int32 frame) const
-{
-    // no frame is last
-    return false;// this is online!
-}
-
-int32 KdOnline2Decodable::NumFramesReady() const
+int KdOnline2Decodable::NumFramesReady()
 {
     return features->NumFramesReady();
 }
 
-int32 KdOnline2Decodable::NumIndices() const
+int32 KdOnline2Decodable::NumIndices()
 {
     return trans_model->NumTransitionIds();
 }

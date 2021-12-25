@@ -31,5 +31,19 @@ public:
     KdToken2(float tot_cost, float extra_cost, KdToken2 *next);
 };
 
+/*extra_cost is used in pruning tokens, to save memory.
+
+  extra_cost can be thought of as a beta (backward) cost assuming
+  we had set the betas on currently-active tokens to all be the negative
+  of the alphas for those tokens.  (So all currently active tokens would
+  be on (tied) best paths).
+
+  We can use the extra_cost to accurately prune away tokens that we know will
+  never appear in the lattice.  If the extra_cost is greater than the desired
+  lattice beam, the token would provably never appear in the lattice, so we can
+  prune away the token.
+
+  (Note: we don't update all the extra_costs every time we update a frame; we
+  only do it every 'config_.prune_interval' frames).*/
 typedef kaldi::decoder::ForwardLink<KdToken2> KdFLink;
 #endif // KD_TOKEN2_H

@@ -57,10 +57,7 @@ void KdOnline::init()
     d_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
     d_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
     o2_model = new KdOnline2Model(trans_model, am_gmm, &d_config);
-
-#ifdef BT_LAT_ONLINE
     decoder_opts.lattice_beam = 6.0;
-#endif
 
     o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
                                 silence_phones, *trans_model);
@@ -84,10 +81,7 @@ void KdOnline::startDecode()
 
     while(1)
     {
-
-#ifdef BT_LAT_ONLINE
         decodable.features->AcceptWaveform(cy_buf);
-#endif
         o_decoder->Decode(&decodable);
         result = o_decoder->getResult(&out_fst, lexicon);
         bt_writeBarResult(result);

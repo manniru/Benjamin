@@ -230,7 +230,7 @@ void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
             status.max_frame = last.end*100;
             status.state = KD_STATE_NORMAL;
         }
-        else if( (uframe-(status.max_frame))>200 )
+        else if( (uframe-(status.max_frame))>150 )
         {
             status.state = KD_STATE_SILENCE;
         }
@@ -246,7 +246,7 @@ void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
 //    qDebug() << uframe;
 }
 
-int KdOnlineLDecoder::Decode(DecodableInterface *decodable)
+int KdOnlineLDecoder::Decode(KdOnline2Decodable *decodable)
 {
     if( status.state==KD_STATE_SILENCE )
     {

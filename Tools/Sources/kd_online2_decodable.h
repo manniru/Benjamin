@@ -14,7 +14,7 @@
 #include "kd_online2_feinput.h"
 
 
-class KdOnline2Decodable : public kaldi::DecodableInterface
+class KdOnline2Decodable
 {
 public:
     KdOnline2Decodable(BtRecorder *au_src, KdOnline2Model *mdl, float scale);
@@ -22,18 +22,16 @@ public:
 
 
     /// Returns the scaled log likelihood
-    virtual kaldi::BaseFloat LogLikelihood(int32 frame, int32 index);
+    float LogLikelihood(int32 frame, int index);
 
-    virtual bool IsLastFrame(int32 frame) const;
-
-    virtual int32 NumFramesReady() const;
+    int NumFramesReady();
 
     /// Indices are one-based!  This is for compatibility with OpenFst.
-    virtual int32 NumIndices() const;
+    int NumIndices();
     KdOnline2FeInput *features;
 
 private:
-    void CacheFrame(int32 frame);
+    void CacheFrame(int frame);
 
     kaldi::AmDiagGmm *ac_model;
     float ac_scale_;

@@ -5,21 +5,7 @@
 #include "decoder/lattice-faster-decoder.h"
 #include "kd_token2.h"
 #include "kd_lattice.h"
-
-/*extra_cost is used in pruning tokens, to save memory.
-
-  extra_cost can be thought of as a beta (backward) cost assuming
-  we had set the betas on currently-active tokens to all be the negative
-  of the alphas for those tokens.  (So all currently active tokens would
-  be on (tied) best paths).
-
-  We can use the extra_cost to accurately prune away tokens that we know will
-  never appear in the lattice.  If the extra_cost is greater than the desired
-  lattice beam, the token would provably never appear in the lattice, so we can
-  prune away the token.
-
-  (Note: we don't update all the extra_costs every time we update a frame; we
-  only do it every 'config_.prune_interval' frames).*/
+#include "kd_online2_decodable.h"
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
 
@@ -42,13 +28,13 @@ public:
     ~KdLatticeDecoder();
 
     void InitDecoding();
-    bool Decode(kaldi::DecodableInterface *decodable);
-    void AdvanceDecoding(kaldi::DecodableInterface *decodable);
+    bool Decode(KdOnline2Decodable *decodable);
+    void AdvanceDecoding(KdOnline2Decodable *decodable);
 
     float FinalRelativeCost();
 
     double GetBestCutoff(Elem *best_elem,
-                         kaldi::DecodableInterface *decodable);
+                         KdOnline2Decodable *decodable);
 
     long frame_num = 0; //number of decoded frame
 
@@ -70,8 +56,8 @@ protected:
 
     float GetCutoff(Elem *list_head, size_t *tok_count, Elem **best_elem);
 
-    float ProcessEmitting(kaldi::DecodableInterface *decodable);
-    float PEmittingElem(Elem *e, float next_cutoff, kaldi::DecodableInterface *decodable);
+    float ProcessEmitting(KdOnline2Decodable *decodable);
+    float PEmittingElem(Elem *e, float next_cutoff, KdOnline2Decodable *decodable);
     void  ProcessNonemitting(float cost_cutoff);
     void  PNonemittingElem(Elem *e, float cutoff);
 

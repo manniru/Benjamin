@@ -38,7 +38,7 @@ void KdLatticeDecoder::InitDecoding()
 }
 
 // return false indicates error.
-bool KdLatticeDecoder::Decode(DecodableInterface *decodable)
+bool KdLatticeDecoder::Decode(KdOnline2Decodable *decodable)
 {
     InitDecoding();
     AdvanceDecoding(decodable);
@@ -328,7 +328,7 @@ void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final
     }
 }
 
-void KdLatticeDecoder::AdvanceDecoding(DecodableInterface *decodable)
+void KdLatticeDecoder::AdvanceDecoding(KdOnline2Decodable *decodable)
 {
     KALDI_ASSERT(!frame_toks.empty() && !decoding_finalized_ &&
                  "You must call InitDecoding() before AdvanceDecoding");
@@ -440,7 +440,7 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
     }
 }
 
-double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *decodable)
+double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, KdOnline2Decodable *decodable)
 {
     double cutoff = KD_INFINITY;
     int32 frame = cost_offsets.size();
@@ -473,7 +473,7 @@ double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *deco
 }
 
 // Processes for one frame.
-float KdLatticeDecoder::ProcessEmitting(DecodableInterface *decodable)
+float KdLatticeDecoder::ProcessEmitting(KdOnline2Decodable *decodable)
 {
     frame_toks.push_back(KdTokenList()); //add new frame tok
 
@@ -533,7 +533,7 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 
 // Processes Single Emiting Elem
 float KdLatticeDecoder::PEmittingElem(Elem *e, float next_cutoff,
-                                      DecodableInterface *decodable)
+                                      KdOnline2Decodable *decodable)
 {
     int32 frame = frame_toks.size() - 2;
 

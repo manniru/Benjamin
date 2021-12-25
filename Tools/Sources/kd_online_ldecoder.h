@@ -46,7 +46,7 @@ public:
                      QVector<int> sil_phones, kaldi::TransitionModel &trans_model);
 
 
-    int Decode(kaldi::DecodableInterface *decodable);
+    int Decode(KdOnline2Decodable *decodable);
 
     void createStates(kaldi::Lattice *ofst);
     void RawLattice(kaldi::Lattice *ofst);
