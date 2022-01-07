@@ -58,8 +58,6 @@ HEADERS += \
     Sources/kd_online_feinput.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
-    Sources/kd_online2_gmm.h \
-    Sources/kd_online2.h \
     Sources/kd_token2.h
 
 SOURCES += \
@@ -84,8 +82,6 @@ SOURCES += \
     Sources/kd_online_feinput.cpp \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
-    Sources/kd_online2_gmm.cpp \
-    Sources/kd_online2.cpp \
     Sources/kd_token2.cpp \
     Sources/main.cpp
 
