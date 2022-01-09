@@ -20,7 +20,6 @@ linux:LIBS += -lgio-2.0 \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
               -liomp5 -lpthread -lm -ldl \
               -L/home/bijan/Project/Benjamin/Tools/Kaldi/Libs \
-              -lkaldi-online2 -lkaldi-online \
               -lkaldi-decoder -lkaldi-lat -lkaldi-fstext \
               -lkaldi-hmm -lkaldi-feat -lkaldi-transform \
               -lkaldi-gmm  -lkaldi-tree -lkaldi-util \
@@ -53,9 +52,6 @@ HEADERS += \
     Sources/kd_online2_decodable.h \
     Sources/kd_online2_feinput.h \
     Sources/kd_online2_model.h \
-    Sources/kd_online_decodable.h \
-    Sources/kd_online_decoder.h \
-    Sources/kd_online_feinput.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
     Sources/kd_token2.h
@@ -77,9 +73,6 @@ SOURCES += \
     Sources/kd_online2_decodable.cpp \
     Sources/kd_online2_feinput.cpp \
     Sources/kd_online2_model.cpp \
-    Sources/kd_online_decodable.cpp \
-    Sources/kd_online_decoder.cpp \
-    Sources/kd_online_feinput.cpp \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
     Sources/kd_token2.cpp \
