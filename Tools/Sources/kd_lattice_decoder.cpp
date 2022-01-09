@@ -4,10 +4,10 @@
 
 using namespace kaldi;
 
-KdLatticeDecoder::KdLatticeDecoder(KdFST &fst, LatticeFasterDecoderConfig &config):
-    fst_(&fst), config_(config), num_toks_(0)
+KdLatticeDecoder::KdLatticeDecoder()
 {
-    config.Check();
+    num_toks_ = 0;
+    config_.Check();
     toks_.SetSize(1000);  // just so on the first frame we do something reasonable.
 }
 

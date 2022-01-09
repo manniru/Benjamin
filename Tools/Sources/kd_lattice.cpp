@@ -161,3 +161,44 @@ void kd_writeLat(Lattice *ifst)
         exit(0);
     }
 }
+
+fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename)
+{
+    // read decoding network FST
+    Input ki(filename); // use ki.Stream() instead of is.
+    if (!ki.Stream().good()) KALDI_ERR << "Could not open decoding-graph FST "
+                                       << filename;
+
+    fst::FstHeader hdr;
+    if (!hdr.Read(ki.Stream(), "<unknown>"))
+    {
+        KALDI_ERR << "Reading FST: error reading FST header.";
+    }
+    if (hdr.ArcType() != fst::StdArc::Type()) {
+        KALDI_ERR << "FST with arc type " << hdr.ArcType() << " not supported.";
+    }
+    fst::FstReadOptions ropts("<unspecified>", &hdr);
+
+    fst::Fst<fst::StdArc> *decode_fst = NULL;
+
+    if (hdr.FstType() == "vector")
+    {
+        decode_fst = fst::VectorFst<fst::StdArc>::Read(ki.Stream(), ropts);
+    }
+    else if (hdr.FstType() == "const")
+    {
+        decode_fst = fst::ConstFst<fst::StdArc>::Read(ki.Stream(), ropts);
+    }
+    else
+    {
+        KALDI_ERR << "Reading FST: unsupported FST type: " << hdr.FstType();
+    }
+    if (decode_fst == NULL) { // fst code will warn.
+        KALDI_ERR << "Error reading FST (after reading header).";
+        return NULL;
+    }
+    else
+    {
+        return decode_fst;
+    }
+}

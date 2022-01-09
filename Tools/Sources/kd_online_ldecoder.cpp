@@ -8,13 +8,18 @@
 
 using namespace kaldi;
 
-KdOnlineLDecoder::KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst,
-                                   KdOnlineLDecoderOpts &opts,
-                                   QVector<int> sil_phones,
+KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
                                    kaldi::TransitionModel &trans_model):
-    KdLatticeDecoder(fst, opts), opts_(opts),
-    trans_model_(trans_model), max_beam_(opts.beam)
+    trans_model_(trans_model)
 {
+    fst_ = kd_readDecodeGraph(BT_FST_PATH);
+
+    opts.max_active = 7000;
+    opts.lattice_beam = 6.0;
+
+    config_ = opts;
+    config_.Check();
+
     silence_set = sil_phones;
     uframe = 0;
     effective_beam_ = opts.beam;
@@ -257,7 +262,7 @@ int KdOnlineLDecoder::Decode(KdOnline2Decodable *decodable)
     }
     ProcessNonemitting(std::numeric_limits<float>::max());
     int frame;
-    for ( frame=0 ; frame<opts_.batch_size; frame++)
+    for ( frame=0 ; frame<opts.batch_size; frame++)
     {
         if( frame_num>=decodable->NumFramesReady() )
         {

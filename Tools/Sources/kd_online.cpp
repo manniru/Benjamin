@@ -10,7 +10,6 @@ using namespace fst;
 typedef kaldi::int32 int32;
 typedef OnlineDecodableDiagGmmScaled KdGmmDecodable;
 
-fst::Fst<fst::StdArc> *decode_fst;
 AmDiagGmm             *am_gmm;
 TransitionModel       *trans_model;
 BT_ONLINE_DECODER     *o_decoder;
@@ -26,7 +25,6 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
 
 KdOnline::~KdOnline()
 {
-    delete decode_fst;
     delete o_decoder;
     delete am_gmm;
     delete trans_model;
@@ -34,10 +32,7 @@ KdOnline::~KdOnline()
 
 void KdOnline::init()
 {
-    BT_ONLINE_OPTS decoder_opts;
-
     std::string model_rxfilename = BT_MDL_PATH;
-    std::string fst_rxfilename   = BT_FST_PATH;
     QVector<int> silence_phones = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     trans_model = new TransitionModel;
@@ -48,20 +43,12 @@ void KdOnline::init()
     trans_model->Read(ki.Stream(), rx_binary);
     am_gmm->Read(ki.Stream(), rx_binary);
 
-    decode_fst = ReadDecodeGraph(fst_rxfilename);
-
-    decoder_opts.max_active = 7000;
-    decoder_opts.beam = 13.0;
-
     OnlineGmmDecodingConfig d_config;
     d_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
     d_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
     o2_model = new KdOnline2Model(trans_model, am_gmm, &d_config);
-    decoder_opts.lattice_beam = 6.0;
 
-    o_decoder = new BT_ONLINE_DECODER(*decode_fst, decoder_opts,
-                                silence_phones, *trans_model);
-
+    o_decoder = new BT_ONLINE_DECODER(silence_phones, *trans_model);
 
     startDecode();
 }

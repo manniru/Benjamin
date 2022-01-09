@@ -24,7 +24,7 @@ public:
     typedef kaldi::HashList<KdStateId, KdToken2*>::Elem Elem;
 
     kaldi::LatticeFasterDecoderConfig config_;
-    KdLatticeDecoder(KdFST &fst, kaldi::LatticeFasterDecoderConfig &config);
+    KdLatticeDecoder();
     ~KdLatticeDecoder();
 
     void InitDecoding();

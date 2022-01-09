@@ -27,7 +27,6 @@ struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
     int32 max_utt_len_  = 1500;  // if utt. is longer, we accept shorter silence as utt. separators
     int32 update_interval = 3;   // beam update period in # of frames
     float beam_update = 0.01;    // rate of adjustment of the beam
-    float max_beam_update = 0.05;// maximum rate of beam adjustment
 };
 
 struct KdOnlineStatus
@@ -42,8 +41,8 @@ class KdOnlineLDecoder : public KdLatticeDecoder
 {
 public:
     // "sil_phones" - the IDs of all silence phones
-    KdOnlineLDecoder(fst::Fst<fst::StdArc> &fst, KdOnlineLDecoderOpts &opts,
-                     QVector<int> sil_phones, kaldi::TransitionModel &trans_model);
+    KdOnlineLDecoder(QVector<int> sil_phones,
+                     kaldi::TransitionModel &trans_model);
 
 
     int Decode(KdOnline2Decodable *decodable);
@@ -69,10 +68,9 @@ private:
     // Searches for the last token, ancestor of all currently active tokens
     void UpdateImmortalToken();
 
-    const KdOnlineLDecoderOpts opts_;
+    KdOnlineLDecoderOpts opts;
     QVector<int> silence_set; // silence phones IDs
     const kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
-    float max_beam_; // the maximum allowed beam
     KdOnlineStatus status;
     float effective_beam_; // the currently used beam
     int   uframe;          // reset on ResetDecoder(utterance)

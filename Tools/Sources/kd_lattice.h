@@ -17,6 +17,8 @@ void kd_fstShortestPath(kaldi::Lattice *ifst, kaldi::Lattice *ofst);
 bool kd_SingleShortestPath(kaldi::Lattice *ifst, KdStateId *f_parent,
                         std::vector<std::pair<KdStateId, size_t>> *parent);
 void kd_writeLat(kaldi::Lattice *ifst);
+fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename);
+
 
 
 #endif // KD_LATTICE_H
