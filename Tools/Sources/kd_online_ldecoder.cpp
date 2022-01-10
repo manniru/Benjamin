@@ -220,13 +220,12 @@ void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
     if( word_count )
     {
         BtWord last = result.last();
-        qDebug() << "word_count" << uframe-status.max_frame << uframe;
 
         if( status.word_count!=word_count )
         {
             status.word_count = word_count;
             status.last_word = last.word;
-            status.max_frame = last.end;
+            status.max_frame = last.end*100;
             status.state = KD_STATE_NORMAL;
         }
         else if( status.last_word!=last.word )
@@ -235,10 +234,11 @@ void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
             status.max_frame = last.end*100;
             status.state = KD_STATE_NORMAL;
         }
-        else if( (uframe-(status.max_frame))>150 )
+        else if( (uframe-(status.max_frame))>100 )
         {
             status.state = KD_STATE_SILENCE;
         }
+        qDebug() << "word_count" << status.max_frame << status.last_word;
     }
     else if( uframe>200 )
     {
@@ -248,27 +248,26 @@ void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
     {
         status.state = KD_STATE_NORMAL; //reset decoder
     }
-    qDebug() << uframe << frame_num-decodable->NumFramesReady();
+//    qDebug() << uframe;
 }
 
 int KdOnlineLDecoder::Decode()
 {
     if( status.state==KD_STATE_SILENCE )
     {
+        status.word_count = -1;
+        status.last_word = "";
+        status.max_frame = -1;
         printTime(start_t);
         start_t = clock();
         ResetDecoder();
-        qDebug() << "reset";
+        frame_num -= 25;
     }
     ProcessNonemitting(std::numeric_limits<float>::max());
-    int frame;
-    for ( frame=0 ; frame<opts.batch_size; frame++)
+    int frame_max = decodable->NumFramesReady();
+//    for ( frame=0 ; frame<opts.batch_size ; frame++ )
+    while( frame_num<frame_max )
     {
-        if( frame_num>=decodable->NumFramesReady() )
-        {
-            break;
-        }
-
         if ( (frame_num%config_.prune_interval)==0 )
         {
 //            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);

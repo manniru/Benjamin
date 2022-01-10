@@ -16,8 +16,7 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
 }
 
 // Init() is to be called from the constructor; it assumes the pointer
-// members are all uninitialized but config_ and lda_mat_ are
-// initialized.
+// members are all uninitialized but config_
 void KdOnline2FeInput::Init()
 {
     mfcc = new MfccComputer(mfcc_opts);

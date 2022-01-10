@@ -44,7 +44,6 @@ public:
     KdOnlineLDecoder(QVector<int> sil_phones,
                      kaldi::TransitionModel &trans_model);
 
-
     int Decode();
 
     void createStates(kaldi::Lattice *ofst);
