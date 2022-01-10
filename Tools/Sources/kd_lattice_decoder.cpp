@@ -17,7 +17,7 @@ KdLatticeDecoder::~KdLatticeDecoder()
     ClearActiveTokens();
 }
 
-void KdLatticeDecoder::InitDecoding()
+void KdLatticeDecoder::InitDecoding(KdOnline2Decodable *dcodable)
 {
     // clean up from last time:
     DeleteElems(toks_.Clear());
@@ -35,16 +35,7 @@ void KdLatticeDecoder::InitDecoding()
     toks_.Insert(start_state, start_tok);
     num_toks_++;
     ProcessNonemitting(config_.beam);
-}
-
-// return false indicates error.
-bool KdLatticeDecoder::Decode(KdOnline2Decodable *decodable)
-{
-    InitDecoding();
-    AdvanceDecoding(decodable);
-//    FinalizeDecoding();
-
-    return !frame_toks.empty() && frame_toks.back().toks != NULL;
+    decodable = dcodable;
 }
 
 // Locates a token in toks_ or inserts a new to frame_toks[frame]->toks
@@ -328,7 +319,7 @@ void KdLatticeDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final
     }
 }
 
-void KdLatticeDecoder::AdvanceDecoding(KdOnline2Decodable *decodable)
+void KdLatticeDecoder::AdvanceDecoding()
 {
     KALDI_ASSERT(!frame_toks.empty() && !decoding_finalized_ &&
                  "You must call InitDecoding() before AdvanceDecoding");
@@ -342,7 +333,7 @@ void KdLatticeDecoder::AdvanceDecoding(KdOnline2Decodable *decodable)
         {
             PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
-        float cost_cutoff = ProcessEmitting(decodable);
+        float cost_cutoff = ProcessEmitting();
         ProcessNonemitting(cost_cutoff);
     }
 }
@@ -440,7 +431,7 @@ float KdLatticeDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
     }
 }
 
-double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, KdOnline2Decodable *decodable)
+double KdLatticeDecoder::GetBestCutoff(Elem *best_elem)
 {
     double cutoff = KD_INFINITY;
     int32 frame = cost_offsets.size();
@@ -473,7 +464,7 @@ double KdLatticeDecoder::GetBestCutoff(Elem *best_elem, KdOnline2Decodable *deco
 }
 
 // Processes for one frame.
-float KdLatticeDecoder::ProcessEmitting(KdOnline2Decodable *decodable)
+float KdLatticeDecoder::ProcessEmitting()
 {
     frame_toks.push_back(KdTokenList()); //add new frame tok
 
@@ -482,7 +473,7 @@ float KdLatticeDecoder::ProcessEmitting(KdOnline2Decodable *decodable)
     size_t tok_cnt;
 
     float cutoff = GetCutoff(final_toks, &tok_cnt, &best_elem);
-    float next_cutoff = GetBestCutoff(best_elem, decodable);
+    float next_cutoff = GetBestCutoff(best_elem);
 
     Elem *e_tail;
     int id_t = 0;
@@ -490,7 +481,7 @@ float KdLatticeDecoder::ProcessEmitting(KdOnline2Decodable *decodable)
     {
         if( e->val->tot_cost<=cutoff )
         {
-            next_cutoff = PEmittingElem(e, next_cutoff, decodable);
+            next_cutoff = PEmittingElem(e, next_cutoff);
         }
         e_tail = e->tail;
         toks_.Delete(e);
@@ -532,8 +523,7 @@ void KdLatticeDecoder::ProcessNonemitting(float cutoff)
 }
 
 // Processes Single Emiting Elem
-float KdLatticeDecoder::PEmittingElem(Elem *e, float next_cutoff,
-                                      KdOnline2Decodable *decodable)
+float KdLatticeDecoder::PEmittingElem(Elem *e, float next_cutoff)
 {
     int32 frame = frame_toks.size() - 2;
 

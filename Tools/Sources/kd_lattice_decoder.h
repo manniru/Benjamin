@@ -27,14 +27,12 @@ public:
     KdLatticeDecoder();
     ~KdLatticeDecoder();
 
-    void InitDecoding();
-    bool Decode(KdOnline2Decodable *decodable);
-    void AdvanceDecoding(KdOnline2Decodable *decodable);
+    void InitDecoding(KdOnline2Decodable *dcodable);
+    void AdvanceDecoding();
 
     float FinalRelativeCost();
 
-    double GetBestCutoff(Elem *best_elem,
-                         KdOnline2Decodable *decodable);
+    double GetBestCutoff(Elem *best_elem);
 
     long frame_num = 0; //number of decoded frame
 
@@ -56,13 +54,14 @@ protected:
 
     float GetCutoff(Elem *list_head, size_t *tok_count, Elem **best_elem);
 
-    float ProcessEmitting(KdOnline2Decodable *decodable);
-    float PEmittingElem(Elem *e, float next_cutoff, KdOnline2Decodable *decodable);
+    float ProcessEmitting();
+    float PEmittingElem(Elem *e, float next_cutoff);
     void  ProcessNonemitting(float cost_cutoff);
     void  PNonemittingElem(Elem *e, float cutoff);
 
     // HashList is indexed by frame-index plus one.
     kaldi::HashList<KdStateId, KdToken2*> toks_;
+    KdOnline2Decodable *decodable;
 
     std::vector<KdTokenList> frame_toks; // Lists of tokens, indexed by
     // frame (members of KdTokenList are toks, must_prune_forward_links,

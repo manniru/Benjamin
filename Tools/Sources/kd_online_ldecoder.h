@@ -45,7 +45,7 @@ public:
                      kaldi::TransitionModel &trans_model);
 
 
-    int Decode(KdOnline2Decodable *decodable);
+    int Decode();
 
     void createStates(kaldi::Lattice *ofst);
     void RawLattice(kaldi::Lattice *ofst);

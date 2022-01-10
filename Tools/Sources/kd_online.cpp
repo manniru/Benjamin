@@ -62,14 +62,14 @@ void KdOnline::startDecode()
 
     ab_src->startStream();
 
-    o_decoder->InitDecoding();
+    o_decoder->InitDecoding(&decodable);
     BT_ONLINE_LAT out_fst;
     QVector<BtWord> result;
 
     while(1)
     {
         decodable.features->AcceptWaveform(cy_buf);
-        o_decoder->Decode(&decodable);
+        o_decoder->Decode();
         result = o_decoder->getResult(&out_fst, lexicon);
         bt_writeBarResult(result);
     }

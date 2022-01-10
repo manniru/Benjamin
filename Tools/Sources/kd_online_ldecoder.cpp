@@ -248,10 +248,10 @@ void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
     {
         status.state = KD_STATE_NORMAL; //reset decoder
     }
-//    qDebug() << uframe;
+    qDebug() << uframe << frame_num-decodable->NumFramesReady();
 }
 
-int KdOnlineLDecoder::Decode(KdOnline2Decodable *decodable)
+int KdOnlineLDecoder::Decode()
 {
     if( status.state==KD_STATE_SILENCE )
     {
@@ -273,7 +273,7 @@ int KdOnlineLDecoder::Decode(KdOnline2Decodable *decodable)
         {
 //            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
-        float weight_cutoff = ProcessEmitting(decodable);
+        float weight_cutoff = ProcessEmitting();
         ProcessNonemitting(weight_cutoff);
 
         uframe++;
