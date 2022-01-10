@@ -55,9 +55,12 @@ QString getStrCommand(QString command)
     return returnData;
 }
 
-void printTime(clock_t start)
+QString getDiffTime(clock_t start)
 {
+    QString ret;
     clock_t end = clock();
     double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    qDebug() << "cpu time" << qRound(cpu_time_used*1000) << "ms";
+    ret  = QString::number(qRound(cpu_time_used*1000));
+    ret += "ms";
+    return  ret;
 }

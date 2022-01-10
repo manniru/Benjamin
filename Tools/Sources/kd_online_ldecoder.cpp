@@ -255,10 +255,10 @@ int KdOnlineLDecoder::Decode()
 {
     if( status.state==KD_STATE_SILENCE )
     {
+        qDebug() << getDiffTime(start_t) << status.max_frame;
         status.word_count = -1;
         status.last_word = "";
         status.max_frame = -1;
-        printTime(start_t);
         start_t = clock();
         ResetDecoder();
         frame_num -= 25;
