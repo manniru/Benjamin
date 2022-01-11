@@ -69,29 +69,39 @@ void KdOnline::startDecode()
         o_decoder->Decode();
         result = o_decoder->getResult(&out_fst, lexicon);
         bt_writeBarResult(result);
+
+        if( o_decoder->status.state==KD_STATE_SILENCE )
+        {
+            if( result.size() )
+            {
+                execute(result);
+            }
+        }
     }
 }
 
-void KdOnline::execute(std::vector<int> word)
+void KdOnline::execute(QVector<BtWord> result)
 {
     QString cmd = KAL_SI_DIR"main.sh \"";
 
-    for( int i=0 ; i<word.size() ; i++ )
+    for( int i=0 ; i<result.size() ; i++ )
     {
-        QString word_str = lexicon[word[i]];
-        cmd += word_str;
+        cmd += result[i].word;
         cmd += " ";
-        history.push_back(word_str);
     }
     cmd += "\"";
     system(cmd.toStdString().c_str());
+
+    // Run Effective Immedietly
+    system("dbus-send --session --dest=com.binaee.rebound / "
+                   "com.binaee.rebound.exec  string:\"\"");
 }
 
 void KdOnline::parseLexicon(QString filename)
 {
     QFile words_file(filename);
 
-    if (!words_file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if( !words_file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
         qDebug() << "Error opening" << filename;
         return;
@@ -99,7 +109,7 @@ void KdOnline::parseLexicon(QString filename)
 
     lexicon.clear();
 
-    while (!words_file.atEnd())
+    while ( !words_file.atEnd() )
     {
         QString line = QString(words_file.readLine());
         QStringList line_list = line.split(" ");

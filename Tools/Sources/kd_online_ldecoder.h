@@ -54,6 +54,7 @@ public:
                               QVector<QString> lexicon);
 
     void HaveSilence(QVector<BtWord> result);
+    KdOnlineStatus status;
 
 private:
     void ResetDecoder();
@@ -70,7 +71,6 @@ private:
     KdOnlineLDecoderOpts opts;
     QVector<int> silence_set; // silence phones IDs
     const kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
-    KdOnlineStatus status;
     float effective_beam_; // the currently used beam
     int   uframe;          // reset on ResetDecoder(utterance)
     clock_t start_t;

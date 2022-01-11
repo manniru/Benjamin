@@ -91,7 +91,9 @@ bool kd_SingleShortestPath(Lattice *ifst, KdStateId *f_parent,
                 *f_parent = s;
             }
             if( !f_distance.Member() )
+            {
                 return false;
+            }
         }
 
         for( fst::ArcIterator<fst::Fst<LatticeArc>> aiter(*ifst, s) ; !aiter.Done() ; aiter.Next() )

@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#Direction Keys
 #Key Code from input-event-codes.h
 
 WORD="$1"
@@ -83,6 +83,6 @@ fi
 if [[ "$OUTPUT" ]]; then
 
     dbus-send --session $DBUS_PATH.debug string:"$WORD"
-    dbus-send --session $DBUS_PATH.speex string:"$OUTPUT"
+    dbus-send --session $DBUS_PATH.dirs  string:"$OUTPUT"
     
 fi

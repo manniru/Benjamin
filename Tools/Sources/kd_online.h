@@ -35,7 +35,7 @@ signals:
 
 private:
     void parseLexicon(QString filename);
-    void execute(std::vector<int> word);
+    void execute(QVector<BtWord> result);
 
     void processLat(BT_ONLINE_LAT *clat, clock_t start);
 
