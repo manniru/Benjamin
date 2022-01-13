@@ -92,9 +92,9 @@ void KdOnline::execute(QVector<BtWord> result)
     cmd += "\"";
     system(cmd.toStdString().c_str());
 
-    // Run Effective Immedietly
-    system("dbus-send --session --dest=com.binaee.rebound / "
-                   "com.binaee.rebound.exec  string:\"\"");
+//    // Run Effective Immedietly
+//    system("dbus-send --session --dest=com.binaee.rebound / "
+//                   "com.binaee.rebound.exec  string:\"\"");
 }
 
 void KdOnline::parseLexicon(QString filename)
