@@ -42,6 +42,8 @@ private:
     BtRecorder       *ab_src;
     QVector<QString>  history;
     QVector<QString>  lexicon;
+    QVector<BtWord>   last_r; //last_result
+    KdOnlineStatus    status;
     BtCyclic         *cy_buf;
 };
 

@@ -54,6 +54,7 @@ public:
                               QVector<QString> lexicon);
 
     void HaveSilence(QVector<BtWord> result);
+    void CalcFinal(QVector<BtWord> *result);
     KdOnlineStatus status;
 
 private:

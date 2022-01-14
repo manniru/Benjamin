@@ -423,6 +423,7 @@ QVector<BtWord> KdMBR::getResult(QVector<QString> lexicon)
         word_buf.end = times[i].second/100.0;
         word_buf.time = (word_buf.start+word_buf.end)/2;
         word_buf.word = lexicon[words[i]];
+        word_buf.is_final = 0;
 
         result.push_back(word_buf);
     }

@@ -21,10 +21,10 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
 
 KdOnline::~KdOnline()
 {
-    delete o_decoder;
     delete am_gmm;
     delete trans_model;
     delete o2_model;
+    delete o_decoder;
 }
 
 void KdOnline::init()
@@ -70,31 +70,70 @@ void KdOnline::startDecode()
         result = o_decoder->getResult(&out_fst, lexicon);
         bt_writeBarResult(result);
 
+        if( result.size() )
+        {
+            execute(result);
+        }
+
         if( o_decoder->status.state==KD_STATE_SILENCE )
         {
-            if( result.size() )
-            {
-                execute(result);
-            }
+            status.last_word = "";
+            status.word_count = 0;
         }
     }
 }
 
 void KdOnline::execute(QVector<BtWord> result)
 {
-    QString cmd = KAL_SI_DIR"main.sh \"";
+    QVector<QString> buf;
+    int r_size = result.size();
+
+    if( r_size==last_r.size() )
+    {
+        if( result.last().word==status.last_word )
+        {
+            for( int i=status.word_count ; i<r_size-1 ; i++ )
+            {
+                buf += result[i].word;
+            }
+            status.word_count = r_size;
+        }
+        else
+        {
+            status.last_word = result.last().word;
+        }
+    }
+    last_r = result;
+
+    QString dbg = "result ";
 
     for( int i=0 ; i<result.size() ; i++ )
     {
-        cmd += result[i].word;
+        dbg += result[i].word;
+        dbg += "(";
+        dbg += QString::number(result[i].conf);
+        dbg += ")";
+        dbg += " ";
+    }
+
+    qDebug() << dbg;
+
+    if( buf.empty() )
+    {
+        return;
+    }
+
+    QString cmd = KAL_SI_DIR"main.sh \"";
+
+    for( int i=0 ; i<buf.size() ; i++ )
+    {
+        cmd += buf[i];
         cmd += " ";
     }
-    cmd += "\"";
-    system(cmd.toStdString().c_str());
 
-//    // Run Effective Immedietly
-//    system("dbus-send --session --dest=com.binaee.rebound / "
-//                   "com.binaee.rebound.exec  string:\"\"");
+    cmd += "\"";
+//    system(cmd.toStdString().c_str());
+    qDebug() << "exec" << cmd;
 }
 
 void KdOnline::parseLexicon(QString filename)

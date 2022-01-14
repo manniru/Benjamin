@@ -157,58 +157,24 @@ QVector<BtWord> KdOnlineLDecoder::getResult(CompactLattice *out_fst,
     mbr = new KdMBR(out_fst);
     result = mbr->getResult(lexicon);
 
+    CalcFinal(&result);
     HaveSilence(result);
     return result;
 }
 
-bool KdOnlineLDecoder::GetiSymbol(Lattice *fst,
-                             std::vector<int32> *isymbols_out)
+void KdOnlineLDecoder::CalcFinal(QVector<BtWord> *result)
 {
-  LatticeArc::Weight tot_weight = LatticeArc::Weight::One();
-  std::vector<int32> ilabel_seq;
+    int min_diff = 30;
+    int word_count = result->size();
+    for( int i=0 ; i<word_count-1 ; i++ )
+    {
+        int f_end = floor(result->at(i).end*100);
 
-  KdStateId cur_state = fst->Start();
-  if( cur_state ==-1 ) // Not a valid state ID.
-  {
-      isymbols_out->clear();
-      qDebug() << "Not a valid state ID";
-      return true;
-  }
-
-  int i = 0;
-  while( 1 )
-  {
-      i++;
-      LatticeArc::Weight w = fst->Final(cur_state);
-      if( w!= LatticeArc::Weight::Zero() )
-      {  // is final..
-          qDebug() << "-----------" << i;//THIS LINE NEVER RUN!
-          tot_weight = Times(w, tot_weight);
-          if( fst->NumArcs(cur_state)!=0 )
-          {
-              return false;
-          }
-          *isymbols_out = ilabel_seq;
-          return true;
-      }
-      else
-      {
-//          qDebug() << "Flag #2" << i;
-          if( fst->NumArcs(cur_state)!=1 )
-          {
-              return false;
-          }
-
-          fst::ArcIterator<Lattice > iter(*fst, cur_state);  // get the only arc.
-          const LatticeArc &arc = iter.Value();
-          tot_weight = Times(arc.weight, tot_weight);
-          if( arc.ilabel!=0 )
-          {
-              ilabel_seq.push_back(arc.ilabel);
-          }
-          cur_state = arc.nextstate;
-      }
-  }
+        if( (uframe-f_end)>min_diff )
+        {
+            result->at(i).is_final = 1;
+        }
+    }
 }
 
 // Returns "true" if the current hypothesis ends with long silence
@@ -234,11 +200,11 @@ void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
             status.max_frame = last.end*100;
             status.state = KD_STATE_NORMAL;
         }
-        else if( (uframe-(status.max_frame))>100 )
+        else if( (uframe-(status.max_frame))>sil_frm )
         {
             status.state = KD_STATE_SILENCE;
         }
-        qDebug() << "word_count" << status.max_frame << status.last_word;
+//        qDebug() << "word_count" << status.max_frame << status.last_word;
     }
     else if( uframe>200 )
     {

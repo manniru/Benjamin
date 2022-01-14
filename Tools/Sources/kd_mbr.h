@@ -26,6 +26,7 @@ typedef struct BtWord
     double  start;
     double  end;
     double  conf;
+    int     is_final;
 }BtWord;
 
 class KdMBR

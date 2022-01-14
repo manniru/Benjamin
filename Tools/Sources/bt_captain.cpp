@@ -294,13 +294,21 @@ void bt_writeBarResult(QVector<BtWord> result)
 
     for( int i=0 ; i<result.length() ; i++ )
     {
-        if( result[i].conf<KAL_CONF_TRESHOLD )
+//        if( result[i].conf<KAL_CONF_TRESHOLD )
+//        {
+//            out << "%{F#777}";
+//        }
+//        else
+//        {
+//            out << "%{F#ddd}";
+//        }
+        if( result[i].is_final )
         {
-            out << "%{F#777}";
+            out << "%{F#ddd}";
         }
         else
         {
-            out << "%{F#ddd}";
+            out << "%{F#777}";
         }
 
         if( result[i].conf<KAL_HARD_TRESHOLD )
