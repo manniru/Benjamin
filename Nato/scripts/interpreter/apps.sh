@@ -28,6 +28,14 @@ elif [[ "$WORD" == "ding" ]]; then
 
     OUTPUT="6"
 
+elif [[ "$WORD" == "link" ]]; then
+
+    OUTPUT="7"
+
+elif [[ "$WORD" == "sleep" ]]; then
+
+    OUTPUT="8"
+
 fi
 
 if [[ "$OUTPUT" ]]; then

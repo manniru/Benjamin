@@ -22,7 +22,7 @@ elif [[ "$WORD" == "down" ]]; then
     
     OUTPUT="108"
 
-elif [[ "$WORD" == "up" ]]; then
+elif [[ "$WORD" == "raise" ]]; then
     
     OUTPUT="103"
 

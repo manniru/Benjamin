@@ -12,45 +12,41 @@ elif [[ "$WORD" == "system" ]]; then
     
     OUTPUT="2"
 
-elif [[ "$WORD" == "wake" ]]; then
+elif [[ "$WORD" == "start" ]]; then
     
     OUTPUT="3"
 
-elif [[ "$WORD" == "start" ]]; then
+elif [[ "$WORD" == "fox" ]]; then
     
     OUTPUT="4"
 
-elif [[ "$WORD" == "fox" ]]; then
+elif [[ "$WORD" == "page" ]]; then
     
     OUTPUT="5"
 
-elif [[ "$WORD" == "page" ]]; then
+elif [[ "$WORD" == "go" ]]; then
     
     OUTPUT="6"
 
-elif [[ "$WORD" == "go" ]]; then
+elif [[ "$WORD" == "sky" ]]; then
     
     OUTPUT="7"
 
-elif [[ "$WORD" == "sky" ]]; then
+elif [[ "$WORD" == "dive" ]]; then
     
     OUTPUT="8"
 
-elif [[ "$WORD" == "dive" ]]; then
-    
-    OUTPUT="9"
-
 elif [[ "$WORD" == "music" ]]; then
     
-    OUTPUT="10"
+    OUTPUT="9"
     
 elif [[ "$WORD" == "close" ]]; then
     
-    OUTPUT="11"
+    OUTPUT="10"
     
 elif [[ "$WORD" == "switch" ]]; then
     
-    OUTPUT="12"
+    OUTPUT="11"
     
 fi
 
