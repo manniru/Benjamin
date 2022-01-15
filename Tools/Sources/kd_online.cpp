@@ -17,6 +17,7 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     parseLexicon(BT_WORDS_PATH);
 
     ab_src = new BtRecorder(cy_buf);
+    status.word_count = 0;
 }
 
 KdOnline::~KdOnline()
@@ -86,43 +87,35 @@ void KdOnline::startDecode()
 void KdOnline::execute(QVector<BtWord> result)
 {
     QVector<QString> buf;
-    int r_size = result.size();
-
-    if( r_size==last_r.size() )
-    {
-        if( result.last().word==status.last_word )
-        {
-            for( int i=status.word_count ; i<r_size-1 ; i++ )
-            {
-                buf += result[i].word;
-            }
-            status.word_count = r_size;
-        }
-        else
-        {
-            status.last_word = result.last().word;
-        }
-    }
-    last_r = result;
-
     QString dbg = "result ";
 
-    for( int i=0 ; i<result.size() ; i++ )
+    for( int i=status.word_count ; i<result.size() ; i++ )
     {
-        dbg += result[i].word;
-        dbg += "(";
-        dbg += QString::number(result[i].conf);
-        dbg += ")";
-        dbg += " ";
+        if( i==0 )
+        {
+            if( result[i].conf<0.75 )
+            {
+                return;
+            }
+        }
+        if( result[i].is_final )
+        {
+            status.word_count = i+1;
+            buf += result[i].word;
+            dbg += result[i].word;
+            dbg += "(";
+            dbg += QString::number(result[i].conf);
+            dbg += ")";
+            dbg += " ";
+        }
     }
-
-    qDebug() << dbg;
 
     if( buf.empty() )
     {
         return;
     }
 
+    qDebug() << dbg;
     QString cmd = KAL_SI_DIR"main.sh \"";
 
     for( int i=0 ; i<buf.size() ; i++ )
@@ -132,7 +125,7 @@ void KdOnline::execute(QVector<BtWord> result)
     }
 
     cmd += "\"";
-//    system(cmd.toStdString().c_str());
+    system(cmd.toStdString().c_str());
     qDebug() << "exec" << cmd;
 }
 

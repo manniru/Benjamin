@@ -172,8 +172,28 @@ void KdOnlineLDecoder::CalcFinal(QVector<BtWord> *result)
 
         if( (uframe-f_end)>min_diff )
         {
-            result->at(i).is_final = 1;
+            (*result)[i].is_final = 1;
         }
+    }
+
+    //for last word
+    if( word_count )
+    {
+        BtWord last = result->last();
+
+        if( status.word_count!=word_count )
+        {
+            return;
+        }
+        else if( status.last_word!=last.word )
+        {
+            return;
+        }
+        else if( (uframe-(status.max_frame))>min_diff )
+        {
+            (*result)[word_count-1].is_final = 1;
+        }
+//        qDebug() << "word_count" << status.max_frame << status.last_word;
     }
 }
 
