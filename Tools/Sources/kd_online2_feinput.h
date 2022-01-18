@@ -9,6 +9,8 @@
 #include "feat/feature-mfcc.h"
 #include "bt_recorder.h"
 #include "kd_cmvn.h"
+#include "kd_matrix.h"
+#include "kd_mfcc.h"
 
 class KdOnline2FeInput: public QObject
 {
@@ -32,12 +34,11 @@ private:
     kaldi::Matrix<float> global_cmvn_stats_;
 
     KdCMVN *cmvn;
-    kaldi::MfccOptions mfcc_opts;
     kaldi::OnlineCmvnOptions cmvn_opts;
     kaldi::DeltaFeaturesOptions delta_opts;
 
     kaldi::RecyclingVector *o_features;
-    kaldi::MfccComputer    *mfcc;
+    KdMFCC *mfcc;
 
     kaldi::Vector<float> waveform_remainder_;
 

@@ -48,7 +48,9 @@ HEADERS += \
     Sources/kd_lattice.h \
     Sources/kd_lattice_decoder.h \
     Sources/kd_lattice_functions.h \
+    Sources/kd_matrix.h \
     Sources/kd_mbr.h \
+    Sources/kd_mfcc.h \
     Sources/kd_online2_decodable.h \
     Sources/kd_online2_feinput.h \
     Sources/kd_online2_model.h \
@@ -69,7 +71,9 @@ SOURCES += \
     Sources/kd_lattice.cpp \
     Sources/kd_lattice_decoder.cpp \
     Sources/kd_lattice_functions.cpp \
+    Sources/kd_matrix.cpp \
     Sources/kd_mbr.cpp \
+    Sources/kd_mfcc.cpp \
     Sources/kd_online2_decodable.cpp \
     Sources/kd_online2_feinput.cpp \
     Sources/kd_online2_model.cpp \

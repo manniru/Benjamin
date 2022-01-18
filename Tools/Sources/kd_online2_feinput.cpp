@@ -8,19 +8,18 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
     rec_src = au_src;
     waveform_offset = 0;
     std::string  global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
-    mfcc_opts.use_energy = false;
 
-    ReadKaldiObject(global_cmvn_stats_rxfilename,
+    kd_readMatrix(global_cmvn_stats_rxfilename,
                     &global_cmvn_stats_);
     Init();
 }
 
 // Init() is to be called from the constructor; it assumes the pointer
-// members are all uninitialized but config_
+// members are all uninitialized
 void KdOnline2FeInput::Init()
 {
-    mfcc = new MfccComputer(mfcc_opts);
-    o_features = new RecyclingVector(mfcc_opts.frame_opts.max_feature_vectors);
+    mfcc = new KdMFCC;
+    o_features = new RecyclingVector;
     KALDI_ASSERT(global_cmvn_stats_.NumRows() != 0);
     Matrix<double> global_cmvn_stats_dbl(global_cmvn_stats_);
     OnlineCmvnState initial_state(global_cmvn_stats_dbl);
@@ -124,9 +123,9 @@ void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf, int len)
 
 void KdOnline2FeInput::ComputeFeatures()
 {
-    FeatureWindowFunction window_function(mfcc->GetFrameOptions());
+    const FrameExtractionOptions &frame_opts = mfcc->opts.frame_opts;
+    FeatureWindowFunction window_function(frame_opts);
     bool input_finished = false; //always input is not finished
-    const FrameExtractionOptions &frame_opts = mfcc->GetFrameOptions();
     int64 num_samples_total = waveform_offset + waveform_remainder_.Dim();
     int32 num_frames_old = o_features->Size();
     int32 num_frames_new = NumFrames(num_samples_total, frame_opts,
