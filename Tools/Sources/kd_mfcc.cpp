@@ -8,7 +8,7 @@ void KdMFCC::Compute(float signal_raw_log_energy,
                            VectorBase<float> *signal_frame,
                            VectorBase<float> *feature)
 {
-    KALDI_ASSERT(signal_frame->Dim() == opts.frame_opts.PaddedWindowSize() &&
+    KALDI_ASSERT(signal_frame->Dim() == frame_opts.PaddedWindowSize() &&
                  feature->Dim() == this->Dim());
 
     const MelBanks &mel_banks = *(GetMelBanks(vtln_warp));
@@ -67,15 +67,17 @@ KdMFCC::KdMFCC()
     SubMatrix<float> dct_rows(dct_matrix, 0, opts.num_ceps, 0, num_bins);
     dct_matrix_.Resize(opts.num_ceps, num_bins);
     dct_matrix_.CopyFromMat(dct_rows);  // subset of rows.
-    if (opts.cepstral_lifter != 0.0)
+    if( opts.cepstral_lifter!=0.0 )
     {
         lifter_coeffs_.Resize(opts.num_ceps);
         ComputeLifterCoeffs(opts.cepstral_lifter, &lifter_coeffs_);
     }
-    if (opts.energy_floor > 0.0)
+    if( opts.energy_floor>0.0 )
+    {
         log_energy_floor_ = Log(opts.energy_floor);
+    }
 
-    int32 padded_window_size = opts.frame_opts.PaddedWindowSize();
+    int padded_window_size = frame_opts.PaddedWindowSize();
     if ((padded_window_size & (padded_window_size-1)) == 0)  // Is a power of two...
         srfft_ = new SplitRadixRealFft<float>(padded_window_size);
 
@@ -97,11 +99,10 @@ MelBanks *KdMFCC::GetMelBanks(float vtln_warp)
 {
     MelBanks *this_mel_banks = NULL;
     std::map<float, MelBanks*>::iterator iter = mel_banks_.find(vtln_warp);
-    if (iter == mel_banks_.end())
+    if( iter==mel_banks_.end() )
     {
         this_mel_banks = new MelBanks(*(opts.mel_opts),
-                                      opts.frame_opts,
-                                      vtln_warp);
+                                      frame_opts, vtln_warp);
         mel_banks_[vtln_warp] = this_mel_banks;
     }
     else

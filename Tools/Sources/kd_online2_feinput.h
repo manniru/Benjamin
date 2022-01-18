@@ -42,8 +42,7 @@ private:
 
     kaldi::Vector<float> waveform_remainder_;
 
-    // waveform_offset_ is the number of samples of waveform that we have
-    // already discarded, i.e. that were prior to 'waveform_remainder_'.
+    // number of samples that discarded and were prior to 'waveform_remainder_'
     int64 waveform_offset;
 
     kaldi::DeltaFeatures *delta_features;

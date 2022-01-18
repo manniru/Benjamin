@@ -120,10 +120,9 @@ void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf, int len)
     ComputeFeatures();
 }
 
-
 void KdOnline2FeInput::ComputeFeatures()
 {
-    const FrameExtractionOptions &frame_opts = mfcc->opts.frame_opts;
+    const FrameExtractionOptions &frame_opts = mfcc->frame_opts;
     FeatureWindowFunction window_function(frame_opts);
     bool input_finished = false; //always input is not finished
     int64 num_samples_total = waveform_offset + waveform_remainder_.Dim();

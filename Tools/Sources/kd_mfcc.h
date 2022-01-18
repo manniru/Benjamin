@@ -28,7 +28,6 @@
 // for 8khz, 15 may be better.
 struct KdMfccOptions
 {
-    kaldi::FrameExtractionOptions frame_opts;
     kaldi::MelBanksOptions *mel_opts;
     int32 num_ceps = 13;  // num cepstral coeffs, counting zero.
     bool use_energy = false;  // use energy; else C0
@@ -55,6 +54,7 @@ public:
                  kaldi::VectorBase<float> *signal_frame,
                  kaldi::VectorBase<float> *feature);
     KdMfccOptions opts;
+    kaldi::FrameExtractionOptions frame_opts;
 
 protected:
     kaldi::MelBanks *GetMelBanks(float vtln_warp);
