@@ -13,10 +13,6 @@ void KdMFCC::Compute(float signal_raw_log_energy,
 
     const MelBanks &mel_banks = *(GetMelBanks(vtln_warp));
 
-    if (opts.use_energy && !opts.raw_energy)
-        signal_raw_log_energy = Log(std::max<float>(VecVec(*signal_frame, *signal_frame),
-                                                        std::numeric_limits<float>::epsilon()));
-
     if (srfft_ != NULL)  // Compute FFT using the split-radix algorithm.
         srfft_->Compute(signal_frame->Data(), true);
     else  // An alternative algorithm that works for non-powers-of-two.

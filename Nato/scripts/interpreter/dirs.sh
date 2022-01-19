@@ -74,6 +74,10 @@ elif [[ "$WORD" == "delete" ]]; then
     
     OUTPUT="111"
 
+elif [[ "$WORD" == "slash" ]]; then
+    
+    OUTPUT="53"
+
 elif [[ "$WORD" == "departure" ]]; then
     
     OUTPUT="1"

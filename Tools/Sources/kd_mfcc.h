@@ -5,6 +5,7 @@
 #include "feat/feature-window.h"
 #include "feat/feature-functions.h"
 #include <QString>
+#include "kd_window.h"
 
 /**
  @param [in] signal_raw_log_energy The log-energy of the frame of the signal
@@ -54,7 +55,7 @@ public:
                  kaldi::VectorBase<float> *signal_frame,
                  kaldi::VectorBase<float> *feature);
     KdMfccOptions opts;
-    kaldi::FrameExtractionOptions frame_opts;
+    KdWinOpt frame_opts;
 
 protected:
     kaldi::MelBanks *GetMelBanks(float vtln_warp);

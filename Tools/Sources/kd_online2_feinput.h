@@ -20,9 +20,9 @@ public:
                               QObject *parent = nullptr);
     ~KdOnline2FeInput();
 
-    int32 Dim();
-    int32 NumFramesReady();
-    void GetFrame(int32 frame, kaldi::VectorBase<float> *feat);
+    int  Dim();
+    int  NumFramesReady();
+    void GetFrame(int frame, kaldi::VectorBase<float> *feat);
     void FreezeCmvn();
 
     void AcceptWaveform(BtCyclic *buf, int len=0);

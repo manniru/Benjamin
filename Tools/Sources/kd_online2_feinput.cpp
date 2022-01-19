@@ -7,10 +7,9 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
 {
     rec_src = au_src;
     waveform_offset = 0;
-    std::string  global_cmvn_stats_rxfilename = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
+    std::string gcmvn__path = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
 
-    kd_readMatrix(global_cmvn_stats_rxfilename,
-                    &global_cmvn_stats_);
+    kd_readMatrix(gcmvn__path, &global_cmvn_stats_);
     Init();
 }
 
@@ -33,18 +32,18 @@ void KdOnline2FeInput::FreezeCmvn()
     cmvn->Freeze(o_features->Size() - 1, o_features);
 }
 
-int32 KdOnline2FeInput::Dim()
+int KdOnline2FeInput::Dim()
 {
-    int32 mfcc_dim = mfcc->Dim();
+    int mfcc_dim = mfcc->Dim();
     return mfcc_dim * (1 + delta_opts.order);
 }
 
-int32 KdOnline2FeInput::NumFramesReady()
+int KdOnline2FeInput::NumFramesReady()
 {
-    int32 num_frames = o_features->Size();
+    int num_frames = o_features->Size();
     // number of frames that is less to produce the output.
-    int32 context = delta_opts.order * delta_opts.window;
-    int32 ret     = num_frames - context;
+    int context = delta_opts.order * delta_opts.window;
+    int ret     = num_frames - context;
     if( ret>0 )
     {
         return ret;
@@ -52,13 +51,13 @@ int32 KdOnline2FeInput::NumFramesReady()
     return 0;
 }
 
-void KdOnline2FeInput::GetFrame(int32 frame,
+void KdOnline2FeInput::GetFrame(int frame,
                                 VectorBase<float> *feat)
 {
-    int32 context = delta_opts.order * delta_opts.window;
-    int32 left_frame = frame - context;
-    int32 right_frame = frame + context;
-    int32 src_frames_ready = o_features->Size();
+    int context = delta_opts.order * delta_opts.window;
+    int left_frame = frame - context;
+    int right_frame = frame + context;
+    int src_frames_ready = o_features->Size();
     if (left_frame < 0)
     {
         left_frame = 0;
@@ -73,10 +72,10 @@ void KdOnline2FeInput::GetFrame(int32 frame,
                  << "left_frame" << left_frame;
         return;
     }
-    int32 temp_num_frames = right_frame + 1 - left_frame;
-    int32 mfcc_dim = mfcc->Dim();
+    int temp_num_frames = right_frame + 1 - left_frame;
+    int mfcc_dim = mfcc->Dim();
     Matrix<BaseFloat> temp_src(temp_num_frames, mfcc_dim);
-    for( int32 t=left_frame ; t<=right_frame ; t++ )
+    for( int t=left_frame ; t<=right_frame ; t++ )
     {
         SubVector<BaseFloat> temp_row(temp_src, t - left_frame);
         temp_row.CopyFromVec(*(o_features->At(t)));////GET FRAME

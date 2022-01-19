@@ -56,7 +56,8 @@ HEADERS += \
     Sources/kd_online2_model.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
-    Sources/kd_token2.h
+    Sources/kd_token2.h \
+    Sources/kd_window.h
 
 SOURCES += \
     Sources/backend.cpp \
@@ -80,5 +81,6 @@ SOURCES += \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
     Sources/kd_token2.cpp \
+    Sources/kd_window.cpp \
     Sources/main.cpp
 
