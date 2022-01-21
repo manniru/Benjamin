@@ -6,6 +6,7 @@
 #include "feat/feature-functions.h"
 #include <QString>
 #include "kd_window.h"
+#include "kd_melbank.h"
 
 /**
  @param [in] signal_raw_log_energy The log-energy of the frame of the signal
@@ -58,12 +59,12 @@ public:
     KdWinOpt frame_opts;
 
 protected:
-    kaldi::MelBanks *GetMelBanks(float vtln_warp);
+    KdMelBanks *GetMelBanks(float vtln_warp);
 
     kaldi::Vector<float> lifter_coeffs_;
     kaldi::Matrix<float> dct_matrix_;  // matrix we left-multiply by to perform DCT.
     float log_energy_floor_;
-    std::map<float, kaldi::MelBanks*> mel_banks_;  // BaseFloat is VTLN coefficient.
+    std::map<float, KdMelBanks*> mel_banks_;  // float is VTLN coefficient.
     kaldi::SplitRadixRealFft<float> *srfft_;
 
     // note: mel_energies_ is specific to the frame we're processing, it's

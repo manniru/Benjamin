@@ -6596,7 +6596,8 @@ atocha AH0 T AA1 CH AH0
 atoll AE1 T AA2 L
 atoll(2) AE1 T AO2 L
 atoll(3) AH0 T OW1 L
-atom AE1 T AH0 M
+atom AE1 D AH0 M
+atom(orig) AE1 T AH0 M
 atomic AH0 T AA1 M IH0 K
 atomizer AE1 T AH0 M AY2 Z ER0
 atoms AE1 T AH0 M Z
@@ -97629,7 +97630,8 @@ quotable K W OW1 T AH0 B AH0 L
 quotas K W OW1 T AH0 Z
 quotation K W OW0 T EY1 SH AH0 N
 quotations K W OW0 T EY1 SH AH0 N Z
-quote K W OW1 T
+quote K OW1 T
+quote(orig) K W OW1 T
 quoted K W OW1 T IH0 D
 quotes K W OW1 T S
 quoth K W OW1 TH

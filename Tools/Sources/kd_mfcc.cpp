@@ -11,7 +11,7 @@ void KdMFCC::Compute(float signal_raw_log_energy,
     KALDI_ASSERT(signal_frame->Dim() == frame_opts.PaddedWindowSize() &&
                  feature->Dim() == this->Dim());
 
-    const MelBanks &mel_banks = *(GetMelBanks(vtln_warp));
+    KdMelBanks &mel_banks = *(GetMelBanks(vtln_warp));
 
     if (srfft_ != NULL)  // Compute FFT using the split-radix algorithm.
         srfft_->Compute(signal_frame->Data(), true);
@@ -84,20 +84,20 @@ KdMFCC::KdMFCC()
 
 KdMFCC::~KdMFCC()
 {
-    for (std::map<float, MelBanks*>::iterator iter = mel_banks_.begin();
+    for (std::map<float, KdMelBanks*>::iterator iter = mel_banks_.begin();
          iter != mel_banks_.end();
          ++iter)
         delete iter->second;
     delete srfft_;
 }
 
-MelBanks *KdMFCC::GetMelBanks(float vtln_warp)
+KdMelBanks *KdMFCC::GetMelBanks(float vtln_warp)
 {
-    MelBanks *this_mel_banks = NULL;
-    std::map<float, MelBanks*>::iterator iter = mel_banks_.find(vtln_warp);
+    KdMelBanks *this_mel_banks = NULL;
+    std::map<float, KdMelBanks*>::iterator iter = mel_banks_.find(vtln_warp);
     if( iter==mel_banks_.end() )
     {
-        this_mel_banks = new MelBanks(*(opts.mel_opts),
+        this_mel_banks = new KdMelBanks(*(opts.mel_opts),
                                       frame_opts, vtln_warp);
         mel_banks_[vtln_warp] = this_mel_banks;
     }
