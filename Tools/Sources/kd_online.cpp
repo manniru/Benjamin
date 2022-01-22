@@ -30,7 +30,7 @@ KdOnline::~KdOnline()
 
 void KdOnline::init()
 {
-    std::string model_rxfilename = BT_MDL_PATH;
+    std::string model_rxfilename = BT_OAMDL_PATH;
     QVector<int> silence_phones = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     trans_model = new TransitionModel;

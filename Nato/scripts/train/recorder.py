@@ -13,7 +13,7 @@ print("Directory = " + directory)
 
 # create random name from 3 digit
 def getRandomFileName(digit1, digit2, digit3):
-	rnd = random.randint(0,6)
+	rnd = random.randint(0,5)
 
 	if( rnd==0 ):
 		return str(digit1) + "_" + str(digit2) + "_" + str(digit3) + ".wav"
@@ -34,8 +34,8 @@ for i in range(REC_NUMBER):
 	digit2 = random.randint(0,WORD_COUNT)
 	#biased digit
 	#digit3 = random.randint(0,WORD_COUNT-67) + 67
-	digit3 = 4
-#	digit3 = random.randint(0,66)
+#	digit3 = 12
+	digit3 = random.randint(0,66)
 	#digit3 = random.randint(0,WORD_COUNT)
 	file_name = getRandomFileName(digit1, digit2, digit3)
 	file_path = str(directory) + "/" + file_name

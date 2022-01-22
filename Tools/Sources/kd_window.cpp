@@ -73,21 +73,18 @@ KdWindow::KdWindow()
     }
 }
 
-int KdWindow::NumFrames(int num_samples)
+int KdWindow::frameCount(int num_samples)
 {
-    int64 frame_shift = WindowShift();
-    int64 frame_length = WindowSize();
+    int frame_length = WindowSize();
     if( num_samples<frame_length )
     {
         return 0;
     }
     else
     {
+        int frame_shift = WindowShift();
         return (1 + ((num_samples - frame_length) / frame_shift));
     }
-    // 'num_samples - frame_length' is how much room we have to shift the frame within the
-    // waveform; 'frame_shift' is how much we shift it each time; and the ratio
-    // is how many times we can shift it (integer arithmetic rounds down).
 }
 
 void KdWindow::ExtractWindow(int sample_offset,

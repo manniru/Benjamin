@@ -8,24 +8,6 @@
 #include "kd_window.h"
 #include "kd_melbank.h"
 
-/**
- @param [in] signal_raw_log_energy The log-energy of the frame of the signal
-     prior to windowing and pre-emphasis, or
-     log(numeric_limits<float>::min()), whichever is greater.  Must be
-     ignored by this function if this class returns false from
-     this->NeedsRawLogEnergy().
- @param [in] vtln_warp  The VTLN warping factor that the user wants
-     to be applied when computing features for this utterance.  Will
-     normally be 1.0, meaning no warping is to be done.  The value will
-     be ignored for feature types that don't support VLTN, such as
-     spectrogram features.
- @param [in] signal_frame  One frame of the signal,
-   as extracted using the function ExtractWindow() using the options
-   returned by this->GetFrameOptions().  The function will use the
-   vector as a workspace, which is why it's a non-const pointer.
- @param [out] feature  Pointer to a vector of size this->Dim(), to which
-     the computed feature will be written.
-*/
 // 23 for 16khz-sampled data,
 // for 8khz, 15 may be better.
 struct KdMfccOptions
@@ -38,8 +20,6 @@ struct KdMfccOptions
     bool raw_energy = true;  // If true, compute energy before preemphasis and windowing
     float cepstral_lifter = 22.0;  // Scaling factor on cepstra for HTK compatibility.
     // if 0.0, no liftering is done.
-    bool htk_compat = false;  // if true, put energy/C0 last and introduce a factor of
-    // sqrt(2) on C0 to be the same as HTK.
 };
 
 class KdMFCC

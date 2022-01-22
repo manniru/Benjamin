@@ -2,11 +2,6 @@
 #define KD_ONLINE2_FEINPUT_H
 
 #include "bt_config.h"
-
-//#ifndef BT_LAT_ONLINE
-
-#include "online2/online-feature-pipeline.h"
-#include "feat/feature-mfcc.h"
 #include "bt_recorder.h"
 #include "kd_cmvn.h"
 #include "kd_matrix.h"
@@ -34,7 +29,6 @@ private:
     kaldi::Matrix<float> global_cmvn_stats_;
 
     KdCMVN *cmvn;
-    kaldi::OnlineCmvnOptions cmvn_opts;
     kaldi::DeltaFeaturesOptions delta_opts;
 
     kaldi::RecyclingVector *o_features;

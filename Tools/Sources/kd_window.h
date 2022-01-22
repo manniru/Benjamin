@@ -14,7 +14,7 @@ public:
     int WindowShift();
     int WindowSize();
     int PaddedWindowSize();
-    int NumFrames(int num_samples);
+    int frameCount(int num_samples);
     void ExtractWindow(int sample_offset,
                                  const kaldi::VectorBase<float> &wave,
                                  int f, kaldi::Vector<float> *window,

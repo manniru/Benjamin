@@ -22,7 +22,7 @@ void KdOnline2FeInput::Init()
     KALDI_ASSERT(global_cmvn_stats_.NumRows() != 0);
     Matrix<double> global_cmvn_stats_dbl(global_cmvn_stats_);
     OnlineCmvnState initial_state(global_cmvn_stats_dbl);
-    cmvn = new KdCMVN(cmvn_opts, initial_state, mfcc->Dim());
+    cmvn = new KdCMVN(initial_state, mfcc->Dim());
 
     delta_features = new DeltaFeatures(delta_opts);
 }
@@ -124,21 +124,20 @@ void KdOnline2FeInput::ComputeFeatures()
     KdWindow &frame_opts = mfcc->frame_opts;
     int64 num_samples_total = waveform_offset + waveform_remainder_.Dim();
     int32 num_frames_old = o_features->Size();
-    int32 num_frames_new = frame_opts.NumFrames(num_samples_total);
+    int32 num_frames_new = frame_opts.frameCount(num_samples_total);
     KALDI_ASSERT(num_frames_new >= num_frames_old);
 
     Vector<float> window;
-    for (int32 frame = num_frames_old; frame < num_frames_new; frame++)
+    for( int frame=num_frames_old ; frame<num_frames_new ; frame++)
     {
         frame_opts.ExtractWindow(waveform_offset, waveform_remainder_, frame,
                       &window, NULL); //dont need energy
 
-        Vector<float> *this_feature = new Vector<float>(mfcc->Dim(),
-                                                                kUndefined);
+        Vector<float> *features = new Vector<float>(mfcc->Dim(), kUndefined);
 
         float raw_log_energy = 0.0;
-        mfcc->Compute(raw_log_energy, &window, this_feature);
-        o_features->PushBack(this_feature);
+        mfcc->Compute(raw_log_energy, &window, features);
+        o_features->PushBack(features);
     }
     // OK, we will now discard any portion of the signal that will not be
     // necessary to compute frames in the future.

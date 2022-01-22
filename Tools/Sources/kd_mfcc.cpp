@@ -12,10 +12,8 @@ void KdMFCC::Compute(float signal_raw_log_energy,
 
     KdMelBanks &mel_banks = *(GetMelBanks());
 
-    if (srfft_ != NULL)  // Compute FFT using the split-radix algorithm.
-        srfft_->Compute(signal_frame->Data(), true);
-    else  // An alternative algorithm that works for non-powers-of-two.
-        RealFft(signal_frame, true);
+    // Compute FFT using the split-radix algorithm.
+    srfft_->Compute(signal_frame->Data(), true);
 
     // Convert the FFT into a power spectrum.
     ComputePowerSpectrum(signal_frame);
@@ -73,8 +71,7 @@ KdMFCC::KdMFCC()
     }
 
     int padded_window_size = frame_opts.PaddedWindowSize();
-    if ((padded_window_size & (padded_window_size-1)) == 0)  // Is a power of two...
-        srfft_ = new SplitRadixRealFft<float>(padded_window_size);
+    srfft_ = new SplitRadixRealFft<float>(padded_window_size);
 
     // We'll definitely need the filterbanks info for VTLN warping factor 1.0.
     // [note: this call caches it.]
