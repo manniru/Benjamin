@@ -7,8 +7,20 @@
 
 int kd_RoundP2(int n);
 
-struct KdWinOpt // FrameExtractionOptions
+class KdWindow // FrameExtractionOptions + FeatureWindowFunction
 {
+public:
+    KdWindow();
+    int WindowShift();
+    int WindowSize();
+    int PaddedWindowSize();
+    int NumFrames(int num_samples);
+    void ExtractWindow(int sample_offset,
+                                 const kaldi::VectorBase<float> &wave,
+                                 int f, kaldi::Vector<float> *window,
+                                 float *log_energy_pre_window);
+    int FirstSampleOfFrame(int32 frame);
+
     float samp_freq = BT_REC_RATE;
     float frame_shift_ms = 10.0;
     float frame_length_ms = 25.0;
@@ -23,18 +35,8 @@ struct KdWinOpt // FrameExtractionOptions
     bool allow_upsample = false;
     int max_feature_vectors = -1;
 
-    int WindowShift()
-    {
-        return samp_freq * 0.001 * frame_shift_ms;
-    }
-    int WindowSize()
-    {
-        return samp_freq * 0.001 * frame_length_ms;
-    }
-    int PaddedWindowSize()
-    {
-        return kd_RoundP2(WindowSize());
-    }
+private:
+    kaldi::Vector<float> window;
 };
 
 #endif // KD_WINDOW_H

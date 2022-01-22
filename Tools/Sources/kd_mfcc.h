@@ -56,7 +56,7 @@ public:
                  kaldi::VectorBase<float> *signal_frame,
                  kaldi::VectorBase<float> *feature);
     KdMfccOptions opts;
-    KdWinOpt frame_opts;
+    KdWindow frame_opts;
 
 protected:
     KdMelBanks *GetMelBanks(float vtln_warp);

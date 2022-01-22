@@ -74,10 +74,10 @@ void KdOnline2FeInput::GetFrame(int frame,
     }
     int temp_num_frames = right_frame + 1 - left_frame;
     int mfcc_dim = mfcc->Dim();
-    Matrix<BaseFloat> temp_src(temp_num_frames, mfcc_dim);
+    Matrix<float> temp_src(temp_num_frames, mfcc_dim);
     for( int t=left_frame ; t<=right_frame ; t++ )
     {
-        SubVector<BaseFloat> temp_row(temp_src, t - left_frame);
+        SubVector<float> temp_row(temp_src, t - left_frame);
         temp_row.CopyFromVec(*(o_features->At(t)));////GET FRAME
         cmvn->GetFrame(t, o_features, &temp_row);
     }
@@ -121,22 +121,19 @@ void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf, int len)
 
 void KdOnline2FeInput::ComputeFeatures()
 {
-    KdWinOpt &frame_opts = mfcc->frame_opts;
-    FeatureWindowFunction window_function(frame_opts);
-    bool input_finished = false; //always input is not finished
+    KdWindow &frame_opts = mfcc->frame_opts;
     int64 num_samples_total = waveform_offset + waveform_remainder_.Dim();
     int32 num_frames_old = o_features->Size();
-    int32 num_frames_new = NumFrames(num_samples_total, frame_opts,
-                                       input_finished);
+    int32 num_frames_new = frame_opts.NumFrames(num_samples_total);
     KALDI_ASSERT(num_frames_new >= num_frames_old);
 
-    Vector<BaseFloat> window;
+    Vector<float> window;
     for (int32 frame = num_frames_old; frame < num_frames_new; frame++)
     {
-        ExtractWindow(waveform_offset, waveform_remainder_, frame,
-                      frame_opts, window_function, &window, NULL); //dont need energy
+        frame_opts.ExtractWindow(waveform_offset, waveform_remainder_, frame,
+                      &window, NULL); //dont need energy
 
-        Vector<BaseFloat> *this_feature = new Vector<BaseFloat>(mfcc->Dim(),
+        Vector<float> *this_feature = new Vector<float>(mfcc->Dim(),
                                                                 kUndefined);
 
         float vtln_warp = 1.0; // this code does not support VTLN.
@@ -146,8 +143,7 @@ void KdOnline2FeInput::ComputeFeatures()
     }
     // OK, we will now discard any portion of the signal that will not be
     // necessary to compute frames in the future.
-    int64 first_sample_of_next_frame = FirstSampleOfFrame(num_frames_new,
-                                                          frame_opts);
+    int64 first_sample_of_next_frame = frame_opts.FirstSampleOfFrame(num_frames_new);
     int32 samples_to_discard = first_sample_of_next_frame - waveform_offset;
     if (samples_to_discard > 0)
     {
@@ -161,7 +157,7 @@ void KdOnline2FeInput::ComputeFeatures()
         }
         else
         {
-            Vector<BaseFloat> new_remainder(new_num_samples);
+            Vector<float> new_remainder(new_num_samples);
             new_remainder.CopyFromVec(waveform_remainder_.Range(samples_to_discard,
                                                                 new_num_samples));
             waveform_offset += samples_to_discard;

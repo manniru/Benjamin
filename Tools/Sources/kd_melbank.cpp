@@ -2,7 +2,7 @@
 
 using namespace kaldi;
 KdMelBanks::KdMelBanks(MelBanksOptions &opts,
-                   KdWinOpt &frame_opts, float vtln_warp_factor):
+                   KdWindow &frame_opts, float vtln_warp_factor):
     htk_mode_(opts.htk_mode) {
     int32 num_bins = opts.num_bins;
     if (num_bins < 3) KALDI_ERR << "Must have at least 3 mel bins";

@@ -19,8 +19,8 @@ public:
     }
 
     KdMelBanks(kaldi::MelBanksOptions &opts,
-             KdWinOpt &frame_opts,
-             float vtln_warp_factor);
+               KdWindow &frame_opts,
+               float vtln_warp_factor);
 
     /// Compute Mel energies (note: not log enerties).
     /// At input, "fft_energies" contains the FFT energies (not log).
