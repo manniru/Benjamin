@@ -52,14 +52,13 @@ public:
     bool NeedRawLogEnergy();
 
     void Compute(float signal_raw_log_energy,
-                 float vtln_warp,
                  kaldi::VectorBase<float> *signal_frame,
                  kaldi::VectorBase<float> *feature);
     KdMfccOptions opts;
     KdWindow frame_opts;
 
 protected:
-    KdMelBanks *GetMelBanks(float vtln_warp);
+    KdMelBanks *GetMelBanks();
 
     kaldi::Vector<float> lifter_coeffs_;
     kaldi::Matrix<float> dct_matrix_;  // matrix we left-multiply by to perform DCT.

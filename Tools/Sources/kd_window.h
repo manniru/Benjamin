@@ -19,6 +19,12 @@ public:
                                  const kaldi::VectorBase<float> &wave,
                                  int f, kaldi::Vector<float> *window,
                                  float *log_energy_pre_window);
+    void ProcessWindow(kaldi::VectorBase<float> *win,
+                       float *log_energy_pre_window = NULL);
+    void Preemphasize(kaldi::VectorBase<float> *waveform, float preemph_coeff);
+    void Dither(kaldi::VectorBase<float> *waveform, float dither_value);
+
+
     int FirstSampleOfFrame(int32 frame);
 
     float samp_freq = BT_REC_RATE;

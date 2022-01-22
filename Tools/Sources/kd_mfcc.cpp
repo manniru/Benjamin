@@ -4,14 +4,13 @@
 using namespace kaldi;
 
 void KdMFCC::Compute(float signal_raw_log_energy,
-                           float vtln_warp,
                            VectorBase<float> *signal_frame,
                            VectorBase<float> *feature)
 {
     KALDI_ASSERT(signal_frame->Dim() == frame_opts.PaddedWindowSize() &&
                  feature->Dim() == this->Dim());
 
-    KdMelBanks &mel_banks = *(GetMelBanks(vtln_warp));
+    KdMelBanks &mel_banks = *(GetMelBanks());
 
     if (srfft_ != NULL)  // Compute FFT using the split-radix algorithm.
         srfft_->Compute(signal_frame->Data(), true);
@@ -79,7 +78,7 @@ KdMFCC::KdMFCC()
 
     // We'll definitely need the filterbanks info for VTLN warping factor 1.0.
     // [note: this call caches it.]
-    GetMelBanks(1.0);
+    GetMelBanks();
 }
 
 KdMFCC::~KdMFCC()
@@ -91,15 +90,15 @@ KdMFCC::~KdMFCC()
     delete srfft_;
 }
 
-KdMelBanks *KdMFCC::GetMelBanks(float vtln_warp)
+KdMelBanks *KdMFCC::GetMelBanks()
 {
     KdMelBanks *this_mel_banks = NULL;
-    std::map<float, KdMelBanks*>::iterator iter = mel_banks_.find(vtln_warp);
+    std::map<float, KdMelBanks*>::iterator iter = mel_banks_.find(1.0);
     if( iter==mel_banks_.end() )
     {
         this_mel_banks = new KdMelBanks(*(opts.mel_opts),
-                                      frame_opts, vtln_warp);
-        mel_banks_[vtln_warp] = this_mel_banks;
+                                      frame_opts);
+        mel_banks_[1] = this_mel_banks;
     }
     else
     {

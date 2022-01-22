@@ -146,9 +146,33 @@ void KdWindow::ExtractWindow(int sample_offset,
     if (frame_length_padded > frame_length)
         win->Range(frame_length, frame_length_padded - frame_length).SetZero();
 
-    SubVector<BaseFloat> frame(*win, 0, frame_length);
+    SubVector<float> frame(*win, 0, frame_length);
 
     ProcessWindow(&frame, log_energy_pre_window);
+}
+
+
+void KdWindow::ProcessWindow(VectorBase<float> *win,
+                   BaseFloat *log_energy_pre_window)
+{
+    int frame_length = WindowSize();
+    KALDI_ASSERT(win->Dim() == frame_length);
+
+    Dither(win, dither);
+
+    // remove_dc_offset
+    win->Add(-win->Sum()/frame_length);
+
+    if (log_energy_pre_window != NULL)
+    {
+        float energy = std::max<float>(VecVec(*win, *win),
+                                               std::numeric_limits<float>::epsilon());
+        *log_energy_pre_window = Log(energy);
+    }
+
+    Preemphasize(win, preemph_coeff);
+
+    win->MulElements(window);
 }
 
 int KdWindow::FirstSampleOfFrame(int32 frame)
@@ -156,4 +180,30 @@ int KdWindow::FirstSampleOfFrame(int32 frame)
     return frame * WindowShift();
 }
 
+void KdWindow::Dither(VectorBase<float> *waveform, float dither_value)
+{
+    if (dither_value == 0.0)
+    {
+        return;
+    }
+    int dim = waveform->Dim();
+    BaseFloat *data = waveform->Data();
+    RandomState rstate;
+    for( int i=0 ; i<dim ; i++ )
+    {
+        data[i] += RandGauss(&rstate) * dither_value;
+    }
+}
+
+
+void KdWindow::Preemphasize(VectorBase<float> *waveform, float preemph_coeff)
+{
+    if (preemph_coeff == 0.0) return;
+    KALDI_ASSERT(preemph_coeff >= 0.0 && preemph_coeff <= 1.0);
+    for (int32 i = waveform->Dim()-1 ; i > 0 ; i-- )
+    {
+        (*waveform)(i) -= preemph_coeff * (*waveform)(i-1);
+    }
+    (*waveform)(0) -= preemph_coeff * (*waveform)(0);
+}
 

@@ -136,9 +136,8 @@ void KdOnline2FeInput::ComputeFeatures()
         Vector<float> *this_feature = new Vector<float>(mfcc->Dim(),
                                                                 kUndefined);
 
-        float vtln_warp = 1.0; // this code does not support VTLN.
         float raw_log_energy = 0.0;
-        mfcc->Compute(raw_log_energy, vtln_warp, &window, this_feature);
+        mfcc->Compute(raw_log_energy, &window, this_feature);
         o_features->PushBack(this_feature);
     }
     // OK, we will now discard any portion of the signal that will not be

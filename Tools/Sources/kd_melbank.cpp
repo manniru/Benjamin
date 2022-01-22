@@ -2,7 +2,7 @@
 
 using namespace kaldi;
 KdMelBanks::KdMelBanks(MelBanksOptions &opts,
-                   KdWindow &frame_opts, float vtln_warp_factor):
+                   KdWindow &frame_opts):
     htk_mode_(opts.htk_mode) {
     int32 num_bins = opts.num_bins;
     if (num_bins < 3) KALDI_ERR << "Must have at least 3 mel bins";
@@ -37,37 +37,21 @@ KdMelBanks::KdMelBanks(MelBanksOptions &opts,
     // spread out to the sides.
     float mel_freq_delta = (mel_high_freq - mel_low_freq) / (num_bins+1);
 
-    float vtln_low = opts.vtln_low,
-            vtln_high = opts.vtln_high;
-    if (vtln_high < 0.0) {
-        vtln_high += nyquist;
-    }
-
-    if (vtln_warp_factor != 1.0 &&
-            (vtln_low < 0.0 || vtln_low <= low_freq
-             || vtln_low >= high_freq
-             || vtln_high <= 0.0 || vtln_high >= high_freq
-             || vtln_high <= vtln_low))
-        KALDI_ERR << "Bad values in options: vtln-low " << vtln_low
-                  << " and vtln-high " << vtln_high << ", versus "
-                  << "low-freq " << low_freq << " and high-freq "
-                  << high_freq;
-
     bins_.resize(num_bins);
     center_freqs_.Resize(num_bins);
 
     for (int32 bin = 0; bin < num_bins; bin++)
     {
-        float left_mel = mel_low_freq + bin * mel_freq_delta,
-                center_mel = mel_low_freq + (bin + 1) * mel_freq_delta,
-                right_mel = mel_low_freq + (bin + 2) * mel_freq_delta;
+        float left_mel = mel_low_freq + bin * mel_freq_delta;
+        float center_mel = mel_low_freq + (bin + 1) * mel_freq_delta;
+        float right_mel = mel_low_freq + (bin + 2) * mel_freq_delta;
 
         center_freqs_(bin) = InverseMelScale(center_mel);
         // this_bin will be a vector of coefficients that is only
         // nonzero where this mel bin is active.
         Vector<float> this_bin(num_fft_bins);
-        int32 first_index = -1, last_index = -1;
-        for (int32 i = 0; i < num_fft_bins; i++) {
+        int first_index = -1, last_index = -1;
+        for( int i = 0; i < num_fft_bins; i++) {
             float freq = (fft_bin_width * i);  // Center frequency of this fft
             // bin.
             float mel = MelScale(freq);
@@ -132,48 +116,12 @@ void KdMelBanks::Compute(const VectorBase<float> &power_spectrum,
     }
 }
 
-void ComputeLifterCoeffs(float Q, VectorBase<float> *coeffs) {
-    // Compute liftering coefficients (scaling on cepstral coeffs)
-    // coeffs are numbered slightly differently from HTK: the zeroth
-    // index is C0, which is not affected.
-    for (int32 i = 0; i < coeffs->Dim(); i++)
-        (*coeffs)(i) = 1.0 + 0.5 * Q * sin (M_PI * i / Q);
+float KdMelBanks::MelScale(float freq)
+{
+    return 1127.0f * logf (1.0f + freq / 700.0f);
 }
 
-
-// Durbin's recursion - converts autocorrelation coefficients to the LPC
-// pTmp - temporal place [n]
-// pAC - autocorrelation coefficients [n + 1]
-// pLP - linear prediction coefficients [n] (predicted_sn = sum_1^P{a[i-1] * s[n-i]}})
-//       F(z) = 1 / (1 - A(z)), 1 is not stored in the demoninator
-float Durbin(int n, const float *pAC, float *pLP, float *pTmp) {
-    float ki;                // reflection coefficient
-    int i;
-    int j;
-
-    float E = pAC[0];
-
-    for (i = 0; i < n; i++) {
-        // next reflection coefficient
-        ki = pAC[i + 1];
-        for (j = 0; j < i; j++)
-            ki += pLP[j] * pAC[i - j];
-        ki = ki / E;
-
-        // new error
-        float c = 1 - ki * ki;
-        if (c < 1.0e-5) // remove NaNs for constan signal
-            c = 1.0e-5;
-        E *= c;
-
-        // new LP coefficients
-        pTmp[i] = -ki;
-        for (j = 0; j < i; j++)
-            pTmp[j] = pLP[j] - ki * pLP[i - j - 1];
-
-        for (j = 0; j <= i; j++)
-            pLP[j] = pTmp[j];
-    }
-
-    return E;
+float KdMelBanks::InverseMelScale(float mel_freq)
+{
+    return 700.0f * (expf (mel_freq / 1127.0f) - 1.0f);
 }
