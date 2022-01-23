@@ -3,10 +3,10 @@
 
 using namespace kaldi;
 
-void KdMFCC::Compute(float signal_raw_log_energy,
-                           VectorBase<float> *signal_frame,
-                           VectorBase<float> *feature)
+void KdMFCC::Compute(VectorBase<float> *signal_frame,
+                     VectorBase<float> *feature)
 {
+    mel_banks_ = NULL;
     KALDI_ASSERT(signal_frame->Dim() == frame_opts.PaddedWindowSize() &&
                  feature->Dim() == this->Dim());
 
@@ -32,12 +32,6 @@ void KdMFCC::Compute(float signal_raw_log_energy,
 
     if (opts.cepstral_lifter != 0.0)
         feature->MulElements(lifter_coeffs_);
-
-    if (opts.use_energy) {
-        if (opts.energy_floor > 0.0 && signal_raw_log_energy < log_energy_floor_)
-            signal_raw_log_energy = log_energy_floor_;
-        (*feature)(0) = signal_raw_log_energy;
-    }
 }
 
 KdMFCC::KdMFCC()
@@ -80,36 +74,22 @@ KdMFCC::KdMFCC()
 
 KdMFCC::~KdMFCC()
 {
-    for (std::map<float, KdMelBanks*>::iterator iter = mel_banks_.begin();
-         iter != mel_banks_.end();
-         ++iter)
-        delete iter->second;
+    if( mel_banks_ )
+        delete mel_banks_;
     delete srfft_;
 }
 
 KdMelBanks *KdMFCC::GetMelBanks()
 {
-    KdMelBanks *this_mel_banks = NULL;
-    std::map<float, KdMelBanks*>::iterator iter = mel_banks_.find(1.0);
-    if( iter==mel_banks_.end() )
+    if( mel_banks_==NULL )
     {
-        this_mel_banks = new KdMelBanks(*(opts.mel_opts),
+        mel_banks_ = new KdMelBanks(*(opts.mel_opts),
                                       frame_opts);
-        mel_banks_[1] = this_mel_banks;
     }
-    else
-    {
-        this_mel_banks = iter->second;
-    }
-    return this_mel_banks;
+    return mel_banks_;
 }
 
 int KdMFCC::Dim()
 {
     return opts.num_ceps;
-}
-
-bool KdMFCC::NeedRawLogEnergy()
-{
-    return opts.use_energy && opts.raw_energy;
 }

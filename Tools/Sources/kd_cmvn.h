@@ -4,29 +4,33 @@
 #include <QObject>
 #include <QThread>
 
-#include "feat/online-feature.h"
+#include "kd_cmvn.h"
+#include "kd_cmvn_state.h"
+#include "matrix/matrix-lib.h"
+#include "util/common-utils.h"
+#include "base/kaldi-error.h"
 
 class KdCMVN
 {
 public:
 
-    void GetFrame(int32 frame,
-                  kaldi::RecyclingVector *o_features,
+    void GetFrame(int frame,
+                  KdRecyclingVector *o_features,
                   kaldi::VectorBase<float> *feat);
 
     /// If you do have previous utterances from the same speaker
     /// you are supposed to initialize it by calling SetState
-    KdCMVN(kaldi::OnlineCmvnState &cmvn_state, int32 dim);
+    KdCMVN(KdCmvnState &cmvn_state, int32 dim);
 
-    void GetState(int32 cur_frame, kaldi::RecyclingVector *o_features,
-                  kaldi::OnlineCmvnState *cmvn_state);
+    void GetState(int32 cur_frame, KdRecyclingVector *o_features,
+                  KdCmvnState *cmvn_state);
 
     // This function can be used to modify the state of the CMVN computation
     // from outside, but must only be called before you have processed any data
     // (otherwise it will crash).
-    void SetState(kaldi::OnlineCmvnState cmvn_state);
+    void SetState(KdCmvnState cmvn_state);
     void Freeze(int32 cur_frame,
-                kaldi::RecyclingVector *o_features);
+                KdRecyclingVector *o_features);
 
     virtual ~KdCMVN();
 protected:
@@ -53,10 +57,10 @@ protected:
     /// Computes the raw CMVN stats for this frame, making use of (and updating if
     /// necessary) the cached statistics in raw_stats_.  This means the (x,
     /// x^2, count) stats for the last up to opts_.cmn_window frames.
-    void ComputeStatsForFrame(int32 frame, kaldi::RecyclingVector *o_features,
+    void ComputeStatsForFrame(int32 frame, KdRecyclingVector *o_features,
                               kaldi::MatrixBase<double> *stats);
 
-    kaldi::OnlineCmvnState orig_state_;   // reflects the state before we saw this
+    KdCmvnState orig_state_;   // reflects the state before we saw this
     // utterance.
     kaldi::Matrix<double> frozen_state_;  // If the user called Freeze(), this variable
     // will reflect the CMVN state that we froze

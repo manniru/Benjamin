@@ -14,7 +14,6 @@ struct KdMfccOptions
 {
     kaldi::MelBanksOptions *mel_opts;
     int32 num_ceps = 13;  // num cepstral coeffs, counting zero.
-    bool use_energy = false;  // use energy; else C0
     float energy_floor = 0;  // set to a value like 1.0 or 0.1 if
     // you disable dithering.
     bool raw_energy = true;  // If true, compute energy before preemphasis and windowing
@@ -29,10 +28,8 @@ public:
     ~KdMFCC();
 
     int Dim();
-    bool NeedRawLogEnergy();
 
-    void Compute(float signal_raw_log_energy,
-                 kaldi::VectorBase<float> *signal_frame,
+    void Compute(kaldi::VectorBase<float> *signal_frame,
                  kaldi::VectorBase<float> *feature);
     KdMfccOptions opts;
     KdWindow frame_opts;
@@ -43,7 +40,7 @@ protected:
     kaldi::Vector<float> lifter_coeffs_;
     kaldi::Matrix<float> dct_matrix_;  // matrix we left-multiply by to perform DCT.
     float log_energy_floor_;
-    std::map<float, KdMelBanks*> mel_banks_;  // float is VTLN coefficient.
+    KdMelBanks* mel_banks_;  // float is VTLN coefficient.
     kaldi::SplitRadixRealFft<float> *srfft_;
 
     // note: mel_energies_ is specific to the frame we're processing, it's

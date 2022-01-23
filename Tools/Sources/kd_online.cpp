@@ -53,7 +53,7 @@ void KdOnline::init()
 
 void KdOnline::startDecode()
 {
-    float acoustic_scale = 0.04;
+    float acoustic_scale = 0.08;
 
     KdOnline2Decodable decodable(ab_src, o2_model,
                              acoustic_scale);

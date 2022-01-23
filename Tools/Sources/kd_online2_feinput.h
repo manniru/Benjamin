@@ -31,7 +31,7 @@ private:
     KdCMVN *cmvn;
     kaldi::DeltaFeaturesOptions delta_opts;
 
-    kaldi::RecyclingVector *o_features;
+    KdRecyclingVector *o_features;
     KdMFCC *mfcc;
 
     kaldi::Vector<float> waveform_remainder_;

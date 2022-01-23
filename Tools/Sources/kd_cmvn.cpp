@@ -8,7 +8,7 @@
 
 using namespace kaldi;
 
-KdCMVN::KdCMVN(OnlineCmvnState &cmvn_state,
+KdCMVN::KdCMVN(KdCmvnState &cmvn_state,
                int32 dim)
 {
     temp_feats_dbl_.Resize(dim);
@@ -117,7 +117,7 @@ KdCMVN::~KdCMVN()
 }
 
 void KdCMVN::ComputeStatsForFrame(int32 frame,
-                                  kaldi::RecyclingVector *o_features,
+                                  KdRecyclingVector *o_features,
                                   MatrixBase<double> *stats_out)
 {
     KALDI_ASSERT(frame >= 0 && frame < o_features->Size());
@@ -125,7 +125,7 @@ void KdCMVN::ComputeStatsForFrame(int32 frame,
     int32 cur_frame;
     GetMostRecentCachedFrame(frame, &cur_frame, stats_out);
 
-    Vector<BaseFloat> &feats(temp_feats_);
+    Vector<float> &feats(temp_feats_);
     Vector<double> &feats_dbl(temp_feats_dbl_);
     while (cur_frame < frame)
     {
@@ -209,7 +209,7 @@ void KdCMVN::SmoothOnlineCmvnStats(const MatrixBase<double> &speaker_stats,
 }
 
 void KdCMVN::GetFrame(int32 frame,
-                      kaldi::RecyclingVector *o_features,
+                      KdRecyclingVector *o_features,
                       VectorBase<float> *feat)
 {
     KALDI_ASSERT(feat->Dim() == Dim);
@@ -232,7 +232,7 @@ void KdCMVN::GetFrame(int32 frame,
     // call the function ApplyCmvn declared in ../transform/cmvn.h, which
     // requires a matrix.
     // 1 row; num-cols == dim; stride  == dim.
-    SubMatrix<BaseFloat> feat_mat(feat->Data(), 1, Dim, Dim);
+    SubMatrix<float> feat_mat(feat->Data(), 1, Dim, Dim);
     // the function ApplyCmvn takes a matrix, so form a one-row matrix to give it.
     if( normalize_mean )
     {
@@ -244,7 +244,7 @@ void KdCMVN::GetFrame(int32 frame,
     }
 }
 
-void KdCMVN::Freeze(int32 cur_frame, kaldi::RecyclingVector *o_features)
+void KdCMVN::Freeze(int32 cur_frame, KdRecyclingVector *o_features)
 {
     Matrix<double> stats(2, Dim + 1);
     // get the raw CMVN stats
@@ -257,14 +257,14 @@ void KdCMVN::Freeze(int32 cur_frame, kaldi::RecyclingVector *o_features)
 }
 
 void KdCMVN::GetState(int32 cur_frame,
-                      RecyclingVector *o_features,
-                      OnlineCmvnState *state_out)
+                      KdRecyclingVector *o_features,
+                      KdCmvnState *state_out)
 {
     *state_out = this->orig_state_;
     { // This block updates state_out->speaker_cmvn_stats
         if (state_out->speaker_cmvn_stats.NumRows() == 0)
             state_out->speaker_cmvn_stats.Resize(2, Dim + 1);
-        Vector<BaseFloat> feat(Dim);
+        Vector<float> feat(Dim);
         Vector<double> feat_dbl(Dim);
         for (int32 t = 0; t <= cur_frame; t++)
         {
@@ -280,7 +280,7 @@ void KdCMVN::GetState(int32 cur_frame,
     state_out->frozen_state = frozen_state_;
 }
 
-void KdCMVN::SetState(OnlineCmvnState cmvn_state)
+void KdCMVN::SetState(KdCmvnState cmvn_state)
 {
     KALDI_ASSERT(cached_stats_modulo_.empty() &&
                  "You cannot call SetState() after processing data.");

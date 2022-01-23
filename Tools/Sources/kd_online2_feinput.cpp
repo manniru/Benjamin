@@ -18,10 +18,11 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
 void KdOnline2FeInput::Init()
 {
     mfcc = new KdMFCC;
-    o_features = new RecyclingVector;
+    o_features = new KdRecyclingVector;
     KALDI_ASSERT(global_cmvn_stats_.NumRows() != 0);
     Matrix<double> global_cmvn_stats_dbl(global_cmvn_stats_);
-    OnlineCmvnState initial_state(global_cmvn_stats_dbl);
+    KdCmvnState initial_state;
+    initial_state.global_cmvn_stats = global_cmvn_stats_dbl;
     cmvn = new KdCMVN(initial_state, mfcc->Dim());
 
     delta_features = new DeltaFeatures(delta_opts);
@@ -135,8 +136,7 @@ void KdOnline2FeInput::ComputeFeatures()
 
         Vector<float> *features = new Vector<float>(mfcc->Dim(), kUndefined);
 
-        float raw_log_energy = 0.0;
-        mfcc->Compute(raw_log_energy, &window, features);
+        mfcc->Compute(&window, features);
         o_features->PushBack(features);
     }
     // OK, we will now discard any portion of the signal that will not be
