@@ -23,7 +23,7 @@ public:
     kaldi::Vector<float> center_freqs_;
 
     // the "bins_" vector is a vector, one for each bin, of a pair(the vector of weights).
-    std::vector<std::pair<int32, kaldi::Vector<float> > > bins_;
+    std::vector<std::pair<int, kaldi::Vector<float> > > bins_;
 private:
     bool debug_;
     bool htk_mode_;

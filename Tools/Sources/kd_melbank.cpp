@@ -4,12 +4,12 @@ using namespace kaldi;
 KdMelBanks::KdMelBanks(MelBanksOptions &opts,
                    KdWindow &frame_opts):
     htk_mode_(opts.htk_mode) {
-    int32 num_bins = opts.num_bins;
+    int num_bins = opts.num_bins;
     if (num_bins < 3) KALDI_ERR << "Must have at least 3 mel bins";
     float sample_freq = frame_opts.samp_freq;
-    int32 window_length_padded = frame_opts.PaddedWindowSize();
+    int window_length_padded = frame_opts.PaddedWindowSize();
     KALDI_ASSERT(window_length_padded % 2 == 0);
-    int32 num_fft_bins = window_length_padded / 2;
+    int num_fft_bins = window_length_padded / 2;
     float nyquist = 0.5 * sample_freq;
 
     float low_freq = opts.low_freq, high_freq;
@@ -40,7 +40,7 @@ KdMelBanks::KdMelBanks(MelBanksOptions &opts,
     bins_.resize(num_bins);
     center_freqs_.Resize(num_bins);
 
-    for (int32 bin = 0; bin < num_bins; bin++)
+    for (int bin = 0; bin < num_bins; bin++)
     {
         float left_mel = mel_low_freq + bin * mel_freq_delta;
         float center_mel = mel_low_freq + (bin + 1) * mel_freq_delta;
@@ -71,7 +71,7 @@ KdMelBanks::KdMelBanks(MelBanksOptions &opts,
                 && "You may have set --num-mel-bins too large.");
 
         bins_[bin].first = first_index;
-        int32 size = last_index + 1 - first_index;
+        int size = last_index + 1 - first_index;
         bins_[bin].second.Resize(size);
         bins_[bin].second.CopyFromVec(this_bin.Range(first_index, size));
 
@@ -91,11 +91,11 @@ KdMelBanks::KdMelBanks(MelBanksOptions &opts,
 // "power_spectrum" contains fft energies.
 void KdMelBanks::Compute(const VectorBase<float> &power_spectrum,
                        VectorBase<float> *mel_energies_out) const {
-    int32 num_bins = bins_.size();
+    int num_bins = bins_.size();
     KALDI_ASSERT(mel_energies_out->Dim() == num_bins);
 
-    for (int32 i = 0; i < num_bins; i++) {
-        int32 offset = bins_[i].first;
+    for (int i = 0; i < num_bins; i++) {
+        int offset = bins_[i].first;
         const Vector<float> &v(bins_[i].second);
         float energy = VecVec(v, power_spectrum.Range(offset, v.Dim()));
         // HTK-like flooring- for testing purposes (we prefer dither)
@@ -110,7 +110,7 @@ void KdMelBanks::Compute(const VectorBase<float> &power_spectrum,
 
     if (debug_) {
         fprintf(stderr, "MEL BANKS:\n");
-        for (int32 i = 0; i < num_bins; i++)
+        for (int i = 0; i < num_bins; i++)
             fprintf(stderr, " %f", (*mel_energies_out)(i));
         fprintf(stderr, "\n");
     }

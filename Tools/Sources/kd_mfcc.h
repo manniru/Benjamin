@@ -13,7 +13,7 @@
 struct KdMfccOptions
 {
     kaldi::MelBanksOptions *mel_opts;
-    int32 num_ceps = 13;  // num cepstral coeffs, counting zero.
+    int num_ceps = 13;  // num cepstral coeffs, counting zero.
     float energy_floor = 0;  // set to a value like 1.0 or 0.1 if
     // you disable dithering.
     bool raw_energy = true;  // If true, compute energy before preemphasis and windowing

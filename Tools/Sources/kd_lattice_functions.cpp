@@ -2,7 +2,7 @@
 
 using namespace kaldi;
 
-void kd_latticeGetTimes(Lattice *lat, std::vector<int32> *times)
+void kd_latticeGetTimes(Lattice *lat, std::vector<int> *times)
 {
     if( !lat->Properties(fst::kTopSorted, true) )
     {
@@ -10,15 +10,15 @@ void kd_latticeGetTimes(Lattice *lat, std::vector<int32> *times)
     }
 
     KALDI_ASSERT(lat->Start() == 0);
-    int32 num_states = lat->NumStates();
+    int num_states = lat->NumStates();
 
     times->clear();
     times->resize(num_states, -1);
 
     (*times)[0] = 0;
-    for( int32 state=0 ; state<num_states; state++ )
+    for( int state=0 ; state<num_states; state++ )
     {
-        int32 cur_time = (*times)[state];
+        int cur_time = (*times)[state];
         for (fst::ArcIterator<Lattice> aiter(*lat, state); !aiter.Done();
              aiter.Next())
         {

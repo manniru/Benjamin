@@ -22,7 +22,7 @@ public:
 
 
     /// Returns the scaled log likelihood
-    float LogLikelihood(int32 frame, int index);
+    float LogLikelihood(int frame, int index);
 
     int NumFramesReady();
 
@@ -36,10 +36,10 @@ private:
     kaldi::AmDiagGmm *ac_model;
     float ac_scale_;
     kaldi::TransitionModel *trans_model;
-    int32 feat_dim;  // dimensionality of the input features
+    int feat_dim;  // dimensionality of the input features
     kaldi::Vector<float> cur_feats_;
-    int32 cur_frame_;
-    std::vector<std::pair<int32, float> > cache_;
+    int cur_frame_;
+    std::vector<std::pair<int, float> > cache_;
 };
 
 

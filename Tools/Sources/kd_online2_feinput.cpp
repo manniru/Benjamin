@@ -25,7 +25,7 @@ void KdOnline2FeInput::Init()
     initial_state.global_cmvn_stats = global_cmvn_stats_dbl;
     cmvn = new KdCMVN(initial_state, mfcc->Dim());
 
-    delta_features = new DeltaFeatures(delta_opts);
+    delta = new KdDelta;
 }
 
 void KdOnline2FeInput::FreezeCmvn()
@@ -36,14 +36,14 @@ void KdOnline2FeInput::FreezeCmvn()
 int KdOnline2FeInput::Dim()
 {
     int mfcc_dim = mfcc->Dim();
-    return mfcc_dim * (1 + delta_opts.order);
+    return mfcc_dim * (1 + delta->order);
 }
 
 int KdOnline2FeInput::NumFramesReady()
 {
     int num_frames = o_features->Size();
     // number of frames that is less to produce the output.
-    int context = delta_opts.order * delta_opts.window;
+    int context = delta->order * delta->window;
     int ret     = num_frames - context;
     if( ret>0 )
     {
@@ -55,7 +55,7 @@ int KdOnline2FeInput::NumFramesReady()
 void KdOnline2FeInput::GetFrame(int frame,
                                 VectorBase<float> *feat)
 {
-    int context = delta_opts.order * delta_opts.window;
+    int context = delta->order * delta->window;
     int left_frame = frame - context;
     int right_frame = frame + context;
     int src_frames_ready = o_features->Size();
@@ -82,9 +82,9 @@ void KdOnline2FeInput::GetFrame(int frame,
         temp_row.CopyFromVec(*(o_features->At(t)));////GET FRAME
         cmvn->GetFrame(t, o_features, &temp_row);
     }
-    int32 temp_t = frame - left_frame;  // temp_t is the offset of frame "frame"
+    int temp_t = frame - left_frame;  // temp_t is the offset of frame "frame"
                                         // within temp_src
-    delta_features->Process(temp_src, temp_t, feat);
+    delta->Process(temp_src, temp_t, feat);
 }
 
 KdOnline2FeInput::~KdOnline2FeInput()
@@ -123,9 +123,9 @@ void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf, int len)
 void KdOnline2FeInput::ComputeFeatures()
 {
     KdWindow &frame_opts = mfcc->frame_opts;
-    int64 num_samples_total = waveform_offset + waveform_remainder_.Dim();
-    int32 num_frames_old = o_features->Size();
-    int32 num_frames_new = frame_opts.frameCount(num_samples_total);
+    int num_samples_total = waveform_offset + waveform_remainder_.Dim();
+    int num_frames_old = o_features->Size();
+    int num_frames_new = frame_opts.frameCount(num_samples_total);
     KALDI_ASSERT(num_frames_new >= num_frames_old);
 
     Vector<float> window;
@@ -141,12 +141,12 @@ void KdOnline2FeInput::ComputeFeatures()
     }
     // OK, we will now discard any portion of the signal that will not be
     // necessary to compute frames in the future.
-    int64 first_sample_of_next_frame = frame_opts.FirstSampleOfFrame(num_frames_new);
-    int32 samples_to_discard = first_sample_of_next_frame - waveform_offset;
+    int first_sample_of_next_frame = frame_opts.FirstSampleOfFrame(num_frames_new);
+    int samples_to_discard = first_sample_of_next_frame - waveform_offset;
     if (samples_to_discard > 0)
     {
         // discard the leftmost part of the waveform that we no longer need.
-        int32 new_num_samples = waveform_remainder_.Dim() - samples_to_discard;
+        int new_num_samples = waveform_remainder_.Dim() - samples_to_discard;
         if (new_num_samples <= 0)
         {
             // odd, but we'll try to handle it.

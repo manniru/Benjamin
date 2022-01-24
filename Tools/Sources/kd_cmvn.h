@@ -20,16 +20,16 @@ public:
 
     /// If you do have previous utterances from the same speaker
     /// you are supposed to initialize it by calling SetState
-    KdCMVN(KdCmvnState &cmvn_state, int32 dim);
+    KdCMVN(KdCmvnState &cmvn_state, int dim);
 
-    void GetState(int32 cur_frame, KdRecyclingVector *o_features,
+    void GetState(int cur_frame, KdRecyclingVector *o_features,
                   KdCmvnState *cmvn_state);
 
     // This function can be used to modify the state of the CMVN computation
     // from outside, but must only be called before you have processed any data
     // (otherwise it will crash).
     void SetState(KdCmvnState cmvn_state);
-    void Freeze(int32 cur_frame,
+    void Freeze(int cur_frame,
                 KdRecyclingVector *o_features);
 
     virtual ~KdCMVN();
@@ -44,12 +44,12 @@ protected:
 
     /// Get the most recent cached frame of CMVN stats.  [If no frames
     /// were cached, sets up empty stats for frame zero and returns that].
-    void GetMostRecentCachedFrame(int32 frame,
-                                  int32 *cached_frame,
+    void GetMostRecentCachedFrame(int frame,
+                                  int *cached_frame,
                                   kaldi::MatrixBase<double> *stats);
 
     /// Cache this frame of stats.
-    void CacheFrame(int32 frame, const kaldi::MatrixBase<double> &stats);
+    void CacheFrame(int frame, const kaldi::MatrixBase<double> &stats);
 
     /// Initialize ring buffer for caching stats.
     inline void InitRingBufferIfNeeded();
@@ -57,7 +57,7 @@ protected:
     /// Computes the raw CMVN stats for this frame, making use of (and updating if
     /// necessary) the cached statistics in raw_stats_.  This means the (x,
     /// x^2, count) stats for the last up to opts_.cmn_window frames.
-    void ComputeStatsForFrame(int32 frame, KdRecyclingVector *o_features,
+    void ComputeStatsForFrame(int frame, KdRecyclingVector *o_features,
                               kaldi::MatrixBase<double> *stats);
 
     KdCmvnState orig_state_;   // reflects the state before we saw this
@@ -71,9 +71,9 @@ protected:
     // contains the (count, x, x^2) statistics for the frames from
     // std::max(0, n - opts_.cmn_window) through n.
     std::vector<kaldi::Matrix<double>*> cached_stats_modulo_;
-    // the variable below is a ring-buffer of cached stats.  the int32 is the
+    // the variable below is a ring-buffer of cached stats.  the int is the
     // frame index.
-    std::vector<std::pair<int32, kaldi::Matrix<double> > > cached_stats_ring_;
+    std::vector<std::pair<int, kaldi::Matrix<double> > > cached_stats_ring_;
 
     // Some temporary variables used inside functions of this class, which
     // put here to avoid reallocation.
@@ -86,7 +86,7 @@ protected:
     int global_frames = 200;  // must be <= speaker_frames.
     bool normalize_mean = true;  // Must be true if normalize_variance==true.
     bool normalize_variance = false;
-    int32 Dim; ///REMOVE THIS
+    int Dim; ///REMOVE THIS
 
     int modulus = 20;  // smaller->more time-efficient but less memory-efficient.
                          // Must be >= 1.

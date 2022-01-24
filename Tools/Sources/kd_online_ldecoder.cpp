@@ -108,7 +108,7 @@ void KdOnlineLDecoder::createStates(Lattice *ofst)
 
     // First create all states.
     std::vector<KdToken2*> token_list;
-    for( int32 f=0 ; f<end ; f++ )
+    for( int f=0 ; f<end ; f++ )
     {
         if( frame_toks[f].toks==NULL )
         {

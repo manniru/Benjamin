@@ -11,8 +11,8 @@ KdOnline2Decodable::KdOnline2Decodable(BtRecorder *au_src, KdOnline2Model *mdl, 
     ac_model = mdl->GetOnlineAlignmentModel();
     trans_model = mdl->GetTransitionModel();
 
-    int32 num_pdfs = trans_model->NumPdfs();
-    cache_.resize(num_pdfs, std::pair<int32,BaseFloat>(-1, 0.0f));
+    int num_pdfs = trans_model->NumPdfs();
+    cache_.resize(num_pdfs, std::pair<int,BaseFloat>(-1, 0.0f));
 
     features = new KdOnline2FeInput(au_src);
     feat_dim = features->Dim();
@@ -33,14 +33,14 @@ void KdOnline2Decodable::CacheFrame(int frame)
     cur_frame_ = frame;
 }
 
-float KdOnline2Decodable::LogLikelihood(int32 frame, int index)
+float KdOnline2Decodable::LogLikelihood(int frame, int index)
 {
     if (frame != cur_frame_)
     {
         CacheFrame(frame);
     }
 
-    int32 pdf_id = trans_model->TransitionIdToPdf(index);
+    int pdf_id = trans_model->TransitionIdToPdf(index);
     if (cache_[pdf_id].first == frame)
     {
         return cache_[pdf_id].second;
@@ -57,7 +57,7 @@ int KdOnline2Decodable::NumFramesReady()
     return features->NumFramesReady();
 }
 
-int32 KdOnline2Decodable::NumIndices()
+int KdOnline2Decodable::NumIndices()
 {
     return trans_model->NumTransitionIds();
 }

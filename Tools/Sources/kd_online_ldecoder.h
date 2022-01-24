@@ -22,10 +22,10 @@
 
 struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
 {
-    int32 batch_size = 27;       // number of features decoded in one go
-    int32 inter_utt_sil = 50;    // minimum silence (#frames) to trigger end of utterance
-    int32 max_utt_len_  = 1500;  // if utt. is longer, we accept shorter silence as utt. separators
-    int32 update_interval = 3;   // beam update period in # of frames
+    int batch_size = 27;       // number of features decoded in one go
+    int inter_utt_sil = 50;    // minimum silence (#frames) to trigger end of utterance
+    int max_utt_len_  = 1500;  // if utt. is longer, we accept shorter silence as utt. separators
+    int update_interval = 3;   // beam update period in # of frames
     float beam_update = 0.01;    // rate of adjustment of the beam
 };
 
@@ -59,11 +59,11 @@ public:
 
 private:
     void ResetDecoder();
-    bool GetiSymbol(kaldi::Lattice *fst, std::vector<int32> *isymbols_out);
+    bool GetiSymbol(kaldi::Lattice *fst, std::vector<int> *isymbols_out);
 
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token
-    void TracebackNFrames(int32 nframes, kaldi::Lattice *out_fst);
+    void TracebackNFrames(int nframes, kaldi::Lattice *out_fst);
     KdToken2* getBestTok();
 
     // Searches for the last token, ancestor of all currently active tokens

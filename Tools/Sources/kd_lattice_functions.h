@@ -15,6 +15,6 @@
 #include "lat/kaldi-lattice.h"
 #include "itf/decodable-itf.h"
 
-void kd_latticeGetTimes(kaldi::Lattice *lat, std::vector<int32> *times);
+void kd_latticeGetTimes(kaldi::Lattice *lat, std::vector<int> *times);
 
 #endif // KD_LATTICE_FUNCTIONS_H

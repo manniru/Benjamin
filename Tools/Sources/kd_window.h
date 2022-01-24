@@ -25,7 +25,7 @@ public:
     void Dither(kaldi::VectorBase<float> *waveform, float dither_value);
 
 
-    int FirstSampleOfFrame(int32 frame);
+    int FirstSampleOfFrame(int frame);
 
     float samp_freq = BT_REC_RATE;
     float frame_shift_ms = 10.0;

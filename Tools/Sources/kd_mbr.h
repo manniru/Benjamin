@@ -13,9 +13,9 @@
 
 struct KdMBRArc
 {
-    int32 word;
-    int32 start_node;
-    int32 end_node;
+    int word;
+    int start_node;
+    int end_node;
     float loglike;
 };
 
@@ -34,7 +34,7 @@ class KdMBR
 public:
     KdMBR(kaldi::CompactLattice *clat);
 
-    std::vector<int32> GetOneBest();
+    std::vector<int> GetOneBest();
     std::vector<std::vector<std::pair<float, float> > > GetTimes();
     std::vector<std::pair<float, float> > GetSausageTimes();
     std::vector<std::pair<float, float> > GetOneBestTimes();
@@ -47,10 +47,10 @@ private:
     void MbrDecode(); // Figure 6 of the paper.
 
     // gives edit-distance function l(a,b)
-    double l_distance(int32 a, int32 b, bool penalize = false);
+    double l_distance(int a, int b, bool penalize = false);
 
     /// Figure 4 of the paper; called from AccStats (Fig. 5)
-    double EditDistance(int32 N, int32 Q,
+    double EditDistance(int N, int Q,
                         kaldi::Vector<double> &alpha,
                         kaldi::Matrix<double> &alpha_dash,
                         kaldi::Vector<double> &alpha_dash_arc);
@@ -59,14 +59,14 @@ private:
     void AccStats();
 
     /// Removes epsilons (symbol 0) from a vector
-    void RemoveEps(std::vector<int32> *vec);
+    void RemoveEps(std::vector<int> *vec);
 
     // Ensures that between each word in "vec" and at the beginning and end, is
     // epsilon (0).  (But if no words in vec, just one epsilon)
-    void NormalizeEps(std::vector<int32> *vec);
+    void NormalizeEps(std::vector<int> *vec);
 
 
-    void AddToMap(int32 i, double d, std::map<int32, double> *gamma);
+    void AddToMap(int i, double d, std::map<int, double> *gamma);
 
     kaldi::MinimumBayesRiskOptions opts;
 
@@ -77,19 +77,19 @@ private:
 
     /// For each node in the lattice, a list of arcs entering that node. Indexed
     /// from 1 (first node == 1).
-    std::vector<std::vector<int32> > pre_;
+    std::vector<std::vector<int> > pre_;
 
-    std::vector<int32> state_times_; // time of each state in the word lattice,
+    std::vector<int> state_times_; // time of each state in the word lattice,
     // indexed from 1 (same index as into pre_)
 
-    std::vector<int32> R_; // current 1-best word sequence, normalized to have
+    std::vector<int> R_; // current 1-best word sequence, normalized to have
     // epsilons between each word and at the beginning and end.  R in paper...
     // caution: indexed from zero, not from 1 as in paper.
 
     double L_; // current averaged edit-distance between lattice and R_.
     // \hat{L} in paper.
 
-    std::vector<std::vector<std::pair<int32, float> > > gamma_;
+    std::vector<std::vector<std::pair<int, float> > > gamma_;
     // The stats we accumulate; these are pairs of (posterior, word-id), and note
     // that word-id may be epsilon.
 

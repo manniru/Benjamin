@@ -6,6 +6,7 @@
 #include "kd_cmvn.h"
 #include "kd_matrix.h"
 #include "kd_mfcc.h"
+#include "kd_delta.h"
 
 class KdOnline2FeInput: public QObject
 {
@@ -26,20 +27,16 @@ public:
 private:
     void Init();
 
-    kaldi::Matrix<float> global_cmvn_stats_;
-
-    KdCMVN *cmvn;
-    kaldi::DeltaFeaturesOptions delta_opts;
-
-    KdRecyclingVector *o_features;
     KdMFCC *mfcc;
-
-    kaldi::Vector<float> waveform_remainder_;
+    kaldi::Matrix<float> global_cmvn_stats_;
+    KdCMVN *cmvn;
+    KdRecyclingVector *o_features;
 
     // number of samples that discarded and were prior to 'waveform_remainder_'
-    int64 waveform_offset;
+    int waveform_offset;
+    kaldi::Vector<float> waveform_remainder_;
 
-    kaldi::DeltaFeatures *delta_features;
+    KdDelta    *delta;
     BtRecorder *rec_src;
     QThread    *rec_thread;
 };

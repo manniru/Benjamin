@@ -36,17 +36,17 @@ void KdFasterDecoder::Decode(DecodableInterface *decodable)
 /// object, but if max_num_frames is >= 0 it will decode no more than
 /// that many frames.
 void KdFasterDecoder::AdvanceDecoding(DecodableInterface *decodable,
-                                      int32 max_num_frames)
+                                      int max_num_frames)
 {
     KALDI_ASSERT(num_frames_decoded_ >= 0 &&
                  "You must call InitDecoding() before AdvanceDecoding()");
-    int32 num_frames_ready = decodable->NumFramesReady();
+    int num_frames_ready = decodable->NumFramesReady();
     // num_frames_ready must be >= num_frames_decoded, or else
     // the number of frames ready must have decreased (which doesn't
     // make sense) or the decodable object changed between calls
     // (which isn't allowed).
     KALDI_ASSERT(num_frames_ready >= num_frames_decoded_);
-    int32 target_frames_decoded = num_frames_ready;
+    int target_frames_decoded = num_frames_ready;
     if (max_num_frames >= 0)
     {
         target_frames_decoded = std::min(target_frames_decoded,
@@ -60,7 +60,7 @@ void KdFasterDecoder::AdvanceDecoding(DecodableInterface *decodable,
     }
 }
 
-int32 KdFasterDecoder::NumFramesDecoded()
+int KdFasterDecoder::NumFramesDecoded()
 {
     return num_frames_decoded_;
 }
@@ -265,7 +265,7 @@ double KdFasterDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *decod
 // and then increments num_frames_decoded_
 double KdFasterDecoder::ProcessEmitting(DecodableInterface *decodable)
 {
-    int32 frame = num_frames_decoded_;
+    int frame = num_frames_decoded_;
 //    ClearToks(toks_.Clear());
     Elem *last_toks = toks_.Clear();
     size_t tok_cnt;

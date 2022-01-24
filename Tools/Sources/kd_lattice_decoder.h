@@ -45,11 +45,11 @@ protected:
     Elem *FindOrAddToken(KdStateId state, float  tot_cost,
                          bool *changed);
 
-    bool PruneForwardLinks(int32 frame, bool *extra_costs_changed, float delta);
+    bool PruneForwardLinks(int frame, bool *extra_costs_changed, float delta);
     void ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
                            float *final_relative_cost, float *final_best_cost);
 
-    void PruneTokensForFrame(int32 frame);
+    void PruneTokensForFrame(int frame);
     void PruneActiveTokens(float delta);
 
     float GetCutoff(Elem *list_head, size_t *tok_count, Elem **best_elem);
@@ -74,7 +74,7 @@ protected:
 
     QVector<float> cost_offsets; //offset that keep costs close to
     // zero, to reduce roundoff errors.
-    int32 num_toks_; // current total #toks allocated...
+    int num_toks_; // current total #toks allocated...
     bool warned_;
 
     bool decoding_finalized_; // true if someone called FinalizeDecoding().

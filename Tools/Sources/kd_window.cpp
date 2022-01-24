@@ -32,11 +32,11 @@ int KdWindow::PaddedWindowSize()
 
 KdWindow::KdWindow()
 {
-    int32 frame_length = WindowSize();
+    int frame_length = WindowSize();
     KALDI_ASSERT(frame_length > 0);
     window.Resize(frame_length);
     double a = M_2PI / (frame_length-1);
-    for (int32 i = 0; i < frame_length; i++)
+    for (int i = 0; i < frame_length; i++)
     {
         double i_fl = static_cast<double>(i);
         if (window_type == "hanning")
@@ -122,10 +122,10 @@ void KdWindow::ExtractWindow(int sample_offset,
         // Deal with any end effects by reflection, if needed.  This code will only
         // be reached for about two frames per utterance, so we don't concern
         // ourselves excessively with efficiency.
-        int32 wave_dim = wave.Dim();
-        for (int32 s = 0; s < frame_length; s++)
+        int wave_dim = wave.Dim();
+        for (int s = 0; s < frame_length; s++)
         {
-            int32 s_in_wave = s + wave_start;
+            int s_in_wave = s + wave_start;
             while (s_in_wave < 0 || s_in_wave >= wave_dim)
             {
                 // reflect around the beginning or end of the wave.
@@ -172,7 +172,7 @@ void KdWindow::ProcessWindow(VectorBase<float> *win,
     win->MulElements(window);
 }
 
-int KdWindow::FirstSampleOfFrame(int32 frame)
+int KdWindow::FirstSampleOfFrame(int frame)
 {
     return frame * WindowShift();
 }
@@ -197,7 +197,7 @@ void KdWindow::Preemphasize(VectorBase<float> *waveform, float preemph_coeff)
 {
     if (preemph_coeff == 0.0) return;
     KALDI_ASSERT(preemph_coeff >= 0.0 && preemph_coeff <= 1.0);
-    for (int32 i = waveform->Dim()-1 ; i > 0 ; i-- )
+    for (int i = waveform->Dim()-1 ; i > 0 ; i-- )
     {
         (*waveform)(i) -= preemph_coeff * (*waveform)(i-1);
     }

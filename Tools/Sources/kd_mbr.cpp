@@ -9,8 +9,8 @@ struct GammaCompare
     // should be like operator <.  But we want reverse order
     // on the 2nd element (posterior), so it'll be like operator
     // > that looks first at the posterior.
-    bool operator () (const std::pair<int32, float> &a,
-                      const std::pair<int32, float> &b) const {
+    bool operator () (const std::pair<int, float> &a,
+                      const std::pair<int, float> &b) const {
         if (a.second > b.second) return true;
         else if (a.second < b.second) return false;
         else return a.first > b.first;
@@ -35,9 +35,9 @@ void KdMBR::MbrDecode()
             if (opts.decode_mbr)
             { // This loop updates R_ [indexed same as gamma_].
                 // gamma_[i] is sorted in reverse order so most likely one is first.
-                const std::vector<std::pair<int32, BaseFloat> > &this_gamma = gamma_[q];
+                const std::vector<std::pair<int, BaseFloat> > &this_gamma = gamma_[q];
                 double old_gamma = 0, new_gamma = this_gamma[0].second;
-                int32 rq = R_[q], rhat = this_gamma[0].first; // rq: old word, rhat: new.
+                int rq = R_[q], rhat = this_gamma[0].first; // rq: old word, rhat: new.
                 for (size_t j = 0; j < this_gamma.size(); j++)
                     if (this_gamma[j].first == rq) old_gamma = this_gamma[j].second;
                 delta_Q += (old_gamma - new_gamma); // will be 0 or negative; a bound on
@@ -51,8 +51,8 @@ void KdMBR::MbrDecode()
             {
                 // see which 'item' from the sausage-bin should we select,
                 // (not necessarily the 1st one when MBR decoding disabled)
-                int32 s = 0;
-                for (int32 j=0; j<gamma_[q].size(); j++) {
+                int s = 0;
+                for (int j=0; j<gamma_[q].size(); j++) {
                     if (gamma_[q][j].first == R_[q]) {
                         s = j;
                         break;
@@ -83,7 +83,7 @@ void KdMBR::MbrDecode()
                     one_best_times_[i-1].second = right;
                 }
                 float confidence = 0.0;
-                for (int32 j = 0; j < gamma_[q].size(); j++) {
+                for (int j = 0; j < gamma_[q].size(); j++) {
                     if (gamma_[q][j].first == R_[q]) {
                         confidence = gamma_[q][j].second;
                         break;
@@ -107,7 +107,7 @@ void KdMBR::MbrDecode()
     }
 }
 
-void KdMBR::RemoveEps(std::vector<int32> *vec)
+void KdMBR::RemoveEps(std::vector<int> *vec)
 {
     for( int i=0 ; i<vec->size() ; i++ )
     {
@@ -119,12 +119,12 @@ void KdMBR::RemoveEps(std::vector<int32> *vec)
     }
 }
 
-void KdMBR::NormalizeEps(std::vector<int32> *vec)
+void KdMBR::NormalizeEps(std::vector<int> *vec)
 {
     RemoveEps(vec);
     vec->resize(1 + vec->size() * 2);
-    int32 s = vec->size();
-    for (int32 i = s/2 - 1; i >= 0; i--)
+    int s = vec->size();
+    for (int i = s/2 - 1; i >= 0; i--)
     {
         (*vec)[i*2 + 1] = (*vec)[i];
         (*vec)[i*2 + 2] = 0;
@@ -132,18 +132,18 @@ void KdMBR::NormalizeEps(std::vector<int32> *vec)
     (*vec)[0] = 0;
 }
 
-double KdMBR::EditDistance(int32 N, int32 Q,
+double KdMBR::EditDistance(int N, int Q,
                            Vector<double> &alpha,
                            Matrix<double> &alpha_dash,
                            Vector<double> &alpha_dash_arc)
 {
     alpha(1) = 0.0; // = log(1).  Line 5.
     alpha_dash(1, 0) = 0.0; // Line 5.
-    for (int32 q = 1; q <= Q; q++)
+    for (int q = 1; q <= Q; q++)
     {
         alpha_dash(1, q) = alpha_dash(1, q-1) + l_distance(0, R_[q-1]); // Line 7.
     }
-    for (int32 n = 2; n <= N; n++)
+    for (int n = 2; n <= N; n++)
     {
         double alpha_n = kLogZeroDouble;
         for (size_t i = 0; i < pre_[n].size(); i++)
@@ -156,9 +156,9 @@ double KdMBR::EditDistance(int32 N, int32 Q,
         for (size_t i = 0; i < pre_[n].size(); i++)
         {
             const KdMBRArc &arc = arcs_[pre_[n][i]];
-            int32 s_a = arc.start_node, w_a = arc.word;
+            int s_a = arc.start_node, w_a = arc.word;
             BaseFloat p_a = arc.loglike;
-            for (int32 q = 0; q <= Q; q++)
+            for (int q = 0; q <= Q; q++)
             {
                 if (q == 0)
                 {
@@ -167,7 +167,7 @@ double KdMBR::EditDistance(int32 N, int32 Q,
                 }
                 else
                 {  // a1,a2,a3 are the 3 parts of min expression of line 17.
-                    int32 r_q = R_[q-1];;
+                    int r_q = R_[q-1];;
                     double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
                             a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
                             a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
@@ -186,8 +186,8 @@ void KdMBR::AccStats()
 {
     using std::map;
 
-    int32 N = static_cast<int32>(pre_.size()) - 1,
-            Q = static_cast<int32>(R_.size());
+    int N = static_cast<int>(pre_.size()) - 1,
+            Q = static_cast<int>(R_.size());
 
     Vector<double> alpha(N+1); // index (1...N)
     Matrix<double> alpha_dash(N+1, Q+1); // index (1...N, 0...Q)
@@ -195,14 +195,14 @@ void KdMBR::AccStats()
     Matrix<double> beta_dash(N+1, Q+1); // index (1...N, 0...Q)
     Vector<double> beta_dash_arc(Q+1); // index 0...Q
     std::vector<char> b_arc(Q+1); // integer in {1,2,3}; index 1...Q
-    std::vector<map<int32, double> > gamma(Q+1); // temp. form of gamma.
+    std::vector<map<int, double> > gamma(Q+1); // temp. form of gamma.
     // index 1...Q [word] -> occ.
 
     // The tau maps below are the sums over arcs with the same word label
     // of the tau_b and tau_e timing quantities mentioned in Appendix C of
     // the paper... we are using these to get averaged times for both the
     // the sausage bins and the 1-best output.
-    std::vector<map<int32, double> > tau_b(Q+1), tau_e(Q+1);
+    std::vector<map<int, double> > tau_b(Q+1), tau_e(Q+1);
 
     double Ltmp = EditDistance(N, Q, alpha, alpha_dash, alpha_dash_arc);
     if (L_ != 0 && Ltmp > L_) { // L_ != 0 is to rule out 1st iter.
@@ -213,15 +213,15 @@ void KdMBR::AccStats()
     KALDI_VLOG(2) << "L = " << L_;
     // omit line 10: zero when initialized.
     beta_dash(N, Q) = 1.0; // Line 11.
-    for (int32 n = N; n >= 2; n--) {
+    for (int n = N; n >= 2; n--) {
         for (size_t i = 0; i < pre_[n].size(); i++) {
             const KdMBRArc &arc = arcs_[pre_[n][i]];
-            int32 s_a = arc.start_node, w_a = arc.word;
+            int s_a = arc.start_node, w_a = arc.word;
             BaseFloat p_a = arc.loglike;
             alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(w_a, 0, true); // line 14.
-            for (int32 q = 1; q <= Q; q++)
+            for (int q = 1; q <= Q; q++)
             { // this loop == lines 15-18.
-                int32 r_q = R_[q-1];;
+                int r_q = R_[q-1];;
                 double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
                         a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
                         a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
@@ -253,7 +253,7 @@ void KdMBR::AccStats()
                 }
             }
             beta_dash_arc.SetZero(); // line 19.
-            for (int32 q = Q; q >= 1; q--)
+            for (int q = Q; q >= 1; q--)
             {
                 // line 21:
                 beta_dash_arc(q) += Exp(alpha(s_a) + p_a - alpha(n)) * beta_dash(n, q);
@@ -290,7 +290,7 @@ void KdMBR::AccStats()
         }
     }
     beta_dash_arc.SetZero(); // line 29.
-    for (int32 q = Q; q >= 1; q--)
+    for (int q = Q; q >= 1; q--)
     {
         beta_dash_arc(q) += beta_dash(1, q);
         beta_dash_arc(q-1) += beta_dash_arc(q);
@@ -300,10 +300,10 @@ void KdMBR::AccStats()
         AddToMap(0, state_times_[1] * beta_dash_arc(q), &(tau_b[q]));
         AddToMap(0, state_times_[1] * beta_dash_arc(q), &(tau_e[q]));
     }
-    for (int32 q = 1; q <= Q; q++)
+    for (int q = 1; q <= Q; q++)
     { // a check (line 35)
         double sum = 0.0;
-        for (map<int32, double>::iterator iter = gamma[q].begin();
+        for (map<int, double>::iterator iter = gamma[q].begin();
              iter != gamma[q].end(); ++iter) sum += iter->second;
         if (fabs(sum - 1.0) > 0.1)
             KALDI_WARN << "sum of gamma[" << q << ",s] is " << sum;
@@ -313,9 +313,9 @@ void KdMBR::AccStats()
     // data structure and indexed from zero, not one.
     gamma_.clear();
     gamma_.resize(Q);
-    for (int32 q = 1; q <= Q; q++)
+    for (int q = 1; q <= Q; q++)
     {
-        for (map<int32, double>::iterator iter = gamma[q].begin();
+        for (map<int, double>::iterator iter = gamma[q].begin();
              iter != gamma[q].end(); ++iter)
             gamma_[q-1].push_back(
                         std::make_pair(iter->first, static_cast<BaseFloat>(iter->second)));
@@ -330,10 +330,10 @@ void KdMBR::AccStats()
     times_.resize(Q);
     sausage_times_.clear();
     sausage_times_.resize(Q);
-    for (int32 q = 1; q <= Q; q++)
+    for (int q = 1; q <= Q; q++)
     {
         double t_b = 0.0, t_e = 0.0;
-        for (std::vector<std::pair<int32, BaseFloat>>::iterator iter = gamma_[q-1].begin();
+        for (std::vector<std::pair<int, BaseFloat>>::iterator iter = gamma_[q-1].begin();
              iter != gamma_[q-1].end(); ++iter) {
             double w_b = tau_b[q][iter->first], w_e = tau_e[q][iter->first];
             if (w_b > w_e)
@@ -359,22 +359,22 @@ void KdMBR::AccStats()
     }
 }
 
-std::vector<int32> KdMBR::GetOneBest()
+std::vector<int> KdMBR::GetOneBest()
 {
     return R_;
 }
 
-void KdMBR::AddToMap(int32 i, double d, std::map<int32, double> *gamma)
+void KdMBR::AddToMap(int i, double d, std::map<int, double> *gamma)
 {
     if (d == 0) return;
-    std::pair<const int32, double> pr(i, d);
-    std::pair<std::map<int32, double>::iterator, bool> ret = gamma->insert(pr);
+    std::pair<const int, double> pr(i, d);
+    std::pair<std::map<int, double>::iterator, bool> ret = gamma->insert(pr);
     if (!ret.second) // not inserted, so add to contents.
         ret.first->second += d;
 }
 
 // gives edit-distance function l(a,b)
-double KdMBR::l_distance(int32 a, int32 b, bool penalize)
+double KdMBR::l_distance(int a, int b, bool penalize)
 {
     if (a == b)
     {
@@ -412,7 +412,7 @@ QVector<BtWord> KdMBR::getResult(QVector<QString> lexicon)
 {
     QVector<BtWord> result;
     std::vector<float> conf = GetOneBestConfidences();
-    std::vector<int32> words = GetOneBest();
+    std::vector<int> words = GetOneBest();
     std::vector<std::pair<float, float>> times = GetOneBestTimes();
 
     for( int i = 0; i<words.size() ; i++ )
@@ -459,12 +459,12 @@ void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat)
     // arcs preceding any given state.
     // Note: in our internal format the states will be numbered from 1,
     // which involves adding 1 to the OpenFst states.
-    int32 N = clat->NumStates();
+    int N = clat->NumStates();
     pre_.resize(N+1);
 
     // Careful: "Arc" is a class-member struct, not an OpenFst type of arc as one
     // would normally assume.
-    for (int32 n = 1; n <= N; n++)
+    for (int n = 1; n <= N; n++)
     {
         for (fst::ArcIterator<CompactLattice> aiter(*clat, n-1);
              !aiter.Done(); aiter.Next())
@@ -500,7 +500,7 @@ KdMBR::KdMBR(CompactLattice *clat_in)
     ConvertLattice(lat, &fst); // convert from lattice to normal FST.
     fst::VectorFst<fst::StdArc> fst_shortest_path;
     fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
-    std::vector<int32> alignment, words;
+    std::vector<int> alignment, words;
     fst::TropicalWeight weight;
     GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
     KALDI_ASSERT(alignment.empty()); // we removed the alignment.

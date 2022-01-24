@@ -28,9 +28,9 @@ public:
     void Decode(kaldi::DecodableInterface *decodable);
 
     void AdvanceDecoding(kaldi::DecodableInterface *decodable,
-                         int32 max_num_frames = -1);
+                         int max_num_frames = -1);
 
-    int32 NumFramesDecoded();
+    int NumFramesDecoded();
     void SetOptions(kaldi::FasterDecoderOptions &config);
 
 protected:
@@ -59,7 +59,7 @@ protected:
     // make it class member to avoid internal new/delete.
 
     // Keep track of the number of frames decoded in the current file.
-    int32 num_frames_decoded_;
+    int num_frames_decoded_;
 
     void ClearToks(Elem *list);
 };

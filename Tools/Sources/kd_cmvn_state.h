@@ -18,8 +18,7 @@ struct KdCmvnState  //OnlineCmvnState
     kaldi::Matrix<double> frozen_state;
 };
 
-/// This class serves as a storage for feature vectors with an option to limit
-/// the memory usage by removing old elements.
+/// storage to limit the memory usage by removing old elements.
 class KdRecyclingVector
 {
 public:

@@ -44,6 +44,7 @@ HEADERS += \
     Sources/bt_state.h \
     Sources/kd_cmvn.h \
     Sources/kd_cmvn_state.h \
+    Sources/kd_delta.h \
     Sources/kd_f_token.h \
     Sources/kd_faster_decoder.h \
     Sources/kd_lattice.h \
@@ -70,6 +71,7 @@ SOURCES += \
     Sources/bt_state.cpp \
     Sources/kd_cmvn.cpp \
     Sources/kd_cmvn_state.cpp \
+    Sources/kd_delta.cpp \
     Sources/kd_f_token.cpp \
     Sources/kd_faster_decoder.cpp \
     Sources/kd_lattice.cpp \
