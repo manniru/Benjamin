@@ -35,7 +35,7 @@ void KdMBR::MbrDecode()
             if (opts.decode_mbr)
             { // This loop updates R_ [indexed same as gamma_].
                 // gamma_[i] is sorted in reverse order so most likely one is first.
-                const std::vector<std::pair<int, BaseFloat> > &this_gamma = gamma_[q];
+                const std::vector<std::pair<int, float> > &this_gamma = gamma_[q];
                 double old_gamma = 0, new_gamma = this_gamma[0].second;
                 int rq = R_[q], rhat = this_gamma[0].first; // rq: old word, rhat: new.
                 for (size_t j = 0; j < this_gamma.size(); j++)
@@ -157,7 +157,7 @@ double KdMBR::EditDistance(int N, int Q,
         {
             const KdMBRArc &arc = arcs_[pre_[n][i]];
             int s_a = arc.start_node, w_a = arc.word;
-            BaseFloat p_a = arc.loglike;
+            float p_a = arc.loglike;
             for (int q = 0; q <= Q; q++)
             {
                 if (q == 0)
@@ -217,7 +217,7 @@ void KdMBR::AccStats()
         for (size_t i = 0; i < pre_[n].size(); i++) {
             const KdMBRArc &arc = arcs_[pre_[n][i]];
             int s_a = arc.start_node, w_a = arc.word;
-            BaseFloat p_a = arc.loglike;
+            float p_a = arc.loglike;
             alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(w_a, 0, true); // line 14.
             for (int q = 1; q <= Q; q++)
             { // this loop == lines 15-18.
@@ -318,7 +318,7 @@ void KdMBR::AccStats()
         for (map<int, double>::iterator iter = gamma[q].begin();
              iter != gamma[q].end(); ++iter)
             gamma_[q-1].push_back(
-                        std::make_pair(iter->first, static_cast<BaseFloat>(iter->second)));
+                        std::make_pair(iter->first, static_cast<float>(iter->second)));
         // sort gamma_[q-1] from largest to smallest posterior.
         GammaCompare comp;
         std::sort(gamma_[q-1].begin(), gamma_[q-1].end(), comp);
@@ -333,14 +333,14 @@ void KdMBR::AccStats()
     for (int q = 1; q <= Q; q++)
     {
         double t_b = 0.0, t_e = 0.0;
-        for (std::vector<std::pair<int, BaseFloat>>::iterator iter = gamma_[q-1].begin();
+        for (std::vector<std::pair<int, float>>::iterator iter = gamma_[q-1].begin();
              iter != gamma_[q-1].end(); ++iter) {
             double w_b = tau_b[q][iter->first], w_e = tau_e[q][iter->first];
             if (w_b > w_e)
                 KALDI_WARN << "Times out of order";  // this is quite bad.
             times_[q-1].push_back(
-                        std::make_pair(static_cast<BaseFloat>(w_b / iter->second),
-                                       static_cast<BaseFloat>(w_e / iter->second)));
+                        std::make_pair(static_cast<float>(w_b / iter->second),
+                                       static_cast<float>(w_e / iter->second)));
             t_b += w_b;
             t_e += w_e;
         }

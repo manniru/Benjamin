@@ -150,7 +150,7 @@ void KdWindow::ExtractWindow(int sample_offset,
 
 
 void KdWindow::ProcessWindow(VectorBase<float> *win,
-                   BaseFloat *log_energy_pre_window)
+                   float *log_energy_pre_window)
 {
     int frame_length = WindowSize();
     KALDI_ASSERT(win->Dim() == frame_length);
@@ -184,7 +184,7 @@ void KdWindow::Dither(VectorBase<float> *waveform, float dither_value)
         return;
     }
     int dim = waveform->Dim();
-    BaseFloat *data = waveform->Data();
+    float *data = waveform->Data();
     RandomState rstate;
     for( int i=0 ; i<dim ; i++ )
     {

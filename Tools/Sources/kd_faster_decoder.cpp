@@ -118,7 +118,7 @@ bool KdFasterDecoder::GetBestPath(fst::MutableFst<LatticeArc> *fst_out,
     std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
 
     for (KdFToken *tok = best_tok; tok != NULL; tok = tok->prev_) {
-        BaseFloat tot_cost = tok->cost -
+        float tot_cost = tok->cost -
                 (tok->prev_ ? tok->prev_->cost : 0.0),
                 graph_cost = tok->arc_.weight.Value(),
                 ac_cost = tot_cost - graph_cost;
@@ -248,7 +248,7 @@ double KdFasterDecoder::GetBestCutoff(Elem *best_elem, DecodableInterface *decod
             const Arc &arc = aiter.Value();
             if( arc.ilabel!=0 )
             {
-                BaseFloat ac_cost = - decodable->LogLikelihood(num_frames_decoded_, arc.ilabel);
+                float ac_cost = - decodable->LogLikelihood(num_frames_decoded_, arc.ilabel);
                 double new_weight = arc.weight.Value() + tok->cost + ac_cost + adaptive_beam;
                 if( new_weight<cutoff )
                 {
@@ -297,7 +297,7 @@ double KdFasterDecoder::ProcessEmitting(DecodableInterface *decodable)
                 Arc arc = aiter.Value();
                 if (arc.ilabel != 0)
                 {
-                    BaseFloat ac_cost =  - decodable->LogLikelihood(frame, arc.ilabel);
+                    float ac_cost =  - decodable->LogLikelihood(frame, arc.ilabel);
                     double new_weight = arc.weight.Value() + tok->cost + ac_cost;
                     if( new_weight<next_weight_cutoff )
                     {

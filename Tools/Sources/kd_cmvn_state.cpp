@@ -14,7 +14,7 @@ KdRecyclingVector::~KdRecyclingVector()
     }
 }
 
-Vector<BaseFloat> *KdRecyclingVector::At(int index) const
+Vector<float> *KdRecyclingVector::At(int index) const
 {
     if (index < first_available_index_) {
         KALDI_ERR << "Attempted to retrieve feature vector that was "
@@ -27,7 +27,7 @@ Vector<BaseFloat> *KdRecyclingVector::At(int index) const
     return items_.at(index - first_available_index_);
 }
 
-void KdRecyclingVector::PushBack(Vector<BaseFloat> *item)
+void KdRecyclingVector::PushBack(Vector<float> *item)
 {
     if (items_.size() == items_to_hold_) {
         delete items_.front();

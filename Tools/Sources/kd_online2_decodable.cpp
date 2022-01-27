@@ -12,7 +12,7 @@ KdOnline2Decodable::KdOnline2Decodable(BtRecorder *au_src, KdOnline2Model *mdl, 
     trans_model = mdl->GetTransitionModel();
 
     int num_pdfs = trans_model->NumPdfs();
-    cache_.resize(num_pdfs, std::pair<int,BaseFloat>(-1, 0.0f));
+    cache_.resize(num_pdfs, std::pair<int,float>(-1, 0.0f));
 
     features = new KdOnline2FeInput(au_src);
     feat_dim = features->Dim();
@@ -46,7 +46,7 @@ float KdOnline2Decodable::LogLikelihood(int frame, int index)
         return cache_[pdf_id].second;
     }
 
-    BaseFloat ans = ac_model->LogLikelihood(pdf_id, cur_feats_) * ac_scale_;
+    float ans = ac_model->LogLikelihood(pdf_id, cur_feats_) * ac_scale_;
     cache_[pdf_id].first = frame;
     cache_[pdf_id].second = ans;
     return ans;
