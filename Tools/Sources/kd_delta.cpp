@@ -15,7 +15,7 @@ KdDelta::KdDelta()
 
     for (int32 i = 1; i <= order; i++)
     {
-        Vector<BaseFloat> &prev_scales = scales_[i-1],
+        Vector<float> &prev_scales = scales_[i-1],
                 &cur_scales = scales_[i];
         // work if instead we later make it an array and do window[i-1],
         // or something like that. "window" is a parameter specifying delta-window
@@ -25,37 +25,37 @@ KdDelta::KdDelta()
                 cur_offset = prev_offset + window;
         cur_scales.Resize(prev_scales.Dim() + 2*window);  // also zeros it.
 
-        BaseFloat normalizer = 0.0;
+        float normalizer = 0.0;
         for (int32 j = -window; j <= window; j++) {
             normalizer += j*j;
             for (int32 k = -prev_offset; k <= prev_offset; k++) {
                 cur_scales(j+k+cur_offset) +=
-                        static_cast<BaseFloat>(j) * prev_scales(k+prev_offset);
+                        static_cast<float>(j) * prev_scales(k+prev_offset);
             }
         }
         cur_scales.Scale(1.0 / normalizer);
     }
 }
 
-void KdDelta::Process(const MatrixBase<BaseFloat> &input_feats,
+void KdDelta::Process(const MatrixBase<float> &input_feats,
                       int32 frame,
-                      VectorBase<BaseFloat> *output_frame) const {
+                      VectorBase<float> *output_frame) const {
     KALDI_ASSERT(frame < input_feats.NumRows());
     int32 num_frames = input_feats.NumRows(),
             feat_dim = input_feats.NumCols();
     KALDI_ASSERT(static_cast<int32>(output_frame->Dim()) == feat_dim * (order+1));
     output_frame->SetZero();
     for (int32 i = 0; i <= order; i++) {
-        const Vector<BaseFloat> &scales = scales_[i];
+        const Vector<float> &scales = scales_[i];
         int32 max_offset = (scales.Dim() - 1) / 2;
-        SubVector<BaseFloat> output(*output_frame, i*feat_dim, feat_dim);
+        SubVector<float> output(*output_frame, i*feat_dim, feat_dim);
         for (int32 j = -max_offset; j <= max_offset; j++) {
             // if asked to read
             int32 offset_frame = frame + j;
             if (offset_frame < 0) offset_frame = 0;
             else if (offset_frame >= num_frames)
                 offset_frame = num_frames - 1;
-            BaseFloat scale = scales(j + max_offset);
+            float scale = scales(j + max_offset);
             if (scale != 0.0)
                 output.AddVec(scale, input_feats.Row(offset_frame));
         }

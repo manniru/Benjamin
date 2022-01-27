@@ -4,6 +4,10 @@
 #include "kd_window.h"
 #include "feat/mel-computations.h"
 
+
+struct MelBanksOptions {
+};
+
 class KdMelBanks
 {
 public:
@@ -11,7 +15,7 @@ public:
     float InverseMelScale(float mel_freq);
     float MelScale(float freq);
 
-    KdMelBanks(kaldi::MelBanksOptions &opts,
+    KdMelBanks(int bin_count,
                KdWindow &frame_opts);
 
     /// Compute Mel energies (note: not log enerties).
@@ -25,8 +29,10 @@ public:
     // the "bins_" vector is a vector, one for each bin, of a pair(the vector of weights).
     std::vector<std::pair<int, kaldi::Vector<float> > > bins_;
 private:
-    bool debug_;
-    bool htk_mode_;
+    int num_bins = 25;  // e.g. 25; number of triangular bins
+    float low_freq = 20;  // e.g. 20; lower frequency cutoff
+    float high_freq = 0;  // an upper frequency cutoff; 0 -> no cutoff, negative
+    // ->added to the Nyquist frequency to get the cutoff.
 };
 
 #endif // KD_LATTICE_DECODER_H

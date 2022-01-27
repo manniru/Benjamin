@@ -27,5 +27,4 @@ private:
     // dimension by this window.
 };
 
-
 #endif // KD_DELTA_H
