@@ -164,7 +164,7 @@ QVector<BtWord> KdOnlineLDecoder::getResult(CompactLattice *out_fst,
 
 void KdOnlineLDecoder::CalcFinal(QVector<BtWord> *result)
 {
-    int min_diff = 30;
+    int min_diff = 15;
     int word_count = result->size();
     for( int i=0 ; i<word_count-1 ; i++ )
     {
@@ -247,7 +247,7 @@ int KdOnlineLDecoder::Decode()
         status.max_frame = -1;
         start_t = clock();
         ResetDecoder();
-        frame_num -= 25;
+        frame_num -= 35;
     }
     ProcessNonemitting(std::numeric_limits<float>::max());
     int frame_max = decodable->NumFramesReady();

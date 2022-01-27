@@ -7,7 +7,7 @@ if [[ "$WORD" == "go" ]]; then
 		
 	OUTPUT="special alt raise"
 		
-elif [[ "$WORD" == "back" ]]; then
+elif [[ "$WORD" == "sky" ]]; then
 
 	OUTPUT="alt raise"
 		

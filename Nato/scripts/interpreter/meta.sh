@@ -48,6 +48,10 @@ elif [[ "$WORD" == "switch" ]]; then
     
     OUTPUT="11"
     
+elif [[ "$WORD" == "mouse" ]]; then
+    
+    OUTPUT="12"
+    
 fi
 
 if [[ "$OUTPUT" ]]; then
