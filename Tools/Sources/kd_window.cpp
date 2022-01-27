@@ -25,7 +25,7 @@ int KdWindow::WindowSize()
     return samp_freq * 0.001 * frame_length_ms;
 }
 
-int KdWindow::PaddedWindowSize()
+int KdWindow::fftSize()
 {
     return kd_RoundP2(WindowSize());
 }
@@ -94,7 +94,7 @@ void KdWindow::ExtractWindow(int sample_offset,
 {
     KALDI_ASSERT(sample_offset >= 0 && wave.Dim() != 0);
     int frame_length = WindowSize();
-    int frame_length_padded = PaddedWindowSize();
+    int frame_length_padded = fftSize();
     int num_samples = sample_offset + wave.Dim();
     int start_sample = FirstSampleOfFrame(f);
     int end_sample = start_sample + frame_length;

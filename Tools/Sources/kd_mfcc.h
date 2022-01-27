@@ -1,10 +1,10 @@
 #ifndef KD_MFCC_H
 #define KD_MFCC_H
 
-#include "feat/feature-functions.h"
 #include <QString>
 #include "kd_window.h"
 #include "kd_melbank.h"
+#include "kd_fft.h"
 
 class KdMFCC
 {
@@ -24,7 +24,7 @@ protected:
     kaldi::Vector<float> lifter_coeffs_;
     kaldi::Matrix<float> dct_matrix_;  // matrix we left-multiply by to perform DCT.
     KdMelBanks* mel_banks_;
-    kaldi::SplitRadixRealFft<float> *srfft_;
+    KdFFT *fft;
 
     // note: mel_energies_ is specific to the frame we're processing, it's
     // just a temporary workspace.

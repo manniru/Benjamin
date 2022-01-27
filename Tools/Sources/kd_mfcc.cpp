@@ -7,13 +7,13 @@ void KdMFCC::Compute(VectorBase<float> *signal_frame,
                      VectorBase<float> *feature)
 {
     mel_banks_ = NULL;
-    KALDI_ASSERT(signal_frame->Dim() == frame_opts.PaddedWindowSize() &&
+    KALDI_ASSERT(signal_frame->Dim() == frame_opts.fftSize() &&
                  feature->Dim() == this->Dim());
 
     KdMelBanks &mel_banks = *(GetMelBanks());
 
     // Compute FFT using the split-radix algorithm.
-    srfft_->Compute(signal_frame->Data(), true);
+    fft->Compute(signal_frame->Data());
 
     // Convert the FFT into a power spectrum.
     ComputePowerSpectrum(signal_frame);
@@ -36,7 +36,7 @@ void KdMFCC::Compute(VectorBase<float> *signal_frame,
 KdMFCC::KdMFCC()
 {
     mel_energies_.Resize(num_bins);
-    srfft_ = NULL;
+    fft = NULL;
     if( num_ceps>num_bins )
         qDebug() << "num-ceps cannot be larger than num-mel-bins."
                  << num_ceps << "  and num-mel-bins: "
@@ -54,8 +54,7 @@ KdMFCC::KdMFCC()
     lifter_coeffs_.Resize(num_ceps);
     ComputeLifterCoeffs(cepstral_lifter, &lifter_coeffs_);
 
-    int padded_window_size = frame_opts.PaddedWindowSize();
-    srfft_ = new SplitRadixRealFft<float>(padded_window_size);
+    fft = new KdFFT(frame_opts.fftSize());
 
     // We'll definitely need the filterbanks info for VTLN warping factor 1.0.
     // [note: this call caches it.]
@@ -66,7 +65,7 @@ KdMFCC::~KdMFCC()
 {
     if( mel_banks_ )
         delete mel_banks_;
-    delete srfft_;
+    delete fft;
 }
 
 KdMelBanks *KdMFCC::GetMelBanks()

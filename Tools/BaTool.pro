@@ -47,6 +47,7 @@ HEADERS += \
     Sources/kd_delta.h \
     Sources/kd_f_token.h \
     Sources/kd_faster_decoder.h \
+    Sources/kd_fft.h \
     Sources/kd_lattice.h \
     Sources/kd_lattice_decoder.h \
     Sources/kd_lattice_functions.h \
@@ -74,6 +75,7 @@ SOURCES += \
     Sources/kd_delta.cpp \
     Sources/kd_f_token.cpp \
     Sources/kd_faster_decoder.cpp \
+    Sources/kd_fft.cpp \
     Sources/kd_lattice.cpp \
     Sources/kd_lattice_decoder.cpp \
     Sources/kd_lattice_functions.cpp \

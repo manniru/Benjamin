@@ -10,7 +10,7 @@ KdMelBanks::KdMelBanks(int bin_count,
         KALDI_ERR << "Must have at least 3 mel bins";
 
     float sample_freq = frame_opts.samp_freq;
-    int window_length_padded = frame_opts.PaddedWindowSize();
+    int window_length_padded = frame_opts.fftSize();
     KALDI_ASSERT(window_length_padded % 2 == 0);
     int num_fft_bins = window_length_padded / 2;
     float nyquist = 0.5 * sample_freq;
