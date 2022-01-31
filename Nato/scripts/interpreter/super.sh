@@ -7,7 +7,11 @@ OUTPUT=""
 
 if [[ "$WORD" == "meta" ]]; then
     
-    OUTPUT="13"
+    OUTPUT="101"
+    
+elif [[ "$WORD" == "colon" ]]; then
+    
+    OUTPUT="102"
     
 fi
 

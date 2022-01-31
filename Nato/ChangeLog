@@ -7,4 +7,13 @@ bravo(12)
 atom(fix in cmu)
 quote(fix in cmu)
 spy->meta(fix in cmu)
-arch->arsh(fix in cmu)
+arch->arsh(11-fix in cmu)
+uniform->page(32)
+
+
+-----------------
+suggestions
+-----------------
+colon-> camel
+u-> ut
+github -> copy

@@ -5,7 +5,7 @@ M_VAL="0"
 MAX_VAL="$1"
 MEAN_VAL="0"
 VAR_VAL="0"
-AUD_PATH="audio"
+AUD_PATH="audio/train"
 
 while [[ "$I_VAL" -lt "$MAX_VAL" ]]; do
 	
@@ -70,7 +70,7 @@ done
 echo Mean = $MEAN_VAL VAR_VAL = $VAR_VAL
 
 
-find "$AUD_PATH/train" -type d > list_dir
+find "$AUD_PATH" -type d > list_dir
 sed -i '1d' list_dir #remove first line
 
 while read DIR_NAME; do

@@ -52,6 +52,10 @@ elif [[ "$WORD" == "mouse" ]]; then
     
     OUTPUT="12"
     
+elif [[ "$WORD" == "colon" ]]; then
+    
+    OUTPUT="13"
+    
 fi
 
 if [[ "$OUTPUT" ]]; then
