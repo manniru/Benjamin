@@ -50,7 +50,6 @@ void KdOnlineLDecoder::ResetDecoder()
     ProcessNonemitting(config_.beam);
 }
 
-
 void KdOnlineLDecoder::RawLattice(Lattice *ofst)
 {
     int end = frame_toks.size();

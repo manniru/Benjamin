@@ -20,6 +20,8 @@ public:
 
 protected:
     KdMelBanks *GetMelBanks();
+    void ComputeLifterCoeffs(kaldi::VectorBase<float> *coeffs);
+    void ComputePowerSpectrum(kaldi::VectorBase<float> *waveform) ;
 
     kaldi::Vector<float> lifter_coeffs_;
     kaldi::Matrix<float> dct_matrix_;  // matrix we left-multiply by to perform DCT.

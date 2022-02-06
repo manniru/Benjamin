@@ -40,11 +40,13 @@ KdMelBanks::KdMelBanks(int bin_count,
         // nonzero where this mel bin is active.
         Vector<float> this_bin(num_fft_bins);
         int first_index = -1, last_index = -1;
-        for( int i = 0; i < num_fft_bins; i++) {
+        for( int i = 0; i < num_fft_bins; i++)
+        {
             float freq = (fft_bin_width * i);  // Center frequency of this fft
             // bin.
             float mel = MelScale(freq);
-            if (mel > left_mel && mel < right_mel) {
+            if (mel > left_mel && mel < right_mel)
+            {
                 float weight;
                 if (mel <= center_mel)
                     weight = (mel - left_mel) / (center_mel - left_mel);
@@ -68,8 +70,9 @@ KdMelBanks::KdMelBanks(int bin_count,
 }
 
 // "power_spectrum" contains fft energies.
-void KdMelBanks::Compute(const VectorBase<float> &power_spectrum,
-                       VectorBase<float> *mel_energies_out) const {
+void KdMelBanks::Compute(kaldi::VectorBase<float> &power_spectrum,
+                       VectorBase<float> *mel_energies_out)
+{
     int num_bins = bins_.size();
     KALDI_ASSERT(mel_energies_out->Dim() == num_bins);
 

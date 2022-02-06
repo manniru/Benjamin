@@ -52,7 +52,7 @@ KdMFCC::KdMFCC()
     dct_matrix_.CopyFromMat(dct_rows);  // subset of rows.
 
     lifter_coeffs_.Resize(num_ceps);
-    ComputeLifterCoeffs(cepstral_lifter, &lifter_coeffs_);
+    ComputeLifterCoeffs(&lifter_coeffs_);
 
     fft = new KdFFT(frame_opts.fftSize());
 
@@ -75,6 +75,36 @@ KdMelBanks *KdMFCC::GetMelBanks()
         mel_banks_ = new KdMelBanks(num_bins, frame_opts);
     }
     return mel_banks_;
+}
+
+// Compute liftering coefficients
+void KdMFCC::ComputeLifterCoeffs(VectorBase<float> *coeffs)
+{
+    float Q = cepstral_lifter;
+    for( int i=0 ; i<coeffs->Dim() ; i++ )
+    {
+        (*coeffs)(i) = 1.0 + 0.5 * Q * sin(M_PI*i/Q);
+    }
+}
+
+void KdMFCC::ComputePowerSpectrum(VectorBase<float> *waveform)
+{
+    int dim = waveform->Dim();
+
+    int half_dim = dim/2;
+    float first_energy = (*waveform)(0) * (*waveform)(0);
+    float last_energy  = (*waveform)(1) * (*waveform)(1);  // handle this special case
+
+    for (int i = 1; i < half_dim; i++)
+    {
+        float real = (*waveform)(i*2);
+        float im = (*waveform)(i*2 + 1);
+        (*waveform)(i) = real*real + im*im;
+    }
+
+    (*waveform)(0) = first_energy;
+    (*waveform)(half_dim) = last_energy;  // Will actually never be used, and anyway
+    // if the signal has been bandlimited sensibly this should be zero.
 }
 
 int KdMFCC::Dim()
