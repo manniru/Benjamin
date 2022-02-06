@@ -2,6 +2,12 @@
 
 using namespace kaldi;
 
+
+KdFFT::KdFFT(int N): SplitRadixComplexFft<float> (N/2)
+{
+    N_ = N;
+}
+
 // forward = true instead of inverse
 void KdFFT::Compute(float *data)
 {
@@ -12,8 +18,9 @@ void KdFFT::Compute(float *data)
     float rootN_re, rootN_im;  // exp(-2pi/N)
     int forward_sign = -1;
     ComplexImExp(static_cast<float>(M_2PI/N *forward_sign), &rootN_re, &rootN_im);
-    float kN_re = -forward_sign, kN_im = 0.0;  // exp(-2pik/N), forward; exp(-2pik/N), backward
-    // kN starts out as 1.0 for forward algorithm but -1.0 for backward.
+    float kN_re = -forward_sign;
+    float kN_im = 0.0;  // exp(-2pik/N)
+
     for (MatrixIndexT k = 1; 2*k <= N2; k++)
     {
         ComplexMul(rootN_re, rootN_im, &kN_re, &kN_im);
@@ -33,12 +40,9 @@ void KdFFT::Compute(float *data)
         ComplexAddProduct(Dk_re, Dk_im, kN_re, kN_im, &(data[2*k]), &(data[2*k+1]));
 
         MatrixIndexT kdash = N2 - k;
-        if (kdash != k) {
-            // Next we handle the index k' = N/2 - k.  This is necessary
-            // to do now, to avoid invalidating data that we will later need.
-            // The quantities C_{k'} and D_{k'} are just the conjugates of C_k
-            // and D_k, so the equations are simple modifications of the above,
-            // replacing Ck_im and Dk_im with their negatives.
+        if (kdash != k)
+        {
+            // Next we handle the index k' = N/2 - k.
             data[2*kdash] = Ck_re;  // A_k' <-- C_k'
             data[2*kdash+1] = -Ck_im;
             // now A_k' += D_k' 1^(k'/N)
@@ -47,12 +51,7 @@ void KdFFT::Compute(float *data)
             ComplexAddProduct(Dk_re, -Dk_im, -kN_re, kN_im, &(data[2*kdash]), &(data[2*kdash+1]));
         }
     }
-    // Now handle k = 0.
-    // In simple terms: after the complex fft, data[0] becomes the sum of float
-    // parts input[0], input[2]... and data[1] becomes the sum of imaginary
-    // pats input[1], input[3]...
-    // "zeroth" [A_0] is just the sum of input[0]+input[1]+input[2]..
-    // and "n2th" [A_{N/2}] is input[0]-input[1]+input[2]... .
+    // k = 0.
     float zeroth = data[0] + data[1];
     float   n2th = data[0] - data[1];
     data[0] = zeroth;

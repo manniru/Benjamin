@@ -18,7 +18,7 @@ linux:LIBS += -lgio-2.0 \
               -pthread \
               -L/opt/intel/mkl/lib/intel64 \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
-              -liomp5 -lpthread -lm -ldl \
+              -lm -ldl \
               -L/home/bijan/Project/Benjamin/Tools/Kaldi/Libs \
               -lkaldi-lat -lkaldi-fstext \
               -lkaldi-hmm -lkaldi-transform \
@@ -41,7 +41,6 @@ HEADERS += \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
     Sources/bt_recorder.h \
-    Sources/bt_state.h \
     Sources/kd_cmvn.h \
     Sources/kd_cmvn_state.h \
     Sources/kd_delta.h \
@@ -69,7 +68,6 @@ SOURCES += \
     Sources/bt_chapar.cpp \
     Sources/bt_cyclic.cpp \
     Sources/bt_recorder.cpp \
-    Sources/bt_state.cpp \
     Sources/kd_cmvn.cpp \
     Sources/kd_cmvn_state.cpp \
     Sources/kd_delta.cpp \

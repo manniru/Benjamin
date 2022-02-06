@@ -6,7 +6,6 @@
 #include <QTimer>
 #include <QDebug>
 
-#include "bt_state.h"
 #include "bt_recorder.h"
 #include "bt_captain.h" //For BtWord
 #include "kd_online2_model.h"
