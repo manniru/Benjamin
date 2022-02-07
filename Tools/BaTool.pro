@@ -21,8 +21,8 @@ linux:LIBS += -lgio-2.0 \
               -lm -ldl \
               -L/home/bijan/Project/Benjamin/Tools/Kaldi/Libs \
               -lkaldi-lat -lkaldi-fstext \
-              -lkaldi-hmm -lkaldi-transform \
-              -lkaldi-gmm  -lkaldi-tree -lkaldi-util \
+              -lkaldi-hmm  -lkaldi-gmm \
+              -lkaldi-tree -lkaldi-util \
               -lkaldi-matrix -lkaldi-base -lportaudio -lasound -lrt -ljack -lfst
 
 DEFINES += HAVE_MKL \

@@ -21,16 +21,6 @@ KdOnline2Model::KdOnline2Model(TransitionModel *tran, AmDiagGmm *acc_model,
         oa_model = new AmDiagGmm;
         oa_model->Read(ki.Stream(), binary);
     }
-
-
-    if( !config->fmllr_basis_rxfilename.empty() )
-    {
-        // We could just as easily use ReadKaldiObject() here.
-        bool binary;
-        Input ki(config->fmllr_basis_rxfilename, &binary);
-        fmllr_basis = new BasisFmllrEstimate;
-        fmllr_basis->Read(ki.Stream(), binary);
-    }
 }
 
 
@@ -59,10 +49,5 @@ AmDiagGmm *KdOnline2Model::GetModel()
 AmDiagGmm *KdOnline2Model::GetFinalModel()
 {
     return a_model;
-}
-
-BasisFmllrEstimate *KdOnline2Model::GetFmllrBasis()
-{
-    return fmllr_basis;
 }
 
