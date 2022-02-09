@@ -494,8 +494,8 @@ KdMBR::KdMBR(CompactLattice *clat_in)
 
     RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
     // in best-path if we do this.
-    Lattice lat;
-    ConvertLattice(clat, &lat); // convert from CompactLattice to Lattice.
+    KdLattice lat;
+    ConvertLattice(clat, &lat); // convert from CompactLattice to KdLattice.
     fst::VectorFst<fst::StdArc> fst;
     ConvertLattice(lat, &fst); // convert from lattice to normal FST.
     fst::VectorFst<fst::StdArc> fst_shortest_path;

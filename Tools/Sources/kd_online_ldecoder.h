@@ -20,7 +20,7 @@
 #include "kd_lattice_functions.h"
 #include "kd_mbr.h"
 
-struct KdOnlineLDecoderOpts: public kaldi::LatticeFasterDecoderConfig
+struct KdOnlineLDecoderOpts: public KdLatticeDecoderConfig
 {
     int batch_size = 27;       // number of features decoded in one go
     int inter_utt_sil = 50;    // minimum silence (#frames) to trigger end of utterance
@@ -46,8 +46,8 @@ public:
 
     int Decode();
 
-    void createStates(kaldi::Lattice *ofst);
-    void RawLattice(kaldi::Lattice *ofst);
+    void createStates(KdLattice *ofst);
+    void RawLattice(KdLattice *ofst);
     void MakeLattice(kaldi::CompactLattice *ofst);
 
     QVector<BtWord> getResult(kaldi::CompactLattice *out_fst,
@@ -59,11 +59,11 @@ public:
 
 private:
     void ResetDecoder();
-    bool GetiSymbol(kaldi::Lattice *fst, std::vector<int> *isymbols_out);
+    bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
 
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token
-    void TracebackNFrames(int nframes, kaldi::Lattice *out_fst);
+    void TracebackNFrames(int nframes, KdLattice *out_fst);
     KdToken2* getBestTok();
 
     // Searches for the last token, ancestor of all currently active tokens

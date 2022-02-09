@@ -2,12 +2,28 @@
 #define KD_LATTICE_DECODER_H
 
 #include<QVector>
-#include "decoder/lattice-faster-decoder.h"
 #include "kd_token2.h"
 #include "kd_lattice.h"
 #include "kd_online2_decodable.h"
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
+struct KdLatticeDecoderConfig
+{
+  float beam = 16;
+  int32 max_active = 16000;
+  int32 min_active = 200;
+  float lattice_beam = 10.0;
+  int32 prune_interval = 25;
+  bool determinize_lattice = true;
+  float beam_delta = 0.5;
+  float hash_ratio = 2.0;
+  float prune_scale = 0.1; // not a very important parameter.
+
+  // Most of the options inside det_opts are not actually queried by the
+  // LatticeFasterDecoder class itself, but by the code that calls it, for
+  // example in the function DecodeUtteranceLatticeFaster.
+  fst::DeterminizeLatticePhonePrunedOptions det_opts;
+};
 
 struct KdTokenList
 {
@@ -23,7 +39,7 @@ public:
     using Weight = typename KdArc::Weight;
     typedef kaldi::HashList<KdStateId, KdToken2*>::Elem Elem;
 
-    kaldi::LatticeFasterDecoderConfig config_;
+    KdLatticeDecoderConfig config_;
     KdLatticeDecoder();
     ~KdLatticeDecoder();
 

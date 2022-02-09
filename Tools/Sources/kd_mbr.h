@@ -9,7 +9,7 @@
 #include "lat/sausages.h"
 #include "lat/lattice-functions.h"
 #include <QString>
-
+#include "kd_lattice.h"
 
 struct KdMBRArc
 {

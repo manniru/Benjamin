@@ -10,11 +10,11 @@
 
 #include "base/kaldi-common.h"
 #include "hmm/posterior.h"
-#include "fstext/fstext-lib.h"
 #include "hmm/transition-model.h"
 #include "lat/kaldi-lattice.h"
-#include "itf/decodable-itf.h"
+#include "kd_lattice.h"
 
-void kd_latticeGetTimes(kaldi::Lattice *lat, std::vector<int> *times);
+void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times);
+bool kd_PruneLattice(float beam, KdLattice *lat);
 
 #endif // KD_LATTICE_FUNCTIONS_H

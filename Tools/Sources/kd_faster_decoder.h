@@ -5,6 +5,7 @@
 
 #include "decoder/faster-decoder.h"
 #include "kd_f_token.h"
+#include "kd_lattice.h"
 
 typedef fst::Fst<fst::StdArc> KdFST;
 
@@ -21,7 +22,7 @@ public:
 
     bool ReachedFinal();
 
-    bool GetBestPath(fst::MutableFst<kaldi::LatticeArc> *fst_out,
+    bool GetBestPath(fst::MutableFst<KdLatticeArc> *fst_out,
                      bool use_final_probs = true);
 
     void InitDecoding();

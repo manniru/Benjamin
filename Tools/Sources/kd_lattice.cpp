@@ -2,7 +2,7 @@
 
 using namespace kaldi;
 
-void kd_fstSSPathBacktrace(Lattice *ifst, Lattice *ofst,
+void kd_fstSSPathBacktrace(KdLattice *ifst, KdLattice *ofst,
     std::vector<std::pair<KdStateId, size_t>> &parent,KdStateId f_parent)
 {
     ofst->DeleteStates();
@@ -41,7 +41,7 @@ void kd_fstSSPathBacktrace(Lattice *ifst, Lattice *ofst,
     ofst->SetProperties(path_property , FST_PROPERTY);
 }
 
-bool kd_SingleShortestPath(Lattice *ifst, KdStateId *f_parent,
+bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
                            std::vector<std::pair<KdStateId, size_t>> *parent)
 {
     std::vector<LatticeArc::Weight> distance;
@@ -130,7 +130,7 @@ bool kd_SingleShortestPath(Lattice *ifst, KdStateId *f_parent,
     return true;
 }
 
-void kd_fstShortestPath(Lattice *ifst, Lattice *ofst)
+void kd_fstShortestPath(KdLattice *ifst, KdLattice *ofst)
 {
     std::vector<std::pair<KdStateId, size_t>> parent;
     KdStateId f_parent = KD_INVALID_STATE;
@@ -146,7 +146,7 @@ void kd_fstShortestPath(Lattice *ifst, Lattice *ofst)
     return;
 }
 
-void kd_writeLat(Lattice *ifst)
+void kd_writeLat(KdLattice *ifst)
 {
 //    LatticeWriter lat_writer("ark:" KAL_SK_DIR "out.ark");
 //    lat_writer.Write("f", *ifst);

@@ -80,7 +80,7 @@ protected:
     int cmn_window = 600;
     int speaker_frames = 600;  // must be <= cmn_window
     int global_frames = 200;  // must be <= speaker_frames.
-    bool normalize_mean = true;  // Must be true if normalize_variance==true.
+    bool normalize_mean = true;
     bool normalize_variance = false;
     int Dim; ///REMOVE THIS
 

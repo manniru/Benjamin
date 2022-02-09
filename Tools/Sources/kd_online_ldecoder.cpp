@@ -18,7 +18,6 @@ KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
     opts.lattice_beam = 6.0;
 
     config_ = opts;
-    config_.Check();
 
     silence_set = sil_phones;
     uframe = 0;
@@ -50,7 +49,7 @@ void KdOnlineLDecoder::ResetDecoder()
     ProcessNonemitting(config_.beam);
 }
 
-void KdOnlineLDecoder::RawLattice(Lattice *ofst)
+void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
 {
     int end = frame_toks.size();
     unordered_map<KdToken2*, float> final_costs;
@@ -100,7 +99,7 @@ void KdOnlineLDecoder::RawLattice(Lattice *ofst)
     }
 }
 
-void KdOnlineLDecoder::createStates(Lattice *ofst)
+void KdOnlineLDecoder::createStates(KdLattice *ofst)
 {
     int end = frame_toks.size();
     ofst->DeleteStates();
@@ -131,12 +130,12 @@ void KdOnlineLDecoder::createStates(Lattice *ofst)
 
 void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
 {
-    Lattice raw_fst;
+    KdLattice raw_fst;
     double lat_beam = config_.lattice_beam;
     RawLattice(&raw_fst);
 
 //    GetRawLattice(&raw_fst);
-    PruneLattice(lat_beam, &raw_fst);
+    kd_PruneLattice(lat_beam, &raw_fst);
 
     fst::DeterminizeLatticePhonePrunedWrapper(trans_model_,
             &raw_fst, lat_beam, ofst, config_.det_opts);

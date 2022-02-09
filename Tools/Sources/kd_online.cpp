@@ -1,7 +1,4 @@
 #include "kd_online.h"
-#include "online/onlinebin-util.h"
-#include "online/online-decodable.h"
-#include "online/online-faster-decoder.h"
 
 using namespace kaldi;
 using namespace fst;

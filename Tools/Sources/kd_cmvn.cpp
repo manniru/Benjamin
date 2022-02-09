@@ -4,7 +4,6 @@
 #include <base/kaldi-common.h>
 #include <util/common-utils.h>
 #include <matrix/kaldi-matrix.h>
-#include <transform/cmvn.h>
 
 using namespace kaldi;
 
@@ -229,9 +228,6 @@ void KdCMVN::GetFrame(int frame,
                               &stats);
     }
 
-    // call the function ApplyCmvn declared in ../transform/cmvn.h, which
-    // requires a matrix.
-    // 1 row; num-cols == dim; stride  == dim.
     SubMatrix<float> feat_mat(feat->Data(), 1, Dim, Dim);
     // the function ApplyCmvn takes a matrix, so form a one-row matrix to give it.
     if( normalize_mean )

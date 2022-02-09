@@ -7,7 +7,6 @@ using namespace kaldi;
 KdLatticeDecoder::KdLatticeDecoder()
 {
     num_toks_ = 0;
-    config_.Check();
     toks_.SetSize(1000);  // just so on the first frame we do something reasonable.
 }
 

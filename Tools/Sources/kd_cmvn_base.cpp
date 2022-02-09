@@ -25,7 +25,7 @@ void kd_applyCmvn(const MatrixBase<double> &stats,
         KALDI_ERR << "Insufficient stats for cepstral mean and variance normalization: "
                   << "count = " << count;
 
-    if (!var_norm)
+    if( var_norm==0 )
     {
         Vector<float> offset(dim);
         SubVector<double> mean_stats(stats.RowData(0), dim);
