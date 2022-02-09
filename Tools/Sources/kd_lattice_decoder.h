@@ -3,7 +3,7 @@
 
 #include<QVector>
 #include "kd_token2.h"
-#include "kd_lattice.h"
+#include "kd_lattice_functions.h""
 #include "kd_online2_decodable.h"
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
@@ -19,10 +19,7 @@ struct KdLatticeDecoderConfig
   float hash_ratio = 2.0;
   float prune_scale = 0.1; // not a very important parameter.
 
-  // Most of the options inside det_opts are not actually queried by the
-  // LatticeFasterDecoder class itself, but by the code that calls it, for
-  // example in the function DecodeUtteranceLatticeFaster.
-  fst::DeterminizeLatticePhonePrunedOptions det_opts;
+  KdPrunedOpt det_opts;
 };
 
 struct KdTokenList

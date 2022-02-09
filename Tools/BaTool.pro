@@ -20,7 +20,7 @@ linux:LIBS += -lgio-2.0 \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
               -lm -ldl \
               -L/home/bijan/Project/Benjamin/Tools/Kaldi/Libs \
-              -lkaldi-lat -lkaldi-hmm  -lkaldi-gmm \
+              -lkaldi-hmm  -lkaldi-gmm \
               -lkaldi-tree -lkaldi-util \
               -lkaldi-matrix -lkaldi-base -lportaudio -lasound -lrt -ljack -lfst
 

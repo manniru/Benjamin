@@ -1,4 +1,4 @@
-﻿#include "kd_lattice.h"
+﻿#include "kd_lattice_functions.h"
 
 using namespace kaldi;
 
@@ -127,4 +127,199 @@ bool kd_PruneLattice(float beam, KdLattice *lat)
     }
     fst::Connect(lat);
     return (lat->NumStates() > 0);
+}
+
+// DeterminizeLatticePhonePrunedWrapper
+bool kd_detLatPhonePrunedW(TransitionModel &trans_model,
+                           KdLattice *ifst,
+                           double beam, CompactLattice *ofst,
+                           KdPrunedOpt opts)
+{
+    bool ans = true;
+    Invert(ifst);
+    if (ifst->Properties(fst::kTopSorted, true) == 0)
+    {
+        if (!TopSort(ifst))
+        {
+            KALDI_ERR << "Topological sorting lattice failed.";
+        }
+    }
+    fst::ILabelCompare<KdLatticeArc> ilabel_comp;
+    fst::ArcSort(ifst, ilabel_comp);
+    ans = kd_detLatPhonePruned(trans_model, ifst,
+                               beam, ofst, opts);
+    Connect(ofst);
+    return ans;
+}
+
+// DeterminizeLatticePhonePruned
+bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
+                          KdLattice *ifst, double beam,
+                          CompactLattice *ofst, KdPrunedOpt opts)
+{
+    // Returning status.
+    bool ans = true;
+
+    // Make sure at least one of opts.phone_determinize and opts.word_determinize
+    // is not false, otherwise calling this function doesn't make any sense.
+    if ((opts.phone_determinize || opts.word_determinize) == false)
+    {
+        KALDI_WARN << "Both --phone-determinize and --word-determinize are set to "
+                   << "false, copying lattice without determinization.";
+        // We are expecting the words on the input side.
+        fst::ConvertLattice<KdLatticeWeight, int>(*ifst, ofst, false);
+        return ans;
+    }
+
+    // Determinization options.
+    KdDetOpt det_opts;
+    det_opts.delta = opts.delta;
+    det_opts.max_mem = opts.max_mem;
+
+    // If --phone-determinize is true, do the determinization on phone + word
+    // lattices.
+    if (opts.phone_determinize)
+    {
+        KALDI_VLOG(3) << "Doing first pass of determinization on phone + word "
+                      << "lattices.";
+        ans = kd_DetLatFirstPass(trans_model, beam, ifst, &det_opts) && ans;
+
+        // If --word-determinize is false, we've finished the job and return here.
+        if (!opts.word_determinize)
+        {
+            // We are expecting the words on the input side.
+            fst::ConvertLattice<KdLatticeWeight, int>(*ifst, ofst, false);
+            return ans;
+        }
+    }
+
+    // If --word-determinize is true, do the determinization on word lattices.
+    if (opts.word_determinize)
+    {
+        KALDI_VLOG(3) << "Doing second pass of determinization on word lattices.";
+        ans = kd_detLatPruned(*ifst, beam,
+                              ofst, &det_opts) && ans;
+    }
+
+    return ans;
+}
+
+//DeterminizeLatticePhonePrunedFirstPass
+bool kd_DetLatFirstPass(kaldi::TransitionModel &trans_model,
+                        double beam, KdLattice *fst, KdDetOpt *opts)
+{
+    // First, insert the phones.
+    KdLatticeArc::Label first_phone_label =
+            DeterminizeLatticeInsertPhones(trans_model, fst);
+    TopSort(fst);
+
+    // Second, do determinization with phone inserted.
+    bool ans = kd_detLatPruned(*fst, beam, fst, *opts);
+
+    // Finally, remove the inserted phones.
+    fst::DeterminizeLatticeDeletePhones(first_phone_label, fst);
+    TopSort(fst);
+
+    return ans;
+}
+
+
+// DeterminizeLatticePruned
+// there are two versions with different output FST types.
+bool kd_detLatPruned(KdLattice &ifst, double beam,
+                     KdLattice *ofst, KdDetOpt opts)
+{
+    ofst->SetInputSymbols(ifst.InputSymbols());
+    ofst->SetOutputSymbols(ifst.OutputSymbols());
+    if (ifst.NumStates() == 0)
+    {
+        ofst->DeleteStates();
+        return true;
+    }
+    KALDI_ASSERT(opts.retry_cutoff >= 0.0 && opts.retry_cutoff < 1.0);
+    int32 max_num_iters = 10;  // avoid the potential for infinite loops if
+    // retrying.
+    KdLattice temp_fst;
+
+    for (int32 iter = 0; iter < max_num_iters; iter++)
+    {
+        LatticeDeterminizerPruned<Weight, IntType> det(iter == 0 ? ifst : temp_fst,
+                                                       beam, opts);
+        double effective_beam;
+        bool ans = det.Determinize(&effective_beam);
+        // if it returns false it will typically still produce reasonable output,
+        // just with a narrower beam than "beam".  If the user specifies an infinite
+        // beam we don't do this beam-narrowing.
+        if (effective_beam >= beam * opts.retry_cutoff ||
+                beam == std::numeric_limits<double>::infinity() ||
+                iter + 1 == max_num_iters)
+        {
+            det.Output(ofst);
+            return ans;
+        }
+        else
+        {
+            // The code below to set "beam" is a heuristic.
+            // If effective_beam is very small, we want to reduce by a lot.
+            // But never change the beam by more than a factor of two.
+            if (effective_beam < 0.0) effective_beam = 0.0;
+            double new_beam = beam * sqrt(effective_beam / beam);
+            if (new_beam < 0.5 * beam) new_beam = 0.5 * beam;
+            beam = new_beam;
+            if (iter == 0)
+                temp_fst = ifst;
+            kd_PruneLattice(beam, &temp_fst);
+            KALDI_LOG << "Pruned state-level lattice with beam " << beam
+                      << " and retrying determinization with that beam.";
+        }
+    }
+    return false; // Suppress compiler warning; this code is unreachable.
+}
+
+bool kd_detLatPruned( KdLattice &ifst, double beam,
+                      CompactLattice *ofst, KdDetOpt opts)
+{
+    ofst->SetInputSymbols(ifst.InputSymbols());
+    ofst->SetOutputSymbols(ifst.OutputSymbols());
+    if (ifst.NumStates() == 0)
+    {
+        ofst->DeleteStates();
+        return true;
+    }
+    KALDI_ASSERT(opts.retry_cutoff >= 0.0 && opts.retry_cutoff < 1.0);
+    int max_num_iters = 10;  // avoid the potential for infinite loops if
+    // retrying.
+    KdLattice temp_fst;
+
+    for (int32 iter = 0; iter < max_num_iters; iter++)
+    {
+        LatticeDeterminizerPruned<Weight, IntType> det(iter == 0 ? ifst : temp_fst,
+                                                       beam, opts);
+        double effective_beam;
+        bool ans = det.Determinize(&effective_beam);
+        // if it returns false it will typically still produce reasonable output,
+        // just with a narrower beam than "beam".  If the user specifies an infinite
+        // beam we don't do this beam-narrowing.
+        if (effective_beam >= beam * opts.retry_cutoff ||
+                beam == std::numeric_limits<double>::infinity() ||
+                iter + 1 == max_num_iters) {
+            det.Output(ofst);
+            return ans;
+        }
+        else
+        {
+            // The code below to set "beam" is a heuristic.
+            // If effective_beam is very small, we want to reduce by a lot.
+            // But never change the beam by more than a factor of two.
+            if (effective_beam < 0.0) effective_beam = 0.0;
+            double new_beam = beam * sqrt(effective_beam / beam);
+            if (new_beam < 0.5 * beam) new_beam = 0.5 * beam;
+            beam = new_beam;
+            if (iter == 0) temp_fst = ifst;
+            kd_PruneLattice(beam, &temp_fst);
+            KALDI_LOG << "Pruned state-level lattice with beam " << beam
+                      << " and retrying determinization with that beam.";
+        }
+    }
+    return false; // Suppress compiler warning; this code is unreachable.
 }
