@@ -236,7 +236,7 @@ void KdCMVN::GetFrame(int frame,
     // the function ApplyCmvn takes a matrix, so form a one-row matrix to give it.
     if( normalize_mean )
     {
-        ApplyCmvn(stats, normalize_variance, &feat_mat);
+        kd_applyCmvn(stats, normalize_variance, &feat_mat);
     }
     else
     {

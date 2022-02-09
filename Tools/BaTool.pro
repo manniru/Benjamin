@@ -42,6 +42,7 @@ HEADERS += \
     Sources/bt_cyclic.h \
     Sources/bt_recorder.h \
     Sources/kd_cmvn.h \
+    Sources/kd_cmvn_base.h \
     Sources/kd_cmvn_state.h \
     Sources/kd_delta.h \
     Sources/kd_f_token.h \
@@ -69,6 +70,7 @@ SOURCES += \
     Sources/bt_cyclic.cpp \
     Sources/bt_recorder.cpp \
     Sources/kd_cmvn.cpp \
+    Sources/kd_cmvn_base.cpp \
     Sources/kd_cmvn_state.cpp \
     Sources/kd_delta.cpp \
     Sources/kd_f_token.cpp \

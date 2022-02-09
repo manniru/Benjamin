@@ -4,11 +4,7 @@
 #include <QObject>
 #include <QThread>
 
-#include "kd_cmvn.h"
-#include "kd_cmvn_state.h"
-#include "matrix/matrix-lib.h"
-#include "util/common-utils.h"
-#include "base/kaldi-error.h"
+#include "kd_cmvn_base.h"
 
 class KdCMVN
 {
