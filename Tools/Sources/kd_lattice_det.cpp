@@ -5,35 +5,38 @@ using namespace kaldi;
 void KdLatDet::Output(CompactLattice *ofst, bool destroy)
 {
     KALDI_ASSERT(determinized_);
-    typedef typename Arc::StateId StateId;
     StateId nStates = static_cast<StateId>(output_states_.size());
     if (destroy)
         FreeMostMemory();
     ofst->DeleteStates();
-    ofst->SetStart(kNoStateId);
+    ofst->SetStart(KD_INVALID_STATE);
     if (nStates == 0) {
         return;
     }
     for (StateId s = 0;s < nStates;s++) {
-        OutputStateId news = ofst->AddState();
+        KdStateId news = ofst->AddState();
         KALDI_ASSERT(news == s);
     }
     ofst->SetStart(0);
     // now process transitions.
     for (StateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
         OutputState &this_state = *(output_states_[this_state_id]);
-        vector<TempArc> &this_vec(this_state.arcs);
-        typename vector<TempArc>::const_iterator iter = this_vec.begin(), end = this_vec.end();
+        std::vector<TempArc> &this_vec(this_state.arcs);
+        typename std::vector<TempArc>::const_iterator iter = this_vec.begin(), end = this_vec.end();
 
-        for (;iter != end; ++iter) {
+        for (;iter != end; ++iter)
+        {
             const TempArc &temp_arc(*iter);
-            CompactArc new_arc;
-            vector<Label> olabel_seq;
+            CompactLatticeArc new_arc;
+            std::vector<Label> olabel_seq;
             repository_.ConvertToVector(temp_arc.string, &olabel_seq);
-            CompactWeight weight(temp_arc.weight, olabel_seq);
-            if (temp_arc.nextstate == kNoStateId) {  // is really final weight.
+            CompactLatticeWeight weight(temp_arc.weight, olabel_seq);
+            if( temp_arc.nextstate == KD_INVALID_STATE )
+            {  // is really final weight.
                 ofst->SetFinal(this_state_id, weight);
-            } else {  // is really an arc.
+            }
+            else
+            {  // is really an arc.
                 new_arc.nextstate = temp_arc.nextstate;
                 new_arc.ilabel = temp_arc.ilabel;
                 new_arc.olabel = temp_arc.ilabel;  // acceptor.  input == output.
@@ -43,7 +46,11 @@ void KdLatDet::Output(CompactLattice *ofst, bool destroy)
         }
         // Free up memory.  Do this inside the loop as ofst is also allocating memory,
         // and we want to reduce the maximum amount ever allocated.
-        if (destroy) { vector<TempArc> temp; temp.swap(this_vec); }
+        if (destroy)
+        {
+            std::vector<TempArc> temp;
+            temp.swap(this_vec);
+        }
     }
     if (destroy) {
         FreeOutputStates();
@@ -51,40 +58,40 @@ void KdLatDet::Output(CompactLattice *ofst, bool destroy)
     }
 }
 
-void KdLatDet::Output(KdLattice *ofst, bool destroy = true)
+void KdLatDet::Output(KdLattice *ofst, bool destroy)
 {
     // Outputs to standard fst.
-    OutputStateId nStates = static_cast<OutputStateId>(output_states_.size());
+    KdStateId nStates = static_cast<KdStateId>(output_states_.size());
     ofst->DeleteStates();
     if (nStates == 0) {
-        ofst->SetStart(kNoStateId);
+        ofst->SetStart(KD_INVALID_STATE);
         return;
     }
     if (destroy)
         FreeMostMemory();
     // Add basic states-- but we will add extra ones to account for strings on output.
-    for (OutputStateId s = 0; s< nStates;s++) {
-        OutputStateId news = ofst->AddState();
+    for (KdStateId s = 0; s< nStates;s++) {
+        KdStateId news = ofst->AddState();
         KALDI_ASSERT(news == s);
     }
     ofst->SetStart(0);
-    for (OutputStateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
+    for (KdStateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
         OutputState &this_state = *(output_states_[this_state_id]);
-        vector<TempArc> &this_vec(this_state.arcs);
+        std::vector<TempArc> &this_vec(this_state.arcs);
 
-        typename vector<TempArc>::const_iterator iter = this_vec.begin(), end = this_vec.end();
+        typename std::vector<TempArc>::const_iterator iter = this_vec.begin(), end = this_vec.end();
         for (; iter != end; ++iter) {
             const TempArc &temp_arc(*iter);
-            vector<Label> seq;
+            std::vector<Label> seq;
             repository_.ConvertToVector(temp_arc.string, &seq);
 
-            if (temp_arc.nextstate == kNoStateId) {  // Really a final weight.
+            if (temp_arc.nextstate == KD_INVALID_STATE) {  // Really a final weight.
                 // Make a sequence of states going to a final state, with the strings
                 // as labels.  Put the weight on the first arc.
-                OutputStateId cur_state = this_state_id;
+                KdStateId cur_state = this_state_id;
                 for (size_t i = 0; i < seq.size(); i++) {
-                    OutputStateId next_state = ofst->AddState();
-                    Arc arc;
+                    KdStateId next_state = ofst->AddState();
+                    KdLatticeArc arc;
                     arc.nextstate = next_state;
                     arc.weight = (i == 0 ? temp_arc.weight : KdLatticeWeight::One());
                     arc.ilabel = 0;  // epsilon.
@@ -94,13 +101,13 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy = true)
                 }
                 ofst->SetFinal(cur_state, (seq.size() == 0 ? temp_arc.weight : KdLatticeWeight::One()));
             } else {  // Really an arc.
-                OutputStateId cur_state = this_state_id;
+                KdStateId cur_state = this_state_id;
                 // Have to be careful with this integer comparison (i+1 < seq.size()) because unsigned.
                 // i < seq.size()-1 could fail for zero-length sequences.
                 for (size_t i = 0; i+1 < seq.size();i++) {
                     // for all but the last element of seq, create new state.
-                    OutputStateId next_state = ofst->AddState();
-                    Arc arc;
+                    KdStateId next_state = ofst->AddState();
+                    KdLatticeArc arc;
                     arc.nextstate = next_state;
                     arc.weight = (i == 0 ? temp_arc.weight : KdLatticeWeight::One());
                     arc.ilabel = (i == 0 ? temp_arc.ilabel : 0);  // put ilabel on first element of seq.
@@ -109,7 +116,7 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy = true)
                     cur_state = next_state;
                 }
                 // Add the final arc in the sequence.
-                Arc arc;
+                KdLatticeArc arc;
                 arc.nextstate = temp_arc.nextstate;
                 arc.weight = (seq.size() <= 1 ? temp_arc.weight : KdLatticeWeight::One());
                 arc.ilabel = (seq.size() <= 1 ? temp_arc.ilabel : 0);
@@ -118,7 +125,7 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy = true)
             }
         }
         // Free up memory.  Do this inside the loop as ofst is also allocating memory
-        if (destroy) { vector<TempArc> temp; temp.swap(this_vec); }
+        if (destroy) { std::vector<TempArc> temp; temp.swap(this_vec); }
     }
     if (destroy) {
         FreeOutputStates();
@@ -132,15 +139,15 @@ KdLatDet::KdLatDet(KdLattice &ifst, double beam,
     equal_(opts_.delta), determinized_(false),
     minimal_hash_(3, hasher_, equal_), initial_hash_(3, hasher_, equal_)
 {
-    KALDI_ASSERT(KdLatticeWeight::Properties() & kIdempotent); // this algorithm won't
-    // work correctly otherwise.
+    KALDI_ASSERT(KdLatticeWeight::Properties() & FST_PLUS_ZERO);
+    // this algorithm won't work correctly otherwise.
 }
 
 void KdLatDet::FreeOutputStates()
 {
     for (size_t i = 0; i < output_states_.size(); i++)
         delete output_states_[i];
-    vector<OutputState*> temp;
+    std::vector<OutputState*> temp;
     temp.swap(output_states_);
 }
 
@@ -154,7 +161,7 @@ void KdLatDet::FreeMostMemory()
     { MinimalSubsetHash tmp; tmp.swap(minimal_hash_); }
 
     for (size_t i = 0; i < output_states_.size(); i++) {
-        vector<Element> empty_subset;
+        std::vector<Element> empty_subset;
         empty_subset.swap(output_states_[i]->minimal_subset);
     }
 
@@ -162,21 +169,24 @@ void KdLatDet::FreeMostMemory()
          iter != initial_hash_.end(); ++iter)
         delete iter->first;
     { InitialSubsetHash tmp; tmp.swap(initial_hash_); }
-    for (size_t i = 0; i < output_states_.size(); i++) {
-        vector<Element> tmp;
+    for (size_t i = 0; i < output_states_.size(); i++)
+    {
+        std::vector<Element> tmp;
         tmp.swap(output_states_[i]->minimal_subset);
     }
-    { vector<char> tmp;  tmp.swap(isymbol_or_final_); }
+    { std::vector<char> tmp;  tmp.swap(isymbol_or_final_); }
     { // Free up the queue.  I'm not sure how to make sure all
         // the memory is really freed (no swap() function)... doesn't really
         // matter much though.
-        while (!queue_.empty()) {
+        while (!queue_.empty())
+        {
             Task *t = queue_.top();
             delete t;
             queue_.pop();
         }
     }
-    { vector<pair<Label, Element> > tmp; tmp.swap(all_elems_tmp_); }
+    std::vector<std::pair<Label, Element> > tmp;
+    tmp.swap(all_elems_tmp_);
 }
 
 KdLatDet::~KdLatDet()
@@ -216,7 +226,7 @@ void KdLatDet::RebuildRepository()
     for (typename InitialSubsetHash::const_iterator
          iter = initial_hash_.begin();
          iter != initial_hash_.end(); ++iter) {
-        const vector<Element> &vec = *(iter->first);
+        const std::vector<Element> &vec = *(iter->first);
         Element elem = iter->second;
         AddStrings(vec, &needed_strings);
         needed_strings.push_back(elem.string);
@@ -322,10 +332,10 @@ bool KdLatDet::Determinize(double *effective_beam) {
     // arc or state limit.
 }
 
-void KdLatDet::ConvertToMinimal(vector<Element> *subset)
+void KdLatDet::ConvertToMinimal(std::vector<Element> *subset)
 {
     KALDI_ASSERT(!subset->empty());
-    typename vector<Element>::iterator cur_in = subset->begin(),
+    typename std::vector<Element>::iterator cur_in = subset->begin(),
             cur_out = subset->begin(), end = subset->end();
     while (cur_in != end) {
         if(IsIsymbolOrFinal(cur_in->state)) {  // keep it...
@@ -337,13 +347,13 @@ void KdLatDet::ConvertToMinimal(vector<Element> *subset)
     subset->resize(cur_out - subset->begin());
 }
 
-OutputStateId KdLatDet::MinimalToStateId(const vector<Element> &subset,
+KdStateId KdLatDet::MinimalToStateId(const std::vector<Element> &subset,
                                const double forward_cost)
 {
     typename MinimalSubsetHash::const_iterator iter
             = minimal_hash_.find(&subset);
     if (iter != minimal_hash_.end()) { // Found a matching subset.
-        OutputStateId state_id = iter->second;
+        KdStateId state_id = iter->second;
         const OutputState &state = *(output_states_[state_id]);
         // Below is just a check that the algorithm is working...
         if (forward_cost < state.forward_cost - 0.1) {
@@ -354,7 +364,7 @@ OutputStateId KdLatDet::MinimalToStateId(const vector<Element> &subset,
         }
         return state_id;
     }
-    OutputStateId state_id = static_cast<OutputStateId>(output_states_.size());
+    KdStateId state_id = static_cast<KdStateId>(output_states_.size());
     OutputState *new_state = new OutputState(subset, forward_cost);
     minimal_hash_[&(new_state->minimal_subset)] = state_id;
     output_states_.push_back(new_state);
@@ -367,7 +377,7 @@ OutputStateId KdLatDet::MinimalToStateId(const vector<Element> &subset,
     return state_id;
 }
 
-OutputStateId KdLatDet::InitialToStateId(const vector<Element> &subset_in,
+KdStateId KdLatDet::InitialToStateId(const std::vector<Element> &subset_in,
                                double forward_cost,
                                KdLatticeWeight *remaining_weight,
                                StringId *common_prefix)
@@ -383,7 +393,7 @@ OutputStateId KdLatDet::InitialToStateId(const vector<Element> &subset_in,
         return elem.state;
     }
     // else no matching subset-- have to work it out.
-    vector<Element> subset(subset_in);
+    std::vector<Element> subset(subset_in);
     // Follow through epsilons.  Will add no duplicate states.  note: after
     // EpsilonClosure, it is the same as "canonical" subset, except not
     // normalized (actually we never compute the normalized canonical subset,
@@ -392,13 +402,13 @@ OutputStateId KdLatDet::InitialToStateId(const vector<Element> &subset_in,
     ConvertToMinimal(&subset); // remove all but emitting and final states.
 
     Element elem; // will be used to store remaining weight and string, and
-    // OutputStateId, in initial_hash_;
+    // KdStateId, in initial_hash_;
     NormalizeSubset(&subset, &elem.weight, &elem.string); // normalize subset; put
     // common string and weight in "elem".  The subset is now a minimal,
     // normalized subset.
 
     forward_cost += ConvertToCost(elem.weight);
-    OutputStateId ans = MinimalToStateId(subset, forward_cost);
+    KdStateId ans = MinimalToStateId(subset, forward_cost);
     *remaining_weight = elem.weight;
     *common_prefix = elem.string;
     if (elem.weight == KdLatticeWeight::Zero())
@@ -407,7 +417,7 @@ OutputStateId KdLatDet::InitialToStateId(const vector<Element> &subset_in,
     // Before returning "ans", add the initial subset to the hash,
     // so that we can bypass the epsilon-closure etc., next time
     // we process the same initial subset.
-    vector<Element> *initial_subset_ptr = new vector<Element>(subset_in);
+    std::vector<Element> *initial_subset_ptr = new std::vector<Element>(subset_in);
     elem.state = ans;
     initial_hash_[initial_subset_ptr] = elem;
     num_elems_ += initial_subset_ptr->size(); // keep track of memory usage.
@@ -421,7 +431,7 @@ int KdLatDet::Compare(const KdLatticeWeight &a_w, StringId a_str,
     if (weight_comp != 0) return weight_comp;
     // now comparing strings.
     if (a_str == b_str) return 0;
-    vector<IntType> a_vec, b_vec;
+    std::vector<int> a_vec, b_vec;
     repository_.ConvertToVector(a_str, &a_vec);
     repository_.ConvertToVector(b_str, &b_vec);
     // First compare their lengths.
@@ -438,15 +448,15 @@ int KdLatDet::Compare(const KdLatticeWeight &a_w, StringId a_str,
     return 0;
 }
 
-void KdLatDet::EpsilonClosure(vector<Element> *subset) {
+void KdLatDet::EpsilonClosure(std::vector<Element> *subset) {
     // at input, subset must have only one example of each StateId.  [will still
     // be so at output].  This function follows input-epsilons, and augments the
     // subset accordingly.
 
-    std::priority_queue<Element, vector<Element>, greater<Element> > queue;
+    std::priority_queue<Element, std::vector<Element>, std::greater<Element> > queue;
     unordered_map<InputStateId, Element> cur_subset;
     typedef typename unordered_map<InputStateId, Element>::iterator MapIter;
-    typedef typename vector<Element>::const_iterator VecIter;
+    typedef typename std::vector<Element>::const_iterator VecIter;
 
     for (VecIter iter = subset->begin(); iter != subset->end(); ++iter) {
         queue.push(*iter);
@@ -454,7 +464,7 @@ void KdLatDet::EpsilonClosure(vector<Element> *subset) {
     }
 
     // find whether input fst is known to be sorted on input label.
-    bool sorted = ((ifst_->Properties(kILabelSorted, false) & kILabelSorted) != 0);
+    bool sorted = ((ifst_->Properties(fst::kILabelSorted, false) & fst::kILabelSorted) != 0);
     bool replaced_elems = false; // relates to an optimization, see below.
     int counter = 0; // stops infinite loops here for non-lattice-determinizable input
     // (e.g. input with negative-cost epsilon loops); useful in testing.
@@ -475,8 +485,8 @@ void KdLatDet::EpsilonClosure(vector<Element> *subset) {
             KALDI_ERR << "Lattice determinization aborted since looped more than "
                       << opts_.max_loop << " times during epsilon closure.";
         }
-        for (ArcIterator<ExpandedFst<Arc> > aiter(*ifst_, elem.state); !aiter.Done(); aiter.Next()) {
-            const Arc &arc = aiter.Value();
+        for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); !aiter.Done(); aiter.Next()) {
+            const KdLatticeArc &arc = aiter.Value();
             if (sorted && arc.ilabel != 0) break;  // Break from the loop: due to sorting there will be no
             // more transitions with epsilons as input labels.
             if (arc.ilabel == 0
@@ -531,10 +541,10 @@ void KdLatDet::EpsilonClosure(vector<Element> *subset) {
     }
 }
 
-void KdLatDet::ProcessFinal(OutputStateId output_state_id)
+void KdLatDet::ProcessFinal(KdStateId output_state_id)
 {
     OutputState &state = *(output_states_[output_state_id]);
-    const vector<Element> &minimal_subset = state.minimal_subset;
+    const std::vector<Element> &minimal_subset = state.minimal_subset;
     // processes final-weights for this subset.  state.minimal_subset_ may be
     // empty if the graphs is not connected/trimmed, I think, do don't check
     // that it's nonempty.
@@ -542,7 +552,7 @@ void KdLatDet::ProcessFinal(OutputStateId output_state_id)
     // compiler happy; if it doesn't get set in the loop, we won't use the value anyway.
     KdLatticeWeight final_weight = KdLatticeWeight::Zero();
     bool is_final = false;
-    typename vector<Element>::const_iterator iter = minimal_subset.begin(), end = minimal_subset.end();
+    typename std::vector<Element>::const_iterator iter = minimal_subset.begin(), end = minimal_subset.end();
     for (; iter != end; ++iter) {
         const Element &elem = *iter;
         KdLatticeWeight this_final_weight = Times(elem.weight, ifst_->Final(elem.state));
@@ -564,7 +574,7 @@ void KdLatDet::ProcessFinal(OutputStateId output_state_id)
         // the stuff with Compare.
         TempArc temp_arc;
         temp_arc.ilabel = 0;
-        temp_arc.nextstate = kNoStateId;  // special marker meaning "final weight".
+        temp_arc.nextstate = KD_INVALID_STATE;  // special marker meaning "final weight".
         temp_arc.string = final_string;
         temp_arc.weight = final_weight;
         state.arcs.push_back(temp_arc);
@@ -575,7 +585,7 @@ void KdLatDet::ProcessFinal(OutputStateId output_state_id)
 // NormalizeSubset normalizes the subset "elems" by
 // removing any common string prefix (putting it in common_str),
 // and dividing by the total weight (putting it in tot_weight).
-void KdLatDet::NormalizeSubset(vector<Element> *elems,
+void KdLatDet::NormalizeSubset(std::vector<Element> *elems,
                      KdLatticeWeight *tot_weight,
                      StringId *common_str)
 {
@@ -587,18 +597,20 @@ void KdLatDet::NormalizeSubset(vector<Element> *elems,
         return;
     }
     size_t size = elems->size();
-    vector<IntType> common_prefix;
+    std::vector<int> common_prefix;
     repository_.ConvertToVector((*elems)[0].string, &common_prefix);
     KdLatticeWeight weight = (*elems)[0].weight;
-    for(size_t i = 1; i < size; i++) {
+    for(size_t i = 1; i < size; i++)
+    {
         weight = Plus(weight, (*elems)[i].weight);
         repository_.ReduceToCommonPrefix((*elems)[i].string, &common_prefix);
     }
     KALDI_ASSERT(weight != KdLatticeWeight::Zero()); // we made sure to ignore arcs with zero
     // weights on them, so we shouldn't have zero here.
     size_t prefix_len = common_prefix.size();
-    for(size_t i = 0; i < size; i++) {
-        (*elems)[i].weight = Divide((*elems)[i].weight, weight, DIVIDE_LEFT);
+    for(size_t i = 0; i < size; i++)
+    {
+        (*elems)[i].weight = Divide((*elems)[i].weight, weight, fst::DIVIDE_LEFT);
         (*elems)[i].string =
                 repository_.RemovePrefix((*elems)[i].string, prefix_len);
     }
@@ -609,9 +621,9 @@ void KdLatDet::NormalizeSubset(vector<Element> *elems,
 // Take a subset of Elements that is sorted on state, and
 // merge any Elements that have the same state (taking the best
 // (weight, string) pair in the semiring).
-void KdLatDet::MakeSubsetUnique(vector<Element> *subset)
+void KdLatDet::MakeSubsetUnique(std::vector<Element> *subset)
 {
-    typedef typename vector<Element>::iterator IterType;
+    typedef typename std::vector<Element>::iterator IterType;
 
     // This KALDI_ASSERT is designed to fail (usually) if the subset is not sorted on
     // state.
@@ -640,7 +652,7 @@ void KdLatDet::MakeSubsetUnique(vector<Element> *subset)
     subset->resize(num_out);
 }
 
-void KdLatDet::ProcessTransition(OutputStateId ostate_id, Label ilabel, vector<Element> *subset)
+void KdLatDet::ProcessTransition(KdStateId ostate_id, Label ilabel, std::vector<Element> *subset)
 {
 
     double forward_cost = output_states_[ostate_id]->forward_cost;
@@ -649,7 +661,7 @@ void KdLatDet::ProcessTransition(OutputStateId ostate_id, Label ilabel, vector<E
     NormalizeSubset(subset, &tot_weight, &common_str);
     forward_cost += ConvertToCost(tot_weight);
 
-    OutputStateId nextstate;
+    KdStateId nextstate;
     {
         KdLatticeWeight next_tot_weight;
         StringId next_common_str;
@@ -672,24 +684,24 @@ void KdLatDet::ProcessTransition(OutputStateId ostate_id, Label ilabel, vector<E
     num_arcs_++;
 }
 
-void KdLatDet::ProcessTransitions(OutputStateId output_state_id)
+void KdLatDet::ProcessTransitions(KdStateId output_state_id)
 {
-    const vector<Element> &minimal_subset = output_states_[output_state_id]->minimal_subset;
+    const std::vector<Element> &minimal_subset = output_states_[output_state_id]->minimal_subset;
     // it's possible that minimal_subset could be empty if there are
     // unreachable parts of the graph, so don't check that it's nonempty.
-    vector<pair<Label, Element> > &all_elems(all_elems_tmp_); // use class member
+    std::vector<std::pair<Label, Element> > &all_elems(all_elems_tmp_); // use class member
     // to avoid memory allocation/deallocation.
     {
         // Push back into "all_elems", elements corresponding to all
         // non-epsilon-input transitions out of all states in "minimal_subset".
-        typename vector<Element>::const_iterator iter = minimal_subset.begin(), end = minimal_subset.end();
+        typename std::vector<Element>::const_iterator iter = minimal_subset.begin(), end = minimal_subset.end();
         for (;iter != end; ++iter) {
             const Element &elem = *iter;
-            for (ArcIterator<ExpandedFst<Arc> > aiter(*ifst_, elem.state); ! aiter.Done(); aiter.Next()) {
-                const Arc &arc = aiter.Value();
+            for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); ! aiter.Done(); aiter.Next()) {
+                const KdLatticeArc &arc = aiter.Value();
                 if (arc.ilabel != 0
                         && arc.weight != KdLatticeWeight::Zero()) {  // Non-epsilon transition -- ignore epsilons here.
-                    pair<Label, Element> this_pr;
+                    std::pair<Label, Element> this_pr;
                     this_pr.first = arc.ilabel;
                     Element &next_elem(this_pr.second);
                     next_elem.state = arc.nextstate;
@@ -706,9 +718,10 @@ void KdLatDet::ProcessTransitions(OutputStateId output_state_id)
     PairComparator pc;
     std::sort(all_elems.begin(), all_elems.end(), pc);
     // now sorted first on input label, then on state.
-    typedef typename vector<pair<Label, Element> >::const_iterator PairIter;
+    typedef typename std::vector<std::pair<Label, Element> >::const_iterator PairIter;
     PairIter cur = all_elems.begin(), end = all_elems.end();
-    while (cur != end) {
+    while (cur != end)
+    {
         // The old code (non-pruned) called ProcessTransition; here, instead,
         // we'll put the calls into a priority queue.
         Task *task = new Task;
@@ -773,10 +786,11 @@ bool KdLatDet::IsIsymbolOrFinal(InputStateId state)
     isymbol_or_final_[state] = static_cast<char>(OSF_NO);
     if (ifst_->Final(state) != KdLatticeWeight::Zero())
         isymbol_or_final_[state] = static_cast<char>(OSF_YES);
-    for (ArcIterator<ExpandedFst<Arc> > aiter(*ifst_, state);
+    for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, state);
          !aiter.Done();
-         aiter.Next()) {
-        const Arc &arc = aiter.Value();
+         aiter.Next())
+    {
+        const KdLatticeArc &arc = aiter.Value();
         if (arc.ilabel != 0 && arc.weight != KdLatticeWeight::Zero()) {
             isymbol_or_final_[state] = static_cast<char>(OSF_YES);
             return true;
@@ -795,15 +809,15 @@ void KdLatDet::ComputeBackwardWeight()
     for (StateId s = ifst_->NumStates() - 1; s >= 0; s--) {
         double &cost = backward_costs_[s];
         cost = ConvertToCost(ifst_->Final(s));
-        for (ArcIterator<ExpandedFst<Arc> > aiter(*ifst_, s);
+        for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, s);
              !aiter.Done(); aiter.Next()) {
-            const Arc &arc = aiter.Value();
+            const KdLatticeArc &arc = aiter.Value();
             cost = std::min(cost,
                             ConvertToCost(arc.weight) + backward_costs_[arc.nextstate]);
         }
     }
 
-    if (ifst_->Start() == kNoStateId) return; // we'll be returning
+    if (ifst_->Start() == KD_INVALID_STATE) return; // we'll be returning
     // an empty FST.
 
     double best_cost = backward_costs_[ifst_->Start()];
@@ -819,21 +833,20 @@ void KdLatDet::InitializeDeterminization()
     // applicable to even cyclic FSTs), but it helps us more efficiently
     // compute the backward_costs_ array.  There may be some other reason we
     // require this, that escapes me at the moment.
-    KALDI_ASSERT(ifst_->Properties(kTopSorted, true) != 0);
+    KALDI_ASSERT(ifst_->Properties(fst::kTopSorted, true) != 0);
     ComputeBackwardWeight();
 #if !(__GNUC__ == 4 && __GNUC_MINOR__ == 0)
-    if(ifst_->Properties(kExpanded, false) != 0)
+    if(ifst_->Properties(fst::kExpanded, false) != 0)
     { // if we know the number of
         // states in ifst_, it might be a bit more efficient
         // to pre-size the hashes so we're not constantly rebuilding them.
-        StateId num_states =
-                down_cast<KdLattice*, const Fst<Arc> >(ifst_)->NumStates();
+        StateId num_states = ifst_->NumStates();
         minimal_hash_.rehash(num_states/2 + 3);
         initial_hash_.rehash(num_states/2 + 3);
     }
 #endif
     InputStateId start_id = ifst_->Start();
-    if (start_id != kNoStateId) {
+    if (start_id != KD_INVALID_STATE) {
         /* Create determinized-state corresponding to the start state....
      Unlike all the other states, we don't "normalize" the representation
      of this determinized-state before we put it into minimal_hash_.  This is actually
@@ -845,7 +858,7 @@ void KdLatDet::InitializeDeterminization()
      a lookaside buffer anyway, so this isn't a problem-- it will get populated
      later if it needs to be.
   */
-        vector<Element> subset(1);
+        std::vector<Element> subset(1);
         subset[0].state = start_id;
         subset[0].weight = KdLatticeWeight::One();
         subset[0].string = repository_.EmptyString();  // Id of empty sequence.
@@ -859,7 +872,7 @@ void KdLatDet::InitializeDeterminization()
         KALDI_ASSERT(output_states_.empty());
         output_states_.push_back(initial_state);
         num_elems_ += subset.size();
-        OutputStateId initial_state_id = 0;
+        KdStateId initial_state_id = 0;
         minimal_hash_[&(initial_state->minimal_subset)] = initial_state_id;
         ProcessFinal(initial_state_id);
         ProcessTransitions(initial_state_id); // this will add tasks to
@@ -867,8 +880,8 @@ void KdLatDet::InitializeDeterminization()
     }
 }
 
-void KdLatDet::AddStrings(const vector<Element> &vec,
-                vector<StringId> *needed_strings)
+void KdLatDet::AddStrings(const std::vector<Element> &vec,
+                std::vector<StringId> *needed_strings)
 {
     for (typename std::vector<Element>::const_iterator iter = vec.begin();
          iter != vec.end(); ++iter)

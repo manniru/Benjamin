@@ -198,7 +198,7 @@ bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
     {
         KALDI_VLOG(3) << "Doing second pass of determinization on word lattices.";
         ans = kd_detLatPruned(*ifst, beam,
-                              ofst, &det_opts) && ans;
+                              ofst, det_opts) && ans;
     }
 
     return ans;
@@ -292,7 +292,7 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
 
     for (int32 iter = 0; iter < max_num_iters; iter++)
     {
-        LatticeDeterminizerPruned<Weight, IntType> det(iter == 0 ? ifst : temp_fst,
+        KdLatDet det(iter == 0 ? ifst : temp_fst,
                                                        beam, opts);
         double effective_beam;
         bool ans = det.Determinize(&effective_beam);

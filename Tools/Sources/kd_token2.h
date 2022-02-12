@@ -1,14 +1,9 @@
 #ifndef KD_TOKEN2_H
 #define KD_TOKEN2_H
 
-#include "lat/kaldi-lattice.h"
 #include "decoder/lattice-faster-decoder.h"
+#include "kd_lattice.h"
 
-#define KD_INVALID_STATE  -1  // Not a valid state ID.
-#define KD_INVALID_ARC    -1  // Null Arc
-typedef fst::StdFst        KdFST;
-typedef fst::StdFst::Arc   KdArc;
-typedef KdArc::StateId     KdStateId;
 class KdToken2
 {
 public:

@@ -3,11 +3,19 @@
 
 #include <QDebug>
 #include "bt_config.h".
-#include "kd_token2.h"
+#include "lat/kaldi-lattice.h"
 
 #define FST_ERROR         0x4ULL
+#define FST_PLUS_ZERO     0x8ULL // for semi ring null plus
 #define FST_PROPERTY      0xffffffff0007ULL
 #define KD_SHORTEST_DELTA 1e-6
+
+#define KD_INVALID_STATE  -1  // Not a valid state ID.
+#define KD_INVALID_ARC    -1  // Null Arc
+
+typedef fst::StdFst        KdFST;
+typedef fst::StdFst::Arc   KdArc;
+typedef KdArc::StateId     KdStateId;
 
 typedef fst::LatticeWeightTpl<float> KdLatticeWeight;
 typedef fst::ArcTpl<KdLatticeWeight> KdLatticeArc;

@@ -140,7 +140,7 @@ void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
     kd_detLatPhonePrunedW(trans_model_,
             &raw_fst, lat_beam, ofst, config_.det_opts);
 
-    fst::DeterminizeLatticePhonePrunedWrapper()
+//    fst::DeterminizeLatticePhonePrunedWrapper()
 }
 
 QVector<BtWord> KdOnlineLDecoder::getResult(CompactLattice *out_fst,

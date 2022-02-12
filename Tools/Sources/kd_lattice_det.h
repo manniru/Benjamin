@@ -70,7 +70,7 @@ private:
     typedef typename KdLatticeArc::Label Label;
     typedef typename KdLatticeArc::StateId StateId;  // use this when we don't know if it's input or output.
     typedef typename KdLatticeArc::StateId InputStateId;  // state in the input FST.
-    typedef typename KdLatticeArc::StateId OutputStateId;  // same as above but distinguish
+    typedef typename KdLatticeArc::StateId KdStateId;  // same as above but distinguish
     // states in output Fst.
 
     typedef fst::LatticeStringRepository<int> StringRepositoryType;
@@ -80,7 +80,7 @@ private:
     struct Element
     {
         StateId state; // use StateId as this is usually InputStateId but in one case
-        // OutputStateId.
+        // KdStateId.
         StringId string;
         KdLatticeWeight weight;
         bool operator != (const Element &other) const {
@@ -103,7 +103,7 @@ private:
     struct TempArc {
         Label ilabel;
         StringId string;  // Look it up in the StringRepository, it's a sequence of Labels.
-        OutputStateId nextstate;  // or kNoState for final weights.
+        KdStateId nextstate;  // or kNoState for final weights.
         KdLatticeWeight weight;
     };
 
@@ -152,7 +152,7 @@ private:
         }
         float delta_;
         SubsetEqual(float delta): delta_(delta) {}
-        SubsetEqual(): delta_(kDelta) {}
+        SubsetEqual(): delta_(KD_KDELTA) {}
     };
 
     // Operator that says whether two Elements have the same states.
@@ -173,14 +173,14 @@ private:
     };
 
     // Define the hash type we use to map subsets (in minimal
-    // representation) to OutputStateId.
-    typedef unordered_map<const std::vector<Element>*, OutputStateId,
+    // representation) to KdStateId.
+    typedef unordered_map<const std::vector<Element>*, KdStateId,
     SubsetKey, SubsetEqual> MinimalSubsetHash;
 
     // Define the hash type we use to map subsets (in initial
-    // representation) to OutputStateId, together with an
+    // representation) to KdStateId, together with an
     // extra weight. [note: we interpret the Element.state in here
-    // as an OutputStateId even though it's declared as InputStateId;
+    // as an KdStateId even though it's declared as InputStateId;
     // these types are the same anyway].
     typedef unordered_map<const std::vector<Element>*, Element,
     SubsetKey, SubsetEqual> InitialSubsetHash;
@@ -191,18 +191,18 @@ private:
     // states).  Output is not necessarily normalized, even if input_subset was.
     void ConvertToMinimal(std::vector<Element> *subset);
 
-    // Takes a minimal, normalized subset, and converts it to an OutputStateId.
-    // Involves a hash lookup, and possibly adding a new OutputStateId.
-    // If it creates a new OutputStateId, it creates a new record for it, works
+    // Takes a minimal, normalized subset, and converts it to an KdStateId.
+    // Involves a hash lookup, and possibly adding a new KdStateId.
+    // If it creates a new KdStateId, it creates a new record for it, works
     // out its final-weight, and puts stuff on the queue relating to its
     // transitions.
-    OutputStateId MinimalToStateId(const std::vector<Element> &subset,
+    KdStateId MinimalToStateId(const std::vector<Element> &subset,
                                    const double forward_cost);
 
 
     // Given a normalized initial subset of elements (i.e. before epsilon closure),
     // compute the corresponding output-state.
-    OutputStateId InitialToStateId(const std::vector<Element> &subset_in,
+    KdStateId InitialToStateId(const std::vector<Element> &subset_in,
                                    double forward_cost,
                                    KdLatticeWeight *remaining_weight,
                                    StringId *common_prefix);
@@ -228,7 +228,7 @@ private:
     // called by ProcessSubset.
     // Has no side effects except on the variable repository_, and
     // output_states_[output_state_id].arcs
-    void ProcessFinal(OutputStateId output_state_id);
+    void ProcessFinal(KdStateId output_state_id);
 
     // NormalizeSubset normalizes the subset "elems" by
     // removing any common string prefix (putting it in common_str),
@@ -249,7 +249,7 @@ private:
     // represents a set of next-states with associated weights and strings, each
     // one arising from an arc from some state in a determinized-state; the
     // next-states are unique (there is only one Entry assocated with each)
-    void ProcessTransition(OutputStateId ostate_id, Label ilabel, std::vector<Element> *subset);
+    void ProcessTransition(KdStateId ostate_id, Label ilabel, std::vector<Element> *subset);
 
 
     // "less than" operator for pair<Label, Element>.   Used in ProcessTransitions.
@@ -267,7 +267,7 @@ private:
         }
     };
 
-    void ProcessTransitions(OutputStateId output_state_id);
+    void ProcessTransitions(KdStateId output_state_id);
     bool IsIsymbolOrFinal(InputStateId state);
 
     void ComputeBackwardWeight();
@@ -310,12 +310,12 @@ private:
     SubsetEqual equal_;  // object that compares subsets-- only data member is delta_.
     bool determinized_; // set to true when user called Determinize(); used to make
     // sure this object is used correctly.
-    MinimalSubsetHash minimal_hash_;  // hash from Subset to OutputStateId.  Subset is "minimal
+    MinimalSubsetHash minimal_hash_;  // hash from Subset to KdStateId.  Subset is "minimal
     // representation" (only include final and states and states with
     // nonzero ilabel on arc out of them.  Owns the pointers
     // in its keys.
     InitialSubsetHash initial_hash_;   // hash from Subset to Element, which
-    // represents the OutputStateId together
+    // represents the KdStateId together
     // with an extra weight and string.  Subset
     // is "initial representation".  The extra
     // weight and string is needed because after
@@ -325,7 +325,7 @@ private:
     // in its keys.
 
     struct Task {
-        OutputStateId state; // State from which we're processing the transition.
+        KdStateId state; // State from which we're processing the transition.
         Label label; // Label on the transition we're processing out of this state.
         std::vector<Element> subset; // Weighted subset of states (with strings)-- not normalized.
         double priority_cost; // Cost used in deciding priority of tasks.  Note:
