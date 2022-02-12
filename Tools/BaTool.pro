@@ -49,6 +49,7 @@ HEADERS += \
     Sources/kd_fft.h \
     Sources/kd_lattice.h \
     Sources/kd_lattice_decoder.h \
+    Sources/kd_lattice_det.h \
     Sources/kd_lattice_functions.h \
     Sources/kd_matrix.h \
     Sources/kd_mbr.h \
@@ -77,6 +78,7 @@ SOURCES += \
     Sources/kd_fft.cpp \
     Sources/kd_lattice.cpp \
     Sources/kd_lattice_decoder.cpp \
+    Sources/kd_lattice_det.cpp \
     Sources/kd_lattice_functions.cpp \
     Sources/kd_matrix.cpp \
     Sources/kd_mbr.cpp \

@@ -12,23 +12,7 @@
 #include "hmm/posterior.h"
 #include "hmm/transition-model.h"
 #include "lat/kaldi-lattice.h"
-#include "kd_lattice.h"
-
-// A representable float near .001.
-#define KD_KDELTA fst::kDelta
-
-//DeterminizeLatticePrunedOptions
-struct KdDetOpt
-{
-    float delta = KD_KDELTA; // A small offset used to measure equality of weights.
-    int max_mem = -1; // If >0, determinization will fail and return false
-    // when the algorithm's (approximate) memory consumption crosses this threshold.
-    int max_loop = -1; // If >0, can be used to detect non-determinizable input
-    // (a case that wouldn't be caught by max_mem).
-    int max_states = -1 ;
-    int max_arcs = -1;
-    float retry_cutoff = 0.5;
-};
+#include "kd_lattice_det.h"
 
 struct KdPrunedOpt
 {
