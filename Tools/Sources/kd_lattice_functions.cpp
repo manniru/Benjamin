@@ -210,17 +210,75 @@ bool kd_DetLatFirstPass(kaldi::TransitionModel &trans_model,
 {
     // First, insert the phones.
     KdLatticeArc::Label first_phone_label =
-            DeterminizeLatticeInsertPhones(trans_model, fst);
+            kd_DetLatInsertPhones(trans_model, fst);
     TopSort(fst);
 
     // Second, do determinization with phone inserted.
     bool ans = kd_detLatPruned(*fst, beam, fst, *opts);
 
     // Finally, remove the inserted phones.
-    fst::DeterminizeLatticeDeletePhones(first_phone_label, fst);
+    kd_DetLatDeletePhones(first_phone_label, fst);
     TopSort(fst);
 
     return ans;
+}
+
+// DeterminizeLatticeInsertPhones
+KdLatticeArc::Label kd_DetLatInsertPhones(
+        kaldi::TransitionModel &trans_model, KdLattice *fst)
+{
+    // Define some types.
+    typedef typename KdLatticeArc::StateId StateId;
+    typedef typename KdLatticeArc::Label Label;
+
+    // Work out the first phone symbol. This is more related to the phone
+    // insertion function, so we put it here and make it the returning value of
+    // DeterminizeLatticeInsertPhones().
+    Label first_phone_label = HighestNumberedInputSymbol(*fst) + 1;
+
+    // Insert phones here.
+    for (fst::StateIterator<KdLattice > siter(*fst);
+         !siter.Done(); siter.Next()) {
+        StateId state = siter.Value();
+        if (state == fst->Start())
+            continue;
+        for (fst::MutableArcIterator<KdLattice > aiter(fst, state);
+             !aiter.Done(); aiter.Next())
+        {
+            KdLatticeArc arc = aiter.Value();
+
+            // Note: the words are on the input symbol side and transition-id's are on
+            // the output symbol side.
+            if ((arc.olabel != 0)
+                    && (trans_model.TransitionIdToHmmState(arc.olabel) == 0)
+                    && (!trans_model.IsSelfLoop(arc.olabel))) {
+                Label phone =
+                        static_cast<Label>(trans_model.TransitionIdToPhone(arc.olabel));
+
+                // Skips <eps>.
+                KALDI_ASSERT(phone != 0);
+
+                if (arc.ilabel == 0) {
+                    // If there is no word on the arc, insert the phone directly.
+                    arc.ilabel = first_phone_label + phone;
+                }
+                else
+                {
+                    // Otherwise, add an additional arc.
+                    StateId additional_state = fst->AddState();
+                    StateId next_state = arc.nextstate;
+                    arc.nextstate = additional_state;
+                    fst->AddArc(additional_state,
+                                KdLatticeArc(first_phone_label + phone, 0,
+                                             KdLatticeWeight::One(), next_state));
+                }
+            }
+
+            aiter.SetValue(arc);
+        }
+    }
+
+    return first_phone_label;
 }
 
 
@@ -293,7 +351,7 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
     for (int32 iter = 0; iter < max_num_iters; iter++)
     {
         KdLatDet det(iter == 0 ? ifst : temp_fst,
-                                                       beam, opts);
+                     beam, opts);
         double effective_beam;
         bool ans = det.Determinize(&effective_beam);
         // if it returns false it will typically still produce reasonable output,
@@ -321,4 +379,26 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
         }
     }
     return false; // Suppress compiler warning; this code is unreachable.
+}
+
+// DeterminizeLatticeDeletePhones
+void kd_DetLatDeletePhones(
+        KdLatticeArc::Label first_phone_label, KdLattice *fst)
+{
+    // Delete phones here.
+    for (fst::StateIterator<KdLattice> siter(*fst);
+         !siter.Done(); siter.Next())
+    {
+        KdStateId state = siter.Value();
+        for (fst::MutableArcIterator<KdLattice> aiter(fst, state);
+             !aiter.Done(); aiter.Next())
+        {
+            KdLatticeArc arc = aiter.Value();
+
+            if (arc.ilabel >= first_phone_label)
+                arc.ilabel = 0;
+
+            aiter.SetValue(arc);
+        }
+    }
 }

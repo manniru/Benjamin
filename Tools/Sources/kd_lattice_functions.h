@@ -55,5 +55,11 @@ bool kd_detLatPruned(KdLattice &ifst, double beam,
 bool kd_detLatPruned(KdLattice &ifst, double beam,
                      kaldi::CompactLattice *ofst, KdDetOpt opts);
 
+KdLatticeArc::Label kd_DetLatInsertPhones(kaldi::TransitionModel &trans_model,
+    KdLattice *fst);
+
+void kd_DetLatDeletePhones( KdLatticeArc::Label first_phone_label,
+                            KdLattice *fst);
+
 
 #endif // KD_LATTICE_FUNCTIONS_H
