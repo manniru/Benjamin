@@ -6,10 +6,9 @@
 // described in "Minimum Bayes Risk decoding and system combination based on a recursion for
 // edit distance", Haihua Xu, Daniel Povey, Lidia Mangu and Jie Zhu,
 
-#include "lat/sausages.h"
-#include "lat/lattice-functions.h"
 #include <QString>
 #include "kd_lattice.h"
+#include "kd_lattice_compact.h"
 
 struct KdMBRArc
 {

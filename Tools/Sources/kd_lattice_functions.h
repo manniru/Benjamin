@@ -9,9 +9,6 @@
 #include <map>
 
 #include "base/kaldi-common.h"
-#include "hmm/posterior.h"
-#include "hmm/transition-model.h"
-#include "lat/kaldi-lattice.h"
 #include "kd_lattice_det.h"
 
 struct KdPrunedOpt

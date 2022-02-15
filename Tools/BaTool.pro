@@ -48,6 +48,7 @@ HEADERS += \
     Sources/kd_faster_decoder.h \
     Sources/kd_fft.h \
     Sources/kd_lattice.h \
+    Sources/kd_lattice_compact.h \
     Sources/kd_lattice_decoder.h \
     Sources/kd_lattice_det.h \
     Sources/kd_lattice_functions.h \
@@ -77,6 +78,7 @@ SOURCES += \
     Sources/kd_faster_decoder.cpp \
     Sources/kd_fft.cpp \
     Sources/kd_lattice.cpp \
+    Sources/kd_lattice_compact.cpp \
     Sources/kd_lattice_decoder.cpp \
     Sources/kd_lattice_det.cpp \
     Sources/kd_lattice_functions.cpp \

@@ -447,7 +447,7 @@ void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat)
         if (fst::TopSort(clat) == false)
             KALDI_ERR << "Cycles detected in lattice.";
     }
-    CompactLatticeStateTimes(*clat, &state_times_); // work out times of the states in clat
+    kd_compactLatticeStateTimes(*clat, &state_times_); // work out times of the states in clat
     state_times_.push_back(0); // we'll convert to 1-based numbering.
     for (size_t i = state_times_.size()-1; i > 0; i--)
     {

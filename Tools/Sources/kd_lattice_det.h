@@ -4,7 +4,6 @@
 #include<QVector>
 #include "kd_token2.h"
 #include "kd_lattice.h"
-#include <fstext/determinize-lattice-inl.h>
 
 // A representable float near .001.
 #define KD_KDELTA fst::kDelta
