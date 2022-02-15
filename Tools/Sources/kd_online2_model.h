@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "online2/online-gmm-decoding.h"
+#include <gmm/am-diag-gmm.h>
+#include <hmm/transition-model.h>
+#include <util/kaldi-io.h>
 
 #include "bt_config.h"
 #include "backend.h"
@@ -17,7 +19,7 @@ class KdOnline2Model
 {
 public:
     KdOnline2Model(kaldi::TransitionModel *tran, kaldi::AmDiagGmm *acc_model,
-                   kaldi::OnlineGmmDecodingConfig *config);
+                   std::string model_filename);
 
     kaldi::TransitionModel* GetTransitionModel();
     kaldi::AmDiagGmm* GetOnlineAlignmentModel();

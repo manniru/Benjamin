@@ -2,8 +2,11 @@
 #define KD_LATTICE_H
 
 #include <QDebug>
-#include "bt_config.h".
-#include "lat/kaldi-lattice.h"
+#include "bt_config.h"
+#include <fstext/fstext-lib.h>
+#include <base/kaldi-common.h>
+#include <util/common-utils.h>
+#include <util/kaldi-table.h>
 
 #define FST_ERROR         0x4ULL
 #define FST_PLUS_ZERO     0x8ULL // for semi ring null plus

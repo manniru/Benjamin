@@ -7,31 +7,13 @@
 // edit distance", Haihua Xu, Daniel Povey, Lidia Mangu and Jie Zhu,
 
 #include <QString>
-#include "kd_lattice.h"
+#include "kd_mbr_base.h"
 #include "kd_lattice_compact.h"
-
-struct KdMBRArc
-{
-    int word;
-    int start_node;
-    int end_node;
-    float loglike;
-};
-
-typedef struct BtWord
-{
-    QString word;
-    double  time;
-    double  start;
-    double  end;
-    double  conf;
-    int     is_final;
-}BtWord;
 
 class KdMBR
 {
 public:
-    KdMBR(kaldi::CompactLattice *clat);
+    KdMBR(KdCompactLattice *clat);
 
     std::vector<int> GetOneBest();
     std::vector<std::vector<std::pair<float, float> > > GetTimes();
@@ -41,7 +23,7 @@ public:
     QVector<BtWord>    getResult(QVector<QString> lexicon);
 
 private:
-    void PrepareLatticeAndInitStats(kaldi::CompactLattice *clat);
+    void PrepareLatticeAndInitStats(KdCompactLattice *clat);
 
     void MbrDecode(); // Figure 6 of the paper.
 
@@ -67,7 +49,7 @@ private:
 
     void AddToMap(int i, double d, std::map<int, double> *gamma);
 
-    kaldi::MinimumBayesRiskOptions opts;
+    KdMBROpt opts;
 
     /// Arcs in the topologically sorted acceptor form of the word-level lattice,
     /// with one final-state.  Contains (word-symbol, log-likelihood on arc ==

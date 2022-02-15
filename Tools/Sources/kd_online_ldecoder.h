@@ -48,9 +48,9 @@ public:
 
     void createStates(KdLattice *ofst);
     void RawLattice(KdLattice *ofst);
-    void MakeLattice(kaldi::CompactLattice *ofst);
+    void MakeLattice(KdCompactLattice *ofst);
 
-    QVector<BtWord> getResult(kaldi::CompactLattice *out_fst,
+    QVector<BtWord> getResult(KdCompactLattice *out_fst,
                               QVector<QString> lexicon);
 
     void HaveSilence(QVector<BtWord> result);

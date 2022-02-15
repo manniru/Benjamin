@@ -31,7 +31,7 @@ private:
     void parseLexicon(QString filename);
     void execute(QVector<BtWord> result);
 
-    void processLat(kaldi::CompactLattice *clat, clock_t start);
+    void processLat(KdCompactLattice *clat, clock_t start);
 
     BtRecorder       *ab_src;
     QVector<QString>  history;

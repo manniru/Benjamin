@@ -2,7 +2,7 @@
 
 using namespace kaldi;
 
-void KdLatDet::Output(CompactLattice *ofst, bool destroy)
+void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
 {
     KALDI_ASSERT(determinized_);
     StateId nStates = static_cast<StateId>(output_states_.size());
@@ -27,7 +27,7 @@ void KdLatDet::Output(CompactLattice *ofst, bool destroy)
         for (;iter != end; ++iter)
         {
             const TempArc &temp_arc(*iter);
-            CompactLatticeArc new_arc;
+            KdCompactLatticeArc new_arc;
             std::vector<Label> olabel_seq;
             repository_.ConvertToVector(temp_arc.string, &olabel_seq);
             CompactLatticeWeight weight(temp_arc.weight, olabel_seq);

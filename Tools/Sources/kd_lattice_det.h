@@ -4,6 +4,7 @@
 #include<QVector>
 #include "kd_token2.h"
 #include "kd_lattice.h"
+#include "kd_lattice_compact.h"
 
 // A representable float near .001.
 #define KD_KDELTA fst::kDelta
@@ -37,7 +38,7 @@ public:
     // Output to standard FST with CompactWeightTpl<KdLatticeWeight> as its weight type (the
     // weight stores the original output-symbol strings).  If destroy == true,
     // release memory as we go (but we cannot output again).
-    void Output(kaldi::CompactLattice  *ofst, bool destroy = true);
+    void Output(KdCompactLattice  *ofst, bool destroy = true);
 
     // Output to standard FST with KdLatticeWeight as its weight type.  We will create extra
     // states to handle sequences of symbols on the output.  If destroy == true,

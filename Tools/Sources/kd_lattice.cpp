@@ -1,4 +1,5 @@
 ﻿#include "kd_lattice.h"
+#include "kd_lattice_compact.h"
 
 using namespace kaldi;
 
@@ -22,7 +23,7 @@ void kd_fstSSPathBacktrace(KdLattice *ifst, KdLattice *ofst,
         }
         else
         {
-            fst::ArcIterator<fst::Fst<LatticeArc>> aiter(*ifst, state);
+            fst::ArcIterator<fst::Fst<KdLatticeArc>> aiter(*ifst, state);
             aiter.Seek(parent[d].second);
             auto arc = aiter.Value();
             arc.nextstate = d_p;
@@ -44,9 +45,9 @@ void kd_fstSSPathBacktrace(KdLattice *ifst, KdLattice *ofst,
 bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
                            std::vector<std::pair<KdStateId, size_t>> *parent)
 {
-    std::vector<LatticeArc::Weight> distance;
+    std::vector<KdLatticeArc::Weight> distance;
     parent->clear();
-    fst::AnyArcFilter<LatticeArc> arc_filter;
+    fst::AnyArcFilter<KdLatticeArc> arc_filter;
     fst::AutoQueue<KdStateId> state_queue(*ifst, &distance, arc_filter);
 
     if( ifst->Start()==KD_INVALID_STATE )
@@ -56,18 +57,18 @@ bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
     }
     std::vector<bool> enqueued;
     KdStateId source = ifst->Start();
-    LatticeArc::Weight f_distance = LatticeArc::Weight::Zero();
+    KdLatticeArc::Weight f_distance = KdLatticeArc::Weight::Zero();
     distance.clear();
     state_queue.Clear();
 
     while( distance.size()<source )
     {
-        distance.push_back(LatticeArc::Weight::Zero());
+        distance.push_back(KdLatticeArc::Weight::Zero());
         enqueued.push_back(false);
         parent->emplace_back(KD_INVALID_STATE, KD_INVALID_ARC);
     }
 
-    distance.push_back(LatticeArc::Weight::One());
+    distance.push_back(KdLatticeArc::Weight::One());
     parent->emplace_back(KD_INVALID_STATE, KD_INVALID_ARC);
     state_queue.Enqueue(source);
     enqueued.push_back(true);
@@ -81,7 +82,7 @@ bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
         // If we are using a shortest queue, no other path is going to be shorter
         // than f_distance at this point.
 
-        if( ifst->Final(s)!=LatticeArc::Weight::Zero() )
+        if( ifst->Final(s)!=KdLatticeArc::Weight::Zero() )
         {
             qDebug() << "hhhhhhhhhhhhhhhhhhhhhhhhhh";
             const auto plus = Plus(f_distance, Times(sd, ifst->Final(s)));
@@ -96,12 +97,12 @@ bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
             }
         }
 
-        for( fst::ArcIterator<fst::Fst<LatticeArc>> aiter(*ifst, s) ; !aiter.Done() ; aiter.Next() )
+        for( fst::ArcIterator<fst::Fst<KdLatticeArc>> aiter(*ifst, s) ; !aiter.Done() ; aiter.Next() )
         {
             const auto &arc = aiter.Value();
             while (distance.size() <= arc.nextstate)
             {
-                distance.push_back(LatticeArc::Weight::Zero());
+                distance.push_back(KdLatticeArc::Weight::Zero());
                 enqueued.push_back(false);
                 parent->emplace_back(KD_INVALID_STATE, KD_INVALID_ARC);
             }
@@ -151,13 +152,17 @@ void kd_writeLat(KdLattice *ifst)
 //    LatticeWriter lat_writer("ark:" KAL_SK_DIR "out.ark");
 //    lat_writer.Write("f", *ifst);
     fst::RemoveEpsLocal(ifst);
-    CompactLattice clat;
+    KdCompactLattice clat;
     ConvertLattice(*ifst, &clat);
-    CompactLatticeWriter lat_writer("ark:" KAL_SK_DIR "out.ark");
-    lat_writer.Write("f", clat);
-//    TableWriter<fst::VectorFstHolder> fst_writer("ark:1.fsts");
-//    fst_writer.Write("f", *fst_in);
 
+////////////TO WORK UNCOMMENT AND FIX THIS/////////////
+//    KdCompactLWriter lat_writer("ark:" KAL_SK_DIR "out.ark");
+//    lat_writer.Write("f", clat);
+
+    // bool WriteCompactLattice(std::ostream &os, bool binary,
+    // const CompactLattice &clat);
+//    WriteCompactLattice(os, binary, clat);
+///////////////////////////////////////////////////////
     if( ifst->NumStates()> 10 )
     {
         exit(0);

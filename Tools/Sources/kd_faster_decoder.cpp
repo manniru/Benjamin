@@ -83,7 +83,7 @@ bool KdFasterDecoder::ReachedFinal()
 /// final-probs. Returns true if the output best path was not the empty
 /// FST (will only return false in unusual circumstances where
 /// no tokens survived).
-bool KdFasterDecoder::GetBestPath(fst::MutableFst<LatticeArc> *fst_out,
+bool KdFasterDecoder::GetBestPath(fst::MutableFst<KdLatticeArc> *fst_out,
                                   bool use_final_probs)
 {
     fst_out->DeleteStates();
@@ -115,14 +115,14 @@ bool KdFasterDecoder::GetBestPath(fst::MutableFst<LatticeArc> *fst_out,
         return false;  // No output.
     }
 
-    std::vector<LatticeArc> arcs_reverse;  // arcs in reverse order.
+    std::vector<KdLatticeArc> arcs_reverse;  // arcs in reverse order.
 
     for (KdFToken *tok = best_tok; tok != NULL; tok = tok->prev_) {
         float tot_cost = tok->cost -
                 (tok->prev_ ? tok->prev_->cost : 0.0),
                 graph_cost = tok->arc_.weight.Value(),
                 ac_cost = tot_cost - graph_cost;
-        LatticeArc l_arc(tok->arc_.ilabel,
+        KdLatticeArc l_arc(tok->arc_.ilabel,
                          tok->arc_.olabel,
                          LatticeWeight(graph_cost, ac_cost),
                          tok->arc_.nextstate);
@@ -134,7 +134,7 @@ bool KdFasterDecoder::GetBestPath(fst::MutableFst<LatticeArc> *fst_out,
     StateId cur_state = fst_out->AddState();
     fst_out->SetStart(cur_state);
     for (ssize_t i = static_cast<ssize_t>(arcs_reverse.size())-1; i >= 0; i--) {
-        LatticeArc arc = arcs_reverse[i];
+        KdLatticeArc arc = arcs_reverse[i];
         arc.nextstate = fst_out->AddState();
         fst_out->AddArc(cur_state, arc);
         cur_state = arc.nextstate;

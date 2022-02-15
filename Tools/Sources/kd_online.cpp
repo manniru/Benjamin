@@ -38,10 +38,8 @@ void KdOnline::init()
     trans_model->Read(ki.Stream(), rx_binary);
     am_gmm->Read(ki.Stream(), rx_binary);
 
-    OnlineGmmDecodingConfig d_config;
-    d_config.fmllr_basis_rxfilename = KAL_NATO_DIR"exp/tri1_online/fmllr.basis";
-    d_config.online_alimdl_rxfilename = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
-    o2_model = new KdOnline2Model(trans_model, am_gmm, &d_config);
+    std::string online_alimdl = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
+    o2_model = new KdOnline2Model(trans_model, am_gmm, online_alimdl);
 
     o_decoder = new KdOnlineLDecoder(silence_phones, *trans_model);
 
@@ -58,7 +56,7 @@ void KdOnline::startDecode()
     ab_src->startStream();
 
     o_decoder->InitDecoding(&decodable);
-    CompactLattice out_fst;
+    KdCompactLattice out_fst;
     QVector<BtWord> result;
 
     while( 1 )

@@ -8,8 +8,10 @@
 #include <vector>
 #include <map>
 
-#include "base/kaldi-common.h"
+#include <base/kaldi-common.h>
+#include <hmm/transition-model.h>
 #include "kd_lattice_det.h"
+
 
 struct KdPrunedOpt
 {
@@ -30,10 +32,10 @@ void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times);
 bool kd_PruneLattice(float beam, KdLattice *lat);
 bool kd_detLatPhonePrunedW(kaldi::TransitionModel &trans_model,
                            KdLattice *ifst, double beam,
-                           kaldi::CompactLattice *ofst, KdPrunedOpt opts);
+                           KdCompactLattice *ofst, KdPrunedOpt opts);
 bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
                           KdLattice *ifst, double beam,
-                          kaldi::CompactLattice *ofst, KdPrunedOpt opts);
+                          KdCompactLattice *ofst, KdPrunedOpt opts);
 /** first pass determinization with phone symbols inserted
     at phone boundary. It uses a transition model to work out the transition-id
     to phone map. First, phones will be inserted into the word level lattice.
@@ -50,7 +52,7 @@ bool kd_DetLatFirstPass(kaldi::TransitionModel &trans_model,
 bool kd_detLatPruned(KdLattice &ifst, double beam,
                      KdLattice *ofst, KdDetOpt opts);
 bool kd_detLatPruned(KdLattice &ifst, double beam,
-                     kaldi::CompactLattice *ofst, KdDetOpt opts);
+                     KdCompactLattice *ofst, KdDetOpt opts);
 
 KdLatticeArc::Label kd_DetLatInsertPhones(kaldi::TransitionModel &trans_model,
     KdLattice *fst);

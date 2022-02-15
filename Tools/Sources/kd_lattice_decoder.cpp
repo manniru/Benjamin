@@ -1,6 +1,5 @@
 #include "kd_lattice_decoder.h"
 #include <QDebug>
-#include "lat/lattice-functions.h"
 
 using namespace kaldi;
 

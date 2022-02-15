@@ -5,6 +5,7 @@
 #include "kd_token2.h"
 #include "kd_lattice_functions.h""
 #include "kd_online2_decodable.h"
+#include <util/hash-list.h>
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
 struct KdLatticeDecoderConfig

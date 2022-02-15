@@ -22,7 +22,7 @@ void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times)
         for (fst::ArcIterator<KdLattice> aiter(*lat, state); !aiter.Done();
              aiter.Next())
         {
-            const LatticeArc &arc = aiter.Value();
+            const KdLatticeArc &arc = aiter.Value();
 
             if( arc.ilabel!=0 )
             {
@@ -132,7 +132,7 @@ bool kd_PruneLattice(float beam, KdLattice *lat)
 // DeterminizeLatticePhonePrunedWrapper
 bool kd_detLatPhonePrunedW(TransitionModel &trans_model,
                            KdLattice *ifst,
-                           double beam, CompactLattice *ofst,
+                           double beam, KdCompactLattice *ofst,
                            KdPrunedOpt opts)
 {
     bool ans = true;
@@ -155,7 +155,7 @@ bool kd_detLatPhonePrunedW(TransitionModel &trans_model,
 // DeterminizeLatticePhonePruned
 bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
                           KdLattice *ifst, double beam,
-                          CompactLattice *ofst, KdPrunedOpt opts)
+                          KdCompactLattice *ofst, KdPrunedOpt opts)
 {
     // Returning status.
     bool ans = true;
@@ -334,7 +334,7 @@ bool kd_detLatPruned(KdLattice &ifst, double beam,
 }
 
 bool kd_detLatPruned( KdLattice &ifst, double beam,
-                      CompactLattice *ofst, KdDetOpt opts)
+                      KdCompactLattice *ofst, KdDetOpt opts)
 {
     ofst->SetInputSymbols(ifst.InputSymbols());
     ofst->SetOutputSymbols(ifst.OutputSymbols());

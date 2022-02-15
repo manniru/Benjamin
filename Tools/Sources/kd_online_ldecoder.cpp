@@ -1,9 +1,6 @@
 #include "kd_online_ldecoder.h"
 
 #ifdef BT_LAT_ONLINE
-#include "base/timer.h"
-#include "fstext/fstext-utils.h"
-#include "hmm/hmm-utils.h"
 #include <QDebug>
 
 using namespace kaldi;
@@ -73,8 +70,8 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                     KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
                     cost_offset = cost_offsets[f];
                 }
-                LatticeArc::Weight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
-                LatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
+                KdLatticeArc::Weight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
+                KdLatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
                 ofst->AddArc(cur_state, arc);
             }
             if( f==end-1 )
@@ -128,7 +125,7 @@ void KdOnlineLDecoder::createStates(KdLattice *ofst)
     ofst->SetStart(0);// sets the start state
 }
 
-void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
+void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 {
     KdLattice raw_fst;
     double lat_beam = config_.lattice_beam;
@@ -143,7 +140,7 @@ void KdOnlineLDecoder::MakeLattice(CompactLattice *ofst)
 //    fst::DeterminizeLatticePhonePrunedWrapper()
 }
 
-QVector<BtWord> KdOnlineLDecoder::getResult(CompactLattice *out_fst,
+QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst,
                                             QVector<QString> lexicon)
 {
     QVector<BtWord> result;

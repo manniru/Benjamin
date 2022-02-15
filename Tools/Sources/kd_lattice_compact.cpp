@@ -3,8 +3,8 @@
 using namespace kaldi;
 
 // CompactLatticeStateTimes
-int kd_compactLatticeStateTimes(CompactLattice &lat,
-                               std::vector<int> *times)
+int kd_compactLatticeStateTimes(KdCompactLattice &lat,
+                                std::vector<int> *times)
 {
     if (!lat.Properties(fst::kTopSorted, true))
         KALDI_ERR << "Input lattice must be topologically sorted.";
@@ -17,10 +17,10 @@ int kd_compactLatticeStateTimes(CompactLattice &lat,
     for (int state = 0; state < num_states; state++)
     {
         int cur_time = (*times)[state];
-        for (fst::ArcIterator<CompactLattice> aiter(lat, state); !aiter.Done();
+        for (fst::ArcIterator<KdCompactLattice> aiter(lat, state); !aiter.Done();
              aiter.Next())
         {
-            const CompactLatticeArc &arc = aiter.Value();
+            const KdCompactLatticeArc &arc = aiter.Value();
             int arc_len = static_cast<int>(arc.weight.String().size());
             if ((*times)[arc.nextstate] == -1)
                 (*times)[arc.nextstate] = cur_time + arc_len;

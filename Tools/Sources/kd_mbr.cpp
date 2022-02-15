@@ -436,7 +436,7 @@ std::vector<float> KdMBR::GetOneBestConfidences()
     return one_best_confidences_;
 }
 
-void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat)
+void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
 {
     CreateSuperFinal(clat); // Add super-final state (i.e. just one final state).
 
@@ -466,10 +466,10 @@ void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat)
     // would normally assume.
     for (int n = 1; n <= N; n++)
     {
-        for (fst::ArcIterator<CompactLattice> aiter(*clat, n-1);
+        for (fst::ArcIterator<KdCompactLattice> aiter(*clat, n-1);
              !aiter.Done(); aiter.Next())
         {
-            const CompactLatticeArc &carc = aiter.Value();
+            const KdCompactLatticeArc &carc = aiter.Value();
             KdMBRArc arc; // in our local format.
             arc.word = carc.ilabel; // == carc.olabel
             arc.start_node = n;
@@ -485,9 +485,9 @@ void KdMBR::PrepareLatticeAndInitStats(CompactLattice *clat)
     }
 }
 
-KdMBR::KdMBR(CompactLattice *clat_in)
+KdMBR::KdMBR(KdCompactLattice *clat_in)
 {
-    CompactLattice clat(*clat_in); // copy.
+    KdCompactLattice clat(*clat_in); // copy.
     opts.decode_mbr = true;
 
     PrepareLatticeAndInitStats(&clat);
@@ -495,7 +495,7 @@ KdMBR::KdMBR(CompactLattice *clat_in)
     RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
     // in best-path if we do this.
     KdLattice lat;
-    ConvertLattice(clat, &lat); // convert from CompactLattice to KdLattice.
+    ConvertLattice(clat, &lat); // convert from KdCompactLattice to KdLattice.
     fst::VectorFst<fst::StdArc> fst;
     ConvertLattice(lat, &fst); // convert from lattice to normal FST.
     fst::VectorFst<fst::StdArc> fst_shortest_path;
