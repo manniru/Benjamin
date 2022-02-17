@@ -2,7 +2,7 @@
 #define KD_LATTICE_FUNCTIONS_H
 
 #include <QDebug>
-#include "bt_config.h".
+#include "bt_config.h"
 #include "kd_token2.h"
 
 #include <vector>

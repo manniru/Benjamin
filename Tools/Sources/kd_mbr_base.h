@@ -31,9 +31,7 @@ struct KdMBROpt
   bool decode_mbr = true;
   /// Boolean configuration parameter: if true, the 1-best path will 'keep' the <eps> bins,
   bool print_silence = false; //MAYBE THIS WILL FIX EVERYTHING!
-  ///////////////////////////////////////////////////////////////////
-  ////////////////////////////FIX ME/////////////////////////////////
-  ///////////////////////////////////////////////////////////////////
+  /// THIS WONT FIX LAST SILENCE PROBLEM
 };
 
 #endif // KD_MBR_BASE_H

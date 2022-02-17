@@ -111,7 +111,7 @@ void KdOnline::execute(QVector<BtWord> result)
         return;
     }
 
-    qDebug() << dbg;
+//    qDebug() << dbg;
     QString cmd = KAL_SI_DIR"main.sh \"";
 
     for( int i=0 ; i<buf.size() ; i++ )
@@ -122,7 +122,7 @@ void KdOnline::execute(QVector<BtWord> result)
 
     cmd += "\"";
     system(cmd.toStdString().c_str());
-    qDebug() << "exec" << cmd;
+//    qDebug() << "exec" << cmd;
 }
 
 void KdOnline::parseLexicon(QString filename)

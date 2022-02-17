@@ -12,11 +12,11 @@
 #define KAL_WAV_DIR       KAL_DECODE_DIR"wav/"
 #define KAL_MODE          "tri1"
 
-#define BT_WORDS_PATH     KAL_NATO_DIR"exp/"KAL_MODE"/graph/words.txt"
-#define BT_MDL_PATH       KAL_NATO_DIR"exp/"KAL_MODE"/final.mdl"
-#define BT_OMDL_PATH      KAL_NATO_DIR"exp/"KAL_MODE"_online/final.mdl" //Online
-#define BT_OAMDL_PATH     KAL_NATO_DIR"exp/"KAL_MODE"_online/final.oalimdl" //Online Alignment
-#define BT_FST_PATH       KAL_NATO_DIR"exp/"KAL_MODE"/graph/HCLG.fst"
+#define BT_WORDS_PATH     KAL_NATO_DIR "exp/" KAL_MODE "/graph/words.txt"
+#define BT_MDL_PATH       KAL_NATO_DIR "exp/" KAL_MODE "/final.mdl"
+#define BT_OMDL_PATH      KAL_NATO_DIR "exp/" KAL_MODE "_online/final.mdl" //Online
+#define BT_OAMDL_PATH     KAL_NATO_DIR "exp/" KAL_MODE "_online/final.oalimdl" //Online Alignment
+#define BT_FST_PATH       KAL_NATO_DIR "exp/" KAL_MODE "/graph/HCLG.fst"
 #define BT_CONF_PATH      KAL_RESULT_DIR"confidence"
 #define BT_BAR_RESULT     "Resources/bar_result"
 

@@ -203,6 +203,10 @@ void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
     if( word_count )
     {
         BtWord last = result.last();
+//        if( last.word!="<eps>" )
+//        {
+//            qDebug() << last.word << last.start << last.end << uframe/100.0;
+//        }
 
         if( status.word_count!=word_count )
         {
@@ -238,7 +242,7 @@ int KdOnlineLDecoder::Decode()
 {
     if( status.state==KD_STATE_SILENCE )
     {
-        qDebug() << getDiffTime(start_t) << status.max_frame;
+        qDebug() << getDiffTime(start_t) << status.max_frame << uframe;
         status.word_count = -1;
         status.last_word = "";
         status.max_frame = -1;
