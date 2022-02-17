@@ -3,7 +3,6 @@
 
 #include "decoder/faster-decoder.h"
 
-
 class KdFToken
 {
 public:

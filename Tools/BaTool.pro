@@ -40,12 +40,12 @@ HEADERS += \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
     Sources/bt_recorder.h \
+    Sources/bt_test.h \
     Sources/kd_cmvn.h \
     Sources/kd_cmvn_base.h \
     Sources/kd_cmvn_state.h \
     Sources/kd_delta.h \
     Sources/kd_f_token.h \
-    Sources/kd_faster_decoder.h \
     Sources/kd_fft.h \
     Sources/kd_lattice.h \
     Sources/kd_lattice_compact.h \
@@ -71,12 +71,12 @@ SOURCES += \
     Sources/bt_chapar.cpp \
     Sources/bt_cyclic.cpp \
     Sources/bt_recorder.cpp \
+    Sources/bt_test.cpp \
     Sources/kd_cmvn.cpp \
     Sources/kd_cmvn_base.cpp \
     Sources/kd_cmvn_state.cpp \
     Sources/kd_delta.cpp \
     Sources/kd_f_token.cpp \
-    Sources/kd_faster_decoder.cpp \
     Sources/kd_fft.cpp \
     Sources/kd_lattice.cpp \
     Sources/kd_lattice_compact.cpp \

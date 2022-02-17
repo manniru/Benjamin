@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QThread>
 
-#include "online/online-audio-source.h"
 #include "matrix/kaldi-vector.h"
 #include "bt_cyclic.h"
 #include <portaudio.h>

@@ -6,7 +6,6 @@
 #include <QTimer>
 
 #include "bt_captain.h"
-
 #include "kd_online.h"
 
 class ReChapar : public QObject
