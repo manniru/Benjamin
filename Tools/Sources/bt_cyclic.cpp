@@ -102,6 +102,22 @@ void BtCyclic::write(int16_t *data, int size)
 }
 
 // return negative on erorr
+void BtCyclic::write(QVector<int16_t> *data)
+{
+    int max_len = data->size();
+    for( int i=0 ; i<max_len ; i++ )
+    {
+        buffer[write_p] = (*data)[i];
+        write_p++;
+
+        if( write_p>=buff_size )
+        {
+            write_p = 0;
+        }
+    }
+}
+
+// return negative on erorr
 void BtCyclic::constWrite(int16_t data, int size)
 {
     for( int i=0 ; i<size ; i++ )

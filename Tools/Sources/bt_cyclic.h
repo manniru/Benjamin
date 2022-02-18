@@ -17,7 +17,10 @@ public:
 
     int  read(int16_t *data, int size, int *fake=NULL);
     int  read(kaldi::Vector<float> *data, int size);
+
     void write(int16_t *data, int size);
+    void write(QVector<int16_t> *data);
+
     void constWrite(int16_t data, int size);
     void rewind(int count);
     int  getDataSize(int *fake=NULL); // Get Data size that are in Buf

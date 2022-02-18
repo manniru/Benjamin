@@ -7,6 +7,7 @@
 
 #include "bt_captain.h"
 #include "kd_online.h"
+#include "bt_test.h"
 
 class ReChapar : public QObject
 {

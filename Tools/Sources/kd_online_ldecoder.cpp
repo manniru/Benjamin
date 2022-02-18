@@ -1,6 +1,4 @@
 #include "kd_online_ldecoder.h"
-
-#ifdef BT_LAT_ONLINE
 #include <QDebug>
 
 using namespace kaldi;
@@ -265,5 +263,3 @@ int KdOnlineLDecoder::Decode()
         uframe++;
     }
 }
-
-#endif

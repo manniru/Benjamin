@@ -5,8 +5,6 @@
 #include "bt_config.h"
 #include "backend.h"
 
-#ifdef BT_LAT_ONLINE
-
 // This class provide a lattice online gmm decoder
 // Kaldi only offer an online gmm decoder with no
 // Lattice Support. Lattices Make it possible to
@@ -76,6 +74,5 @@ private:
     int   uframe;          // reset on ResetDecoder(utterance)
     clock_t start_t;
 };
-#endif // BT_LAT_ONLINE
 
-#endif // KD_ONLINE_DECODER_H
+#endif // KD_ONLINE_LDECODER_H
