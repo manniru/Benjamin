@@ -60,10 +60,20 @@ void BtTest::startDecode()
     {
         for( int i=0 ; i<result.size() ; i++ )
         {
-            qDebug() << "result" << result[i].word;
+            qDebug() << result[i].word
+                     << result[i].start << result[i].end;
         }
         qDebug() << getDiffTime(start_t);
     }
+
+    qDebug() << "Sorting Started";
+    for( int i=0 ; i<decodable.p_vec.size() ; i++ )
+    {
+        std::sort(decodable.p_vec[i].begin(), decodable.p_vec[i].end());
+
+        qDebug() << i << decodable.p_vec[i].last().pdf_id;
+    }
+//    qDebug() << decodable.p_vec.size();
 
     if( o_decoder->status.state==KD_STATE_SILENCE )
     {

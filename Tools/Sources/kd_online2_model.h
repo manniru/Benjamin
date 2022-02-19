@@ -26,9 +26,9 @@ public:
     kaldi::AmDiagGmm* GetModel();
     kaldi::AmDiagGmm* GetFinalModel();
 
-private:
     kaldi::TransitionModel *t_model; // trained with online-CMVN features
     kaldi::AmDiagGmm *oa_model; //online alignment model;
+private:
     // The ML-trained model used to get transforms (required)
     kaldi::AmDiagGmm *a_model;
 };

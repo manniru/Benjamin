@@ -6,7 +6,6 @@
 // recorder
 
 #include <QObject>
-#include <QtEndian>
 #include <QDebug>
 #include <QFile>
 

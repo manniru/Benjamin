@@ -9,6 +9,18 @@
 #include "kd_online2_model.h"
 #include "kd_online2_feinput.h"
 
+typedef struct KdPDF
+{
+    int pdf_id;
+    int phone_id;
+    float val;
+
+    bool operator<(const KdPDF &b)
+    {
+        return val<b.val;
+    }
+} KdPDF;
+
 class KdOnline2Decodable
 {
 public:
@@ -18,12 +30,16 @@ public:
     /// Returns the scaled log likelihood
     float LogLikelihood(int frame, int index);
     int NumFramesReady();
+    void addPDF(int frame, int id, int phone_id, float val);
 
     int NumIndices();
     KdOnline2FeInput *features;
+    int max_pdf;
+
+    QVector<QVector<KdPDF *>> p_vec;
 
 private:
-    void CacheFrame(int frame);
+    void CacheFeature(int frame);
 
     kaldi::AmDiagGmm *ac_model;
     float ac_scale_;

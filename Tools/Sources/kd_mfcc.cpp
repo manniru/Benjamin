@@ -37,6 +37,7 @@ KdMFCC::KdMFCC()
 {
     mel_energies_.Resize(num_bins);
     fft = NULL;
+    mel_banks_ = NULL;
     if( num_ceps>num_bins )
         qDebug() << "num-ceps cannot be larger than num-mel-bins."
                  << num_ceps << "  and num-mel-bins: "
