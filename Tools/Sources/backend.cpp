@@ -64,3 +64,26 @@ QString getDiffTime(clock_t start)
     ret += "ms";
     return  ret;
 }
+
+QVector<QString> bt_parseLexicon(QString filename)
+{
+    QFile words_file(filename);
+    QVector<QString> lexicon;
+
+    if( !words_file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        qDebug() << "Error opening" << filename;
+        return lexicon;
+    }
+
+
+    while ( !words_file.atEnd() )
+    {
+        QString line = QString(words_file.readLine());
+        QStringList line_list = line.split(" ");
+        lexicon.append(line_list[0]);
+    }
+
+    words_file.close();
+    return lexicon;
+}

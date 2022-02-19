@@ -408,7 +408,7 @@ std::vector<std::pair<float, float> > KdMBR::GetOneBestTimes()
     return one_best_times_;
 }
 
-QVector<BtWord> KdMBR::getResult(QVector<QString> lexicon)
+QVector<BtWord> KdMBR::getResult()
 {
     QVector<BtWord> result;
     std::vector<float> conf = GetOneBestConfidences();
@@ -487,6 +487,7 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
 
 KdMBR::KdMBR(KdCompactLattice *clat_in)
 {
+    lexicon = bt_parseLexicon(BT_WORDS_PATH);
     KdCompactLattice clat(*clat_in); // copy.
     opts.decode_mbr = true;
 

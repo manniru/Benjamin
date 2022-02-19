@@ -138,8 +138,7 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 //    fst::DeterminizeLatticePhonePrunedWrapper()
 }
 
-QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst,
-                                            QVector<QString> lexicon)
+QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 {
     QVector<BtWord> result;
     MakeLattice(out_fst);
@@ -150,7 +149,7 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst,
 
     KdMBR *mbr = NULL;
     mbr = new KdMBR(out_fst);
-    result = mbr->getResult(lexicon);
+    result = mbr->getResult();
 
     CalcFinal(&result);
     HaveSilence(result);

@@ -48,8 +48,7 @@ public:
     void RawLattice(KdLattice *ofst);
     void MakeLattice(KdCompactLattice *ofst);
 
-    QVector<BtWord> getResult(KdCompactLattice *out_fst,
-                              QVector<QString> lexicon);
+    QVector<BtWord> getResult(KdCompactLattice *out_fst);
 
     void HaveSilence(QVector<BtWord> result);
     void CalcFinal(QVector<BtWord> *result);

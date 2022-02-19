@@ -12,5 +12,6 @@
 int getIntCommand(char *command);
 QString getStrCommand(QString command);
 QString getDiffTime(clock_t start);
+QVector<QString> bt_parseLexicon(QString filename);
 
 #endif // BACKEND_H

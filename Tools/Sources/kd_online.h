@@ -28,14 +28,11 @@ signals:
     void resultReady(QVector<BtWord> result);
 
 private:
-    void parseLexicon(QString filename);
     void execute(QVector<BtWord> result);
 
     void processLat(KdCompactLattice *clat, clock_t start);
 
     BtRecorder       *ab_src;
-    QVector<QString>  history;
-    QVector<QString>  lexicon;
     QVector<BtWord>   last_r; //last_result
     KdOnlineStatus    status;
     BtCyclic         *cy_buf;

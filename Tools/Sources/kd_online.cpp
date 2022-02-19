@@ -11,22 +11,10 @@ KdOnline2Model   *o2_model; //gaussain online 2 model
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
-    parseLexicon(BT_WORDS_PATH);
 
     ab_src = new BtRecorder(cy_buf);
     status.word_count = 0;
-}
 
-KdOnline::~KdOnline()
-{
-    delete am_gmm;
-    delete trans_model;
-    delete o2_model;
-    delete o_decoder;
-}
-
-void KdOnline::init()
-{
     std::string model_rxfilename = BT_OAMDL_PATH;
     QVector<int> silence_phones = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
@@ -42,7 +30,18 @@ void KdOnline::init()
     o2_model = new KdOnline2Model(trans_model, am_gmm, online_alimdl);
 
     o_decoder = new KdOnlineLDecoder(silence_phones, *trans_model);
+}
 
+KdOnline::~KdOnline()
+{
+    delete am_gmm;
+    delete trans_model;
+    delete o2_model;
+    delete o_decoder;
+}
+
+void KdOnline::init()
+{
     startDecode();
 }
 
@@ -63,7 +62,7 @@ void KdOnline::startDecode()
     {
         decodable.features->AcceptWaveform(cy_buf);
         o_decoder->Decode();
-        result = o_decoder->getResult(&out_fst, lexicon);
+        result = o_decoder->getResult(&out_fst);
         bt_writeBarResult(result);
 
         if( result.size() )
@@ -123,26 +122,4 @@ void KdOnline::execute(QVector<BtWord> result)
     cmd += "\"";
     system(cmd.toStdString().c_str());
 //    qDebug() << "exec" << cmd;
-}
-
-void KdOnline::parseLexicon(QString filename)
-{
-    QFile words_file(filename);
-
-    if( !words_file.open(QIODevice::ReadOnly | QIODevice::Text) )
-    {
-        qDebug() << "Error opening" << filename;
-        return;
-    }
-
-    lexicon.clear();
-
-    while ( !words_file.atEnd() )
-    {
-        QString line = QString(words_file.readLine());
-        QStringList line_list = line.split(" ");
-        lexicon.append(line_list[0]);
-    }
-
-    words_file.close();
 }

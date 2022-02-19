@@ -7,6 +7,7 @@
 // edit distance", Haihua Xu, Daniel Povey, Lidia Mangu and Jie Zhu,
 
 #include <QString>
+#include "backend.h"
 #include "kd_mbr_base.h"
 #include "kd_lattice_compact.h"
 
@@ -20,9 +21,11 @@ public:
     std::vector<std::pair<float, float> > GetSausageTimes();
     std::vector<std::pair<float, float> > GetOneBestTimes();
     std::vector<float> GetOneBestConfidences();
-    QVector<BtWord>    getResult(QVector<QString> lexicon);
+    QVector<BtWord>    getResult();
 
 private:
+    QVector<QString> lexicon;
+
     void PrepareLatticeAndInitStats(KdCompactLattice *clat);
 
     void MbrDecode(); // Figure 6 of the paper.
