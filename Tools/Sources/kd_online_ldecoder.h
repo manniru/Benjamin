@@ -30,9 +30,8 @@ struct KdOnlineLDecoderOpts: public KdLatticeDecoderConfig
 struct KdOnlineStatus
 {
     int state = KD_STATE_NORMAL;
-    int max_frame = -1;
-    int word_count = -1;
-    QString last_word;
+    int max_frame = 0;
+    int min_frame = 0;
 };
 
 class KdOnlineLDecoder : public KdLatticeDecoder
@@ -50,13 +49,17 @@ public:
 
     QVector<BtWord> getResult(KdCompactLattice *out_fst);
 
-    void HaveSilence(QVector<BtWord> result);
-    void CalcFinal(QVector<BtWord> *result);
+    void HaveSilence();
+    void CalcFinal();
     KdOnlineStatus status;
 
 private:
+    void checkReset();
     void ResetDecoder();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
+    int  getFirstSil(int start);
+    void printAll();
+    QVector<BtWord> result;
 
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token

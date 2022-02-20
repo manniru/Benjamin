@@ -66,12 +66,10 @@ void BtTest::startDecode()
         qDebug() << getDiffTime(start_t);
     }
 
-    qDebug() << "Sorting Started";
-    for( int i=0 ; i<decodable.p_vec.size() ; i++ )
+    qDebug() << "Sorting Started" << decodable.NumFramesReady();
+    for( int i=0 ; i<500 ; i++ )
     {
-        std::sort(decodable.p_vec[i].begin(), decodable.p_vec[i].end());
-
-        qDebug() << i << decodable.p_vec[i].last().pdf_id;
+//        qDebug() << i << decodable.p_vec[i].phone_id;
     }
 //    qDebug() << decodable.p_vec.size();
 

@@ -9,6 +9,7 @@
 #include "kd_online2_model.h"
 #include "kd_online2_feinput.h"
 
+#define MAX_FRAME_CNT 4000
 typedef struct KdPDF
 {
     int pdf_id;
@@ -34,9 +35,8 @@ public:
 
     int NumIndices();
     KdOnline2FeInput *features;
-    int max_pdf;
 
-    QVector<QVector<KdPDF *>> p_vec;
+    KdPDF p_vec[MAX_FRAME_CNT];
 
 private:
     void CacheFeature(int frame);

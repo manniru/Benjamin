@@ -70,9 +70,8 @@ void KdOnline::startDecode()
             execute(result);
         }
 
-        if( o_decoder->status.state==KD_STATE_SILENCE )
+        if( o_decoder->status.state!=KD_STATE_NORMAL )
         {
-            status.last_word = "";
             status.word_count = 0;
         }
     }

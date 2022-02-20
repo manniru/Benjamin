@@ -140,7 +140,6 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 
 QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 {
-    QVector<BtWord> result;
     MakeLattice(out_fst);
     if( out_fst->Start() )
     {
@@ -151,102 +150,138 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
     mbr = new KdMBR(out_fst);
     result = mbr->getResult();
 
-    CalcFinal(&result);
-    HaveSilence(result);
+    HaveSilence();
+    CalcFinal();
     return result;
 }
 
-void KdOnlineLDecoder::CalcFinal(QVector<BtWord> *result)
+void KdOnlineLDecoder::CalcFinal()
 {
     int min_diff = 15;
-    int word_count = result->size();
-    for( int i=0 ; i<word_count-1 ; i++ )
+    int word_count = result.size();
+    QString buf;
+    for( int i=0 ; i<word_count ; i++ )
     {
-        int f_end = floor(result->at(i).end*100);
+        int f_end = floor(result[i].end*100);
 
         if( (uframe-f_end)>min_diff )
         {
-            (*result)[i].is_final = 1;
+            result[i].is_final = 1;
         }
+        buf += result[i].word;
+        buf += " ";
     }
 
-    //for last word
     if( word_count )
     {
-        BtWord last = result->last();
-
-        if( status.word_count!=word_count )
-        {
-            return;
-        }
-        else if( status.last_word!=last.word )
-        {
-            return;
-        }
-        else if( (uframe-(status.max_frame))>min_diff )
-        {
-            (*result)[word_count-1].is_final = 1;
-        }
-//        qDebug() << "word_count" << status.max_frame << status.last_word;
+        qDebug() << ">> " << result.last().end
+                 << uframe << buf;
     }
 }
 
 // Returns "true" if the current hypothesis ends with long silence
-void KdOnlineLDecoder::HaveSilence(QVector<BtWord> result)
+void KdOnlineLDecoder::HaveSilence()
 {
-    int sil_frm = 100;//opts_.inter_utt_sil; //50
+    status.state = KD_STATE_NORMAL;
     int word_count = result.size();
 
+//    printAll();
     if( word_count )
     {
-        BtWord last = result.last();
-//        if( last.word!="<eps>" )
-//        {
-//            qDebug() << last.word << last.start << last.end << uframe/100.0;
-//        }
+        int last_start = result.last().start*100;
 
-        if( status.word_count!=word_count )
+        if( status.max_frame<last_start )
         {
-            status.word_count = word_count;
-            status.last_word = last.word;
-            status.max_frame = last.end*100;
-            status.state = KD_STATE_NORMAL;
+            status.max_frame = last_start;
         }
-        else if( status.last_word!=last.word )
+        int end_frame = getFirstSil(0);
+
+        if( end_frame!=-1 )
         {
-            status.last_word = last.word;
-            status.max_frame = last.end*100;
-            status.state = KD_STATE_NORMAL;
-        }
-        else if( (uframe-(status.max_frame))>sil_frm )
-        {
+            result[word_count-1].end = end_frame/100.0;
+            status.max_frame = end_frame;
             status.state = KD_STATE_SILENCE;
+            qDebug() << "end_frame" << end_frame << uframe;
         }
-//        qDebug() << "word_count" << status.max_frame << status.last_word;
+
+        qDebug() << "word_count" << status.max_frame << status.last_word;
     }
-    else if( uframe>200 )
+    else if( uframe>100 )
     {
-        status.state = KD_STATE_SILENCE; //reset decoder
+        status.state = KD_STATE_NULL; //reset decoder
     }
-    else
+
+    if( uframe>1000 ) //cut imidietly if more than 10s
     {
-        status.state = KD_STATE_NORMAL; //reset decoder
+        status.state = KD_STATE_BLOWN; //reset decoder
+        qDebug() << "We ARE BLOWN";
     }
 //    qDebug() << uframe;
 }
 
+// Get first silence
+int KdOnlineLDecoder::getFirstSil(int start)
+{
+    int sil_count = 10; //100ms
+    int end = uframe-sil_count;
+
+    if( end<start )
+    {
+        return -1;
+    }
+    char *stat = (char *)malloc(end-start+1);
+    stat[end-start] = 0;
+    int j;
+
+    for( int i=start ; i<end ; i++ )
+    {
+        if( decodable->p_vec[i].phone_id<11 )
+        {
+            stat[i-start] = '$';
+            continue; //first element should be non-sil
+        }
+        for( j=1 ; j<sil_count ; j++ )
+        {
+            if( decodable->p_vec[i+j].phone_id>10 )
+            {
+                stat[i-start] = '-';
+                break;
+            }
+        }
+
+        if( decodable->p_vec[i+j].phone_id<11 )
+        {
+            stat[i-start] = '+';
+            qDebug() << "Found Silence @ " << i;
+            free(stat);
+            return i;
+        }
+    }
+    free(stat);
+    return -1;
+}
+
+void KdOnlineLDecoder::printAll()
+{
+    QString buffer;
+    for( int i=0 ; i<uframe ; i++ )
+    {
+        if( decodable->p_vec[i].phone_id<11 )
+        {
+            buffer += "-";
+        }
+        else
+        {
+            buffer += "|";
+            buffer += QString::number(decodable->p_vec[i].phone_id);
+        }
+    }
+    qDebug() << uframe << buffer;
+}
+
 int KdOnlineLDecoder::Decode()
 {
-    if( status.state==KD_STATE_SILENCE )
-    {
-        qDebug() << getDiffTime(start_t) << status.max_frame << uframe;
-        status.word_count = -1;
-        status.last_word = "";
-        status.max_frame = -1;
-        start_t = clock();
-        ResetDecoder();
-        frame_num -= 35;
-    }
+    checkReset(); //check if need reset
     ProcessNonemitting(std::numeric_limits<float>::max());
     int frame_max = decodable->NumFramesReady();
 //    for ( frame=0 ; frame<opts.batch_size ; frame++ )
@@ -260,5 +295,30 @@ int KdOnlineLDecoder::Decode()
         ProcessNonemitting(weight_cutoff);
 
         uframe++;
+    }
+}
+
+void KdOnlineLDecoder::checkReset()
+{
+    if( status.state==KD_STATE_NULL ||
+        status.state==KD_STATE_BLOWN  )
+    {
+        qDebug() << "Reset Null" << getDiffTime(start_t)
+                 << status.max_frame << uframe;
+        frame_num -= 35;
+    }
+    else if( status.state==KD_STATE_SILENCE )
+    {
+        qDebug()  << "Reset Sil" << getDiffTime(start_t)
+                 << status.max_frame << uframe;
+        frame_num = status.max_frame;
+        status.max_frame = 0;
+    }
+
+    if( status.state!=KD_STATE_NORMAL )
+    {
+        status.max_frame = 0;
+        start_t = clock();
+        ResetDecoder(); // this reset uframe
     }
 }

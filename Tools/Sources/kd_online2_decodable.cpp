@@ -18,7 +18,6 @@ KdOnline2Decodable::KdOnline2Decodable(BtRecorder *au_src, KdOnline2Model *mdl, 
     features = new KdOnline2FeInput(au_src);
     feat_dim = features->Dim();
     cur_feats_.Resize(feat_dim);
-    max_pdf = 0;
 }
 
 KdOnline2Decodable::~KdOnline2Decodable()
@@ -31,14 +30,8 @@ void KdOnline2Decodable::CacheFeature(int frame)
     features->GetFrame(frame, &cur_feats_);
     cur_frame_ = frame;
 
-#ifdef BT_TEST_MODE
-    QVector<KdPDF *> buf;
-    p_vec.push_back(buf);
-    if( p_vec.size()<frame )
-    {
-        qDebug() << "FUCKKKKKKKKKKKKKKKK";
-    }
-#endif
+    int index = frame%MAX_FRAME_CNT;
+    p_vec[index].val = -100; //dB
 }
 
 float KdOnline2Decodable::LogLikelihood(int frame, int index)
@@ -59,15 +52,9 @@ float KdOnline2Decodable::LogLikelihood(int frame, int index)
     cache_[pdf_id].first = frame;
     cache_[pdf_id].second = ans;
 
-#ifdef BT_TEST_MODE
-    if( max_pdf<pdf_id )
-    {
-        max_pdf = pdf_id;
-        qDebug() << max_pdf;
-    }
     int phone_id = trans_model->TransitionIdToPhone(index);
     addPDF(frame, pdf_id, phone_id, ans);
-#endif
+
 //    ac_model->
 
     return ans;
@@ -85,33 +72,13 @@ int KdOnline2Decodable::NumIndices()
 
 void KdOnline2Decodable::addPDF(int frame, int id, int phone_id, float val)
 {
-    if( p_vec.size()<=frame )
+    int index = frame%MAX_FRAME_CNT;
+
+    if( p_vec[index].val<val )
     {
-        qDebug() << "FUCKKKKKKKKKKKKKKKK2";
+        p_vec[index].val = val;
+        p_vec[index].phone_id = phone_id;
+        p_vec[index].pdf_id = id;
         return;
     }
-//    qDebug() << "$$$ frame" << frame
-//             << "size" << p_vec.size()
-//             << "id"   << id;
-
-    for( int i=0 ; i<p_vec[frame].size() ; i++ )
-    {
-//        qDebug() << "FLAG1" << i << p_vec[frame].size()
-//                 << "p_vec" << p_vec[frame][i]->pdf_id;
-        if( p_vec[frame][i]->pdf_id==id )
-        {
-            p_vec[frame][i]->val = val;
-            p_vec[frame][i]->phone_id = phone_id;
-            return;
-        }
-    }
-
-    KdPDF *buf = new KdPDF;
-    buf->pdf_id = id;
-    buf->phone_id = phone_id;
-    buf->val = val;
-    p_vec[frame].push_back(buf);
-//    qDebug() << "+ add id" << buf->pdf_id
-//             << "p_vec size"  << p_vec[frame].size();
-
 }
