@@ -9,7 +9,7 @@
 #include "kd_online2_model.h"
 #include "kd_online2_feinput.h"
 
-#define MAX_FRAME_CNT 4000
+#define MAX_FRAME_CNT 400
 typedef struct KdPDF
 {
     int pdf_id;
@@ -32,13 +32,14 @@ public:
     float LogLikelihood(int frame, int index);
     int NumFramesReady();
     void addPDF(int frame, int id, int phone_id, float val);
+    int getPhone(int frame);
 
     int NumIndices();
     KdOnline2FeInput *features;
 
-    KdPDF p_vec[MAX_FRAME_CNT];
 
 private:
+    KdPDF p_vec[MAX_FRAME_CNT];
     void CacheFeature(int frame);
 
     kaldi::AmDiagGmm *ac_model;

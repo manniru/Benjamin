@@ -82,3 +82,10 @@ void KdOnline2Decodable::addPDF(int frame, int id, int phone_id, float val)
         return;
     }
 }
+
+int KdOnline2Decodable::getPhone(int frame)
+{
+    int index = frame%MAX_FRAME_CNT;
+
+    return p_vec[index].phone_id;
+}

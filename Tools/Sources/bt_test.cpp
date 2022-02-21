@@ -73,9 +73,8 @@ void BtTest::startDecode()
     }
 //    qDebug() << decodable.p_vec.size();
 
-    if( o_decoder->status.state==KD_STATE_SILENCE )
+    if( o_decoder->status.state!=KD_STATE_NORMAL )
     {
-        status.last_word = "";
         status.word_count = 0;
     }
 }

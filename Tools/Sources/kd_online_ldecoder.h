@@ -32,6 +32,7 @@ struct KdOnlineStatus
     int state = KD_STATE_NORMAL;
     int max_frame = 0;
     int min_frame = 0;
+    int word_count = -1;
 };
 
 class KdOnlineLDecoder : public KdLatticeDecoder
@@ -57,7 +58,7 @@ private:
     void checkReset();
     void ResetDecoder();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
-    int  getFirstSil(int start);
+    int  getFirstSil();
     void printAll();
     QVector<BtWord> result;
 

@@ -91,6 +91,10 @@ void KdOnline::execute(QVector<BtWord> result)
             {
                 continue;
             }
+            if( result[i].end<0.15 )
+            {
+                continue;
+            }
         }
         if( result[i].is_final )
         {
