@@ -9,7 +9,6 @@
 #include "matrix/kaldi-vector.h"
 #include "bt_cyclic.h"
 #include <portaudio.h>
-#include <pa_ringbuffer.h>
 
 class BtRecorder: public QObject
 {

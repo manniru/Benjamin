@@ -9,7 +9,6 @@ linux:INCLUDEPATH += /usr/include/glib-2.0 \
                      /usr/lib/glib-2.0/include \
                      ../../Kaldi/src \
                      ../../Kaldi/tools/openfst/src/include \
-                     ../../Kaldi/tools/portaudio/install/include \
                      /opt/intel/mkl/include
 
 linux:LIBS += -lgio-2.0 \
