@@ -13,17 +13,29 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
             this, SLOT(shiftHistory()));
     time_shifter->start(BT_HISTORY_UPDATE);
 
-    start_treshold = 0;
+    start_treshold = -BT_HISTORY_SIZE/1000.0;
 }
 
 void BtCaptain::parse(QVector<BtWord> in_words)
 {
+    if( in_words.empty() )
+    {
+        return;
+    }
+
     utterance = "";
+    QString cmd = KAL_SI_DIR"main.sh \"";
 
     for( int i=0 ; i<in_words.length() ; i++ )
     {
         addWord(in_words[i]);
+        cmd += in_words[i].word;
+        cmd += " ";
     }
+
+    cmd += "\"";
+    system(cmd.toStdString().c_str());
+    //    qDebug() << "exec" << cmd;
 
     bt_writeBarResult(history);
 }
@@ -46,7 +58,7 @@ void BtCaptain::addWord(BtWord word)
 
 void BtCaptain::shiftHistory()
 {
-    start_treshold += BT_HISTORY_UPDATE/1000;
+    start_treshold += BT_HISTORY_UPDATE/1000.0;
 
     for( int i=0 ; i<history.length() ; i++ )
     {
@@ -56,6 +68,9 @@ void BtCaptain::shiftHistory()
             i--;
         }
     }
+    qDebug() << "sd" << start_treshold;
+
+    bt_writeBarResult(history);
 }
 
 void bt_writeBarResult(QVector<BtWord> result)

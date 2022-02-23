@@ -211,7 +211,10 @@ void KdOnlineLDecoder::HaveSilence()
         {
             status.max_frame = end_frame;
             end_frame -= status.min_frame;
-            result[word_count-1].end = end_frame/100.0;
+            float end_time = end_frame/100.0;
+            float start_time = result[word_count-1].start;
+            result[word_count-1].end = end_time;
+            result[word_count-1].time = (start_time+end_time)/2;
             status.state = KD_STATE_SILENCE;
             qDebug() << "end_frame" << end_frame << uframe;
         }

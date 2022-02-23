@@ -12,7 +12,8 @@
 #include "kd_mbr.h"
 
 #define BT_TIME_NOW QTime::currentTime().toString("hh:mm:ss")
-#define BT_HISTORY_UPDATE 300 // update interval in ms
+#define BT_HISTORY_UPDATE 300  // update interval in ms
+#define BT_HISTORY_SIZE   3500 // interval in ms that preserved
 
 class BtCaptain : public QObject
 {

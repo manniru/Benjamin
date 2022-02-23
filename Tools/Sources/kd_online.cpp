@@ -63,12 +63,7 @@ void KdOnline::startDecode()
         decodable.features->AcceptWaveform(cy_buf);
         o_decoder->Decode();
         result = o_decoder->getResult(&out_fst);
-        bt_writeBarResult(result);
-
-        if( result.size() )
-        {
-            execute(result);
-        }
+        processResult(result);
 
         if( o_decoder->status.state!=KD_STATE_NORMAL )
         {
@@ -77,10 +72,14 @@ void KdOnline::startDecode()
     }
 }
 
-void KdOnline::execute(QVector<BtWord> result)
+void KdOnline::processResult(QVector<BtWord> result)
 {
-    QVector<QString> buf;
-    QString dbg = "result ";
+    if( result.empty() )
+    {
+        return;
+    }
+
+    QVector<BtWord> buf;
 
     for( int i=status.word_count ; i<result.size() ; i++ )
     {
@@ -99,30 +98,9 @@ void KdOnline::execute(QVector<BtWord> result)
         if( result[i].is_final )
         {
             status.word_count = i+1;
-            buf += result[i].word;
-            dbg += result[i].word;
-            dbg += "(";
-            dbg += QString::number(result[i].conf);
-            dbg += ")";
-            dbg += " ";
+            result[i].time += o_decoder->frame_num/100.0;
+            buf += result[i];
         }
     }
-
-    if( buf.empty() )
-    {
-        return;
-    }
-
-//    qDebug() << dbg;
-    QString cmd = KAL_SI_DIR"main.sh \"";
-
-    for( int i=0 ; i<buf.size() ; i++ )
-    {
-        cmd += buf[i];
-        cmd += " ";
-    }
-
-    cmd += "\"";
-    system(cmd.toStdString().c_str());
-//    qDebug() << "exec" << cmd;
+    emit resultReady(buf);
 }

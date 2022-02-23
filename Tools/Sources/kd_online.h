@@ -28,7 +28,7 @@ signals:
     void resultReady(QVector<BtWord> result);
 
 private:
-    void execute(QVector<BtWord> result);
+    void processResult(QVector<BtWord> result);
 
     void processLat(KdCompactLattice *clat, clock_t start);
 
