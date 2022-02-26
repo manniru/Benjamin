@@ -77,7 +77,7 @@ for i in $(seq $min_lmwt $max_lmwt); do
 
         if [[ "$WORD_COUNT" != "4" ]]; then
             
-            echo "WORD SIZE WRONG $f ${WORD1} ${WORD2} ${WORD3}"
+            echo "WORD_SIZE_WRONG $FILENAME ${WORD1} ${WORD2} ${WORD3}"
             
         elif [[ "$FILENAME" != "${ID1}_${ID2}_${ID3}" ]]; then
         

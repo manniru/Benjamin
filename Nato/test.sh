@@ -38,6 +38,8 @@ elif [[ "$1" == "v" ]]; then
 	echo "Verify Mode"
     
     steps/decode.sh --config conf/decode.config --nj 1 exp/tri1/graph data/train exp/tri1/decode
+    
+    exit 0
 
 fi
 
