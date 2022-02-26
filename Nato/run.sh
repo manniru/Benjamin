@@ -21,11 +21,11 @@ AUDIO_DIR="audio"
 DATA_DIR="data"
 
 source path.sh
-$ST/clean.sh
-
-update_data "train"
-update_data "test"
-
-$SD/sort.sh "$DATA_DIR/local/corpus.txt"
+#$ST/clean.sh
+#
+#update_data "train"
+#update_data "test"
+#
+#$SD/sort.sh "$DATA_DIR/local/corpus.txt"
 
 $ST/run.sh

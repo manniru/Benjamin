@@ -31,7 +31,7 @@ make
 
 1. Import Neccesary Tools.
 
-   From `Kaldi/egs/wsj/s5` copy `utils` and `steps` into Nato Project.
+   From `Kaldi/egs/wsj/s5` copy `steps` into Nato Project.
 
 2. Train the model. These bash scripts are available for the NATO task
 
@@ -44,7 +44,7 @@ make
 ./lang_word.sh
 ```
 
-## Step 4: Compile and Run BaTool
+## Step 3: Compile and Run BaTool
 
 use qmake to compile BaTool and Execute
 
@@ -63,17 +63,7 @@ apt-cyg install portaudio
 
 ----------------------
 * To control the PC this project connect with [Rebound](https://github.com/bijanbina/RAIIS) and uses Linux uInput module.
-* OpenBLAS is slower and doesn't work with this projectgit clone https://github.com/kaldi-asr/kaldi.git
-mv kaldi Kaldi #Rename kaldi to uppercase
-#sudo pacman -S lapack
-sudo pacman -S intel-mkl gcc-fortran subversion
-cd Kaldi/tools
-#extras/install_mkl.sh
-extras/install_srilm.sh <name> <organization> <email>
-make
-cd ../src
-./configure --mathlib=MKL
-make 
+* OpenBLAS is slow for the training, only use it on the end-user application
 * For Arch Linux follow `install_arch.sh` to find sample commands
 
 ```
