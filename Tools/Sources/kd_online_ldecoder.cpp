@@ -157,7 +157,7 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 
 void KdOnlineLDecoder::CalcFinal()
 {
-    int min_diff = 10;
+    int min_diff = 15; // 150 ms
     int word_count = result.size();
     QString buf;
     for( int i=0 ; i<word_count ; i++ )
@@ -168,7 +168,7 @@ void KdOnlineLDecoder::CalcFinal()
         {
             if( result[i].end<0.15 )
             {
-                qDebug() << "skipped " << result[i].end
+                qDebug() << "$$$$$$$ skipped " << result[i].end
                          <<  result[i].word;
                 continue;
             }
@@ -185,7 +185,7 @@ void KdOnlineLDecoder::CalcFinal()
 
     if( word_count )
     {
-        qDebug() << ">> " << result.last().end
+        qDebug() << ">>> " << result.last().end
                  << uframe << buf;
     }
 }
@@ -282,8 +282,9 @@ void KdOnlineLDecoder::printAll()
             buffer += QString::number(decodable->getPhone(i));
         }
     }
-    qDebug() << "##" << uframe
-             << start << buffer;
+    //UNCOM
+//    qDebug() << "##" << uframe
+//             << start << buffer;
 }
 
 int KdOnlineLDecoder::Decode()
@@ -316,9 +317,10 @@ void KdOnlineLDecoder::checkReset()
     }
     else if( status.state==KD_STATE_SILENCE )
     {
+        int diff = status.max_frame - frame_num;
         qDebug() << "------------Reset Sil" << getDiffTime(start_t)
-                 << status.max_frame << uframe;
-        frame_num = status.max_frame;
+                 << status.max_frame << diff << uframe;
+        frame_num -= diff;
     }
 
     if( status.state!=KD_STATE_NORMAL )

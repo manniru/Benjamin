@@ -98,9 +98,9 @@ void KdOnline::processResult(QVector<BtWord> result)
         if( result[i].is_final )
         {
             status.word_count = i+1;
-            result[i].time += o_decoder->frame_num/100.0;
-            buf += result[i];
         }
+        result[i].time += o_decoder->frame_num/100.0;
+        buf += result[i];
     }
     emit resultReady(buf);
 }

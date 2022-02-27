@@ -1,4 +1,4 @@
-#include "bt_captain.h"
+﻿#include "bt_captain.h"
 #include <QDebug>
 
 BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
@@ -29,8 +29,12 @@ void BtCaptain::parse(QVector<BtWord> in_words)
     for( int i=0 ; i<in_words.length() ; i++ )
     {
         addWord(in_words[i]);
-        cmd += in_words[i].word;
-        cmd += " ";
+
+        if( in_words[i].is_final )
+        {
+            cmd += in_words[i].word;
+            cmd += " ";
+        }
     }
 
     cmd += "\"";
@@ -53,6 +57,33 @@ void BtCaptain::printWords(QString words)
 
 void BtCaptain::addWord(BtWord word)
 {
+                    qDebug() << "addWord" << word.word << word.is_final;
+    // change not final last to final
+    // remove all that are not final
+    if( history.length() )
+    {
+        BtWord last = history.last();
+
+        if( (last.is_final==false) &&
+            (last.word==word.word) &&
+            (word.is_final) )
+        {
+            qDebug() << "word" << last.word;
+            history.last().is_final = true;
+            return;
+        }
+
+        while( history.last().is_final==false )
+        {
+            history.removeLast();
+
+            if( history.isEmpty() )
+            {
+                break;
+            }
+        }
+
+    }
     history.append(word);
 }
 
@@ -68,7 +99,6 @@ void BtCaptain::shiftHistory()
             i--;
         }
     }
-    qDebug() << "sd" << start_treshold;
 
     bt_writeBarResult(history);
 }
