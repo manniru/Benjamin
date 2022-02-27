@@ -17,79 +17,80 @@ struct GammaCompare
     }
 };
 
+// Figure 6 of the paper.
 void KdMBR::MbrDecode()
 {
     for( size_t counter=0 ; ; counter++ )
     {
-        NormalizeEps(&R_);
+        NormalizeBest();
         AccStats(); // writes to gamma_
         double delta_Q = 0.0; // change in objective function.
 
-        one_best_times_.clear();
-        one_best_confidences_.clear();
+        one_best_times.clear();
+        one_best_conf.clear();
 
         // Caution: q in the line below is (q-1) in the algorithm
         // in the paper; both R_ and gamma_ are indexed by q-1.
-        for (size_t q = 0; q < R_.size(); q++)
+        for (size_t q = 0; q < one_best_id.size(); q++)
         {
             if (opts.decode_mbr)
             { // This loop updates R_ [indexed same as gamma_].
                 // gamma_[i] is sorted in reverse order so most likely one is first.
                 const std::vector<std::pair<int, float> > &this_gamma = gamma_[q];
                 double old_gamma = 0, new_gamma = this_gamma[0].second;
-                int rq = R_[q], rhat = this_gamma[0].first; // rq: old word, rhat: new.
+                int rq = one_best_id[q], rhat = this_gamma[0].first; // rq: old word, rhat: new.
                 for (size_t j = 0; j < this_gamma.size(); j++)
                     if (this_gamma[j].first == rq) old_gamma = this_gamma[j].second;
                 delta_Q += (old_gamma - new_gamma); // will be 0 or negative; a bound on
                 // change in error.
                 if (rq != rhat)
                     KALDI_VLOG(2) << "Changing word " << rq << " to " << rhat;
-                R_[q] = rhat;
+                one_best_id[q] = rhat;
             }
             // build the outputs (time, confidences),
-            if (R_[q] != 0 || opts.print_silence)
+            if (one_best_id[q] != 0 || opts.print_silence)
             {
                 // see which 'item' from the sausage-bin should we select,
                 // (not necessarily the 1st one when MBR decoding disabled)
                 int s = 0;
                 for (int j=0; j<gamma_[q].size(); j++) {
-                    if (gamma_[q][j].first == R_[q]) {
+                    if (gamma_[q][j].first == one_best_id[q]) {
                         s = j;
                         break;
                     }
                 }
-                one_best_times_.push_back(times_[q][s]);
+                one_best_times.push_back(times_[q][s]);
                 // post-process the times,
-                size_t i = one_best_times_.size();
-                if (i > 1 && one_best_times_[i-2].second > one_best_times_[i-1].first)
+                size_t i = one_best_times.size();
+                if (i > 1 && one_best_times[i-2].second > one_best_times[i-1].first)
                 {
                     // It's quite possible for this to happen, but it seems like it would
                     // have a bad effect on the downstream processing, so we fix it here.
                     // We resolve overlaps by redistributing the available time interval.
-                    float prev_right = i > 2 ? one_best_times_[i-3].second : 0.0;
+                    float prev_right = i > 2 ? one_best_times[i-3].second : 0.0;
                     float left = std::max(prev_right,
-                                              std::min(one_best_times_[i-2].first,
-                                              one_best_times_[i-1].first));
-                    float right = std::max(one_best_times_[i-2].second,
-                            one_best_times_[i-1].second);
+                                              std::min(one_best_times[i-2].first,
+                                              one_best_times[i-1].first));
+                    float right = std::max(one_best_times[i-2].second,
+                            one_best_times[i-1].second);
                     float first_dur =
-                            one_best_times_[i-2].second - one_best_times_[i-2].first;
+                            one_best_times[i-2].second - one_best_times[i-2].first;
                     float second_dur =
-                            one_best_times_[i-1].second - one_best_times_[i-1].first;
+                            one_best_times[i-1].second - one_best_times[i-1].first;
                     float mid = first_dur > 0 ? left + (right - left) * first_dur /
                                                     (first_dur + second_dur) : left;
-                    one_best_times_[i-2].first = left;
-                    one_best_times_[i-2].second = one_best_times_[i-1].first = mid;
-                    one_best_times_[i-1].second = right;
+                    one_best_times[i-2].first = left;
+                    one_best_times[i-2].second = one_best_times[i-1].first = mid;
+                    one_best_times[i-1].second = right;
                 }
                 float confidence = 0.0;
                 for (int j = 0; j < gamma_[q].size(); j++) {
-                    if (gamma_[q][j].first == R_[q]) {
+                    if (gamma_[q][j].first == one_best_id[q]) {
                         confidence = gamma_[q][j].second;
                         break;
                     }
                 }
-                one_best_confidences_.push_back(confidence);
+                one_best_conf.push_back(confidence);
             }
         }
         KALDI_VLOG(2) << "Iter = " << counter << ", delta-Q = " << delta_Q;
@@ -103,7 +104,7 @@ void KdMBR::MbrDecode()
 
     if( !opts.print_silence )
     {
-        RemoveEps(&R_);
+        RemoveEps(&one_best_id);
     }
 }
 
@@ -119,19 +120,21 @@ void KdMBR::RemoveEps(std::vector<int> *vec)
     }
 }
 
-void KdMBR::NormalizeEps(std::vector<int> *vec)
+// add eps at the beginning, end and between words
+void KdMBR::NormalizeBest()
 {
-    RemoveEps(vec);
-    vec->resize(1 + vec->size() * 2);
-    int s = vec->size();
-    for (int i = s/2 - 1; i >= 0; i--)
+    RemoveEps(&one_best_id);
+    one_best_id.resize(1 + one_best_id.size() * 2);
+    int len = one_best_id.size();
+    for( int i=len/2-1 ; i>=0 ; i-- )
     {
-        (*vec)[i*2 + 1] = (*vec)[i];
-        (*vec)[i*2 + 2] = 0;
+        one_best_id[i*2 + 1] = one_best_id[i];
+        one_best_id[i*2 + 2] = 0;
     }
-    (*vec)[0] = 0;
+    one_best_id[0] = 0;
 }
 
+// Figure 4 of paper; called from AccStats
 double KdMBR::EditDistance(int N, int Q,
                            Vector<double> &alpha,
                            Matrix<double> &alpha_dash,
@@ -141,7 +144,7 @@ double KdMBR::EditDistance(int N, int Q,
     alpha_dash(1, 0) = 0.0; // Line 5.
     for (int q = 1; q <= Q; q++)
     {
-        alpha_dash(1, q) = alpha_dash(1, q-1) + l_distance(0, R_[q-1]); // Line 7.
+        alpha_dash(1, q) = alpha_dash(1, q-1) + l_distance(0, one_best_id[q-1]); // Line 7.
     }
     for (int n = 2; n <= N; n++)
     {
@@ -167,7 +170,7 @@ double KdMBR::EditDistance(int N, int Q,
                 }
                 else
                 {  // a1,a2,a3 are the 3 parts of min expression of line 17.
-                    int r_q = R_[q-1];;
+                    int r_q = one_best_id[q-1];;
                     double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
                             a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
                             a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
@@ -181,13 +184,13 @@ double KdMBR::EditDistance(int N, int Q,
     return alpha_dash(N, Q); // line 23.
 }
 
-// Figure 5 in the paper.
+// Figure 5 of paper.  Outputs to gamma_ and L_.
 void KdMBR::AccStats()
 {
     using std::map;
 
     int N = static_cast<int>(pre_.size()) - 1,
-            Q = static_cast<int>(R_.size());
+            Q = static_cast<int>(one_best_id.size());
 
     Vector<double> alpha(N+1); // index (1...N)
     Matrix<double> alpha_dash(N+1, Q+1); // index (1...N, 0...Q)
@@ -221,7 +224,7 @@ void KdMBR::AccStats()
             alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(w_a, 0, true); // line 14.
             for (int q = 1; q <= Q; q++)
             { // this loop == lines 15-18.
-                int r_q = R_[q-1];;
+                int r_q = one_best_id[q-1];;
                 double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
                         a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
                         a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
@@ -359,11 +362,6 @@ void KdMBR::AccStats()
     }
 }
 
-std::vector<int> KdMBR::GetOneBest()
-{
-    return R_;
-}
-
 void KdMBR::AddToMap(int i, double d, std::map<int, double> *gamma)
 {
     if (d == 0) return;
@@ -390,30 +388,12 @@ double KdMBR::l_distance(int a, int b, bool penalize)
     }
 }
 
-// These time intervals may overlap.
-std::vector<std::vector<std::pair<float, float> > > KdMBR::GetTimes()
-{
-    return times_;
-}
-
-//the times returned by this method do not overlap
-std::vector<std::pair<float, float> > KdMBR::GetSausageTimes()
-{
-    return sausage_times_;
-}
-
-// returns times for entry in the one-best output.
-std::vector<std::pair<float, float> > KdMBR::GetOneBestTimes()
-{
-    return one_best_times_;
-}
-
 QVector<BtWord> KdMBR::getResult()
 {
     QVector<BtWord> result;
-    std::vector<float> conf = GetOneBestConfidences();
-    std::vector<int> words = GetOneBest();
-    std::vector<std::pair<float, float>> times = GetOneBestTimes();
+    std::vector<float> conf = one_best_conf;
+    std::vector<int> words = one_best_id;
+    std::vector<std::pair<float, float>> times = one_best_times;
 
     for( int i = 0; i<words.size() ; i++ )
     {
@@ -429,11 +409,6 @@ QVector<BtWord> KdMBR::getResult()
     }
 
     return result;
-}
-
-std::vector<float> KdMBR::GetOneBestConfidences()
-{
-    return one_best_confidences_;
 }
 
 void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
@@ -505,7 +480,7 @@ KdMBR::KdMBR(KdCompactLattice *clat_in)
     fst::TropicalWeight weight;
     GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
     KALDI_ASSERT(alignment.empty()); // we removed the alignment.
-    R_ = words;
+    one_best_id = words;
     L_ = 0.0; // Set current edit-distance to 0 [just so we know
     // when we're on the 1st iter.]
 

@@ -129,13 +129,9 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
     double lat_beam = config_.lattice_beam;
     RawLattice(&raw_fst);
 
-//    GetRawLattice(&raw_fst);
     kd_PruneLattice(lat_beam, &raw_fst);
-
-    kd_detLatPhonePrunedW(trans_model_,
-            &raw_fst, lat_beam, ofst, config_.det_opts);
-
-//    fst::DeterminizeLatticePhonePrunedWrapper()
+    kd_detLatPhonePrunedW(trans_model_, &raw_fst,
+                          lat_beam, ofst, config_.det_opts);
 }
 
 QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
