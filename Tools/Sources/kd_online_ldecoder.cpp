@@ -181,7 +181,7 @@ void KdOnlineLDecoder::CalcFinal()
     if( word_count )
     {
         qDebug() << ">>> " << result.last().end
-                 << uframe << buf;
+                 << uframe << buf << result.size();
     }
 }
 
@@ -195,15 +195,14 @@ void KdOnlineLDecoder::HaveSilence()
     {
         float end_time = result.last().end;
         int diff = uframe - end_time*100;
-        if( diff>50 )
+        if( diff>9 )
         {
             status.max_frame = end_time*100;
             status.max_frame += status.min_frame;
             status.state = KD_STATE_SILENCE;
-            qDebug() << "end_frame" << end_time*100 << uframe;
         }
     }
-    else if( uframe>100 )
+    else if( uframe>150 )
     {
         status.state = KD_STATE_NULL; //reset decoder
     }
@@ -213,7 +212,6 @@ void KdOnlineLDecoder::HaveSilence()
         status.state = KD_STATE_BLOWN; //reset decoder
         qDebug() << "We ARE BLOWN";
     }
-//    qDebug() << uframe;
 }
 
 int KdOnlineLDecoder::Decode()
@@ -240,7 +238,7 @@ void KdOnlineLDecoder::checkReset()
     if( status.state==KD_STATE_NULL ||
         status.state==KD_STATE_BLOWN  )
     {
-        qDebug() << "-----------Reset Null" << getDiffTime(start_t)
+        qDebug() << "----------Reset Null" << getDiffTime(start_t)
                  << status.max_frame << uframe;
         frame_num -= 35;
     }

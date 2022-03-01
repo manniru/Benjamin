@@ -1,6 +1,10 @@
 #include "kd_lattice_compact.h"
+#include "backend.h"
+#include <QDebug>
+#include <QFile>
 
 #define MAX_SIL_COUNT 20
+int fid_log = 0;
 
 using namespace kaldi;
 
@@ -38,18 +42,76 @@ QVector<int> kd_getTimes(KdCompactLattice &lat)
      QVector<int> times;
      times.push_back(0);
 
-     for( int state=0 ; state<num_states ; state++ )
+     QString file_name = "Resources/";
+     QVector<QString> lexicon = bt_parseLexicon(BT_WORDS_PATH);
+     file_name += QString::number(fid_log);
+     QFile file(file_name);
+
+     if( !file.open(QIODevice::WriteOnly | QIODevice::Text) )
+         return times;
+
+     QTextStream out(&file);
+
+     KdCompactLatticeArc arc;
+     std::vector<int> input;
+     int state = 0;
+     while( state<(num_states-1) )
      {
          for( fst::ArcIterator<KdCompactLattice> aiter(lat, state) ;
               !aiter.Done() ; aiter.Next() )
          {
-             const KdCompactLatticeArc &arc = aiter.Value();
+             arc = static_cast<KdCompactLatticeArc>(aiter.Value());
              int state_start = kd_getStartTime(arc.weight.String());
-             times[state] += state_start;
-             int state_len = kd_getEndTime(arc.weight.String());
-             state_len -= state_start;
-             times.push_back(times[state] + state_len);
+             int state_len   = kd_getEndTime(arc.weight.String());
+             if( state==0 )
+             {
+                 times[0]  += state_start;
+                 state_len -= state_start;
+                 state_len -= 1;
+             }
+
+             if( arc.weight.String().size()>1 )
+             {
+                 times.push_back(times.last() + state_len + 1);
+
+                 input = arc.weight.String();
+                 int len = input.size();
+                 QString dbg;
+                 for( int i=0 ; i<len ; i++ )
+                 {
+                     dbg += QString::number(input[i]);
+                     dbg += " ";
+                 }
+                 dbg += QString::number(len);
+                 dbg += "|";
+                 dbg += lexicon[arc.olabel];
+                 dbg += "|";
+                 dbg += QString::number(state);
+                 dbg += "->";
+                 dbg += QString::number(arc.nextstate);
+                 dbg += " t:";
+                 dbg += QString::number(times[times.size()-2]);
+                 out << dbg << "\n";
+             }
+
+             state = arc.nextstate;
+//             qDebug() << state << num_states;
+             break;
          }
+     }
+
+     QString dbg2;
+     for( int i=0 ; i<times.size() ; i++ )
+     {
+         dbg2 += QString::number(times[i]);
+         dbg2 += " ";
+     }
+     dbg2 += QString::number(num_states);
+     file.close();
+     if( num_states>2 )
+     {
+         qDebug() << dbg2 << "fid =" << fid_log;
+         fid_log++;
      }
      return times;
 }
