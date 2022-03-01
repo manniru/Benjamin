@@ -57,7 +57,6 @@ void BtCaptain::printWords(QString words)
 
 void BtCaptain::addWord(BtWord word)
 {
-//    qDebug() << "addWord" << word.word << word.is_final;
     // change not final last to final
     // remove all that are not final
     if( history.length() )
@@ -68,7 +67,6 @@ void BtCaptain::addWord(BtWord word)
             (last.word==word.word) &&
             (word.is_final) )
         {
-//            qDebug() << "word" << last.word;
             history.last().is_final = true;
             return;
         }

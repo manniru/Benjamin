@@ -13,7 +13,7 @@
 
 #define BT_TIME_NOW QTime::currentTime().toString("hh:mm:ss")
 #define BT_HISTORY_UPDATE 300  // update interval in ms
-#define BT_HISTORY_SIZE   6500 // interval in ms that preserved
+#define BT_HISTORY_SIZE   2500 // interval in ms that preserved
 
 class BtCaptain : public QObject
 {
