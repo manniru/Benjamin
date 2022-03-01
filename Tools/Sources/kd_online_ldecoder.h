@@ -58,8 +58,6 @@ private:
     void checkReset();
     void ResetDecoder();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
-    int  getFirstSil();
-    void printAll();
     QVector<BtWord> result;
 
     // Returns a linear fst by tracing back the last N frames, beginning

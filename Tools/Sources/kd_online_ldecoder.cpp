@@ -153,7 +153,7 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 
 void KdOnlineLDecoder::CalcFinal()
 {
-    int min_diff = 15; // 150 ms
+    int min_diff = 10; // 150 ms
     int word_count = result.size();
     QString buf;
     for( int i=0 ; i<word_count ; i++ )
@@ -170,8 +170,7 @@ void KdOnlineLDecoder::CalcFinal()
             }
         }
 
-        if( ((uframe-f_end)>min_diff) ||
-            (status.state==KD_STATE_SILENCE) )
+        if( ((uframe-f_end)>min_diff) )
         {
             result[i].is_final = 1;
         }
@@ -194,25 +193,14 @@ void KdOnlineLDecoder::HaveSilence()
 
     if( word_count )
     {
-        printAll();
-//        int last_start = result.last().start*100;
-
-//        if( status.max_frame<last_start )
-//        {
-//            status.max_frame = last_start;
-//        }
-        int end_frame = getFirstSil();
-
-        if( end_frame!=-1 )
+        float end_time = result.last().end;
+        int diff = uframe - end_time*100;
+        if( diff>50 )
         {
-            status.max_frame = end_frame;
-            end_frame -= status.min_frame;
-            float end_time = end_frame/100.0;
-            float start_time = result[word_count-1].start;
-            result[word_count-1].end = end_time;
-            result[word_count-1].time = (start_time+end_time)/2;
+            status.max_frame = end_time*100;
+            status.max_frame += status.min_frame;
             status.state = KD_STATE_SILENCE;
-            qDebug() << "end_frame" << end_frame << uframe;
+            qDebug() << "end_frame" << end_time*100 << uframe;
         }
     }
     else if( uframe>100 )
@@ -226,61 +214,6 @@ void KdOnlineLDecoder::HaveSilence()
         qDebug() << "We ARE BLOWN";
     }
 //    qDebug() << uframe;
-}
-
-// Get first silence
-int KdOnlineLDecoder::getFirstSil()
-{
-    int sil_count = 10; //100ms
-    int end = decodable->NumFramesReady()-sil_count;
-    int start = status.min_frame;
-    int mean = (end + start)/2;
-    int j;
-
-    for( int i=mean ; i<end ; i++ )
-    {
-        if( decodable->getPhone(i)<11 )
-        {
-            continue; //first element should be non-sil
-        }
-        for( j=1 ; j<sil_count ; j++ )
-        {
-            if( decodable->getPhone(i+j)>10 )
-            {
-                break;
-            }
-        }
-
-        if( decodable->getPhone(i+j)<11 )
-        {
-            qDebug() << "Found Silence @ " << i;
-            return i+1;
-        }
-    }
-    return -1;
-}
-
-void KdOnlineLDecoder::printAll()
-{
-    QString buffer;
-
-    int start = status.min_frame;
-    int end = decodable->NumFramesReady();
-    for( int i=start ; i<end ; i++ )
-    {
-        if( decodable->getPhone(i)<11 )
-        {
-            buffer += "-";
-        }
-        else
-        {
-            buffer += "|";
-            buffer += QString::number(decodable->getPhone(i));
-        }
-    }
-    //UNCOM
-//    qDebug() << "##" << uframe
-//             << start << buffer;
 }
 
 int KdOnlineLDecoder::Decode()
@@ -313,7 +246,7 @@ void KdOnlineLDecoder::checkReset()
     }
     else if( status.state==KD_STATE_SILENCE )
     {
-        int diff = status.max_frame - frame_num;
+        int diff = frame_num - status.max_frame;
         qDebug() << "------------Reset Sil" << getDiffTime(start_t)
                  << status.max_frame << diff << uframe;
         frame_num -= diff;

@@ -31,15 +31,12 @@ public:
     /// Returns the scaled log likelihood
     float LogLikelihood(int frame, int index);
     int NumFramesReady();
-    void addPDF(int frame, int id, int phone_id, float val);
-    int getPhone(int frame);
 
     int NumIndices();
     KdOnline2FeInput *features;
 
 
 private:
-    KdPDF p_vec[MAX_FRAME_CNT];
     void CacheFeature(int frame);
 
     kaldi::AmDiagGmm *ac_model;

@@ -29,9 +29,6 @@ void KdOnline2Decodable::CacheFeature(int frame)
 {
     features->GetFrame(frame, &cur_feats_);
     cur_frame_ = frame;
-
-    int index = frame%MAX_FRAME_CNT;
-    p_vec[index].val = -100; //dB
 }
 
 float KdOnline2Decodable::LogLikelihood(int frame, int index)
@@ -52,11 +49,6 @@ float KdOnline2Decodable::LogLikelihood(int frame, int index)
     cache_[pdf_id].first = frame;
     cache_[pdf_id].second = ans;
 
-    int phone_id = trans_model->TransitionIdToPhone(index);
-    addPDF(frame, pdf_id, phone_id, ans);
-
-//    ac_model->
-
     return ans;
 }
 
@@ -68,24 +60,4 @@ int KdOnline2Decodable::NumFramesReady()
 int KdOnline2Decodable::NumIndices()
 {
     return trans_model->NumTransitionIds();
-}
-
-void KdOnline2Decodable::addPDF(int frame, int id, int phone_id, float val)
-{
-    int index = frame%MAX_FRAME_CNT;
-
-    if( p_vec[index].val<val )
-    {
-        p_vec[index].val = val;
-        p_vec[index].phone_id = phone_id;
-        p_vec[index].pdf_id = id;
-        return;
-    }
-}
-
-int KdOnline2Decodable::getPhone(int frame)
-{
-    int index = frame%MAX_FRAME_CNT;
-
-    return p_vec[index].phone_id;
 }

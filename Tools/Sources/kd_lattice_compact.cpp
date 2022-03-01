@@ -67,18 +67,14 @@ void kd_compactLatticeStateTimes(KdCompactLattice &lat,
     times->clear();
     times->resize(num_states, -1);
     (*times)[0] = 0;
-    std::vector<int> buf_t[20];
-    int i = 0;
     for (int state = 0; state < num_states; state++)
     {
         int cur_time = (*times)[state];
         for (fst::ArcIterator<KdCompactLattice> aiter(lat, state); !aiter.Done();
              aiter.Next())
         {
-            i++;
             const KdCompactLatticeArc &arc = aiter.Value();
             int arc_len = arc.weight.String().size();
-            buf_t[i] = arc.weight.String();
             (*times)[arc.nextstate] = cur_time + arc_len;
         }
     }
