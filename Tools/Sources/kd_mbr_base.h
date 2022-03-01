@@ -23,15 +23,4 @@ typedef struct BtWord
     int     is_final;
 }BtWord;
 
-struct KdMBROpt
-{
-  /// Boolean configuration parameter: if true, we actually update the hypothesis
-  /// to do MBR decoding (if false, our output is the MAP decoded output, but we
-  /// output the stats too (i.e. the confidences)).
-  bool decode_mbr = true;
-  /// Boolean configuration parameter: if true, the 1-best path will 'keep' the <eps> bins,
-  bool print_silence = false; //MAYBE THIS WILL FIX EVERYTHING!
-  /// THIS WONT FIX LAST SILENCE PROBLEM
-};
-
 #endif // KD_MBR_BASE_H

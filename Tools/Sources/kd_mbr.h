@@ -32,11 +32,10 @@ private:
     void AccStats();
 
     void RemoveEps(std::vector<int> *vec);
-    void NormalizeBest();
+    void AddEpsBest();
 
     void AddToMap(int i, double d, std::map<int, double> *gamma);
 
-    KdMBROpt opts;
     QVector<QString> lexicon;
 
     // Arcs in the topologically sorted acceptor form of the word-level lattice,
@@ -51,8 +50,7 @@ private:
     double L_; // current averaged edit-distance between lattice and one_best_id.
 
     std::vector<std::vector<std::pair<int, float> > > gamma_;
-    // The stats we accumulate; these are pairs of (posterior, word-id), and note
-    // that word-id may be epsilon.
+    // The stats we accumulate; pair of (1.word-id, 2.posterior)
 
     // Appendix C of the paper.
     // may overlap.
@@ -61,6 +59,7 @@ private:
     std::vector<std::pair<float, float> > sausage_times_;
     std::vector<std::pair<float, float> > one_best_times;
     std::vector<int> state_times_; // time of each state in lattice,
+    QVector<int> b_times; // time with benjamin flavour
 
     std::vector<float> one_best_conf;
 };

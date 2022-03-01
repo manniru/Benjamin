@@ -3,12 +3,12 @@
 
 ReChapar::ReChapar(QObject *parent) : QObject(parent)
 {
-    cap = new BtCaptain;
     kaldi_thread = new QThread;
 
 #ifdef BT_TEST_MODE
     BtTest *test = new BtTest(KAL_WAV_DIR"rec1.wav");
 #else
+    cap = new BtCaptain;
     KdOnline  *kaldi = new KdOnline;
     kaldi->moveToThread(kaldi_thread);
     kaldi_thread->start();

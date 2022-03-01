@@ -17,44 +17,77 @@ struct GammaCompare
     }
 };
 
+KdMBR::KdMBR(KdCompactLattice *clat_in)
+{
+    lexicon = bt_parseLexicon(BT_WORDS_PATH);
+    KdCompactLattice clat(*clat_in); // copy.
+
+    PrepareLatticeAndInitStats(&clat);
+
+    RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
+    KdLattice lat;
+    ConvertLattice(clat, &lat); // convert from KdCompactLattice to KdLattice.
+    fst::VectorFst<fst::StdArc> fst;
+    ConvertLattice(lat, &fst); // convert from lattice to normal FST.
+    fst::VectorFst<fst::StdArc> fst_shortest_path;
+    fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
+    std::vector<int> alignment, words;
+    fst::TropicalWeight weight;
+    GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
+    KALDI_ASSERT(alignment.empty()); // we removed the alignment.
+    one_best_id = words;
+    L_ = 0.0; // Set current edit-distance to 0 [just so we know
+    // when we're on the 1st iter.]
+
+    MbrDecode();
+}
+
 // Figure 6 of the paper.
 void KdMBR::MbrDecode()
 {
+    QVector<QString> list[30];
     for( size_t counter=0 ; ; counter++ )
     {
-        NormalizeBest();
+        AddEpsBest();
         AccStats(); // writes to gamma_
         double delta_Q = 0.0; // change in objective function.
 
         one_best_times.clear();
         one_best_conf.clear();
 
-        // Caution: q in the line below is (q-1) in the algorithm
-        // in the paper; both R_ and gamma_ are indexed by q-1.
-        for (size_t q = 0; q < one_best_id.size(); q++)
-        {
-            if (opts.decode_mbr)
-            { // This loop updates R_ [indexed same as gamma_].
-                // gamma_[i] is sorted in reverse order so most likely one is first.
-                const std::vector<std::pair<int, float> > &this_gamma = gamma_[q];
-                double old_gamma = 0, new_gamma = this_gamma[0].second;
-                int rq = one_best_id[q], rhat = this_gamma[0].first; // rq: old word, rhat: new.
-                for (size_t j = 0; j < this_gamma.size(); j++)
-                    if (this_gamma[j].first == rq) old_gamma = this_gamma[j].second;
-                delta_Q += (old_gamma - new_gamma); // will be 0 or negative; a bound on
-                // change in error.
-                if (rq != rhat)
-                    KALDI_VLOG(2) << "Changing word " << rq << " to " << rhat;
-                one_best_id[q] = rhat;
+        for( int q=0 ; q<one_best_id.size() ; q++ )
+        {// This loop updates one_best_id
+            // gamma_[i] is sorted in reverse order so most likely one is first.
+            const std::vector<std::pair<int, float> > &this_gamma = gamma_[q];
+            double old_gamma = 0;
+            double new_gamma = this_gamma[0].second;
+            int old_word = one_best_id[q];
+            int new_word = this_gamma[0].first; // new_word: new word
+            for( int j=0 ; j<this_gamma.size() ; j++ )
+            {
+                list[q].push_back(lexicon[this_gamma[j].first]);
+                if( this_gamma[j].first==old_word )
+                {
+                    old_gamma = this_gamma[j].second;
+                }
             }
+            delta_Q += (old_gamma - new_gamma); // will be 0 or negative; a bound on
+            // change in error.
+            if( old_word!=new_word )
+            {
+                KALDI_VLOG(2) << "Changing word " << old_word << " to " << new_word;
+            }
+            one_best_id[q] = new_word;
             // build the outputs (time, confidences),
-            if (one_best_id[q] != 0 || opts.print_silence)
+            if( one_best_id[q]!=0 )
             {
                 // see which 'item' from the sausage-bin should we select,
                 // (not necessarily the 1st one when MBR decoding disabled)
                 int s = 0;
-                for (int j=0; j<gamma_[q].size(); j++) {
-                    if (gamma_[q][j].first == one_best_id[q]) {
+                for( int j=0 ; j<gamma_[q].size() ; j++ )
+                {
+                    if (gamma_[q][j].first == one_best_id[q])
+                    {
                         s = j;
                         break;
                     }
@@ -84,8 +117,10 @@ void KdMBR::MbrDecode()
                     one_best_times[i-1].second = right;
                 }
                 float confidence = 0.0;
-                for (int j = 0; j < gamma_[q].size(); j++) {
-                    if (gamma_[q][j].first == one_best_id[q]) {
+                for (int j = 0; j < gamma_[q].size(); j++)
+                {
+                    if (gamma_[q][j].first == one_best_id[q])
+                    {
                         confidence = gamma_[q][j].second;
                         break;
                     }
@@ -94,7 +129,8 @@ void KdMBR::MbrDecode()
             }
         }
         KALDI_VLOG(2) << "Iter = " << counter << ", delta-Q = " << delta_Q;
-        if (delta_Q == 0) break;
+        if (delta_Q == 0)
+            break;
         if (counter > 100)
         {
             KALDI_WARN << "Iterating too many times in MbrDecode; stopping.";
@@ -102,10 +138,7 @@ void KdMBR::MbrDecode()
         }
     }
 
-    if( !opts.print_silence )
-    {
-        RemoveEps(&one_best_id);
-    }
+    RemoveEps(&one_best_id);
 }
 
 void KdMBR::RemoveEps(std::vector<int> *vec)
@@ -121,7 +154,7 @@ void KdMBR::RemoveEps(std::vector<int> *vec)
 }
 
 // add eps at the beginning, end and between words
-void KdMBR::NormalizeBest()
+void KdMBR::AddEpsBest()
 {
     RemoveEps(&one_best_id);
     one_best_id.resize(1 + one_best_id.size() * 2);
@@ -216,8 +249,10 @@ void KdMBR::AccStats()
     KALDI_VLOG(2) << "L = " << L_;
     // omit line 10: zero when initialized.
     beta_dash(N, Q) = 1.0; // Line 11.
-    for (int n = N; n >= 2; n--) {
-        for (size_t i = 0; i < pre_[n].size(); i++) {
+    for (int n = N; n >= 2; n--)
+    {
+        for (size_t i = 0; i < pre_[n].size(); i++)
+        {
             const KdMBRArc &arc = arcs_[pre_[n][i]];
             int s_a = arc.start_node, w_a = arc.word;
             float p_a = arc.loglike;
@@ -337,7 +372,8 @@ void KdMBR::AccStats()
     {
         double t_b = 0.0, t_e = 0.0;
         for (std::vector<std::pair<int, float>>::iterator iter = gamma_[q-1].begin();
-             iter != gamma_[q-1].end(); ++iter) {
+             iter != gamma_[q-1].end(); ++iter)
+        {
             double w_b = tau_b[q][iter->first], w_e = tau_e[q][iter->first];
             if (w_b > w_e)
                 KALDI_WARN << "Times out of order";  // this is quite bad.
@@ -351,7 +387,8 @@ void KdMBR::AccStats()
         sausage_times_[q-1].second = t_e;
         if (sausage_times_[q-1].first > sausage_times_[q-1].second)
             KALDI_WARN << "Times out of order";  // this is quite bad.
-        if (q > 1 && sausage_times_[q-2].second > sausage_times_[q-1].first) {
+        if (q > 1 && sausage_times_[q-2].second > sausage_times_[q-1].first)
+        {
             // We previously had a warning here, but now we'll just set both
             // those values to their average.  It's quite possible for this
             // condition to happen, but it seems like it would have a bad effect
@@ -393,16 +430,15 @@ QVector<BtWord> KdMBR::getResult()
     QVector<BtWord> result;
     std::vector<float> conf = one_best_conf;
     std::vector<int> words = one_best_id;
-    std::vector<std::pair<float, float>> times = one_best_times;
 
     for( int i = 0; i<words.size() ; i++ )
     {
         BtWord word_buf;
-        word_buf.conf = conf[i];
-        word_buf.start = times[i].first/100.0;
-        word_buf.end = times[i].second/100.0;
-        word_buf.time = (word_buf.start+word_buf.end)/2;
-        word_buf.word = lexicon[words[i]];
+        word_buf.conf  = conf[i];
+        word_buf.start = b_times[i]  /100.0;
+        word_buf.end   = b_times[i+1]/100.0;
+        word_buf.time  = (word_buf.start+word_buf.end)/2;
+        word_buf.word  = lexicon[words[i]];
         word_buf.is_final = 0;
 
         result.push_back(word_buf);
@@ -423,6 +459,7 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
             KALDI_ERR << "Cycles detected in lattice.";
     }
     kd_compactLatticeStateTimes(*clat, &state_times_); // work out times of the states in clat
+    b_times = kd_getTimes(*clat);
     state_times_.push_back(0); // we'll convert to 1-based numbering.
     for (size_t i = state_times_.size()-1; i > 0; i--)
     {
@@ -458,32 +495,4 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
             arcs_.push_back(arc);
         }
     }
-}
-
-KdMBR::KdMBR(KdCompactLattice *clat_in)
-{
-    lexicon = bt_parseLexicon(BT_WORDS_PATH);
-    KdCompactLattice clat(*clat_in); // copy.
-    opts.decode_mbr = true;
-
-    PrepareLatticeAndInitStats(&clat);
-
-    RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
-    // in best-path if we do this.
-    KdLattice lat;
-    ConvertLattice(clat, &lat); // convert from KdCompactLattice to KdLattice.
-    fst::VectorFst<fst::StdArc> fst;
-    ConvertLattice(lat, &fst); // convert from lattice to normal FST.
-    fst::VectorFst<fst::StdArc> fst_shortest_path;
-    fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
-    std::vector<int> alignment, words;
-    fst::TropicalWeight weight;
-    GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
-    KALDI_ASSERT(alignment.empty()); // we removed the alignment.
-    one_best_id = words;
-    L_ = 0.0; // Set current edit-distance to 0 [just so we know
-    // when we're on the 1st iter.]
-
-    MbrDecode();
-
 }
