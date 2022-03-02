@@ -22,15 +22,17 @@ public:
     ~BtTest();
 
 private:
-    void init();
-    void startDecode();
-    void readWav(QString filename, BtCyclic *out);
+    void   init();
+    void   startDecode();
+    void   openWave(QString filename);
+    int    readWav(int count, BtCyclic *out);
 
     BtCyclic         *cy_buf;
     QVector<BtWord>   last_r; //last_result
     KdOnlineStatus    status;
     KdOnlineLDecoder *o_decoder;
     KdOnline2Model   *o2_model; //gaussain online 2 model
+    QFile            *wav_file;
 };
 
 #endif // BT_TEST_H

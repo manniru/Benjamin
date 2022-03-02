@@ -6,8 +6,9 @@ using namespace fst;
 
 BtTest::BtTest(QString filename, QObject *parent): QObject(parent)
 {
+    wav_file = NULL;
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
-    readWav(filename, cy_buf);
+    openWave(filename);
     init();
 }
 
@@ -42,6 +43,7 @@ void BtTest::init()
 void BtTest::startDecode()
 {
     float acoustic_scale = 0.05;
+    int chunk_size = 16000; // 1000ms
 
     KdOnline2Decodable decodable(NULL, o2_model,
                              acoustic_scale);
@@ -50,76 +52,76 @@ void BtTest::startDecode()
     KdCompactLattice out_fst;
     QVector<BtWord> result;
 
-    decodable.features->AcceptWaveform(cy_buf);
-    o_decoder->Decode();
-    clock_t start_t = clock();
-    result = o_decoder->getResult(&out_fst);
-    bt_writeBarResult(result);
-
-    if( result.size() )
+    int read_size = chunk_size;
+    while( read_size==chunk_size )
     {
-        for( int i=0 ; i<result.size() ; i++ )
+        read_size = readWav(chunk_size, cy_buf);
+        decodable.features->AcceptWaveform(cy_buf);
+        o_decoder->Decode();
+        result = o_decoder->getResult(&out_fst);
+        if( result.size() )
         {
-            qDebug() << result[i].word
-                     << result[i].start << result[i].end;
+            bt_writeBarResult(result);
         }
-        qDebug() << getDiffTime(start_t);
-    }
 
-    qDebug() << "Sorting Started" << decodable.NumFramesReady();
-    for( int i=0 ; i<500 ; i++ )
-    {
-//        qDebug() << i << decodable.p_vec[i].phone_id;
-    }
-//    qDebug() << decodable.p_vec.size();
-
-    if( o_decoder->status.state!=KD_STATE_NORMAL )
-    {
-        status.word_count = 0;
+        if( o_decoder->status.state!=KD_STATE_NORMAL )
+        {
+            status.word_count = 0;
+        }
     }
 }
 
-void BtTest::readWav(QString filename, BtCyclic *out)
+void BtTest::openWave(QString filename)
 {
-    QFile m_WAVFile;
-    m_WAVFile.setFileName(filename);
-    m_WAVFile.open(QIODevice::ReadWrite);
+    wav_file = new QFile;
+    wav_file->setFileName(filename);
+    wav_file->open(QIODevice::ReadWrite);
 
     char buff[200];
-    QVector<int16_t> data_buff;
 
-    m_WAVFile.read(4); // ="RIFF" is the father of wav
-    m_WAVFile.read(buff,4);//chunk size(int)
-    m_WAVFile.read(buff,4);//format=WAVE(str)
-    m_WAVFile.read(buff,4);//subchunk1 id(str)
-    m_WAVFile.read(buff,4);//subchunk1 size(int)
-    m_WAVFile.read(buff,2);//wav format=1(PCM)(int)
+    wav_file->read(4); // ="RIFF" is the father of wav
+    wav_file->read(buff,4);//chunk size(int)
+    wav_file->read(buff,4);//format=WAVE(str)
+    wav_file->read(buff,4);//subchunk1 id(str)
+    wav_file->read(buff,4);//subchunk1 size(int)
+    wav_file->read(buff,2);//wav format=1(PCM)(int)
 
-    m_WAVFile.read(buff,2);
+    wav_file->read(buff,2);
     uint16_t channel_count = *((uint16_t *)buff);
-    m_WAVFile.read(buff,4);
+    wav_file->read(buff,4);
     uint32_t sample_rate = *((uint32_t *)buff);
 
-    m_WAVFile.read(buff,4);//Byte rate(int, 64K=16*4)
+    wav_file->read(buff,4);//Byte rate(int, 64K=16*4)
 
-    m_WAVFile.read(buff,2);//Block Allign(int, 4(2*2))
-    m_WAVFile.read(buff,2);//BitPerSample(int, 16 bit)
-    qDebug() << "sample_rate:"  << sample_rate
-             << "channel:" << channel_count;
+    wav_file->read(buff,2);//Block Allign(int, 4(2*2))
+    wav_file->read(buff,2);//BitPerSample(int, 16 bit)
 
-    m_WAVFile.read(buff,4);//subchunk2 id(str=data)
-    m_WAVFile.read(buff,4);//subchunk2 size(int)
+    wav_file->read(buff,4);//subchunk2 id(str=data)
+    wav_file->read(buff,4);//subchunk2 size(int)
     uint16_t chunk_size = *((uint32_t *)buff);
+    qDebug() << "sample_rate:"  << sample_rate
+             << "channel:" << channel_count
+             << "chunk_size:" << chunk_size;
+}
+
+int BtTest::readWav(int count, BtCyclic *out)
+{
+    QVector<int16_t> data_buff;
+    char buff[200];
     int i = 0;
 
-    while( !m_WAVFile.atEnd() )
+    while( !wav_file->atEnd() )
     {
         i++;
-        m_WAVFile.read(buff, 2);
-        data_buff.push_back(*((uint16_t *)buff));
-        m_WAVFile.read(buff, 2); // skip second channel
-    }
+        if( i>count )
+        {
+            break;
+        }
 
-    qDebug() << "i:" << i << chunk_size;
+        wav_file->read(buff, 2);
+        data_buff.push_back(*((uint16_t *)buff));
+        wav_file->read(buff, 2); // skip second channel
+    }
     out->write(&data_buff);
+    return i-1;
 }
