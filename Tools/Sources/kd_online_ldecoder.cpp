@@ -2,6 +2,7 @@
 #include <QDebug>
 
 using namespace kaldi;
+QString dbg_times;
 
 KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
                                    kaldi::TransitionModel &trans_model):
@@ -49,7 +50,11 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
     int end = frame_toks.size();
     unordered_map<KdToken2*, float> final_costs;
     ComputeFinalCosts(&final_costs, NULL, NULL);
+    dbg_times += " F:";
+    dbg_times += getLDiffTime();
     createStates(ofst);
+    dbg_times += " C:";
+    dbg_times += getLDiffTime();
 
     // Now create all arcs.
     for( int f=0 ; f<end ; f++ )
@@ -109,8 +114,7 @@ void KdOnlineLDecoder::createStates(KdLattice *ofst)
             return;
         }
         TopSortTokens(frame_toks[f].toks, &token_list);
-//        if( dbg )
-//            qDebug() << "token_list" << f << token_list.size() << start;
+
         for( size_t i=0 ; i<token_list.size() ; i++ )
         {
             if( token_list[i]!=NULL )
@@ -127,11 +131,20 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 {
     KdLattice raw_fst;
     double lat_beam = config_.lattice_beam;
+    getDiffTime(start_t);
+    dbg_times += "S:";
+    dbg_times += getLDiffTime();
     RawLattice(&raw_fst);
+    dbg_times += " R:";
+    dbg_times += getLDiffTime();
 
     kd_PruneLattice(lat_beam, &raw_fst);
+    dbg_times += " P:";
+    dbg_times += getLDiffTime();
     kd_detLatPhonePrunedW(trans_model_, &raw_fst,
                           lat_beam, ofst, config_.det_opts);
+    dbg_times += " D:";
+    dbg_times += getLDiffTime();
 }
 
 QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
@@ -222,7 +235,7 @@ int KdOnlineLDecoder::Decode()
 //    for ( frame=0 ; frame<opts.batch_size ; frame++ )
     while( frame_num<frame_max )
     {
-        if ( (frame_num%config_.prune_interval)==0 )
+        if ( (uframe%config_.prune_interval)==0 )
         {
 //            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }
@@ -235,17 +248,20 @@ int KdOnlineLDecoder::Decode()
 
 void KdOnlineLDecoder::checkReset()
 {
+    dbg_times += " E:";
+    dbg_times += getDiffTime(start_t);
+    qDebug() << "Check Reset" << dbg_times;
     if( status.state==KD_STATE_NULL ||
         status.state==KD_STATE_BLOWN  )
     {
-        qDebug() << "----------Reset Null" << getDiffTime(start_t)
+        qDebug() << "----------Reset Null"
                  << status.max_frame << uframe;
         frame_num -= 35;
     }
     else if( status.state==KD_STATE_SILENCE )
     {
         int diff = frame_num - status.max_frame;
-        qDebug() << "------------Reset Sil" << getDiffTime(start_t)
+        qDebug() << "------------Reset Sil"
                  << status.max_frame << diff << uframe;
         frame_num -= diff;
     }
@@ -254,7 +270,8 @@ void KdOnlineLDecoder::checkReset()
     {
         status.min_frame = frame_num;
         status.max_frame = 0;
-        start_t = clock();
         ResetDecoder(); // this reset uframe
     }
+    start_t = clock();
+    dbg_times = "";
 }
