@@ -25,11 +25,11 @@ KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
 void KdOnlineLDecoder::ResetDecoder()
 {
 //    qDebug() << "Reset Kaldi" << full << frame_toks.size();
-    DeleteElems(toks_.Clear()); //replaced ClearToks
+    DeleteElems(elements.Clear()); //replaced ClearToks
     cost_offsets.clear();
     ClearActiveTokens(); ///THIS LINE SHOULD NOT EXECUTED!
     warned_ = false;
-    num_toks_ = 0;
+    num_elements = 0;
     decoding_finalized_ = false;
     final_costs_.clear();
 
@@ -39,8 +39,8 @@ void KdOnlineLDecoder::ResetDecoder()
     //Weight was Weight::One()
     KdToken2 *dummy_token = new KdToken2(0.0, 0.0, NULL);
     frame_toks[0].toks = dummy_token;
-    toks_.Insert(start_state, dummy_token);
-    num_toks_++;
+    elements.Insert(start_state, dummy_token);
+    num_elements++;
     uframe = 0;
     ProcessNonemitting(config_.beam);
 }
@@ -52,7 +52,8 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
     ComputeFinalCosts(&final_costs, NULL, NULL);
     dbg_times += " F:";
     dbg_times += getLDiffTime();
-    createStates(ofst);
+    createStates();
+    *ofst = cache_fst1;
     dbg_times += " C:";
     dbg_times += getLDiffTime();
 
@@ -99,32 +100,29 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
     }
 }
 
-void KdOnlineLDecoder::createStates(KdLattice *ofst)
+void KdOnlineLDecoder::createStates()
 {
     int end = frame_toks.size();
-    ofst->DeleteStates();
+    cache_fst1.DeleteStates();
+    last_cache_f = 0;
 
     // First create all states.
     std::vector<KdToken2*> token_list;
-    for( int f=0 ; f<end ; f++ )
+    for( int f=last_cache_f ; f<end ; f++ )
     {
-        if( frame_toks[f].toks==NULL )
-        {
-            KALDI_WARN << "GetRawLattice: no tokens active on frame " << f;
-            return;
-        }
+        last_cache_f++;
         TopSortTokens(frame_toks[f].toks, &token_list);
 
         for( size_t i=0 ; i<token_list.size() ; i++ )
         {
             if( token_list[i]!=NULL )
             {
-                token_list[i]->state = ofst->AddState();
+                token_list[i]->state = cache_fst1.AddState();
             }
         }
     }
 
-    ofst->SetStart(0);// sets the start state
+    cache_fst1.SetStart(0);// sets the start state
 }
 
 void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
@@ -271,7 +269,21 @@ void KdOnlineLDecoder::checkReset()
         status.min_frame = frame_num;
         status.max_frame = 0;
         ResetDecoder(); // this reset uframe
+
+        cache_fst1.DeleteStates();
+        last_cache_f = 0;
     }
     start_t = clock();
     dbg_times = "";
 }
+
+//sample_rate: 16000 channel: 2 chunk_size: 57344
+//Check Reset " E:15ms"
+//Check Reset "S:0ms F:0ms C:30ms R:27ms P:68ms D:7ms E:193ms"
+//>>>  1.93 194 "delta oscar mike " 3
+//Check Reset "S:0ms F:0ms C:57ms R:50ms P:126ms D:11ms E:297ms"
+//>>>  2.93 294 "delta oscar mike super one " 5
+//Check Reset "S:0ms F:0ms C:87ms R:78ms P:193ms D:17ms E:436ms"
+//>>>  3.43 394 "delta oscar mike super one november " 6
+//Check Reset "S:0ms F:0ms C:108ms R:97ms P:243ms D:24ms E:523ms"
+//------------Reset Sil 343 51 394

@@ -43,12 +43,13 @@ HEADERS += \
     Sources/kd_cmvn.h \
     Sources/kd_cmvn_base.h \
     Sources/kd_cmvn_state.h \
+    Sources/kd_decodable.h \
+    Sources/kd_decoder.h \
     Sources/kd_delta.h \
     Sources/kd_f_token.h \
     Sources/kd_fft.h \
     Sources/kd_lattice.h \
     Sources/kd_lattice_compact.h \
-    Sources/kd_lattice_decoder.h \
     Sources/kd_lattice_det.h \
     Sources/kd_lattice_functions.h \
     Sources/kd_matrix.h \
@@ -56,7 +57,6 @@ HEADERS += \
     Sources/kd_mbr_base.h \
     Sources/kd_melbank.h \
     Sources/kd_mfcc.h \
-    Sources/kd_online2_decodable.h \
     Sources/kd_online2_feinput.h \
     Sources/kd_online2_model.h \
     Sources/kd_online_ldecoder.h \
@@ -74,12 +74,13 @@ SOURCES += \
     Sources/kd_cmvn.cpp \
     Sources/kd_cmvn_base.cpp \
     Sources/kd_cmvn_state.cpp \
+    Sources/kd_decodable.cpp \
+    Sources/kd_decoder.cpp \
     Sources/kd_delta.cpp \
     Sources/kd_f_token.cpp \
     Sources/kd_fft.cpp \
     Sources/kd_lattice.cpp \
     Sources/kd_lattice_compact.cpp \
-    Sources/kd_lattice_decoder.cpp \
     Sources/kd_lattice_det.cpp \
     Sources/kd_lattice_functions.cpp \
     Sources/kd_matrix.cpp \
@@ -87,7 +88,6 @@ SOURCES += \
     Sources/kd_mbr_base.cpp \
     Sources/kd_melbank.cpp \
     Sources/kd_mfcc.cpp \
-    Sources/kd_online2_decodable.cpp \
     Sources/kd_online2_feinput.cpp \
     Sources/kd_online2_model.cpp \
     Sources/kd_online_ldecoder.cpp \

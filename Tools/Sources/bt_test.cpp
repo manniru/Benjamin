@@ -3,7 +3,6 @@
 using namespace kaldi;
 using namespace fst;
 
-
 BtTest::BtTest(QString filename, QObject *parent): QObject(parent)
 {
     wav_file = NULL;
@@ -45,7 +44,7 @@ void BtTest::startDecode()
     float acoustic_scale = 0.05;
     int chunk_size = 16000; // 1000ms
 
-    KdOnline2Decodable decodable(NULL, o2_model,
+    KdDecodable decodable(NULL, o2_model,
                              acoustic_scale);
 
     o_decoder->InitDecoding(&decodable);

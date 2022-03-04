@@ -11,14 +11,14 @@
 // get multi recognition output.
 
 #include "util/stl-utils.h"
-#include "kd_lattice_decoder.h"
+#include "kd_decoder.h"
 #include "hmm/transition-model.h"
 #include "lat/lattice-functions.h"
 #include "kd_lattice.h"
 #include "kd_lattice_functions.h"
 #include "kd_mbr.h"
 
-struct KdOnlineLDecoderOpts: public KdLatticeDecoderConfig
+struct KdOnlineLDecoderOpts: public KdDecoderConfig
 {
     int batch_size = 27;       // number of features decoded in one go
     int inter_utt_sil = 50;    // minimum silence (#frames) to trigger end of utterance
@@ -35,7 +35,7 @@ struct KdOnlineStatus
     int word_count = 0;
 };
 
-class KdOnlineLDecoder : public KdLatticeDecoder
+class KdOnlineLDecoder : public KdDecoder
 {
 public:
     // "sil_phones" - the IDs of all silence phones
@@ -44,7 +44,7 @@ public:
 
     int Decode();
 
-    void createStates(KdLattice *ofst);
+    void createStates();
     void RawLattice(KdLattice *ofst);
     void MakeLattice(KdCompactLattice *ofst);
 
@@ -67,6 +67,10 @@ private:
 
     // Searches for the last token, ancestor of all currently active tokens
     void UpdateImmortalToken();
+
+    // cache FSTs
+    int       last_cache_f; // last cache frame
+    KdLattice cache_fst1; //used for createStates
 
     KdOnlineLDecoderOpts opts;
     QVector<int> silence_set; // silence phones IDs

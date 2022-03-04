@@ -11,7 +11,7 @@
 
 #include "bt_captain.h" //For BtWord
 #include "kd_online2_model.h"
-#include "kd_online2_decodable.h"
+#include "kd_decodable.h"
 #include "kd_online_ldecoder.h"
 
 class BtTest: public QObject

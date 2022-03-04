@@ -1,10 +1,10 @@
-#include "kd_online2_decodable.h"
+#include "kd_decodable.h"
 #include <QDebug>
 
 using namespace kaldi;
 using namespace fst;
 
-KdOnline2Decodable::KdOnline2Decodable(BtRecorder *au_src, KdOnline2Model *mdl, float scale)
+KdDecodable::KdDecodable(BtRecorder *au_src, KdOnline2Model *mdl, float scale)
 {
     ac_scale_ = scale;
     cur_frame_ = -1;
@@ -20,18 +20,18 @@ KdOnline2Decodable::KdOnline2Decodable(BtRecorder *au_src, KdOnline2Model *mdl, 
     cur_feats_.Resize(feat_dim);
 }
 
-KdOnline2Decodable::~KdOnline2Decodable()
+KdDecodable::~KdDecodable()
 {
     delete features;
 }
 
-void KdOnline2Decodable::CacheFeature(int frame)
+void KdDecodable::CacheFeature(int frame)
 {
     features->GetFrame(frame, &cur_feats_);
     cur_frame_ = frame;
 }
 
-float KdOnline2Decodable::LogLikelihood(int frame, int index)
+float KdDecodable::LogLikelihood(int frame, int index)
 {
     if( frame!=cur_frame_ )
     {
@@ -52,12 +52,12 @@ float KdOnline2Decodable::LogLikelihood(int frame, int index)
     return ans;
 }
 
-int KdOnline2Decodable::NumFramesReady()
+int KdDecodable::NumFramesReady()
 {
     return features->NumFramesReady();
 }
 
-int KdOnline2Decodable::NumIndices()
+int KdDecodable::NumIndices()
 {
     return trans_model->NumTransitionIds();
 }
