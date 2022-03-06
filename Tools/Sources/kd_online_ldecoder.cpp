@@ -3,6 +3,7 @@
 
 using namespace kaldi;
 QString dbg_times;
+#define BT_MIN_SIL 9 //100ms (x+1)*100
 
 KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
                                    kaldi::TransitionModel &trans_model):
@@ -28,19 +29,14 @@ void KdOnlineLDecoder::ResetDecoder()
     DeleteElems(elements.Clear()); //replaced ClearToks
     cost_offsets.clear();
     ClearActiveTokens(); ///THIS LINE SHOULD NOT EXECUTED!
-    warned_ = false;
-    num_elements = 0;
-    decoding_finalized_ = false;
     final_costs_.clear();
 
     KdStateId start_state = fst_->Start();
-    KALDI_ASSERT(start_state != fst::kNoStateId);
     frame_toks.resize(1);
-    //Weight was Weight::One()
-    KdToken2 *dummy_token = new KdToken2(0.0, 0.0, NULL);
-    frame_toks[0].toks = dummy_token;
-    elements.Insert(start_state, dummy_token);
-    num_elements++;
+    KdToken2 *start_tok = new KdToken2(0.0, 0.0, NULL);
+    frame_toks[0].toks = start_tok;
+    elements.Insert(start_state, start_tok);
+    num_elements = 1;
     uframe = 0;
     ProcessNonemitting(config_.beam);
 }
@@ -164,13 +160,10 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 
 void KdOnlineLDecoder::CalcFinal()
 {
-    int min_diff = 10; // 150 ms
     int word_count = result.size();
     QString buf;
     for( int i=0 ; i<word_count ; i++ )
     {
-        int f_end = floor(result[i].end*100);
-
         if( i==0 )
         {
             if( result[i].end<0.15 )
@@ -181,11 +174,15 @@ void KdOnlineLDecoder::CalcFinal()
             }
         }
 
-        if( ((uframe-f_end)>min_diff) )
+        int f_end = result[i].end*100;
+        if( (uframe-f_end)>BT_MIN_SIL )
         {
             result[i].is_final = 1;
         }
         buf += result[i].word;
+        buf += "(";
+        buf += QString::number(f_end);
+        buf += ")";
         buf += " ";
     }
 
@@ -248,7 +245,7 @@ void KdOnlineLDecoder::checkReset()
 {
     dbg_times += " E:";
     dbg_times += getDiffTime(start_t);
-    qDebug() << "Check Reset" << dbg_times;
+//    qDebug() << "Check Reset" << dbg_times;
     if( status.state==KD_STATE_NULL ||
         status.state==KD_STATE_BLOWN  )
     {

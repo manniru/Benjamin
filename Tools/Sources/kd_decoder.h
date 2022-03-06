@@ -35,8 +35,6 @@ struct KdTokenList
 class KdDecoder
 {
 public:
-    using Label = typename KdArc::Label;
-    using Weight = typename KdArc::Weight;
     typedef kaldi::HashList<KdStateId, KdToken2*>::Elem Elem;
 
     KdDecoderConfig config_;
@@ -68,7 +66,7 @@ protected:
     void PruneTokensForFrame(int frame);
     void PruneActiveTokens(float delta);
 
-    float GetCutoff(Elem *list_head, size_t *tok_count, Elem **best_elem);
+    float GetCutoff(Elem *list_head, Elem **best_elem);
 
     float ProcessEmitting();
     float PEmittingElem(Elem *e, float next_cutoff);

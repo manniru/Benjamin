@@ -337,95 +337,72 @@ void KdDecoder::AdvanceDecoding()
 }
 
 // Get Cutoff and Also Update adaptive_beam
-float KdDecoder::GetCutoff(Elem *list_head, size_t *tok_count,
+float KdDecoder::GetCutoff(Elem *list_head,
                                   Elem **best_elem)
 {
     float best_weight = std::numeric_limits<float>::infinity();
     // positive == high cost == bad.
     size_t count = 0;
-    if (config_.max_active == std::numeric_limits<int>::max() &&
-            config_.min_active == 0)
+    tmp_array_.clear();
+    for (Elem *e = list_head; e != NULL; e = e->tail, count++)
     {
-        for (Elem *e = list_head; e != NULL; e = e->tail, count++)
+        float w = e->val->tot_cost;
+        tmp_array_.push_back(w);
+        if (w < best_weight)
         {
-            float w = static_cast<float>(e->val->tot_cost);
-            if (w < best_weight)
+            best_weight = w;
+            if (best_elem)
             {
-                best_weight = w;
-                if (best_elem) *best_elem = e;
+                *best_elem = e;
             }
         }
-        if (tok_count != NULL)
-        {
-            *tok_count = count;
-        }
-        adaptive_beam = config_.beam;
-        return best_weight + config_.beam;
     }
-    else
+
+    float beam_cutoff = best_weight + config_.beam;
+    float min_active_cutoff = std::numeric_limits<float>::infinity();
+    float max_active_cutoff = std::numeric_limits<float>::infinity();
+
+    KALDI_VLOG(6) << "Number of tokens active on frame " << frame_num
+                  << " is " << tmp_array_.size();
+
+    if (tmp_array_.size() > static_cast<size_t>(config_.max_active))
     {
-        tmp_array_.clear();
-        for (Elem *e = list_head; e != NULL; e = e->tail, count++)
+        std::nth_element(tmp_array_.begin(),
+                         tmp_array_.begin() + config_.max_active,
+                         tmp_array_.end());
+        max_active_cutoff = tmp_array_[config_.max_active];
+    }
+    if (max_active_cutoff < beam_cutoff)
+    {
+        // max_active is tighter than beam.
+        adaptive_beam = max_active_cutoff - best_weight + config_.beam_delta;
+        return max_active_cutoff;
+    }
+    if (tmp_array_.size() > static_cast<size_t>(config_.min_active))
+    {
+        if (config_.min_active == 0)
         {
-            float w = e->val->tot_cost;
-            tmp_array_.push_back(w);
-            if (w < best_weight)
-            {
-                best_weight = w;
-                if (best_elem)
-                {
-                    *best_elem = e;
-                }
-            }
-        }
-        if (tok_count != NULL) *tok_count = count;
-
-        float beam_cutoff = best_weight + config_.beam;
-        float min_active_cutoff = std::numeric_limits<float>::infinity();
-        float max_active_cutoff = std::numeric_limits<float>::infinity();
-
-        KALDI_VLOG(6) << "Number of tokens active on frame " << frame_num
-                      << " is " << tmp_array_.size();
-
-        if (tmp_array_.size() > static_cast<size_t>(config_.max_active))
-        {
-            std::nth_element(tmp_array_.begin(),
-                             tmp_array_.begin() + config_.max_active,
-                             tmp_array_.end());
-            max_active_cutoff = tmp_array_[config_.max_active];
-        }
-        if (max_active_cutoff < beam_cutoff)
-        {
-            // max_active is tighter than beam.
-            adaptive_beam = max_active_cutoff - best_weight + config_.beam_delta;
-            return max_active_cutoff;
-        }
-        if (tmp_array_.size() > static_cast<size_t>(config_.min_active))
-        {
-            if (config_.min_active == 0)
-            {
-                min_active_cutoff = best_weight;
-            }
-            else
-            {
-                std::nth_element(tmp_array_.begin(),
-                                 tmp_array_.begin() + config_.min_active,
-                                 tmp_array_.size() > static_cast<size_t>(config_.max_active) ?
-                                     tmp_array_.begin() + config_.max_active :
-                                     tmp_array_.end());
-                min_active_cutoff = tmp_array_[config_.min_active];
-            }
-        }
-        if (min_active_cutoff > beam_cutoff)
-        { // min_active is looser than beam.
-            adaptive_beam = min_active_cutoff - best_weight + config_.beam_delta;
-            return min_active_cutoff;
+            min_active_cutoff = best_weight;
         }
         else
         {
-            adaptive_beam = config_.beam;
-            return beam_cutoff;
+            std::nth_element(tmp_array_.begin(),
+                             tmp_array_.begin() + config_.min_active,
+                             tmp_array_.size() > static_cast<size_t>(config_.max_active) ?
+                                 tmp_array_.begin() + config_.max_active :
+                                 tmp_array_.end());
+            min_active_cutoff = tmp_array_[config_.min_active];
         }
+    }
+    if (min_active_cutoff > beam_cutoff)
+    { // min_active is looser than beam.
+        adaptive_beam = min_active_cutoff - best_weight + config_.beam_delta;
+        return min_active_cutoff;
+    }
+    else
+    {
+        adaptive_beam = config_.beam;
+        return beam_cutoff;
     }
 }
 
@@ -468,9 +445,8 @@ float KdDecoder::ProcessEmitting()
 
     Elem *final_toks = elements.Clear();
     Elem *best_elem = NULL;
-    size_t tok_cnt;
 
-    float cutoff = GetCutoff(final_toks, &tok_cnt, &best_elem);
+    float cutoff = GetCutoff(final_toks, &best_elem);
     float next_cutoff = GetBestCutoff(best_elem);
 
     Elem *e_tail;
@@ -757,39 +733,4 @@ void KdDecoder::TopSortTokens(KdToken2 *tok_list,
     {
         (*out)[iter->second] = iter->first;
     }
-}
-// FinalRelativeCost()!=KD_INFINITY --> ReachedFinal
-
-void KdDecoder::checkIntegrity(QString msg)
-{
-//    int end = frame_toks.size();
-//    for( int f=0 ; f<end ; f++ )
-//    {
-//        int id_t = 0;
-//        for( KdToken2 *tok=frame_toks[f].toks ; tok!=NULL ; tok=tok->next )
-//        {
-//            int id_l = 0;
-//            KdToken2 *link;
-//            KdFLink *flink = tok->links;
-//            if( tok->is_linked==0 )
-//            {
-//                continue;
-//            }
-//            for ( link=tok->link_tok ; link!=NULL; link=link->link_tok )
-//            {
-//                if( link==NULL )
-//                {
-//                    break;
-//                }
-//                if( link!=flink->next_tok ) // emitting
-//                {
-//                    qDebug() << msg << "At frame" << f <<
-//                             "ID_T" << id_t << "ID_L" << id_l;
-//                }
-//                flink = flink->next;
-//                id_l++;
-//            }
-//            id_t++;
-//        }
-//    }
 }

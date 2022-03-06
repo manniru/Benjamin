@@ -33,6 +33,6 @@
 
 #define BT_DOUBLE_BUF     //If undefined encoded file not replaced
 #define BT_IMMDT_EXEC     0 //if is non-zero execute immediately commands on puase
-#define BT_TEST_MODE      // If defined then read from wav file instead of online
+//#define BT_TEST_MODE      // If defined then read from wav file instead of online
 
 #endif // BT_CONFIG_H
