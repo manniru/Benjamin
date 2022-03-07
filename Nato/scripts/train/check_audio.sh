@@ -33,20 +33,20 @@ function printVals
 	#echo $DIFF $T_VAL - $MEAN_VAL
 	if [[ $T_VAL -lt $MEAN_VAL ]]; then
 		if [[ $DIFF -lt $VAR_VAL ]]; then
-			printf "%2s: %4s         " $I_VAL $T_VAL
+			printf "%2s: %4s" $I_VAL $T_VAL
 		else
 			tput setaf 1 #red
-			printf "%2s: %4s         " $I_VAL $T_VAL
+			printf "%2s: %4s" $I_VAL $T_VAL
 		fi
 	else
 		if [[ $DIFF -lt $VAR_VAL ]]; then
-			printf "%2s: %4s         " $I_VAL $T_VAL
+			printf "%2s: %4s" $I_VAL $T_VAL
 		else
 			tput setaf 2 #green
-			printf "%2s: %4s         " $I_VAL $T_VAL
+			printf "%2s: %4s" $I_VAL $T_VAL
 		fi
 	fi
-			tput sgr0 #normal
+	tput sgr0 #normal
 }
 
 I_VAL="0"
@@ -64,6 +64,8 @@ while [[ "$I_VAL" -lt "$MAX_VAL" ]]; do
 	if [[ "$M_VAL" -gt "3" ]]; then
 		printf "\n"
 		M_VAL="0"
+	else
+		printf "         "
 	fi
 done
 

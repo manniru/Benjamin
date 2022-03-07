@@ -32,11 +32,13 @@ public:
     float tot_cost;
     float extra_cost; // always >= 0
 
+    //state both used in raw lattice and decoding
+    KdStateId state; // added in benjamin
+
     ForwardLinkT *links;
     KdToken2 *link_tok;
     int is_linked;
     KdToken2 *next;
-    KdStateId state = KD_INVALID_STATE;
     int ilabel;  // ilabel on arc
     int olabel;  // olabel on arc
     float graph_cost;  // graph cost of traversing arc (contains LM, etc.)

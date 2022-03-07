@@ -10,4 +10,6 @@ KdToken2::KdToken2(float total_cost, float e_cost, KdToken2 *next_tok)
     link_tok = NULL;
     next = next_tok;
     is_linked = 0;
+
+    state = KD_INVALID_STATE;
 }

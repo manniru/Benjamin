@@ -433,6 +433,13 @@ QVector<BtWord> KdMBR::getResult()
 
     for( int i = 0; i<words.size() ; i++ )
     {
+        if( i>(b_times.size()-2) )
+        {
+            qDebug() << "error in BTimes"
+                     << b_times.size()
+                     << "on word" << lexicon[words[i]];
+            break;
+        }
         BtWord word_buf;
         word_buf.conf  = conf[i];
         word_buf.start = b_times[i]  /100.0;
