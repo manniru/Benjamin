@@ -42,29 +42,20 @@ public:
     ~KdDecoder();
 
     void InitDecoding(KdDecodable *dcodable);
-    void AdvanceDecoding();
-
-    float FinalRelativeCost();
 
     double GetBestCutoff(Elem *best_elem);
 
     long frame_num = 0; //number of decoded frame
-
-    void checkIntegrity(QString msg);
 protected:
     // protected instead of private, so classes which inherits from this,
     // also can have access
     inline static void DeleteForwardLinks(KdToken2 *tok);
 
-    Elem *FindOrAddToken(KdStateId state, float  tot_cost,
+    Elem *updateToken(KdStateId state, float  tot_cost,
                          bool *changed);
 
-    bool PruneForwardLinks(int frame, bool *extra_costs_changed, float delta);
     void ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
                            float *final_relative_cost, float *final_best_cost);
-
-    void PruneTokensForFrame(int frame);
-    void PruneActiveTokens(float delta);
 
     float GetCutoff(Elem *list_head, Elem **best_elem);
 
@@ -73,14 +64,13 @@ protected:
     void  ProcessNonemitting(float cost_cutoff);
     void  PNonemittingElem(Elem *e, float cutoff);
 
-    // HashList is indexed by frame-index plus one.
+    // Hash LinkList
     kaldi::HashList<KdStateId, KdToken2*> elements;
     KdDecodable *decodable;
 
     std::vector<KdTokenList> frame_toks; // Lists of tokens, indexed by
     // frame (members of KdTokenList are toks, must_prune_forward_links,
     // must_prune_tokens).
-    std::vector<Elem* > queue_;  // temp variable used in ProcessNonemitting,
     std::vector<float> tmp_array_;  // used in GetCutoff.
 
     // fst_ is a pointer to the FST we are decoding from.
@@ -90,8 +80,6 @@ protected:
     // zero, to reduce roundoff errors.
     int num_elements; // current total #toks allocated...
     bool warned_;
-
-    bool decoding_finalized_; // true if someone called FinalizeDecoding().
 
     unordered_map<KdToken2*, float> final_costs_;
     float final_relative_cost_;

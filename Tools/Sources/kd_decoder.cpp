@@ -23,7 +23,6 @@ void KdDecoder::InitDecoding(KdDecodable *dcodable)
     ClearActiveTokens();
     warned_ = false;
     num_elements = 0;
-    decoding_finalized_ = false;
     final_costs_.clear();
     KdStateId start_state = fst_->Start();
     KALDI_ASSERT(start_state != fst::kNoStateId);
@@ -38,11 +37,12 @@ void KdDecoder::InitDecoding(KdDecodable *dcodable)
 
 // Locates a token in elements or inserts a new to frame_toks[frame]->toks
 // 'changed' true if a token created or cost changed.
-KdDecoder::Elem* KdDecoder::FindOrAddToken(
+KdDecoder::Elem* KdDecoder::updateToken(
         KdStateId state, float tot_cost, bool *changed)
 {
     int frame = frame_toks.size() - 1;
     Elem *e_found = elements.Insert(state, NULL);
+
     if( e_found->val==NULL )
     {
         KdTokenList *tok_list = &frame_toks[frame];
@@ -82,187 +82,8 @@ KdDecoder::Elem* KdDecoder::FindOrAddToken(
         }
         return e_found;
     }
-}
-
-// remove all links in frame_toks[frame].toks
-// based on link_extra_cost>config_.lattice_beam
-bool KdDecoder::PruneForwardLinks(
-        int frame, bool *extra_costs_changed, float delta)
-{
-    *extra_costs_changed = false;
-    bool links_pruned = false;
-    KALDI_ASSERT(frame>=0 && frame<frame_toks.size());
-    KdToken2 *start_tok = frame_toks[frame].toks;
-
-    if( start_tok==NULL )
-    {
-        qDebug() << "PruneForwardLinks: No tokens alive @ " << frame;
-    }
-
-    bool changed = true;  // difference new minus old extra cost >= delta ?
-    while( changed )
-    {
-        changed = false;
-        for( KdToken2 *tok=start_tok ; tok!=NULL; tok=tok->next )
-        {
-            KdFLink *link, *prev_link = NULL;
-            float tok_extra_cost = std::numeric_limits<float>::infinity();
-            // tok_extra_cost is the best (min) of link_extra_cost of outgoing links
-            for( link=tok->links ; link!=NULL; )
-            {
-                KdToken2 *next_tok = link->next_tok;
-                float link_extra_cost = next_tok->extra_cost +
-                        ((tok->tot_cost + link->acoustic_cost + link->graph_cost)
-                         - next_tok->tot_cost);  // difference in brackets is >= 0
-                // link_exta_cost is the difference in score between the best paths
-                // through link source state and through link destination state
-                KALDI_ASSERT(link_extra_cost == link_extra_cost);  // check for NaN
-                if( link_extra_cost>config_.lattice_beam )  // delete link
-                {
-                    KdFLink *next_link = link->next;
-                    if( prev_link!=NULL )
-                    {
-                        prev_link->next = next_link;
-//                        prev_link->next_tok->link_tok = next_link->next_tok;
-                    }
-                    else
-                    {
-                        tok->links = next_link;
-//                        tok->link_tok = next_link->next_tok;
-                    }
-                    delete link;
-                    link = next_link;  // advance link but leave prev_link the same.
-                    links_pruned = true;
-                }
-                else // update the tok_extra_cost if needed.
-                {
-                    if (link_extra_cost < 0.0)
-                    {
-                        if (link_extra_cost < -0.01)
-                            KALDI_WARN << "Negative extra_cost: " << link_extra_cost;
-                        link_extra_cost = 0.0;
-                    }
-                    if (link_extra_cost < tok_extra_cost)
-                        tok_extra_cost = link_extra_cost;
-                    prev_link = link;  // move to next link
-                    link = link->next;
-                }
-            }
-            if( fabs(tok_extra_cost-tok->extra_cost)>delta )
-                changed = true;   // difference new minus old is bigger than delta
-            if( tok_extra_cost!=std::numeric_limits<float>::infinity() )
-            {
-                tok->extra_cost = tok_extra_cost;
-            }
-            else
-            {
-                changed = false;
-            }
-            // will be +infinity or <= lattice_beam_.
-            // infinity indicates, that no forward link survived pruning
-        }
-        if (changed)
-        {
-            *extra_costs_changed = true;
-        }
-    }
-
-    return links_pruned;
-}
-
-float KdDecoder::FinalRelativeCost()
-{
-    if( !decoding_finalized_ )
-    {
-        float relative_cost;
-        ComputeFinalCosts(NULL, &relative_cost, NULL);
-        return relative_cost;
-    }
-    else
-    {   // not allowed if FinalizeDecoding() has been called.
-        return final_relative_cost_;
-    }
-}
-
-// Prune away any tokens on this frame that have no forward links.
-void KdDecoder::PruneTokensForFrame(int frame)
-{
-    KALDI_ASSERT( frame>=0 && frame<frame_toks.size() );
-
-    KdToken2 *&start_token = frame_toks[frame].toks;
-    if( start_token==NULL )
-    {
-        qDebug() << "PruneTokensForFrame: No tokens alive @" << frame;
-    }
-
-    KdToken2 *tok, *next_tok, *prev_tok = NULL;
-    for( tok=start_token ; tok!=NULL ; tok=next_tok )
-    {
-        next_tok = tok->next;
-        if (tok->extra_cost == std::numeric_limits<float>::infinity())
-        {   // token is unreachable from end of graph
-            if (prev_tok != NULL)
-            {
-                prev_tok->next = tok->next;
-            }
-            else
-            {
-                start_token = tok->next;
-            }
-            delete tok;
-            num_elements--;
-            qDebug() << "delete" << frame << "num_elements" << num_elements;
-        }
-        else
-        {  // fetch next KdToken
-            prev_tok = tok;
-        }
-    }
-}
-
-// Go backwards through still-alive tokens, pruning them if the
-// forward+backward cost is more than lat_beam away from the best path.  It's
-// possible to prove that this is "correct" in the sense that we won't lose
-// anything outside of lat_beam, regardless of what happens in the future.
-// delta controls when it considers a cost to have changed enough to continue
-// going backward and propagating the change.  larger delta -> will recurse
-// less far.
-void KdDecoder::PruneActiveTokens(float delta)
-{
-    int cur_frame_plus_one = frame_toks.size();
-    int num_elementsbegin = num_elements;
-
-    for(int f=cur_frame_plus_one-1 ; f>=0 ; f-- )
-    {
-        // Reason why we need to prune forward links in this situation:
-        // (1) we have never pruned them (new TokenList)
-        // (2) we have not yet pruned the forward links to the next f,
-        // after any of those tokens have changed their extra_cost.
-        if( frame_toks[f].prune_forward_links )
-        {
-            bool extra_costs_changed = false;
-            bool links_pruned;
-            links_pruned = PruneForwardLinks(f, &extra_costs_changed, delta);
-
-            if( extra_costs_changed && f>0 ) // any token has changed extra_cost
-            {
-                frame_toks[f-1].prune_forward_links = true;
-            }
-            if (links_pruned) // any link was pruned
-            {
-                frame_toks[f].prune_tokens = true;
-            }
-            frame_toks[f].prune_forward_links = false; // job done
-        }
-
-        if( f+1<cur_frame_plus_one && frame_toks[f+1].prune_tokens )
-        {
-            PruneTokensForFrame(f+1);
-            frame_toks[f+1].prune_tokens = false;
-        }
-    }
-    KALDI_VLOG(4) << "PruneActiveTokens: pruned tokens from " << num_elementsbegin
-                  << " to " << num_elements;
+//    printActive();
+    return e_found;
 }
 
 // computes final-costs for the final frame. It outputs to final-costs, a map from the KdToken*
@@ -271,7 +92,6 @@ void KdDecoder::PruneActiveTokens(float delta)
 void KdDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final_costs,
         float *final_relative_cost, float *final_best_cost)
 {
-    KALDI_ASSERT(!decoding_finalized_);
     if (final_costs != NULL)
         final_costs->clear();
     const Elem *final_toks = elements.GetList();
@@ -317,28 +137,9 @@ void KdDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final_costs,
     }
 }
 
-void KdDecoder::AdvanceDecoding()
-{
-    KALDI_ASSERT(!frame_toks.empty() && !decoding_finalized_ &&
-                 "You must call InitDecoding() before AdvanceDecoding");
-    int max_frame = decodable->NumFramesReady();
-
-    KALDI_ASSERT( max_frame>=frame_num );
-
-    while( frame_num<max_frame )
-    {
-        if( (frame_num%config_.prune_interval)==0 )
-        {
-            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
-        }
-        float cost_cutoff = ProcessEmitting();
-        ProcessNonemitting(cost_cutoff);
-    }
-}
-
 // Get Cutoff and Also Update adaptive_beam
 float KdDecoder::GetCutoff(Elem *list_head,
-                                  Elem **best_elem)
+                           Elem **best_elem)
 {
     float best_weight = std::numeric_limits<float>::infinity();
     // positive == high cost == bad.
@@ -523,7 +324,7 @@ float KdDecoder::PEmittingElem(Elem *e, float next_cutoff)
                 next_cutoff = tot_cost + adaptive_beam; // prune by best current token
             }
 
-            Elem *e_found = FindOrAddToken(arc.nextstate, tot_cost,
+            Elem *e_found = updateToken(arc.nextstate, tot_cost,
                                           NULL);
             KdToken2 *ef_tok = e_found->val;
 
@@ -537,13 +338,10 @@ float KdDecoder::PEmittingElem(Elem *e, float next_cutoff)
             // Add ForwardLink from tok to next_tok (put on head of list tok->links)
             e_tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
                                        graph_cost , ac_cost, e_tok->links);
-
-//            qDebug() << "h";
         }
     }
     return next_cutoff;
 }
-
 
 // Processes Single Non Emiting Elem
 void KdDecoder::PNonemittingElem(Elem *e, float cutoff)

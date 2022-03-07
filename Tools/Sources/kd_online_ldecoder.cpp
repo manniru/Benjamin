@@ -3,7 +3,7 @@
 
 using namespace kaldi;
 QString dbg_times;
-#define BT_MIN_SIL 9 //100ms (x+1)*100
+#define BT_MIN_SIL 9 //100ms ((x+1)*100)
 
 KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
                                    kaldi::TransitionModel &trans_model):
