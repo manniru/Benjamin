@@ -86,57 +86,6 @@ KdDecoder::Elem* KdDecoder::updateToken(
     return e_found;
 }
 
-// computes final-costs for the final frame. It outputs to final-costs, a map from the KdToken*
-// pointer to the final-prob of the corresponding state, for all Tokens
-// that correspond to states that have final-probs.
-void KdDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final_costs,
-        float *final_relative_cost, float *final_best_cost)
-{
-    if (final_costs != NULL)
-        final_costs->clear();
-    const Elem *final_toks = elements.GetList();
-    float infinity = std::numeric_limits<float>::infinity();
-    float best_cost = infinity,
-            best_cost_with_final = infinity;
-
-    while (final_toks != NULL) {
-        KdStateId state = final_toks->key;
-        KdToken2 *tok = final_toks->val;
-        const Elem *next = final_toks->tail;
-        float final_cost = fst_->Final(state).Value();
-        float cost = tok->tot_cost,
-                cost_with_final = cost + final_cost;
-        best_cost = std::min(cost, best_cost);
-        best_cost_with_final = std::min(cost_with_final, best_cost_with_final);
-        if (final_costs != NULL && final_cost != infinity)
-            (*final_costs)[tok] = final_cost;
-        final_toks = next;
-    }
-    if (final_relative_cost != NULL)
-    {
-        if (best_cost == infinity && best_cost_with_final == infinity)
-        {
-            // Likely this will only happen if there are no tokens surviving.
-            // This seems the least bad way to handle it.
-            *final_relative_cost = infinity;
-        }
-        else
-        {
-            *final_relative_cost = best_cost_with_final - best_cost;
-        }
-    }
-    if (final_best_cost != NULL)
-    {
-        if (best_cost_with_final != infinity)
-        { // final-state exists.
-            *final_best_cost = best_cost_with_final;
-        } else
-        { // no final-state exists.
-            *final_best_cost = best_cost;
-        }
-    }
-}
-
 // Get Cutoff and Also Update adaptive_beam
 float KdDecoder::GetCutoff(Elem *list_head,
                            Elem **best_elem)
@@ -333,9 +282,8 @@ float KdDecoder::PEmittingElem(Elem *e, float next_cutoff)
             ef_tok->olabel = arc.olabel;
             ef_tok->graph_cost = graph_cost;
             ef_tok->acoustic_cost = ac_cost;
-            ef_tok->link_tok = e_tok->link_tok;
-            e_tok->link_tok = ef_tok;
-            e_tok->is_linked = 1;
+//            qDebug() << "PIEE---->" << e_state
+//                     << "to" << ac_cost;
             // Add ForwardLink from tok to next_tok (put on head of list tok->links)
             e_tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
                                        graph_cost , ac_cost, e_tok->links);
@@ -377,9 +325,8 @@ void KdDecoder::PNonemittingElem(Elem *e, float cutoff)
                 ef_tok->olabel = arc.olabel;
                 ef_tok->graph_cost = graph_cost;
                 ef_tok->acoustic_cost = 0;
-                ef_tok->link_tok = e_tok->link_tok;
-                e_tok->link_tok = ef_tok;
-                e_tok->is_linked = 1;
+//                qDebug() << "PNEE---->" << e_state
+//                         << "to" << graph_cost;
 
                 e_tok->links = new KdFLink(ef_tok, 0, arc.olabel,
                                          graph_cost, 0, e_tok->links);
@@ -402,13 +349,6 @@ void KdDecoder::DeleteForwardLinks(KdToken2 *tok)
         m = l->next;
         delete l;
         l = m;
-    }
-    KdToken2 *tok_l = tok;
-    while( tok_l!=NULL )
-    {
-        KdToken2 *m2 = tok_l->link_tok;
-        tok_l->link_tok = NULL;
-        tok_l = m2;
     }
     tok->links = NULL;
 }

@@ -36,8 +36,6 @@ public:
     KdStateId state; // added in benjamin
 
     ForwardLinkT *links;
-    KdToken2 *link_tok;
-    int is_linked;
     KdToken2 *next;
     int ilabel;  // ilabel on arc
     int olabel;  // olabel on arc
