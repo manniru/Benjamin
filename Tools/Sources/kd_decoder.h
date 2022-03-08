@@ -54,9 +54,6 @@ protected:
     Elem *updateToken(KdStateId state, float  tot_cost,
                          bool *changed);
 
-    void ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
-                           float *final_relative_cost, float *final_best_cost);
-
     float GetCutoff(Elem *list_head, Elem **best_elem);
 
     float ProcessEmitting();
@@ -87,9 +84,6 @@ protected:
     float adaptive_beam; //updates in getcutoff
 
     void DeleteElems(Elem *list);
-
-    static void TopSortTokens(KdToken2 *tok_list,
-                              std::vector<KdToken2*> *out);
 
     void ClearActiveTokens();
     void printActive();

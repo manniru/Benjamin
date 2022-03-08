@@ -44,7 +44,12 @@ public:
 
     int Decode();
 
+    void ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
+                           float *final_relative_cost, float *final_best_cost);
+    static void TopSortTokens(KdToken2 *tok_list,
+                              std::vector<KdToken2*> *out);
     void createStates();
+
     void RawLattice(KdLattice *ofst);
     void MakeLattice(KdCompactLattice *ofst);
 
