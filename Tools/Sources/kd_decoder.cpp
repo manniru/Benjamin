@@ -6,7 +6,7 @@ using namespace kaldi;
 KdDecoder::KdDecoder()
 {
     num_elements = 0;
-    elements.SetSize(1000);  // just so on the first frame we do something reasonable.
+    elements.SetSize(3000);  // just so on the first frame we do something reasonable.
 }
 
 KdDecoder::~KdDecoder()
@@ -58,7 +58,7 @@ KdDecoder::Elem* KdDecoder::updateToken(
         {
             *changed = true;
         }
-        return e_found;
+        qDebug() << "New Tok---->" << state << "f" << frame;
     }
     else// replace old token
     {
@@ -80,7 +80,7 @@ KdDecoder::Elem* KdDecoder::updateToken(
                 *changed = false;
             }
         }
-        return e_found;
+        qDebug() << "Upd Tok---->" << state << "f" << frame;
     }
 //    printActive();
     return e_found;
@@ -249,20 +249,26 @@ float KdDecoder::ProcessEmitting()
 
     float cutoff = GetCutoff(final_toks, &best_elem);
     float next_cutoff = GetBestCutoff(best_elem);
-
+    qDebug() << "best_state" << best_elem->key
+             << "cutoff" << cutoff << next_cutoff
+             << "uframe" << frame_num;
+    QString dbg_buf;
+    int count = 0;
     Elem *e_tail;
-    int id_t = 0;
     for( Elem *e=final_toks ; e!=NULL ; e=e_tail )
     {
+        dbg_buf += QString::number(e->key);
+        dbg_buf += "->";
+        count++;
         if( e->val->tot_cost<=cutoff )
         {
             next_cutoff = PEmittingElem(e, next_cutoff);
         }
         e_tail = e->tail;
         elements.Delete(e);
-//        qDebug() << "ProcessEmitting ID_T" << id_t;
-        id_t++;
     }
+    qDebug() << "ProcessEmitting---->" << count;
+    qDebug() << dbg_buf;
 
     frame_num++;
     return next_cutoff;
@@ -271,30 +277,25 @@ float KdDecoder::ProcessEmitting()
 // Processes for one frame.
 void KdDecoder::ProcessNonemitting(float cutoff)
 {
-    KALDI_ASSERT(!frame_toks.empty());
-    if( elements.GetList()==NULL )
-    {
-        int frame = frame_toks.size() - 2;
-        qDebug() << "Error, no surviving tokens: frame is " << frame;
-        return;
-    }
-
     // need for reverse
-    queue_.clear();
+    int count = 0;
+    QString dbg_buf;
     for (Elem *e = const_cast<Elem *>(elements.GetList()); e != NULL;  e = e->tail)
     {
         KdStateId state = e->key;
+        dbg_buf += QString::number(state);
+        dbg_buf += "->";
+//        qDebug() << "NNS---->" << state;
+        count++;
         if (fst_->NumInputEpsilons(state) != 0)
         {
-            queue_.push_back(e);
+            PNonemittingElem(e, cutoff);
         }
     }
 
-    int q_len = queue_.size();
-    for( int i=0 ; i<q_len ; i++ )
-    {
-        PNonemittingElem(queue_[q_len-i-1], cutoff);
-    }
+    qDebug() << "NN---->" << count
+             << "u" << frame_num;
+    qDebug() << dbg_buf;
 }
 
 // Processes Single Emiting Elem
@@ -368,7 +369,7 @@ void KdDecoder::PNonemittingElem(Elem *e, float cutoff)
             if( tot_cost<cutoff )
             {
                 bool changed;
-                Elem *e_found = FindOrAddToken(arc.nextstate, tot_cost,
+                Elem *e_found = updateToken(arc.nextstate, tot_cost,
                                              &changed);
                 KdToken2 *ef_tok = e_found->val;
 
@@ -442,9 +443,27 @@ void KdDecoder::ClearActiveTokens()
     KALDI_ASSERT(num_elements == 0);
 }
 
+void KdDecoder::printActive()
+{
+    int count = 0;
+    QString dbg_buf;
+    for (Elem *e = const_cast<Elem *>(elements.GetList()); e != NULL;  e = e->tail)
+    {
+        KdStateId state = e->key;
+        dbg_buf += QString::number(state);
+        dbg_buf += "->";
+        count++;
+    }
+
+    qDebug() << "<---- STATE" << count
+             << "---->";
+    qDebug() << dbg_buf;
+    qDebug() << "-------------";
+}
+
 // outputs a list in topological order
 void KdDecoder::TopSortTokens(KdToken2 *tok_list,
-                                     std::vector<KdToken2 *> *out)
+                              std::vector<KdToken2 *> *out)
 {
     unordered_map<KdToken2*, int> token2pos;
     typedef typename unordered_map<KdToken2*, int>::iterator IterType;

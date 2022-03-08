@@ -92,6 +92,7 @@ protected:
                               std::vector<KdToken2*> *out);
 
     void ClearActiveTokens();
+    void printActive();
 };
 
 
