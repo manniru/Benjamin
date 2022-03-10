@@ -3,7 +3,6 @@
 
 using namespace kaldi;
 QString dbg_times;
-#define BT_MIN_SIL 9 //100ms ((x+1)*100)
 
 KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
                                    kaldi::TransitionModel &trans_model):
@@ -17,53 +16,31 @@ KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
     config_ = opts;
 
     silence_set = sil_phones;
-    uframe = 0;
     effective_beam_ = opts.beam;
     start_t = clock();
-}
-
-//frame_num would not reset
-void KdOnlineLDecoder::ResetDecoder()
-{
-//    qDebug() << "Reset Kaldi" << full << frame_toks.size();
-    DeleteElems(elements.Clear()); //replaced ClearToks
-    cost_offsets.clear();
-    ClearActiveTokens(); ///THIS LINE SHOULD NOT EXECUTED!
-    final_costs_.clear();
-
-    KdStateId start_state = fst_->Start();
-    frame_toks.resize(1);
-    KdToken2 *start_tok = new KdToken2(0.0, 0.0, NULL);
-    frame_toks[0].toks = start_tok;
-    elements.Insert(start_state, start_tok);
-    num_elements = 1;
-    uframe = 0;
-    ProcessNonemitting(config_.beam);
 }
 
 void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
 {
     int end = frame_toks.size();
     unordered_map<KdToken2*, float> final_costs;
-    ComputeFinalCosts(&final_costs, NULL, NULL);
+    ComputeFinalCosts(&final_costs, NULL);
     dbg_times += " F:";
     dbg_times += getLDiffTime();
-    createStates();
-    *ofst = cache_fst1;
+    createStates(ofst);
     dbg_times += " C:";
     dbg_times += getLDiffTime();
 
     // Now create all arcs.
     for( int f=0 ; f<end ; f++ )
     {
-        for( KdToken2 *tok=frame_toks[f].toks ; tok!=NULL ; tok=tok->next )
+        for( KdToken2 *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
         {
-            KdStateId state = tok->state;
             QString dbg_buf;
             KdFLink *link;
             for ( link=tok->links; link!=NULL; link=link->next )
             {
-                KdStateId nextstate = link->next_tok->state;
+                KdStateId nextstate = link->next_tok->m_state;
 
                 float cost_offset = 0.0;
                 if( link->ilabel!=0 ) // emitting
@@ -82,7 +59,7 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                 dbg_buf += "->";
                 KdLatticeArc::Weight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
                 KdLatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
-                ofst->AddArc(state, arc);
+                ofst->AddArc(tok->m_state, arc);
             }
             if( f==end-1 )
             {
@@ -94,45 +71,86 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                     {
                         qDebug() << "FF---->" << iter->second;
 //                        LatticeWeight w = LatticeWeight(iter->second, 0);
-                        ofst->SetFinal(state, LatticeWeight(iter->second, 0));
+                        ofst->SetFinal(tok->m_state, LatticeWeight(iter->second, 0));
                     }
                 }
                 else
                 {
-                    ofst->SetFinal(state, LatticeWeight::One());
+                    ofst->SetFinal(tok->m_state, LatticeWeight::One());
                 }
             }
 
-//            qDebug() << "RL---->" << state
+//            qDebug() << "RL---->" << tok->m_state
 //                     << "u" << f;
 //            qDebug() << dbg_buf;
         }
     }
 }
 
-void KdOnlineLDecoder::createStates()
+
+// computes final-costs for the final frame. It outputs to final-costs, a map from the KdToken*
+// pointer to the final-prob of the corresponding state, for all Tokens
+// that correspond to states that have final-probs.
+// return final_best_cost
+float KdOnlineLDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final_costs,
+                                         float *final_relative_cost)
 {
-    int end = frame_toks.size();
-    cache_fst1.DeleteStates();
-    last_cache_f = 0;
-
-    // First create all states.
-    std::vector<KdToken2*> token_list;
-    for( int f=last_cache_f ; f<end ; f++ )
+    KALDI_ASSERT(!decoding_finalized_);
+    if( final_costs!=NULL )
     {
-        last_cache_f++;
-        TopSortTokens(frame_toks[f].toks, &token_list);
+        final_costs->clear();
+    }
+    float infinity = std::numeric_limits<float>::infinity();
+    float best_cost = infinity;
+    float best_cost_with_final = infinity;
+    KdToken2 *head = frame_toks.last().head;
+    QString dbg_buf;
 
-        for( size_t i=0 ; i<token_list.size() ; i++ )
+    for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
+    {
+        KdStateId state = tok->state;
+        if( state!=-1 )
         {
-            if( token_list[i]!=NULL )
+            dbg_buf += QString::number(state);
+            dbg_buf += "->";
+            float final_cost = fst_->Final(state).Value();
+            float cost = tok->tot_cost;
+            float cost_with_final = cost + final_cost;
+            best_cost = std::min(cost, best_cost);
+            best_cost_with_final = std::min(cost_with_final, best_cost_with_final);
+            if( final_costs!=NULL && final_cost!=infinity )
             {
-                token_list[i]->state = cache_fst1.AddState();
+                (*final_costs)[tok] = final_cost;
             }
         }
     }
+    qDebug() << "ComputeFinalCosts---->" << best_cost;
+    qDebug() << dbg_buf;
+    if (final_relative_cost != NULL)
+    {
+        if (best_cost == infinity && best_cost_with_final == infinity)
+        {
+            // Likely this will only happen if there are no tokens surviving.
+            // This seems the least bad way to handle it.
+            *final_relative_cost = infinity;
+        }
+        else
+        {
+            *final_relative_cost = best_cost_with_final - best_cost;
+        }
+    }
 
-    cache_fst1.SetStart(0);// sets the start state
+    float final_best_cost;
+    if (best_cost_with_final != infinity)
+    { // final-state exists.
+        final_best_cost = best_cost_with_final;
+    }
+    else // no final-state exists.
+    {
+        final_best_cost = best_cost;
+    }
+
+    return final_best_cost;
 }
 
 // outputs a list in topological order
@@ -142,7 +160,7 @@ void KdOnlineLDecoder::TopSortTokens(KdToken2 *tok_list,
     unordered_map<KdToken2*, int> token2pos;
     typedef typename unordered_map<KdToken2*, int>::iterator IterType;
     int num_toks = 0;
-    for (KdToken2 *tok = tok_list; tok != NULL; tok = tok->next)
+    for (KdToken2 *tok = tok_list; tok != NULL; tok = tok->prev)
         num_toks++;
     int cur_pos = 0;
     // We assign the tokens numbers num_toks - 1, ... , 2, 1, 0.
@@ -151,7 +169,7 @@ void KdOnlineLDecoder::TopSortTokens(KdToken2 *tok_list,
     // new tokens are put at the front of the list.
     QString dbg_buf;
     int count = 0;
-    for (KdToken2 *tok = tok_list; tok != NULL; tok = tok->next)
+    for (KdToken2 *tok = tok_list; tok != NULL; tok = tok->prev)
     {
         count++;
         dbg_buf += QString::number(tok->olabel);
@@ -234,60 +252,29 @@ void KdOnlineLDecoder::TopSortTokens(KdToken2 *tok_list,
     }
 }
 
-// computes final-costs for the final frame. It outputs to final-costs, a map from the KdToken*
-// pointer to the final-prob of the corresponding state, for all Tokens
-// that correspond to states that have final-probs.
-void KdOnlineLDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final_costs,
-        float *final_relative_cost, float *final_best_cost)
+void KdOnlineLDecoder::createStates(KdLattice *ofst)
 {
-    if (final_costs != NULL)
-        final_costs->clear();
-    const Elem *final_toks = elements.GetList();
-    float infinity = std::numeric_limits<float>::infinity();
-    float best_cost = infinity,
-            best_cost_with_final = infinity;
+    int end = frame_toks.size();
+    ofst->DeleteStates();
+    last_cache_f = 0;
 
-    QString dbg_buf;
-    while (final_toks != NULL)
+    // First create all states.
+    std::vector<KdToken2*> token_list;
+    for( int f=last_cache_f ; f<end ; f++ )
     {
-        KdStateId state = final_toks->key;
-        KdToken2 *tok = final_toks->val;
-        dbg_buf += QString::number(state);
-        dbg_buf += "->";
-        float final_cost = fst_->Final(state).Value();
-        float cost = tok->tot_cost,
-                cost_with_final = cost + final_cost;
-        best_cost = std::min(cost, best_cost);
-        best_cost_with_final = std::min(cost_with_final, best_cost_with_final);
-        if (final_costs != NULL && final_cost != infinity)
-            (*final_costs)[tok] = final_cost;
-        final_toks = final_toks->tail;
-    }
-    qDebug() << "ComputeFinalCosts---->" << best_cost;
-    qDebug() << dbg_buf;
-    if (final_relative_cost != NULL)
-    {
-        if (best_cost == infinity && best_cost_with_final == infinity)
+        last_cache_f++;
+        TopSortTokens(frame_toks[f].tail, &token_list);
+
+        for( size_t i=0 ; i<token_list.size() ; i++ )
         {
-            // Likely this will only happen if there are no tokens surviving.
-            // This seems the least bad way to handle it.
-            *final_relative_cost = infinity;
-        }
-        else
-        {
-            *final_relative_cost = best_cost_with_final - best_cost;
+            if( token_list[i]!=NULL )
+            {
+                token_list[i]->m_state = ofst->AddState();
+            }
         }
     }
-    if (final_best_cost != NULL)
-    {
-        if (best_cost_with_final != infinity)
-        { // final-state exists.
-            *final_best_cost = best_cost_with_final;
-        } else
-        { // no final-state exists.
-            *final_best_cost = best_cost;
-        }
-    }
+
+    ofst->SetStart(0);// sets the start state
 }
 
 void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
@@ -329,10 +316,13 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 
 void KdOnlineLDecoder::CalcFinal()
 {
+    int min_diff = 10; // 150 ms
     int word_count = result.size();
     QString buf;
     for( int i=0 ; i<word_count ; i++ )
     {
+        int f_end = floor(result[i].end*100);
+
         if( i==0 )
         {
             if( result[i].end<0.15 )
@@ -343,15 +333,11 @@ void KdOnlineLDecoder::CalcFinal()
             }
         }
 
-        int f_end = result[i].end*100;
-        if( (uframe-f_end)>BT_MIN_SIL )
+        if( ((uframe-f_end)>min_diff) )
         {
             result[i].is_final = 1;
         }
         buf += result[i].word;
-        buf += "(";
-        buf += QString::number(f_end);
-        buf += ")";
         buf += " ";
     }
 

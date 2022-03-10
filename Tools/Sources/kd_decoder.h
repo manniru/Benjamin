@@ -3,6 +3,7 @@
 
 #include<QVector>
 #include "kd_token2.h"
+#include "kd_token_list.h"
 #include "kd_lattice_functions.h"
 #include "kd_decodable.h"
 #include <util/hash-list.h>
@@ -10,6 +11,8 @@
 // what is determinization?
 
 #define KD_INFINITY std::numeric_limits<double>::infinity()
+#define MAX_STATE_COUNT 5000 //50K
+
 struct KdDecoderConfig
 {
   float beam = 16;
@@ -24,67 +27,57 @@ struct KdDecoderConfig
   KdPrunedOpt det_opts;
 };
 
-struct KdTokenList
-{
-    KdToken2 *toks = NULL;
-    bool prune_forward_links = true;
-    bool prune_tokens = true;
-};
-
 // KdLatticeDecoder
 class KdDecoder
 {
 public:
-    typedef kaldi::HashList<KdStateId, KdToken2*>::Elem Elem;
-
     KdDecoderConfig config_;
     KdDecoder();
     ~KdDecoder();
 
+    void ResetDecoder();
     void InitDecoding(KdDecodable *dcodable);
 
-    double GetBestCutoff(Elem *best_elem);
-
     long frame_num = 0; //number of decoded frame
+    int  uframe;       // reset on ResetDecoder(utterance)
 protected:
-    // protected instead of private, so classes which inherits from this,
-    // also can have access
+    // protected so classes which inherits also have access
     inline static void DeleteForwardLinks(KdToken2 *tok);
 
-    Elem *updateToken(KdStateId state, float  tot_cost,
-                         bool *changed);
+    bool updateToken(KdStateId state, float  tot_cost,
+                     KdToken2 **tok);
 
-    float GetCutoff(Elem *list_head, Elem **best_elem);
+    float GetCutoff(KdToken2 **best_tok);
+    double GetBestCutoff(KdToken2 *tok);
 
     float ProcessEmitting();
-    float PEmittingElem(Elem *e, float next_cutoff);
+    float PEmittingState(KdToken2 *tok, float next_cutoff);
     void  ProcessNonemitting(float cost_cutoff);
-    void  PNonemittingElem(Elem *e, float cutoff);
+    void  PNonemittingState(KdToken2 *tok, float cutoff);
+    void  updateMaxState(KdStateId state);
 
-    // Hash LinkList
-    kaldi::HashList<KdStateId, KdToken2*> elements;
+    // map from tokens in the current frame to state id
+    KdToken2    *all_tokens[MAX_STATE_COUNT];
     KdDecodable *decodable;
 
-    std::vector<KdTokenList> frame_toks; // Lists of tokens, indexed by
-    // frame (members of KdTokenList are toks, must_prune_forward_links,
-    // must_prune_tokens).
-    std::vector<float> tmp_array_;  // used in GetCutoff.
+    QVector<KdTokenList> frame_toks; // tokens indexed by frame
 
     // fst_ is a pointer to the FST we are decoding from.
     KdFST *fst_;
 
     QVector<float> cost_offsets; //offset that keep costs close to
     // zero, to reduce roundoff errors.
-    int num_elements; // current total #toks allocated...
+    int max_state; // current total #toks allocated...
     bool warned_;
+
+    bool decoding_finalized_; // true if someone called FinalizeDecoding().
 
     unordered_map<KdToken2*, float> final_costs_;
     float final_relative_cost_;
     float final_best_cost_;
     float adaptive_beam; //updates in getcutoff
 
-    void DeleteElems(Elem *list);
-
+    void ClaerAllToks();
     void ClearActiveTokens();
     void printActive();
 };
