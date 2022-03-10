@@ -44,12 +44,12 @@ public:
 
     int Decode();
 
-    void ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
-                           float *final_relative_cost, float *final_best_cost);
+
+    float ComputeFinalCosts(unordered_map<KdToken2*, float> *final_costs,
+                           float *final_relative_cost);
     static void TopSortTokens(KdToken2 *tok_list,
                               std::vector<KdToken2*> *out);
-    void createStates();
-
+    void createStates(KdLattice *ofst);
     void RawLattice(KdLattice *ofst);
     void MakeLattice(KdCompactLattice *ofst);
 
@@ -61,7 +61,6 @@ public:
 
 private:
     void checkReset();
-    void ResetDecoder();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
     QVector<BtWord> result;
 
@@ -81,7 +80,6 @@ private:
     QVector<int> silence_set; // silence phones IDs
     kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
     float effective_beam_; // the currently used beam
-    int   uframe;          // reset on ResetDecoder(utterance)
     clock_t start_t;
 };
 

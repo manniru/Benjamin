@@ -2,11 +2,14 @@
 #include <QDebug>
 
 using namespace kaldi;
-KdToken2::KdToken2(float total_cost, float e_cost, KdToken2 *next_tok)
+KdToken2::KdToken2(float total_cost, float e_cost)
 {
     tot_cost = total_cost;
     extra_cost = e_cost;
     links = NULL;
-    next = next_tok;
+    next = NULL;
+    prev = NULL;
+
     state = KD_INVALID_STATE;
+    m_state = KD_INVALID_STATE;
 }

@@ -32,17 +32,17 @@ public:
     float tot_cost;
     float extra_cost; // always >= 0
 
-    //state both used in raw lattice and decoding
-    KdStateId state; // added in benjamin
-
     ForwardLinkT *links;
-    KdToken2 *next;
+    KdToken2 *next; // used for process states(emitting and non-emitting)
+    KdToken2 *prev; // used for MakeLattice
+    KdStateId m_state; // used for MakeLattice
+    KdStateId state; // used for Decoding
     int ilabel;  // ilabel on arc
     int olabel;  // olabel on arc
     float graph_cost;  // graph cost of traversing arc (contains LM, etc.)
     float acoustic_cost;  // acoustic cost (pre-scaled) of traversing arc
 
-    KdToken2(float tot_cost, float extra_cost, KdToken2 *next);
+    KdToken2(float tot_cost, float extra_cost);
 };
 
 /*extra_cost is used in pruning tokens, to save memory.
