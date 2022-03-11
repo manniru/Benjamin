@@ -5,148 +5,143 @@ using namespace kaldi;
 
 KdDecoder::KdDecoder()
 {
-    num_elements = 0;
-    elements.SetSize(3000);  // just so on the first frame we do something reasonable.
+    max_state = 0;
+    warned_ = false;
+    decoding_finalized_ = false;
+
+    for( int i=0 ; i<MAX_STATE_COUNT ; i++ )
+    {
+        all_tokens[i] = NULL;
+    }
 }
 
 KdDecoder::~KdDecoder()
 {
-    DeleteElems(elements.Clear());
+    ClaerAllToks();
     ClearActiveTokens();
+}
+
+//frame_num would not reset
+void KdDecoder::ResetDecoder()
+{
+    ClaerAllToks();
+    InitDecoding(decodable);
 }
 
 void KdDecoder::InitDecoding(KdDecodable *dcodable)
 {
     // clean up from last time:
-    DeleteElems(elements.Clear());
+    uframe = 0;
+    decodable = dcodable;
     cost_offsets.clear();
     ClearActiveTokens();
-    warned_ = false;
-    num_elements = 0;
     final_costs_.clear();
-    KdStateId start_state = fst_->Start();
-    KALDI_ASSERT(start_state != fst::kNoStateId);
     frame_toks.resize(1);
-    KdToken2 *start_tok = new KdToken2(0.0, 0.0, NULL);
-    frame_toks[0].toks = start_tok;
-    elements.Insert(start_state, start_tok);
-    num_elements++;
+    KdToken2 *start_tok = new KdToken2(0.0, 0.0);
+    KdStateId start_state = fst_->Start();
+    start_tok->state = start_state;
+    frame_toks[0].insert(start_tok);
+    all_tokens[start_state] = start_tok;
+    max_state = 1;
     ProcessNonemitting(config_.beam);
-    decodable = dcodable;
 }
 
-// Locates a token in elements or inserts a new to frame_toks[frame]->toks
-// 'changed' true if a token created or cost changed.
-KdDecoder::Elem* KdDecoder::updateToken(
-        KdStateId state, float tot_cost, bool *changed)
+// update or inserts a new to frame_toks[frame]
+// return true if a token created or cost changed.
+bool KdDecoder::updateToken(KdStateId state, float tot_cost,
+                            KdToken2 **tok)
 {
-    int frame = frame_toks.size() - 1;
-    Elem *e_found = elements.Insert(state, NULL);
-
-    if( e_found->val==NULL )
+    bool changed = false;
+    if( all_tokens[state]==NULL )
     {
-        KdTokenList *tok_list = &frame_toks[frame];
         const float extra_cost = 0.0;
-        // tokens on the currently final frame have zero extra_cost
-        // as any of them could end up on the winning path.
-        KdToken2 *new_tok = new KdToken2 (tot_cost, extra_cost, tok_list->toks);
-        // NULL: no forward links yet
-        tok_list->toks = new_tok;
-        num_elements++;
-        e_found->val = new_tok;
-        if (changed)
-        {
-            *changed = true;
-        }
-        qDebug() << "New Tok---->" << state << "f" << frame;
+        KdToken2 *new_tok = new KdToken2(tot_cost, extra_cost);
+        new_tok->state = state;
+        frame_toks.last().insert(new_tok);
+        all_tokens[state] = new_tok;
+        changed = true;
+//        qDebug() << "New Tok---->" << state << "f" << uframe+1;
     }
-    else// replace old token
+    else// update old token
     {
-        KdToken2 *tok = e_found->val;
+        KdToken2 *tok = all_tokens[state];
         if( tok->tot_cost > tot_cost )
         {
             tok->tot_cost = tot_cost;
             // we don't allocate a new token, the old stays linked in frame_toks
             // we only replace the tot_cost
-            if (changed)
-            {
-                *changed = true;
-            }
+            changed = true;
         }
-        else
-        {
-            if (changed)
-            {
-                *changed = false;
-            }
-        }
-        qDebug() << "Upd Tok---->" << state << "f" << frame;
+//        qDebug() << "Upd Tok---->" << state << "f" << uframe+1;
     }
 //    printActive();
-    return e_found;
+    *tok = all_tokens[state];
+    return changed;
 }
 
 // Get Cutoff and Also Update adaptive_beam
-float KdDecoder::GetCutoff(Elem *list_head,
-                           Elem **best_elem)
+float KdDecoder::GetCutoff(KdToken2 **best_tok)
 {
-    float best_weight = std::numeric_limits<float>::infinity();
-    // positive == high cost == bad.
+    float best_cost = std::numeric_limits<float>::infinity();
     size_t count = 0;
-    tmp_array_.clear();
-    for (Elem *e = list_head; e != NULL; e = e->tail, count++)
+
+    std::vector<float> tmp;
+    KdToken2 *head = frame_toks[uframe].head;
+    for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        float w = e->val->tot_cost;
-        tmp_array_.push_back(w);
-        if (w < best_weight)
+        KdStateId state = tok->state;
+        if( state!=-1 )
         {
-            best_weight = w;
-            if (best_elem)
+            float cost = tok->tot_cost;
+            tmp.push_back(cost);
+            if( cost<best_cost )
             {
-                *best_elem = e;
+                best_cost = cost;
+                *best_tok = tok;
             }
+            count++;
         }
     }
 
-    float beam_cutoff = best_weight + config_.beam;
+    float beam_cutoff = best_cost + config_.beam;
     float min_active_cutoff = std::numeric_limits<float>::infinity();
     float max_active_cutoff = std::numeric_limits<float>::infinity();
 
     KALDI_VLOG(6) << "Number of tokens active on frame " << frame_num
-                  << " is " << tmp_array_.size();
+                  << " is " << tmp.size();
 
-    if (tmp_array_.size() > static_cast<size_t>(config_.max_active))
+    if( tmp.size()>config_.max_active )
     {
-        std::nth_element(tmp_array_.begin(),
-                         tmp_array_.begin() + config_.max_active,
-                         tmp_array_.end());
-        max_active_cutoff = tmp_array_[config_.max_active];
+        std::nth_element(tmp.begin(),
+                         tmp.begin() + config_.max_active,
+                         tmp.end());
+        max_active_cutoff = tmp[config_.max_active];
     }
     if (max_active_cutoff < beam_cutoff)
     {
         // max_active is tighter than beam.
-        adaptive_beam = max_active_cutoff - best_weight + config_.beam_delta;
+        adaptive_beam = max_active_cutoff - best_cost + config_.beam_delta;
         return max_active_cutoff;
     }
-    if (tmp_array_.size() > static_cast<size_t>(config_.min_active))
+    if (tmp.size() > static_cast<size_t>(config_.min_active))
     {
         if (config_.min_active == 0)
         {
-            min_active_cutoff = best_weight;
+            min_active_cutoff = best_cost;
         }
         else
         {
-            std::nth_element(tmp_array_.begin(),
-                             tmp_array_.begin() + config_.min_active,
-                             tmp_array_.size() > static_cast<size_t>(config_.max_active) ?
-                                 tmp_array_.begin() + config_.max_active :
-                                 tmp_array_.end());
-            min_active_cutoff = tmp_array_[config_.min_active];
+            std::nth_element(tmp.begin(),
+                             tmp.begin() + config_.min_active,
+                             tmp.size() > static_cast<size_t>(config_.max_active) ?
+                                 tmp.begin() + config_.max_active :
+                                 tmp.end());
+            min_active_cutoff = tmp[config_.min_active];
         }
     }
     if (min_active_cutoff > beam_cutoff)
     { // min_active is looser than beam.
-        adaptive_beam = min_active_cutoff - best_weight + config_.beam_delta;
+        adaptive_beam = min_active_cutoff - best_cost + config_.beam_delta;
         return min_active_cutoff;
     }
     else
@@ -156,34 +151,30 @@ float KdDecoder::GetCutoff(Elem *list_head,
     }
 }
 
-double KdDecoder::GetBestCutoff(Elem *best_elem)
+double KdDecoder::GetBestCutoff(KdToken2 *tok)
 {
     double cutoff = KD_INFINITY;
     int frame = cost_offsets.size();
 
     cost_offsets.push_back(0.0);
-    if( best_elem )
-    {
-        KdStateId state = best_elem->key;
-        KdToken2 *tok = best_elem->val;
-        float cost_offset = -tok->tot_cost;
 
-        for( fst::ArcIterator<KdFST> aiter(*fst_, state) ; !aiter.Done() ; aiter.Next() )
+    float cost_offset = -tok->tot_cost;
+
+    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ; !aiter.Done() ; aiter.Next() )
+    {
+        const KdArc &arc = aiter.Value();
+        if( arc.ilabel!=0 )
         {
-            const KdArc &arc = aiter.Value();
-            if( arc.ilabel!=0 )
+            float arc_cost = -decodable->LogLikelihood(frame_num, arc.ilabel);
+            float new_weight = arc.weight.Value() + (cost_offset + tok->tot_cost)
+                    + arc_cost + adaptive_beam;
+            if( new_weight<cutoff )
             {
-                float arc_cost = -decodable->LogLikelihood(frame_num, arc.ilabel);
-                float new_weight = arc.weight.Value() + (cost_offset + tok->tot_cost)
-                                 + arc_cost + adaptive_beam;
-                if( new_weight<cutoff )
-                {
-                    cutoff = new_weight;
-                }
+                cutoff = new_weight;
             }
         }
-        cost_offsets[frame] = cost_offset;
     }
+    cost_offsets[frame] = cost_offset;
 
     return cutoff;
 }
@@ -193,31 +184,38 @@ float KdDecoder::ProcessEmitting()
 {
     frame_toks.push_back(KdTokenList()); //add new frame tok
 
-    Elem *final_toks = elements.Clear();
-    Elem *best_elem = NULL;
+    KdToken2 *best_tok = NULL;//fst_->Start();
 
-    float cutoff = GetCutoff(final_toks, &best_elem);
-    float next_cutoff = GetBestCutoff(best_elem);
-    qDebug() << "best_state" << best_elem->key
-             << "cutoff" << cutoff << next_cutoff
-             << "uframe" << frame_num;
+    float cutoff = GetCutoff(&best_tok);
+    float next_cutoff = GetBestCutoff(best_tok);
+    ClaerAllToks();
+    qDebug() << "best_state"  << best_tok->state
+             << "cutoff"      << cutoff << next_cutoff
+             << "uframe"      << uframe;
     QString dbg_buf;
     int count = 0;
-    Elem *e_tail;
-    for( Elem *e=final_toks ; e!=NULL ; e=e_tail )
+    KdToken2 *head = frame_toks[uframe].head;
+
+    for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        dbg_buf += QString::number(e->key);
-        dbg_buf += "->";
         count++;
-        if( e->val->tot_cost<=cutoff )
+        KdStateId state = tok->state;
+        if( state!=-1 )
         {
-            next_cutoff = PEmittingElem(e, next_cutoff);
+            dbg_buf += QString::number(state);
+            dbg_buf += "->";
+            float cost = tok->tot_cost;
+            if( cost<=cutoff )
+            {
+                next_cutoff = PEmittingState(tok, next_cutoff);
+            }
+            //            delete all_tokens[state];
+            //delete would be dont in pruning
+//            all_tokens[state] = NULL;
         }
-        e_tail = e->tail;
-        elements.Delete(e);
     }
-    qDebug() << "ProcessEmitting---->" << count;
-    qDebug() << dbg_buf;
+//    qDebug() << "ProcessEmitting---->" << count;
+//    qDebug() << dbg_buf;
 
     frame_num++;
     return next_cutoff;
@@ -227,35 +225,36 @@ float KdDecoder::ProcessEmitting()
 void KdDecoder::ProcessNonemitting(float cutoff)
 {
     // need for reverse
+    KdToken2 *head = frame_toks.last().head;
     int count = 0;
     QString dbg_buf;
-    for (Elem *e = const_cast<Elem *>(elements.GetList()); e != NULL;  e = e->tail)
+
+    for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        KdStateId state = e->key;
-        dbg_buf += QString::number(state);
-        dbg_buf += "->";
-//        qDebug() << "NNS---->" << state;
         count++;
-        if (fst_->NumInputEpsilons(state) != 0)
+        KdStateId state = tok->state;
+        if( state!=-1 )
         {
-            PNonemittingElem(e, cutoff);
+            dbg_buf += QString::number(state);
+            dbg_buf += "->";
+            if( fst_->NumInputEpsilons(state)!=0 )
+            {
+                PNonemittingState(tok, cutoff);
+            }
         }
     }
 
-    qDebug() << "NN---->" << count
-             << "u" << frame_num;
-    qDebug() << dbg_buf;
+//    qDebug() << "NN---->" << count
+//             << "u" << frame_num;
+//    qDebug() << dbg_buf;
 }
 
-// Processes Single Emiting Elem
-float KdDecoder::PEmittingElem(Elem *e, float next_cutoff)
+// Processes Single Emiting State
+float KdDecoder::PEmittingState(KdToken2 *tok, float next_cutoff)
 {
     int frame = frame_toks.size() - 2;
 
-    KdStateId e_state = e->key;
-    KdToken2 *e_tok = e->val;
-
-    for(fst::ArcIterator<KdFST> aiter(*fst_, e_state); !aiter.Done(); aiter.Next() )
+    for(fst::ArcIterator<KdFST> aiter(*fst_, tok->state); !aiter.Done(); aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
         if( arc.ilabel!=0 )
@@ -263,7 +262,7 @@ float KdDecoder::PEmittingElem(Elem *e, float next_cutoff)
             float new_weight = decodable->LogLikelihood(frame_num, arc.ilabel);
             float ac_cost = cost_offsets[frame] - new_weight;
             float graph_cost = arc.weight.Value();
-            float tot_cost = e_tok->tot_cost + ac_cost + graph_cost;
+            float tot_cost = tok->tot_cost + ac_cost + graph_cost;
 
             if( tot_cost>=next_cutoff )
             {
@@ -271,33 +270,33 @@ float KdDecoder::PEmittingElem(Elem *e, float next_cutoff)
             }
             else if( tot_cost+adaptive_beam<next_cutoff )
             {
-                next_cutoff = tot_cost + adaptive_beam; // prune by best current token
+                // prune by best current token
+                next_cutoff = tot_cost + adaptive_beam;
             }
 
-            Elem *e_found = updateToken(arc.nextstate, tot_cost,
-                                          NULL);
-            KdToken2 *ef_tok = e_found->val;
+            KdToken2 *ef_tok;
+            updateToken(arc.nextstate, tot_cost, &ef_tok);
 
             ef_tok->ilabel = arc.ilabel;
             ef_tok->olabel = arc.olabel;
             ef_tok->graph_cost = graph_cost;
             ef_tok->acoustic_cost = ac_cost;
-//            qDebug() << "PIEE---->" << e_state
+//            qDebug() << "PIEE---->" << tok->state
 //                     << "to" << ac_cost;
             // Add ForwardLink from tok to next_tok (put on head of list tok->links)
-            e_tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
-                                       graph_cost , ac_cost, e_tok->links);
+            tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
+                                       graph_cost , ac_cost, tok->links);
+
+//            qDebug() << "h";
         }
     }
     return next_cutoff;
 }
-
-// Processes Single Non Emiting Elem
-void KdDecoder::PNonemittingElem(Elem *e, float cutoff)
+//2>/home/bijan/Project/B1
+// Processes Single Non Emiting State
+void KdDecoder::PNonemittingState(KdToken2 *tok, float cutoff)
 {
-    KdStateId e_state = e->key;
-    KdToken2 *e_tok = e->val;
-    float cur_cost = e_tok->tot_cost;
+    float cur_cost = tok->tot_cost;
     if( cur_cost>=cutoff )
     {
         return;// Don't bother processing
@@ -305,9 +304,9 @@ void KdDecoder::PNonemittingElem(Elem *e, float cutoff)
     // If "tok" has any existing forward links, delete them,
     // because we're about to regenerate them.  This is a kind
     // of non-optimality (since most states are emitting it's not a huge issue.)
-    DeleteForwardLinks(e_tok); // necessary when re-visiting
+    DeleteForwardLinks(tok); // necessary when re-visiting
 
-    for( fst::ArcIterator<KdFST> aiter(*fst_, e_state) ; !aiter.Done() ; aiter.Next() )
+    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ; !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
         if( arc.ilabel==0 ) // nonemitting
@@ -316,24 +315,23 @@ void KdDecoder::PNonemittingElem(Elem *e, float cutoff)
             float tot_cost = cur_cost + graph_cost;
             if( tot_cost<cutoff )
             {
-                bool changed;
-                Elem *e_found = updateToken(arc.nextstate, tot_cost,
-                                             &changed);
-                KdToken2 *ef_tok = e_found->val;
+                KdToken2 *ef_tok;
+                bool changed = updateToken(arc.nextstate, tot_cost,
+                                             &ef_tok);
 
                 ef_tok->ilabel = 0;
                 ef_tok->olabel = arc.olabel;
                 ef_tok->graph_cost = graph_cost;
                 ef_tok->acoustic_cost = 0;
-//                qDebug() << "PNEE---->" << e_state
+//                qDebug() << "PNEE---->" << tok->state
 //                         << "to" << graph_cost;
 
-                e_tok->links = new KdFLink(ef_tok, 0, arc.olabel,
-                                         graph_cost, 0, e_tok->links);
+                tok->links = new KdFLink(ef_tok, 0, arc.olabel,
+                                         graph_cost, 0, tok->links);
 
                 if (changed && fst_->NumInputEpsilons(arc.nextstate) != 0)
                 {
-                    PNonemittingElem(e_found, cutoff);
+                    PNonemittingState(ef_tok, cutoff);
                 }
             }
         }
@@ -353,46 +351,50 @@ void KdDecoder::DeleteForwardLinks(KdToken2 *tok)
     tok->links = NULL;
 }
 
-// the elements indexed by state. The function DeleteElems returns
-// ownership of elements structure for reuse, The KdToken pointers
-// are reference-counted and are ultimately deleted in PruneTokensForFrame,
-void KdDecoder::DeleteElems(Elem *list)
+// The KdToken pointers
+void KdDecoder::ClaerAllToks()
 {
-    for (Elem *e = list, *e_tail; e != NULL; e = e_tail)
+    for( KdStateId state=1 ; state<MAX_STATE_COUNT ; state++ )
     {
-        e_tail = e->tail;
-        elements.Delete(e);
+        if( all_tokens[state]!=NULL )
+        {
+            all_tokens[state] = NULL;
+        }
     }
 }
 
 void KdDecoder::ClearActiveTokens()
 {
-    for (size_t i = 0; i < frame_toks.size(); i++)
+    for (size_t i=0 ; i<frame_toks.size() ; i++)
     {
-        KdToken2 *tok=frame_toks[i].toks;
+        KdToken2 *tok=frame_toks[i].head;
         while( tok!=NULL )
         {
             DeleteForwardLinks(tok);
             KdToken2 *next_tok = tok->next;
             delete tok;
-            num_elements--;
+            max_state--;
             tok = next_tok;
         }
     }
     frame_toks.clear();
-    KALDI_ASSERT(num_elements == 0);
 }
 
 void KdDecoder::printActive()
 {
-    int count = 0;
     QString dbg_buf;
-    for (Elem *e = const_cast<Elem *>(elements.GetList()); e != NULL;  e = e->tail)
+    int count = 0;
+    KdToken2 *head = frame_toks.last().head;
+
+    for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        KdStateId state = e->key;
-        dbg_buf += QString::number(state);
-        dbg_buf += "->";
         count++;
+        KdStateId state = tok->state;
+        if( state!=-1 )
+        {
+            dbg_buf += QString::number(state);
+            dbg_buf += "->";
+        }
     }
 
     qDebug() << "<---- STATE" << count
@@ -400,4 +402,3 @@ void KdDecoder::printActive()
     qDebug() << dbg_buf;
     qDebug() << "-------------";
 }
-
