@@ -3,6 +3,7 @@
 
 using namespace kaldi;
 QString dbg_times;
+#define BT_MIN_SIL 9 //100ms ((x+1)*100)
 
 KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
                                    kaldi::TransitionModel &trans_model):
@@ -16,6 +17,7 @@ KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
     config_ = opts;
 
     silence_set = sil_phones;
+    uframe = 0;
     effective_beam_ = opts.beam;
     start_t = clock();
 }
@@ -36,7 +38,6 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
     {
         for( KdToken2 *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
         {
-            QString dbg_buf;
             KdFLink *link;
             for ( link=tok->links; link!=NULL; link=link->next )
             {
@@ -48,15 +49,6 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                     KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
                     cost_offset = cost_offsets[f];
                 }
-                dbg_buf += "[";
-                dbg_buf += QString::number(link->ilabel);
-                dbg_buf += ",";
-                dbg_buf += QString::number(link->acoustic_cost);
-                dbg_buf += ",";
-                dbg_buf += QString::number(cost_offset);
-                dbg_buf += ",";
-                dbg_buf += QString::number(link->graph_cost);
-                dbg_buf += "->";
                 KdLatticeArc::Weight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
                 KdLatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
                 ofst->AddArc(tok->m_state, arc);
@@ -69,8 +61,6 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                             iter = final_costs.find(tok);
                     if( iter!=final_costs.end() )
                     {
-                        qDebug() << "FF---->" << iter->second;
-//                        LatticeWeight w = LatticeWeight(iter->second, 0);
                         ofst->SetFinal(tok->m_state, LatticeWeight(iter->second, 0));
                     }
                 }
@@ -79,10 +69,6 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                     ofst->SetFinal(tok->m_state, LatticeWeight::One());
                 }
             }
-
-//            qDebug() << "RL---->" << tok->m_state
-//                     << "u" << f;
-//            qDebug() << dbg_buf;
         }
     }
 }
@@ -104,15 +90,12 @@ float KdOnlineLDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *fina
     float best_cost = infinity;
     float best_cost_with_final = infinity;
     KdToken2 *head = frame_toks.last().head;
-    QString dbg_buf;
 
     for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
     {
         KdStateId state = tok->state;
         if( state!=-1 )
         {
-            dbg_buf += QString::number(state);
-            dbg_buf += "->";
             float final_cost = fst_->Final(state).Value();
             float cost = tok->tot_cost;
             float cost_with_final = cost + final_cost;
@@ -124,8 +107,6 @@ float KdOnlineLDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *fina
             }
         }
     }
-    qDebug() << "ComputeFinalCosts---->" << best_cost;
-    qDebug() << dbg_buf;
     if (final_relative_cost != NULL)
     {
         if (best_cost == infinity && best_cost_with_final == infinity)
@@ -167,18 +148,10 @@ void KdOnlineLDecoder::TopSortTokens(KdToken2 *tok_list,
     // This is likely to be in closer to topological order than
     // if we had given them ascending order, because of the way
     // new tokens are put at the front of the list.
-    QString dbg_buf;
-    int count = 0;
     for (KdToken2 *tok = tok_list; tok != NULL; tok = tok->prev)
     {
-        count++;
-        dbg_buf += QString::number(tok->olabel);
-        dbg_buf += "->";
         token2pos[tok] = num_toks - ++cur_pos;
     }
-//    qDebug() << "TPS---->" << num_toks
-//             << "u" << count;
-//    qDebug() << dbg_buf;
 
     unordered_set<KdToken2*> reprocess;
 
@@ -316,13 +289,10 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 
 void KdOnlineLDecoder::CalcFinal()
 {
-    int min_diff = 10; // 150 ms
     int word_count = result.size();
     QString buf;
     for( int i=0 ; i<word_count ; i++ )
     {
-        int f_end = floor(result[i].end*100);
-
         if( i==0 )
         {
             if( result[i].end<0.15 )
@@ -333,11 +303,15 @@ void KdOnlineLDecoder::CalcFinal()
             }
         }
 
-        if( ((uframe-f_end)>min_diff) )
+        int f_end = result[i].end*100;
+        if( (uframe-f_end)>BT_MIN_SIL )
         {
             result[i].is_final = 1;
         }
         buf += result[i].word;
+        buf += "(";
+        buf += QString::number(f_end);
+        buf += ")";
         buf += " ";
     }
 

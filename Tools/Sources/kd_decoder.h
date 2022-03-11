@@ -79,7 +79,6 @@ protected:
 
     void ClaerAllToks();
     void ClearActiveTokens();
-    void printActive();
 };
 
 

@@ -60,7 +60,6 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
         frame_toks.last().insert(new_tok);
         all_tokens[state] = new_tok;
         changed = true;
-//        qDebug() << "New Tok---->" << state << "f" << uframe+1;
     }
     else// update old token
     {
@@ -72,9 +71,7 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
             // we only replace the tot_cost
             changed = true;
         }
-//        qDebug() << "Upd Tok---->" << state << "f" << uframe+1;
     }
-//    printActive();
     *tok = all_tokens[state];
     return changed;
 }
@@ -189,33 +186,20 @@ float KdDecoder::ProcessEmitting()
     float cutoff = GetCutoff(&best_tok);
     float next_cutoff = GetBestCutoff(best_tok);
     ClaerAllToks();
-    qDebug() << "best_state"  << best_tok->state
-             << "cutoff"      << cutoff << next_cutoff
-             << "uframe"      << uframe;
-    QString dbg_buf;
-    int count = 0;
     KdToken2 *head = frame_toks[uframe].head;
 
     for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        count++;
         KdStateId state = tok->state;
         if( state!=-1 )
         {
-            dbg_buf += QString::number(state);
-            dbg_buf += "->";
             float cost = tok->tot_cost;
             if( cost<=cutoff )
             {
                 next_cutoff = PEmittingState(tok, next_cutoff);
             }
-            //            delete all_tokens[state];
-            //delete would be dont in pruning
-//            all_tokens[state] = NULL;
         }
     }
-//    qDebug() << "ProcessEmitting---->" << count;
-//    qDebug() << dbg_buf;
 
     frame_num++;
     return next_cutoff;
@@ -226,27 +210,18 @@ void KdDecoder::ProcessNonemitting(float cutoff)
 {
     // need for reverse
     KdToken2 *head = frame_toks.last().head;
-    int count = 0;
-    QString dbg_buf;
 
     for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        count++;
         KdStateId state = tok->state;
         if( state!=-1 )
         {
-            dbg_buf += QString::number(state);
-            dbg_buf += "->";
             if( fst_->NumInputEpsilons(state)!=0 )
             {
                 PNonemittingState(tok, cutoff);
             }
         }
     }
-
-//    qDebug() << "NN---->" << count
-//             << "u" << frame_num;
-//    qDebug() << dbg_buf;
 }
 
 // Processes Single Emiting State
@@ -281,18 +256,14 @@ float KdDecoder::PEmittingState(KdToken2 *tok, float next_cutoff)
             ef_tok->olabel = arc.olabel;
             ef_tok->graph_cost = graph_cost;
             ef_tok->acoustic_cost = ac_cost;
-//            qDebug() << "PIEE---->" << tok->state
-//                     << "to" << ac_cost;
             // Add ForwardLink from tok to next_tok (put on head of list tok->links)
             tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
                                        graph_cost , ac_cost, tok->links);
-
-//            qDebug() << "h";
         }
     }
     return next_cutoff;
 }
-//2>/home/bijan/Project/B1
+
 // Processes Single Non Emiting State
 void KdDecoder::PNonemittingState(KdToken2 *tok, float cutoff)
 {
@@ -323,8 +294,6 @@ void KdDecoder::PNonemittingState(KdToken2 *tok, float cutoff)
                 ef_tok->olabel = arc.olabel;
                 ef_tok->graph_cost = graph_cost;
                 ef_tok->acoustic_cost = 0;
-//                qDebug() << "PNEE---->" << tok->state
-//                         << "to" << graph_cost;
 
                 tok->links = new KdFLink(ef_tok, 0, arc.olabel,
                                          graph_cost, 0, tok->links);
@@ -378,27 +347,4 @@ void KdDecoder::ClearActiveTokens()
         }
     }
     frame_toks.clear();
-}
-
-void KdDecoder::printActive()
-{
-    QString dbg_buf;
-    int count = 0;
-    KdToken2 *head = frame_toks.last().head;
-
-    for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
-    {
-        count++;
-        KdStateId state = tok->state;
-        if( state!=-1 )
-        {
-            dbg_buf += QString::number(state);
-            dbg_buf += "->";
-        }
-    }
-
-    qDebug() << "<---- STATE" << count
-             << "---->";
-    qDebug() << dbg_buf;
-    qDebug() << "-------------";
 }

@@ -42,7 +42,7 @@ void BtTest::init()
 void BtTest::startDecode()
 {
     float acoustic_scale = 0.05;
-    int chunk_size = 1600; // 1000ms
+    int chunk_size = 16000; // 1000ms
 
     KdDecodable decodable(NULL, o2_model,
                              acoustic_scale);
@@ -67,7 +67,7 @@ void BtTest::startDecode()
         {
             status.word_count = 0;
         }
-        exit(0);
+//        exit(0);
     }
 }
 
