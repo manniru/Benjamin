@@ -24,11 +24,8 @@ KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
 
 void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
 {
+    float infinity = std::numeric_limits<float>::infinity();
     int end = frame_toks.size();
-    unordered_map<KdToken2*, float> final_costs;
-    ComputeFinalCosts(&final_costs, NULL);
-    dbg_times += " F:";
-    dbg_times += getLDiffTime();
     createStates(ofst);
     dbg_times += " C:";
     dbg_times += getLDiffTime();
@@ -53,85 +50,17 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                 KdLatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
                 ofst->AddArc(tok->m_state, arc);
             }
-            if( f==end-1 )
+            if( f==end-1 ) //final frame
             {
-                if( !final_costs.empty() )
+                float final_cost = fst_->Final(tok->state).Value();
+                if( final_cost==infinity )
                 {
-                    unordered_map<KdToken2*, float>::const_iterator
-                            iter = final_costs.find(tok);
-                    if( iter!=final_costs.end() )
-                    {
-                        ofst->SetFinal(tok->m_state, LatticeWeight(iter->second, 0));
-                    }
+                    final_cost = 0;
                 }
-                else
-                {
-                    ofst->SetFinal(tok->m_state, LatticeWeight::One());
-                }
+                ofst->SetFinal(tok->m_state, LatticeWeight(final_cost, 0));
             }
         }
     }
-}
-
-
-// computes final-costs for the final frame. It outputs to final-costs, a map from the KdToken*
-// pointer to the final-prob of the corresponding state, for all Tokens
-// that correspond to states that have final-probs.
-// return final_best_cost
-float KdOnlineLDecoder::ComputeFinalCosts(unordered_map<KdToken2 *, float> *final_costs,
-                                         float *final_relative_cost)
-{
-    KALDI_ASSERT(!decoding_finalized_);
-    if( final_costs!=NULL )
-    {
-        final_costs->clear();
-    }
-    float infinity = std::numeric_limits<float>::infinity();
-    float best_cost = infinity;
-    float best_cost_with_final = infinity;
-    KdToken2 *head = frame_toks.last().head;
-
-    for( KdToken2 *tok=head ; tok!=NULL ; tok=tok->next )
-    {
-        KdStateId state = tok->state;
-        if( state!=-1 )
-        {
-            float final_cost = fst_->Final(state).Value();
-            float cost = tok->tot_cost;
-            float cost_with_final = cost + final_cost;
-            best_cost = std::min(cost, best_cost);
-            best_cost_with_final = std::min(cost_with_final, best_cost_with_final);
-            if( final_costs!=NULL && final_cost!=infinity )
-            {
-                (*final_costs)[tok] = final_cost;
-            }
-        }
-    }
-    if (final_relative_cost != NULL)
-    {
-        if (best_cost == infinity && best_cost_with_final == infinity)
-        {
-            // Likely this will only happen if there are no tokens surviving.
-            // This seems the least bad way to handle it.
-            *final_relative_cost = infinity;
-        }
-        else
-        {
-            *final_relative_cost = best_cost_with_final - best_cost;
-        }
-    }
-
-    float final_best_cost;
-    if (best_cost_with_final != infinity)
-    { // final-state exists.
-        final_best_cost = best_cost_with_final;
-    }
-    else // no final-state exists.
-    {
-        final_best_cost = best_cost;
-    }
-
-    return final_best_cost;
 }
 
 // outputs a list in topological order
@@ -374,7 +303,7 @@ void KdOnlineLDecoder::checkReset()
 {
     dbg_times += " E:";
     dbg_times += getDiffTime(start_t);
-//    qDebug() << "Check Reset" << dbg_times;
+    qDebug() << "Check Reset" << dbg_times;
     if( status.state==KD_STATE_NULL ||
         status.state==KD_STATE_BLOWN  )
     {
@@ -402,14 +331,3 @@ void KdOnlineLDecoder::checkReset()
     start_t = clock();
     dbg_times = "";
 }
-
-//sample_rate: 16000 channel: 2 chunk_size: 57344
-//Check Reset " E:15ms"
-//Check Reset "S:0ms F:0ms C:30ms R:27ms P:68ms D:7ms E:193ms"
-//>>>  1.93 194 "delta oscar mike " 3
-//Check Reset "S:0ms F:0ms C:57ms R:50ms P:126ms D:11ms E:297ms"
-//>>>  2.93 294 "delta oscar mike super one " 5
-//Check Reset "S:0ms F:0ms C:87ms R:78ms P:193ms D:17ms E:436ms"
-//>>>  3.43 394 "delta oscar mike super one november " 6
-//Check Reset "S:0ms F:0ms C:108ms R:97ms P:243ms D:24ms E:523ms"
-//------------Reset Sil 343 51 394
