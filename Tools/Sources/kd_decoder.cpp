@@ -42,7 +42,7 @@ void KdDecoder::InitDecoding(KdDecodable *dcodable)
     frame_toks[0].insert(start_tok);
     all_tokens[start_state] = start_tok;
     max_state = 1;
-    ProcessNonemitting(config_.beam);
+    ProcessNonemitting(config.beam);
 }
 
 // update or inserts a new to frame_toks[frame]
@@ -99,50 +99,50 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
         }
     }
 
-    float beam_cutoff = best_cost + config_.beam;
+    float beam_cutoff = best_cost + config.beam;
     float min_active_cutoff = std::numeric_limits<float>::infinity();
     float max_active_cutoff = std::numeric_limits<float>::infinity();
 
     KALDI_VLOG(6) << "Number of tokens active on frame " << frame_num
                   << " is " << tmp.size();
 
-    if( tmp.size()>config_.max_active )
+    if( tmp.size()>config.max_active )
     {
         std::nth_element(tmp.begin(),
-                         tmp.begin() + config_.max_active,
+                         tmp.begin() + config.max_active,
                          tmp.end());
-        max_active_cutoff = tmp[config_.max_active];
+        max_active_cutoff = tmp[config.max_active];
     }
     if (max_active_cutoff < beam_cutoff)
     {
         // max_active is tighter than beam.
-        adaptive_beam = max_active_cutoff - best_cost + config_.beam_delta;
+        adaptive_beam = max_active_cutoff - best_cost + config.beam_delta;
         return max_active_cutoff;
     }
-    if (tmp.size() > static_cast<size_t>(config_.min_active))
+    if (tmp.size() > static_cast<size_t>(config.min_active))
     {
-        if (config_.min_active == 0)
+        if (config.min_active == 0)
         {
             min_active_cutoff = best_cost;
         }
         else
         {
             std::nth_element(tmp.begin(),
-                             tmp.begin() + config_.min_active,
-                             tmp.size() > static_cast<size_t>(config_.max_active) ?
-                                 tmp.begin() + config_.max_active :
+                             tmp.begin() + config.min_active,
+                             tmp.size() > static_cast<size_t>(config.max_active) ?
+                                 tmp.begin() + config.max_active :
                                  tmp.end());
-            min_active_cutoff = tmp[config_.min_active];
+            min_active_cutoff = tmp[config.min_active];
         }
     }
     if (min_active_cutoff > beam_cutoff)
     { // min_active is looser than beam.
-        adaptive_beam = min_active_cutoff - best_cost + config_.beam_delta;
+        adaptive_beam = min_active_cutoff - best_cost + config.beam_delta;
         return min_active_cutoff;
     }
     else
     {
-        adaptive_beam = config_.beam;
+        adaptive_beam = config.beam;
         return beam_cutoff;
     }
 }

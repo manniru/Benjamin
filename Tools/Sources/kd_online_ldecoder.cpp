@@ -5,8 +5,7 @@ using namespace kaldi;
 QString dbg_times;
 #define BT_MIN_SIL 9 //100ms ((x+1)*100)
 
-KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
-                                   kaldi::TransitionModel &trans_model):
+KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel &trans_model):
     trans_model_(trans_model)
 {
     fst_ = kd_readDecodeGraph(BT_FST_PATH);
@@ -14,12 +13,12 @@ KdOnlineLDecoder::KdOnlineLDecoder(QVector<int> sil_phones,
     opts.max_active = 7000;
     opts.lattice_beam = 6.0;
 
-    config_ = opts;
+    config = opts;
 
-    silence_set = sil_phones;
     uframe = 0;
     effective_beam_ = opts.beam;
     start_t = clock();
+    last_cache_f = 0;
 }
 
 void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
@@ -27,10 +26,11 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
     float infinity = std::numeric_limits<float>::infinity();
     int end = frame_toks.size();
     createStates(ofst);
+
     dbg_times += " C:";
     dbg_times += getLDiffTime();
 
-    // Now create all arcs.
+    // Now add arcs
     for( int f=0 ; f<end ; f++ )
     {
         for( KdToken *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
@@ -50,139 +50,46 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                 KdLatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
                 ofst->AddArc(tok->m_state, arc);
             }
-            if( f==end-1 ) //final frame
-            {
-                float final_cost = fst_->Final(tok->state).Value();
-                if( final_cost==infinity )
-                {
-                    final_cost = 0;
-                }
-                ofst->SetFinal(tok->m_state, LatticeWeight(final_cost, 0));
-            }
         }
     }
-}
 
-// outputs a list in topological order
-void KdOnlineLDecoder::TopSortTokens(KdToken *tok_list,
-                                     std::vector<KdToken *> *out)
-{
-    unordered_map<KdToken*, int> token2pos;
-    typedef typename unordered_map<KdToken*, int>::iterator IterType;
-    int num_toks = 0;
-    for (KdToken *tok = tok_list; tok != NULL; tok = tok->prev)
-        num_toks++;
-    int cur_pos = 0;
-    // We assign the tokens numbers num_toks - 1, ... , 2, 1, 0.
-    // This is likely to be in closer to topological order than
-    // if we had given them ascending order, because of the way
-    // new tokens are put at the front of the list.
-    for (KdToken *tok = tok_list; tok != NULL; tok = tok->prev)
+    // set final cost
+    for( KdToken *tok=frame_toks[end-1].tail ; tok!=NULL ; tok=tok->prev )
     {
-        token2pos[tok] = num_toks - ++cur_pos;
-    }
-
-    unordered_set<KdToken*> reprocess;
-
-    for( IterType iter=token2pos.begin() ; iter!=token2pos.end() ; ++iter )
-    {
-        KdToken *tok = iter->first;
-        int pos = iter->second;
-        for (KdFLink *link = tok->links; link != NULL; link = link->next)
+        //this should not be m_state
+        float final_cost = fst_->Final(tok->state).Value();
+        if( final_cost==infinity )
         {
-            if (link->ilabel == 0)
-            {
-                // We only need to consider epsilon links, since non-epsilon links
-                // transition between frames and this function only needs to sort a list
-                // of tokens from a single frame.
-                IterType following_iter = token2pos.find(link->next_tok);
-                if (following_iter != token2pos.end())
-                { // another token on this frame,
-                    // so must consider it.
-                    int next_pos = following_iter->second;
-                    if (next_pos < pos)
-                    { // reassign the position of the next KdToken.
-                        following_iter->second = cur_pos++;
-                        reprocess.insert(link->next_tok);
-                    }
-                }
-            }
+            final_cost = 0;
         }
-        // In case we had previously assigned this token to be reprocessed, we can
-        // erase it from that set because it's "happy now" (we just processed it).
-        reprocess.erase(tok);
-    }
-
-    size_t max_loop = 1000000;
-    size_t loop_count; // max_loop is to detect epsilon cycles.
-    for( loop_count=0 ; !reprocess.empty() && loop_count<max_loop; ++loop_count )
-    {
-        std::vector<KdToken*> reprocess_vec;
-        for (typename unordered_set<KdToken*>::iterator iter = reprocess.begin();
-             iter != reprocess.end(); ++iter)
-            reprocess_vec.push_back(*iter);
-        reprocess.clear();
-        for (typename std::vector<KdToken*>::iterator iter = reprocess_vec.begin();
-             iter != reprocess_vec.end(); ++iter) {
-            KdToken *tok = *iter;
-            int pos = token2pos[tok];
-            // Repeat the processing we did above (for comments, see above).
-            for (KdFLink *link = tok->links; link != NULL; link = link->next)
-            {
-                if (link->ilabel == 0)
-                {
-                    IterType following_iter = token2pos.find(link->next_tok);
-                    if (following_iter != token2pos.end())
-                    {
-                        int next_pos = following_iter->second;
-                        if (next_pos < pos)
-                        {
-                            following_iter->second = cur_pos++;
-                            reprocess.insert(link->next_tok);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    out->clear();
-    out->resize(cur_pos, NULL);
-    for (IterType iter = token2pos.begin(); iter != token2pos.end(); ++iter)
-    {
-        (*out)[iter->second] = iter->first;
-    }
-}
-
-void KdOnlineLDecoder::createStates(KdLattice *ofst)
-{
-    int end = frame_toks.size();
-    ofst->DeleteStates();
-    last_cache_f = 0;
-
-    // First create all states.
-    std::vector<KdToken*> token_list;
-    for( int f=last_cache_f ; f<end ; f++ )
-    {
-        last_cache_f++;
-        TopSortTokens(frame_toks[f].tail, &token_list);
-
-        for( size_t i=0 ; i<token_list.size() ; i++ )
-        {
-            if( token_list[i]!=NULL )
-            {
-                token_list[i]->m_state = ofst->AddState();
-            }
-        }
+        ofst->SetFinal(tok->m_state, LatticeWeight(final_cost, 0));
     }
 
     ofst->SetStart(0);// sets the start state
 }
 
+void KdOnlineLDecoder::createStates(KdLattice *ofst)
+{
+    int end = frame_toks.size();
+    last_cache_f = 0;
+    ofst->DeleteStates();
+
+    // First create all states.
+    for( int f=last_cache_f ; f<end ; f++ )
+    {
+        last_cache_f++;
+
+        for( KdToken *tok=frame_toks[f].head ; tok!=NULL ; tok=tok->next )
+        {
+            tok->m_state = ofst->AddState();
+        }
+    }
+}
+
 void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 {
     KdLattice raw_fst;
-    double lat_beam = config_.lattice_beam;
+    double lat_beam = config.lattice_beam;
     getDiffTime(start_t);
     dbg_times += "S:";
     dbg_times += getLDiffTime();
@@ -194,7 +101,7 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
     dbg_times += " P:";
     dbg_times += getLDiffTime();
     kd_detLatPhonePrunedW(trans_model_, &raw_fst,
-                          lat_beam, ofst, config_.det_opts);
+                          lat_beam, ofst, config.det_opts);
     dbg_times += " D:";
     dbg_times += getLDiffTime();
 }
@@ -288,7 +195,7 @@ int KdOnlineLDecoder::Decode()
 //    for ( frame=0 ; frame<opts.batch_size ; frame++ )
     while( frame_num<frame_max )
     {
-        if ( (uframe%config_.prune_interval)==0 )
+        if ( (uframe%config.prune_interval)==0 )
         {
 //            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
         }

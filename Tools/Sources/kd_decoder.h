@@ -30,7 +30,6 @@ struct KdDecoderConfig
 class KdDecoder
 {
 public:
-    KdDecoderConfig config_;
     KdDecoder();
     ~KdDecoder();
 
@@ -63,6 +62,7 @@ protected:
     // fst_ is a pointer to the FST we are decoding from.
     KdFST *fst_;
 
+    KdDecoderConfig config;
     QVector<float> cost_offsets; //offset that keep costs close to
     // zero, to reduce roundoff errors.
     int max_state; // current total #toks allocated...

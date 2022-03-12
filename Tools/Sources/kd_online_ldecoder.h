@@ -39,13 +39,10 @@ class KdOnlineLDecoder : public KdDecoder
 {
 public:
     // "sil_phones" - the IDs of all silence phones
-    KdOnlineLDecoder(QVector<int> sil_phones,
-                     kaldi::TransitionModel &trans_model);
+    KdOnlineLDecoder(kaldi::TransitionModel &trans_model);
 
     int Decode();
 
-    static void TopSortTokens(KdToken *tok_list,
-                              std::vector<KdToken*> *out);
     void createStates(KdLattice *ofst);
     void RawLattice(KdLattice *ofst);
     void MakeLattice(KdCompactLattice *ofst);
@@ -72,9 +69,9 @@ private:
     // cache FSTs
     int       last_cache_f; // last cache frame
     KdLattice cache_fst1; //used for createStates
+    KdLattice cache_fst2; //used for addArcs
 
     KdOnlineLDecoderOpts opts;
-    QVector<int> silence_set; // silence phones IDs
     kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
     float effective_beam_; // the currently used beam
     clock_t start_t;

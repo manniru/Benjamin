@@ -22,7 +22,6 @@ void BtTest::init()
     status.word_count = 0;
 
     std::string model_rxfilename = BT_OAMDL_PATH;
-    QVector<int> silence_phones = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     TransitionModel *trans_model = new TransitionModel;
     AmDiagGmm       *am_gmm = new AmDiagGmm;
@@ -35,7 +34,7 @@ void BtTest::init()
     std::string online_alimdl = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
     o2_model = new KdOnline2Model(trans_model, am_gmm, online_alimdl);
 
-    o_decoder = new KdOnlineLDecoder(silence_phones, *trans_model);
+    o_decoder = new KdOnlineLDecoder(*trans_model);
     startDecode();
 }
 
