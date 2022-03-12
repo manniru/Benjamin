@@ -44,8 +44,8 @@ public:
 
     int Decode();
 
-    static void TopSortTokens(KdToken2 *tok_list,
-                              std::vector<KdToken2*> *out);
+    static void TopSortTokens(KdToken *tok_list,
+                              std::vector<KdToken*> *out);
     void createStates(KdLattice *ofst);
     void RawLattice(KdLattice *ofst);
     void MakeLattice(KdCompactLattice *ofst);
@@ -64,7 +64,7 @@ private:
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token
     void TracebackNFrames(int nframes, KdLattice *out_fst);
-    KdToken2* getBestTok();
+    KdToken* getBestTok();
 
     // Searches for the last token, ancestor of all currently active tokens
     void UpdateImmortalToken();

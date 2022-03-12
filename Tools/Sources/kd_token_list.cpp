@@ -7,7 +7,7 @@ KdTokenList::KdTokenList()
     tail = NULL;
 }
 
-void KdTokenList::insert(KdToken2 *tok)
+void KdTokenList::insert(KdToken *tok)
 {
     if( head==NULL )
     {

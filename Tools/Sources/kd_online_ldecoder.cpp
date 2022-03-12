@@ -33,7 +33,7 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
     // Now create all arcs.
     for( int f=0 ; f<end ; f++ )
     {
-        for( KdToken2 *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
+        for( KdToken *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
         {
             KdFLink *link;
             for ( link=tok->links; link!=NULL; link=link->next )
@@ -64,29 +64,29 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
 }
 
 // outputs a list in topological order
-void KdOnlineLDecoder::TopSortTokens(KdToken2 *tok_list,
-                                     std::vector<KdToken2 *> *out)
+void KdOnlineLDecoder::TopSortTokens(KdToken *tok_list,
+                                     std::vector<KdToken *> *out)
 {
-    unordered_map<KdToken2*, int> token2pos;
-    typedef typename unordered_map<KdToken2*, int>::iterator IterType;
+    unordered_map<KdToken*, int> token2pos;
+    typedef typename unordered_map<KdToken*, int>::iterator IterType;
     int num_toks = 0;
-    for (KdToken2 *tok = tok_list; tok != NULL; tok = tok->prev)
+    for (KdToken *tok = tok_list; tok != NULL; tok = tok->prev)
         num_toks++;
     int cur_pos = 0;
     // We assign the tokens numbers num_toks - 1, ... , 2, 1, 0.
     // This is likely to be in closer to topological order than
     // if we had given them ascending order, because of the way
     // new tokens are put at the front of the list.
-    for (KdToken2 *tok = tok_list; tok != NULL; tok = tok->prev)
+    for (KdToken *tok = tok_list; tok != NULL; tok = tok->prev)
     {
         token2pos[tok] = num_toks - ++cur_pos;
     }
 
-    unordered_set<KdToken2*> reprocess;
+    unordered_set<KdToken*> reprocess;
 
     for( IterType iter=token2pos.begin() ; iter!=token2pos.end() ; ++iter )
     {
-        KdToken2 *tok = iter->first;
+        KdToken *tok = iter->first;
         int pos = iter->second;
         for (KdFLink *link = tok->links; link != NULL; link = link->next)
         {
@@ -117,14 +117,14 @@ void KdOnlineLDecoder::TopSortTokens(KdToken2 *tok_list,
     size_t loop_count; // max_loop is to detect epsilon cycles.
     for( loop_count=0 ; !reprocess.empty() && loop_count<max_loop; ++loop_count )
     {
-        std::vector<KdToken2*> reprocess_vec;
-        for (typename unordered_set<KdToken2*>::iterator iter = reprocess.begin();
+        std::vector<KdToken*> reprocess_vec;
+        for (typename unordered_set<KdToken*>::iterator iter = reprocess.begin();
              iter != reprocess.end(); ++iter)
             reprocess_vec.push_back(*iter);
         reprocess.clear();
-        for (typename std::vector<KdToken2*>::iterator iter = reprocess_vec.begin();
+        for (typename std::vector<KdToken*>::iterator iter = reprocess_vec.begin();
              iter != reprocess_vec.end(); ++iter) {
-            KdToken2 *tok = *iter;
+            KdToken *tok = *iter;
             int pos = token2pos[tok];
             // Repeat the processing we did above (for comments, see above).
             for (KdFLink *link = tok->links; link != NULL; link = link->next)
@@ -161,7 +161,7 @@ void KdOnlineLDecoder::createStates(KdLattice *ofst)
     last_cache_f = 0;
 
     // First create all states.
-    std::vector<KdToken2*> token_list;
+    std::vector<KdToken*> token_list;
     for( int f=last_cache_f ; f<end ; f++ )
     {
         last_cache_f++;

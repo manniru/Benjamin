@@ -2,17 +2,17 @@
 #define KD_TOKEN_LIST_H
 
 #include "kd_lattice.h"
-#include "kd_token2.h"
+#include "kd_token.h"
 
 class KdTokenList
 {
 public:
     KdTokenList();
 
-    void insert(KdToken2 *tok);
+    void insert(KdToken *tok);
 
-    KdToken2 *head = NULL;
-    KdToken2 *tail = NULL;
+    KdToken *head = NULL;
+    KdToken *tail = NULL;
     bool prune_forward_links = true;
     bool prune_tokens = true;
 };

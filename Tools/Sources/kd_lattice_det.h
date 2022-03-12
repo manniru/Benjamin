@@ -2,7 +2,7 @@
 #define KD_LATTICE_DET_H
 
 #include<QVector>
-#include "kd_token2.h"
+#include "kd_token.h"
 #include "kd_lattice.h"
 #include "kd_lattice_compact.h"
 

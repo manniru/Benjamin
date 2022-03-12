@@ -2,11 +2,10 @@
 #define KD_DECODER_H
 
 #include<QVector>
-#include "kd_token2.h"
+#include "kd_token.h"
 #include "kd_token_list.h"
 #include "kd_lattice_functions.h"
 #include "kd_decodable.h"
-#include <util/hash-list.h>
 
 // what is determinization?
 
@@ -15,16 +14,16 @@
 
 struct KdDecoderConfig
 {
-  float beam = 16;
-  int32 max_active = 16000;
-  int32 min_active = 200;
-  float lattice_beam = 10.0;
-  int32 prune_interval = 25;
-  float beam_delta = 0.5;
-  float hash_ratio = 2.0;
-  float prune_scale = 0.1; // not a very important parameter.
+    float beam = 16;
+    int32 max_active = 16000;
+    int32 min_active = 200;
+    float lattice_beam = 10.0;
+    int32 prune_interval = 25;
+    float beam_delta = 0.5;
+    float hash_ratio = 2.0;
+    float prune_scale = 0.1; // not a very important parameter.
 
-  KdPrunedOpt det_opts;
+    KdPrunedOpt det_opts;
 };
 
 // KdLatticeDecoder
@@ -42,22 +41,21 @@ public:
     int  uframe;       // reset on ResetDecoder(utterance)
 protected:
     // protected so classes which inherits also have access
-    inline static void DeleteForwardLinks(KdToken2 *tok);
-
     bool updateToken(KdStateId state, float  tot_cost,
-                     KdToken2 **tok);
+                     KdToken **tok);
 
-    float GetCutoff(KdToken2 **best_tok);
-    double GetBestCutoff(KdToken2 *tok);
+    float GetCutoff(KdToken **best_tok);
+    double GetBestCutoff(KdToken *tok);
 
     float ProcessEmitting();
-    float PEmittingState(KdToken2 *tok, float next_cutoff);
+    float PEmittingState(KdToken *tok, float next_cutoff);
     void  ProcessNonemitting(float cost_cutoff);
-    void  PNonemittingState(KdToken2 *tok, float cutoff);
+    void  PNonemittingState(KdToken *tok, float cutoff);
     void  updateMaxState(KdStateId state);
 
+    void DeleteForwardLinks(KdToken *tok);
     // map from tokens in the current frame to state id
-    KdToken2    *all_tokens[MAX_STATE_COUNT];
+    KdToken    *all_tokens[MAX_STATE_COUNT];
     KdDecodable *decodable;
 
     QVector<KdTokenList> frame_toks; // tokens indexed by frame
@@ -72,7 +70,6 @@ protected:
 
     bool decoding_finalized_; // true if someone called FinalizeDecoding().
 
-    unordered_map<KdToken2*, float> final_costs_;
     float final_relative_cost_;
     float final_best_cost_;
     float adaptive_beam; //updates in getcutoff
