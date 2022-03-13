@@ -11,8 +11,8 @@ struct GammaCompare
     // > that looks first at the posterior.
     bool operator () (const std::pair<int, float> &a,
                       const std::pair<int, float> &b) const {
-        if (a.second > b.second) return true;
-        else if (a.second < b.second) return false;
+        if( a.second > b.second) return true;
+        else if( a.second < b.second) return false;
         else return a.first > b.first;
     }
 };
@@ -86,7 +86,7 @@ void KdMBR::MbrDecode()
                 int s = 0;
                 for( int j=0 ; j<gamma_[q].size() ; j++ )
                 {
-                    if (gamma_[q][j].first == one_best_id[q])
+                    if( gamma_[q][j].first == one_best_id[q])
                     {
                         s = j;
                         break;
@@ -95,7 +95,7 @@ void KdMBR::MbrDecode()
                 one_best_times.push_back(times_[q][s]);
                 // post-process the times,
                 size_t i = one_best_times.size();
-                if (i > 1 && one_best_times[i-2].second > one_best_times[i-1].first)
+                if( i > 1 && one_best_times[i-2].second > one_best_times[i-1].first)
                 {
                     // It's quite possible for this to happen, but it seems like it would
                     // have a bad effect on the downstream processing, so we fix it here.
@@ -119,7 +119,7 @@ void KdMBR::MbrDecode()
                 float confidence = 0.0;
                 for (int j = 0; j < gamma_[q].size(); j++)
                 {
-                    if (gamma_[q][j].first == one_best_id[q])
+                    if( gamma_[q][j].first == one_best_id[q])
                     {
                         confidence = gamma_[q][j].second;
                         break;
@@ -129,9 +129,9 @@ void KdMBR::MbrDecode()
             }
         }
         KALDI_VLOG(2) << "Iter = " << counter << ", delta-Q = " << delta_Q;
-        if (delta_Q == 0)
+        if( delta_Q == 0)
             break;
-        if (counter > 100)
+        if( counter > 100)
         {
             KALDI_WARN << "Iterating too many times in MbrDecode; stopping.";
             break;
@@ -196,7 +196,7 @@ double KdMBR::EditDistance(int N, int Q,
             float p_a = arc.loglike;
             for (int q = 0; q <= Q; q++)
             {
-                if (q == 0)
+                if( q == 0)
                 {
                     alpha_dash_arc(q) = // line 15.
                             alpha_dash(s_a, q) + l_distance(w_a, 0, true);
@@ -241,7 +241,7 @@ void KdMBR::AccStats()
     std::vector<map<int, double> > tau_b(Q+1), tau_e(Q+1);
 
     double Ltmp = EditDistance(N, Q, alpha, alpha_dash, alpha_dash_arc);
-    if (L_ != 0 && Ltmp > L_) { // L_ != 0 is to rule out 1st iter.
+    if( L_ != 0 && Ltmp > L_) { // L_ != 0 is to rule out 1st iter.
         KALDI_WARN << "Edit distance increased: " << Ltmp << " > "
                    << L_;
     }
@@ -263,9 +263,9 @@ void KdMBR::AccStats()
                 double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
                         a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
                         a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
-                if (a1 <= a2)
+                if( a1 <= a2)
                 {
-                    if (a1 <= a3)
+                    if( a1 <= a3)
                     {
                         b_arc[q] = 1;
                         alpha_dash_arc(q) = a1;
@@ -278,7 +278,7 @@ void KdMBR::AccStats()
                 }
                 else
                 {
-                    if (a2 <= a3)
+                    if( a2 <= a3)
                     {
                         b_arc[q] = 2;
                         alpha_dash_arc(q) = a2;
@@ -343,7 +343,7 @@ void KdMBR::AccStats()
         double sum = 0.0;
         for (map<int, double>::iterator iter = gamma[q].begin();
              iter != gamma[q].end(); ++iter) sum += iter->second;
-        if (fabs(sum - 1.0) > 0.1)
+        if( fabs(sum - 1.0) > 0.1)
             KALDI_WARN << "sum of gamma[" << q << ",s] is " << sum;
     }
     // The next part is where we take gamma, and convert
@@ -375,7 +375,7 @@ void KdMBR::AccStats()
              iter != gamma_[q-1].end(); ++iter)
         {
             double w_b = tau_b[q][iter->first], w_e = tau_e[q][iter->first];
-            if (w_b > w_e)
+            if( w_b > w_e)
                 KALDI_WARN << "Times out of order";  // this is quite bad.
             times_[q-1].push_back(
                         std::make_pair(static_cast<float>(w_b / iter->second),
@@ -385,9 +385,9 @@ void KdMBR::AccStats()
         }
         sausage_times_[q-1].first = t_b;
         sausage_times_[q-1].second = t_e;
-        if (sausage_times_[q-1].first > sausage_times_[q-1].second)
+        if( sausage_times_[q-1].first > sausage_times_[q-1].second)
             KALDI_WARN << "Times out of order";  // this is quite bad.
-        if (q > 1 && sausage_times_[q-2].second > sausage_times_[q-1].first)
+        if( q > 1 && sausage_times_[q-2].second > sausage_times_[q-1].first)
         {
             // We previously had a warning here, but now we'll just set both
             // those values to their average.  It's quite possible for this
@@ -401,17 +401,17 @@ void KdMBR::AccStats()
 
 void KdMBR::AddToMap(int i, double d, std::map<int, double> *gamma)
 {
-    if (d == 0) return;
+    if( d == 0) return;
     std::pair<const int, double> pr(i, d);
     std::pair<std::map<int, double>::iterator, bool> ret = gamma->insert(pr);
-    if (!ret.second) // not inserted, so add to contents.
+    if( !ret.second) // not inserted, so add to contents.
         ret.first->second += d;
 }
 
 // gives edit-distance function l(a,b)
 double KdMBR::l_distance(int a, int b, bool penalize)
 {
-    if (a == b)
+    if( a == b)
     {
         return 0.0;
     }
@@ -453,7 +453,7 @@ QVector<BtWord> KdMBR::getResult()
 
     if( result.size() )
     {
-        if ( result.size()!=b_times.size() )
+        if(  result.size()!=b_times.size() )
         {
             result.last().end = b_times.last()/100.0;
         }
@@ -470,7 +470,7 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
     kaldi::uint64 props = clat->Properties(fst::kFstProperties, false);
     if( !(props & fst::kTopSorted) )
     {
-        if (fst::TopSort(clat) == false)
+        if( fst::TopSort(clat) == false)
             KALDI_ERR << "Cycles detected in lattice.";
     }
     kd_compactLatticeStateTimes(*clat, &state_times_); // work out times of the states in clat

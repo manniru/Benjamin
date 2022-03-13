@@ -13,7 +13,7 @@ KdOnline2Model::KdOnline2Model(TransitionModel *tran, AmDiagGmm *acc_model,
     Input ki(model_filename, &binary);
     TransitionModel tmodel;
     tmodel.Read(ki.Stream(), binary);
-    if (!tmodel.Compatible(*t_model))
+    if( !tmodel.Compatible(*t_model))
         KALDI_ERR << "Incompatible models given to the --model and "
                   << "--online-alignment-model options";
     oa_model = new AmDiagGmm;

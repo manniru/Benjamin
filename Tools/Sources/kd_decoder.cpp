@@ -53,7 +53,7 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
     bool changed = false;
     if( all_tokens[state]==NULL )
     {
-        const float extra_cost = 0.0;
+        float extra_cost = 0.0;
         KdToken *new_tok = new KdToken(tot_cost, extra_cost);
         new_tok->state = state;
         frame_toks.last().insert(new_tok);
@@ -113,15 +113,15 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
                          tmp.end());
         max_active_cutoff = tmp[config.max_active];
     }
-    if (max_active_cutoff < beam_cutoff)
+    if( max_active_cutoff < beam_cutoff)
     {
         // max_active is tighter than beam.
         adaptive_beam = max_active_cutoff - best_cost + config.beam_delta;
         return max_active_cutoff;
     }
-    if (tmp.size() > static_cast<size_t>(config.min_active))
+    if( tmp.size() > static_cast<size_t>(config.min_active))
     {
-        if (config.min_active == 0)
+        if( config.min_active == 0)
         {
             min_active_cutoff = best_cost;
         }
@@ -135,7 +135,7 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
             min_active_cutoff = tmp[config.min_active];
         }
     }
-    if (min_active_cutoff > beam_cutoff)
+    if( min_active_cutoff > beam_cutoff)
     { // min_active is looser than beam.
         adaptive_beam = min_active_cutoff - best_cost + config.beam_delta;
         return min_active_cutoff;
@@ -297,7 +297,7 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
                 tok->links = new KdFLink(ef_tok, 0, arc.olabel,
                                          graph_cost, 0, tok->links);
 
-                if (changed && fst_->NumInputEpsilons(arc.nextstate) != 0)
+                if( changed && fst_->NumInputEpsilons(arc.nextstate) != 0)
                 {
                     PNonemittingState(ef_tok, cutoff);
                 }

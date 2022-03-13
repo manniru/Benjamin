@@ -39,29 +39,29 @@ KdWindow::KdWindow()
     for (int i = 0; i < frame_length; i++)
     {
         double i_fl = static_cast<double>(i);
-        if (window_type == "hanning")
+        if( window_type == "hanning")
         {
             window(i) = 0.5  - 0.5*cos(a * i_fl);
         }
-        else if (window_type == "sine")
+        else if( window_type == "sine")
         {
             // when you are checking ws wikipedia, please
             // note that 0.5 * a = M_PI/(frame_length-1)
             window(i) = sin(0.5 * a * i_fl);
         }
-        else if (window_type == "hamming")
+        else if( window_type == "hamming")
         {
             window(i) = 0.54 - 0.46*cos(a * i_fl);
         }
-        else if (window_type == "povey")
+        else if( window_type == "povey")
         {  // like hamming but goes to zero at edges.
             window(i) = pow(0.5 - 0.5*cos(a * i_fl), 0.85);
         }
-        else if (window_type == "rectangular")
+        else if( window_type == "rectangular")
         {
             window(i) = 1.0;
         }
-        else if (window_type == "blackman")
+        else if( window_type == "blackman")
         {
             window(i) = blackman_coeff - 0.5*cos(a * i_fl) +
                     (0.5 - blackman_coeff) * cos(2 * a * i_fl);
@@ -111,7 +111,7 @@ void KdWindow::ExtractWindow(int sample_offset,
     // piece of wave that we're trying to extract.
     int wave_start = start_sample - sample_offset;
     int wave_end = wave_start + frame_length;
-    if (wave_start >= 0 && wave_end <= wave.Dim())
+    if( wave_start >= 0 && wave_end <= wave.Dim())
     {
         // the normal case-- no edge effects to consider.
         win->Range(0, frame_length).CopyFromVec(
@@ -133,14 +133,14 @@ void KdWindow::ExtractWindow(int sample_offset,
                 // dim -> dim - 1, dim + 1 -> dim - 2.
                 // the code supports repeated reflections, although this
                 // would only be needed in pathological cases.
-                if (s_in_wave < 0) s_in_wave = - s_in_wave - 1;
+                if( s_in_wave < 0) s_in_wave = - s_in_wave - 1;
                 else s_in_wave = 2 * wave_dim - 1 - s_in_wave;
             }
             (*win)(s) = wave(s_in_wave);
         }
     }
 
-    if (frame_length_padded > frame_length)
+    if( frame_length_padded > frame_length)
         win->Range(frame_length, frame_length_padded - frame_length).SetZero();
 
     SubVector<float> frame(*win, 0, frame_length);
@@ -160,7 +160,7 @@ void KdWindow::ProcessWindow(VectorBase<float> *win,
     // remove_dc_offset
     win->Add(-win->Sum()/frame_length);
 
-    if (log_energy_pre_window != NULL)
+    if( log_energy_pre_window != NULL)
     {
         float energy = std::max<float>(VecVec(*win, *win),
                                                std::numeric_limits<float>::epsilon());
@@ -179,7 +179,7 @@ int KdWindow::FirstSampleOfFrame(int frame)
 
 void KdWindow::Dither(VectorBase<float> *waveform, float dither_value)
 {
-    if (dither_value == 0.0)
+    if( dither_value == 0.0)
     {
         return;
     }
@@ -195,7 +195,7 @@ void KdWindow::Dither(VectorBase<float> *waveform, float dither_value)
 
 void KdWindow::Preemphasize(VectorBase<float> *waveform, float preemph_coeff)
 {
-    if (preemph_coeff == 0.0) return;
+    if( preemph_coeff == 0.0) return;
     KALDI_ASSERT(preemph_coeff >= 0.0 && preemph_coeff <= 1.0);
     for (int i = waveform->Dim()-1 ; i > 0 ; i-- )
     {

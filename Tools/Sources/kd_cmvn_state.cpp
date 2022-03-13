@@ -16,7 +16,7 @@ KdRecyclingVector::~KdRecyclingVector()
 
 Vector<float> *KdRecyclingVector::At(int index) const
 {
-    if (index < first_available_index_) {
+    if( index < first_available_index_) {
         KALDI_ERR << "Attempted to retrieve feature vector that was "
                      "already removed by the KdRecyclingVector (index = "
                   << index << "; "
@@ -29,7 +29,7 @@ Vector<float> *KdRecyclingVector::At(int index) const
 
 void KdRecyclingVector::PushBack(Vector<float> *item)
 {
-    if (items_.size() == items_to_hold_) {
+    if( items_.size() == items_to_hold_) {
         delete items_.front();
         items_.pop_front();
         ++first_available_index_;

@@ -13,7 +13,7 @@ int getIntCommand(char *command)
     /* Open the command for reading. */
     fp = popen(command, "r");
 
-    if (fp == NULL)
+    if( fp == NULL)
     {
         printf("Failed to run command\n" );
         return -1;
@@ -40,7 +40,7 @@ QString getStrCommand(QString command)
     /* Open the command for reading. */
     fp = popen(command.toStdString().c_str(), "r");
 
-    if (fp == NULL) {
+    if( fp == NULL) {
       printf("Failed to run command\n" );
       return returnData;
     }

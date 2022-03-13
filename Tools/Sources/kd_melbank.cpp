@@ -6,7 +6,7 @@ KdMelBanks::KdMelBanks(int bin_count,
 {
     int num_bins = bin_count;
 
-    if (num_bins < 3)
+    if( num_bins < 3)
         KALDI_ERR << "Must have at least 3 mel bins";
 
     float sample_freq = frame_opts.samp_freq;
@@ -45,15 +45,15 @@ KdMelBanks::KdMelBanks(int bin_count,
             float freq = (fft_bin_width * i);  // Center frequency of this fft
             // bin.
             float mel = MelScale(freq);
-            if (mel > left_mel && mel < right_mel)
+            if( mel > left_mel && mel < right_mel)
             {
                 float weight;
-                if (mel <= center_mel)
+                if( mel <= center_mel)
                     weight = (mel - left_mel) / (center_mel - left_mel);
                 else
                     weight = (right_mel-mel) / (right_mel-center_mel);
                 this_bin(i) = weight;
-                if (first_index == -1)
+                if( first_index == -1)
                     first_index = i;
                 last_index = i;
             }

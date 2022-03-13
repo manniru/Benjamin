@@ -6,11 +6,11 @@ void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
 {
     KALDI_ASSERT(determinized_);
     StateId nStates = static_cast<StateId>(output_states_.size());
-    if (destroy)
+    if( destroy)
         FreeMostMemory();
     ofst->DeleteStates();
     ofst->SetStart(KD_INVALID_STATE);
-    if (nStates == 0) {
+    if( nStates == 0) {
         return;
     }
     for (StateId s = 0;s < nStates;s++) {
@@ -46,13 +46,13 @@ void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
         }
         // Free up memory.  Do this inside the loop as ofst is also allocating memory,
         // and we want to reduce the maximum amount ever allocated.
-        if (destroy)
+        if( destroy)
         {
             std::vector<TempArc> temp;
             temp.swap(this_vec);
         }
     }
-    if (destroy) {
+    if( destroy) {
         FreeOutputStates();
         repository_.Destroy();
     }
@@ -63,11 +63,11 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
     // Outputs to standard fst.
     KdStateId nStates = static_cast<KdStateId>(output_states_.size());
     ofst->DeleteStates();
-    if (nStates == 0) {
+    if( nStates == 0) {
         ofst->SetStart(KD_INVALID_STATE);
         return;
     }
-    if (destroy)
+    if( destroy)
         FreeMostMemory();
     // Add basic states-- but we will add extra ones to account for strings on output.
     for (KdStateId s = 0; s< nStates;s++) {
@@ -85,7 +85,7 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
             std::vector<Label> seq;
             repository_.ConvertToVector(temp_arc.string, &seq);
 
-            if (temp_arc.nextstate == KD_INVALID_STATE) {  // Really a final weight.
+            if( temp_arc.nextstate == KD_INVALID_STATE) {  // Really a final weight.
                 // Make a sequence of states going to a final state, with the strings
                 // as labels.  Put the weight on the first arc.
                 KdStateId cur_state = this_state_id;
@@ -125,9 +125,9 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
             }
         }
         // Free up memory.  Do this inside the loop as ofst is also allocating memory
-        if (destroy) { std::vector<TempArc> temp; temp.swap(this_vec); }
+        if( destroy) { std::vector<TempArc> temp; temp.swap(this_vec); }
     }
-    if (destroy) {
+    if( destroy) {
         FreeOutputStates();
         repository_.Destroy();
     }
@@ -139,7 +139,6 @@ KdLatDet::KdLatDet(KdLattice &ifst, double beam,
     equal_(opts_.delta), determinized_(false),
     minimal_hash_(3, hasher_, equal_), initial_hash_(3, hasher_, equal_)
 {
-    KALDI_ASSERT(KdLatticeWeight::Properties() & FST_PLUS_ZERO);
     // this algorithm won't work correctly otherwise.
 }
 
@@ -153,7 +152,7 @@ void KdLatDet::FreeOutputStates()
 
 void KdLatDet::FreeMostMemory()
 {
-    if (ifst_)
+    if( ifst_)
     {
         delete ifst_;
         ifst_ = NULL;
@@ -246,7 +245,7 @@ bool KdLatDet::CheckMemoryUsage()
             arcs_size = num_arcs_ * sizeof(TempArc),
             elems_size = num_elems_ * sizeof(Element),
             total_size = repo_size + arcs_size + elems_size;
-    if (opts_.max_mem > 0 && total_size > opts_.max_mem) { // We passed the memory threshold.
+    if( opts_.max_mem > 0 && total_size > opts_.max_mem) { // We passed the memory threshold.
         // This is usually due to the repository getting large, so we
         // clean this out.
         RebuildRepository();
@@ -256,14 +255,14 @@ bool KdLatDet::CheckMemoryUsage()
         KALDI_VLOG(2) << "Rebuilt repository in determinize-lattice: repository shrank from "
                       << repo_size << " to " << new_repo_size << " bytes (approximately)";
 
-        if (new_total_size > static_cast<int32>(opts_.max_mem * 0.8)) {
+        if( new_total_size > static_cast<int32>(opts_.max_mem * 0.8)) {
             // Rebuilding didn't help enough-- we need a margin to stop
             // having to rebuild too often.  We'll just return to the user at
             // this point, with a partial lattice that's pruned tighter than
             // the specified beam.  Here we figure out what the effective
             // beam was.
             double effective_beam = beam_;
-            if (!queue_.empty()) { // Note: queue should probably not be empty; we're
+            if( !queue_.empty()) { // Note: queue should probably not be empty; we're
                 // just being paranoid here.
                 Task *task = queue_.top();
                 double total_weight = backward_costs_[ifst_->Start()]; // best weight of FST.
@@ -300,7 +299,7 @@ bool KdLatDet::Determinize(double *effective_beam) {
         // memory passed a user-specified threshold and cleanup failed
         //  to get it below that threshold.
         size_t num_states = output_states_.size();
-        if ((opts_.max_states > 0 && num_states > opts_.max_states) ||
+        if( (opts_.max_states > 0 && num_states > opts_.max_states) ||
                 (opts_.max_arcs > 0 && num_arcs_ > opts_.max_arcs) ||
                 (num_states % 10 == 0 && !CheckMemoryUsage())) { // note: at some point
             // it was num_states % 100, not num_states % 10, but I encountered an example
@@ -321,8 +320,8 @@ bool KdLatDet::Determinize(double *effective_beam) {
         delete task;
     }
     determinized_ = true;
-    if (effective_beam != NULL) {
-        if (queue_.empty()) *effective_beam = beam_;
+    if( effective_beam != NULL) {
+        if( queue_.empty()) *effective_beam = beam_;
         else
             *effective_beam = queue_.top()->priority_cost -
                 backward_costs_[ifst_->Start()];
@@ -352,11 +351,11 @@ KdStateId KdLatDet::MinimalToStateId(const std::vector<Element> &subset,
 {
     typename MinimalSubsetHash::const_iterator iter
             = minimal_hash_.find(&subset);
-    if (iter != minimal_hash_.end()) { // Found a matching subset.
+    if( iter != minimal_hash_.end()) { // Found a matching subset.
         KdStateId state_id = iter->second;
         const OutputState &state = *(output_states_[state_id]);
         // Below is just a check that the algorithm is working...
-        if (forward_cost < state.forward_cost - 0.1) {
+        if( forward_cost < state.forward_cost - 0.1) {
             // for large weights, this check could fail due to roundoff.
             KALDI_WARN << "New cost is less (check the difference is small) "
                        << forward_cost << ", "
@@ -384,11 +383,12 @@ KdStateId KdLatDet::InitialToStateId(const std::vector<Element> &subset_in,
 {
     typename InitialSubsetHash::const_iterator iter
             = initial_hash_.find(&subset_in);
-    if (iter != initial_hash_.end()) { // Found a matching subset.
-        const Element &elem = iter->second;
+    if( iter != initial_hash_.end())
+    { // Found a matching subset.
+        Element elem = iter->second;
         *remaining_weight = elem.weight;
         *common_prefix = elem.string;
-        if (elem.weight == KdLatticeWeight::Zero())
+        if(  elem.weight.isZero() )
             KALDI_WARN << "Zero weight!";
         return elem.state;
     }
@@ -407,12 +407,14 @@ KdStateId KdLatDet::InitialToStateId(const std::vector<Element> &subset_in,
     // common string and weight in "elem".  The subset is now a minimal,
     // normalized subset.
 
-    forward_cost += ConvertToCost(elem.weight);
+    forward_cost += elem.weight.getCost();
     KdStateId ans = MinimalToStateId(subset, forward_cost);
     *remaining_weight = elem.weight;
     *common_prefix = elem.string;
-    if (elem.weight == KdLatticeWeight::Zero())
-        KALDI_WARN << "Zero weight!";
+    if( elem.weight.isZero() )
+    {
+        qDebug() << "Zero weight!";
+    }
 
     // Before returning "ans", add the initial subset to the hash,
     // so that we can bypass the epsilon-closure etc., next time
@@ -424,13 +426,13 @@ KdStateId KdLatDet::InitialToStateId(const std::vector<Element> &subset_in,
     return ans;
 }
 
-int KdLatDet::Compare(const KdLatticeWeight &a_w, StringId a_str,
+int KdLatDet::CompareDet(const KdLatticeWeight &a_w, StringId a_str,
                    const KdLatticeWeight &b_w, StringId b_str)
 {
-    int weight_comp = fst::Compare(a_w, b_w);
-    if (weight_comp != 0) return weight_comp;
+    int weight_comp = Compare(a_w, b_w);
+    if( weight_comp != 0) return weight_comp;
     // now comparing strings.
-    if (a_str == b_str) return 0;
+    if( a_str == b_str) return 0;
     std::vector<int> a_vec, b_vec;
     repository_.ConvertToVector(a_str, &a_vec);
     repository_.ConvertToVector(b_str, &b_vec);
@@ -438,11 +440,11 @@ int KdLatDet::Compare(const KdLatticeWeight &a_w, StringId a_str,
     int a_len = a_vec.size(), b_len = b_vec.size();
     // use opposite order on the string lengths (c.f. Compare in
     // lattice-weight.h)
-    if (a_len > b_len) return -1;
-    else if (a_len < b_len) return 1;
+    if( a_len > b_len) return -1;
+    else if( a_len < b_len) return 1;
     for(int i = 0; i < a_len; i++) {
-        if (a_vec[i] < b_vec[i]) return -1;
-        else if (a_vec[i] > b_vec[i]) return 1;
+        if( a_vec[i] < b_vec[i]) return -1;
+        else if( a_vec[i] > b_vec[i]) return 1;
     }
     KALDI_ASSERT(0); // because we checked if a_str == b_str above, shouldn't reach here
     return 0;
@@ -479,18 +481,20 @@ void KdLatDet::EpsilonClosure(std::vector<Element> *subset) {
         // both the new (optimal) and old (less-optimal) Element will still be in
         // "queue".  The next if-statement stops us from wasting compute by
         // processing the old Element.
-        if (replaced_elems && cur_subset[elem.state] != elem)
+        if( replaced_elems && cur_subset[elem.state] != elem)
             continue;
-        if (opts_.max_loop > 0 && counter++ > opts_.max_loop) {
+        if( opts_.max_loop > 0 && counter++ > opts_.max_loop) {
             KALDI_ERR << "Lattice determinization aborted since looped more than "
                       << opts_.max_loop << " times during epsilon closure.";
         }
-        for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); !aiter.Done(); aiter.Next()) {
-            const KdLatticeArc &arc = aiter.Value();
-            if (sorted && arc.ilabel != 0) break;  // Break from the loop: due to sorting there will be no
+        for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); !aiter.Done(); aiter.Next())
+        {
+            KdLatticeArc arc = aiter.Value();
+            if( sorted && arc.ilabel != 0) break;  // Break from the loop: due to sorting there will be no
             // more transitions with epsilons as input labels.
-            if (arc.ilabel == 0
-                    && arc.weight != KdLatticeWeight::Zero()) {  // Epsilon transition.
+            if( arc.ilabel == 0
+                    && !(arc.weight.isZero()) )
+            {  // Epsilon transition.
                 Element next_elem;
                 next_elem.state = arc.nextstate;
                 next_elem.weight = Times(elem.weight, arc.weight);
@@ -498,23 +502,26 @@ void KdLatDet::EpsilonClosure(std::vector<Element> *subset) {
                 // when we know we need it (this is an optimization)
 
                 MapIter iter = cur_subset.find(next_elem.state);
-                if (iter == cur_subset.end()) {
+                if( iter == cur_subset.end())
+                {
                     // was no such StateId: insert and add to queue.
                     next_elem.string = (arc.olabel == 0 ? elem.string :
                                                           repository_.Successor(elem.string, arc.olabel));
                     cur_subset[next_elem.state] = next_elem;
                     queue.push(next_elem);
-                } else {
+                }
+                else
+                {
                     // was not inserted because one already there.  In normal
                     // determinization we'd add the weights.  Here, we find which one
                     // has the better weight, and keep its corresponding string.
-                    int comp = fst::Compare(next_elem.weight, iter->second.weight);
-                    if (comp == 0) { // A tie on weights.  This should be a rare case;
+                    int comp = Compare(next_elem.weight, iter->second.weight);
+                    if( comp == 0) { // A tie on weights.  This should be a rare case;
                         // we don't optimize for it.
                         next_elem.string = (arc.olabel == 0 ? elem.string :
                                                               repository_.Successor(elem.string,
                                                                                     arc.olabel));
-                        comp = Compare(next_elem.weight, next_elem.string,
+                        comp = CompareDet(next_elem.weight, next_elem.string,
                                        iter->second.weight, iter->second.string);
                     }
                     if(comp == 1) { // next_elem is better, so use its (weight, string)
@@ -557,8 +564,8 @@ void KdLatDet::ProcessFinal(KdStateId output_state_id)
         const Element &elem = *iter;
         KdLatticeWeight this_final_weight = Times(elem.weight, ifst_->Final(elem.state));
         StringId this_final_string = elem.string;
-        if (this_final_weight != KdLatticeWeight::Zero() &&
-                (!is_final || Compare(this_final_weight, this_final_string,
+        if( this_final_weight != KdLatticeWeight::Zero() &&
+                (!is_final || CompareDet(this_final_weight, this_final_string,
                                       final_weight, final_string) == 1)) { // the new
             // (weight, string) pair is more in semiring than our current
             // one.
@@ -567,8 +574,8 @@ void KdLatDet::ProcessFinal(KdStateId output_state_id)
             final_string = this_final_string;
         }
     }
-    if (is_final &&
-            ConvertToCost(final_weight) + state.forward_cost <= cutoff_) {
+    if( is_final &&
+            final_weight.getCost() + state.forward_cost <= cutoff_) {
         // store final weights in TempArc structure, just like a transition.
         // Note: we only store the final-weight if it's inside the pruning beam, hence
         // the stuff with Compare.
@@ -635,10 +642,10 @@ void KdLatDet::MakeSubsetUnique(std::vector<Element> *subset)
     while (cur_in != end) {  // while we have more elements to process.
         // At this point, cur_out points to location of next place we want to put an element,
         // cur_in points to location of next element we want to process.
-        if (cur_in != cur_out) *cur_out = *cur_in;
+        if( cur_in != cur_out) *cur_out = *cur_in;
         cur_in++;
         while (cur_in != end && cur_in->state == cur_out->state) {
-            if (Compare(cur_in->weight, cur_in->string,
+            if( CompareDet(cur_in->weight, cur_in->string,
                         cur_out->weight, cur_out->string) == 1) {
                 // if *cur_in > *cur_out in semiring, then take *cur_in.
                 cur_out->string = cur_in->string;
@@ -659,7 +666,7 @@ void KdLatDet::ProcessTransition(KdStateId ostate_id, Label ilabel, std::vector<
     StringId common_str;
     KdLatticeWeight tot_weight;
     NormalizeSubset(subset, &tot_weight, &common_str);
-    forward_cost += ConvertToCost(tot_weight);
+    forward_cost += tot_weight.getCost();
 
     KdStateId nextstate;
     {
@@ -699,14 +706,14 @@ void KdLatDet::ProcessTransitions(KdStateId output_state_id)
             const Element &elem = *iter;
             for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); ! aiter.Done(); aiter.Next()) {
                 const KdLatticeArc &arc = aiter.Value();
-                if (arc.ilabel != 0
+                if( arc.ilabel != 0
                         && arc.weight != KdLatticeWeight::Zero()) {  // Non-epsilon transition -- ignore epsilons here.
                     std::pair<Label, Element> this_pr;
                     this_pr.first = arc.ilabel;
                     Element &next_elem(this_pr.second);
                     next_elem.state = arc.nextstate;
                     next_elem.weight = Times(elem.weight, arc.weight);
-                    if (arc.olabel == 0) // output epsilon
+                    if( arc.olabel == 0) // output epsilon
                         next_elem.string = elem.string;
                     else
                         next_elem.string = repository_.Successor(elem.string, arc.olabel);
@@ -730,13 +737,14 @@ void KdLatDet::ProcessTransitions(KdStateId output_state_id)
         task->state = output_state_id;
         task->priority_cost = std::numeric_limits<double>::infinity();
         task->label = ilabel;
-        while (cur != end && cur->first == ilabel) {
+        while (cur != end && cur->first == ilabel)
+        {
             task->subset.push_back(cur->second);
-            const Element &element = cur->second;
+            Element element = cur->second;
             // Note: we'll later include the term "forward_cost" in the
             // priority_cost.
             task->priority_cost = std::min(task->priority_cost,
-                                           ConvertToCost(element.weight) +
+                                           element.weight.getCost() +
                                            backward_costs_[element.state]);
             cur++;
         }
@@ -747,7 +755,7 @@ void KdLatDet::ProcessTransitions(KdStateId output_state_id)
         // note: we represent it just as a double.
         task->priority_cost += output_states_[output_state_id]->forward_cost;
 
-        if (task->priority_cost > cutoff_) {
+        if( task->priority_cost > cutoff_) {
             // This task would never get done as it's past the pruning cutoff.
             delete task;
         } else {
@@ -759,7 +767,7 @@ void KdLatDet::ProcessTransitions(KdStateId output_state_id)
             { // this is a check.
                 double best_cost = backward_costs_[ifst_->Start()],
                         tolerance = 0.01 + 1.0e-04 * std::abs(best_cost);
-                if (task->priority_cost < best_cost - tolerance) {
+                if( task->priority_cost < best_cost - tolerance) {
                     KALDI_WARN << "Cost below best cost was encountered:"
                                << task->priority_cost << " < " << best_cost;
                 }
@@ -776,22 +784,22 @@ bool KdLatDet::IsIsymbolOrFinal(InputStateId state)
     // of the input FST either is final or has an osymbol on an arc out of it.
     // Uses the vector isymbol_or_final_ as a cache for this info.
     KALDI_ASSERT(state >= 0);
-    if (isymbol_or_final_.size() <= state)
+    if( isymbol_or_final_.size() <= state)
         isymbol_or_final_.resize(state+1, static_cast<char>(OSF_UNKNOWN));
-    if (isymbol_or_final_[state] == static_cast<char>(OSF_NO))
+    if( isymbol_or_final_[state] == static_cast<char>(OSF_NO))
         return false;
-    else if (isymbol_or_final_[state] == static_cast<char>(OSF_YES))
+    else if( isymbol_or_final_[state] == static_cast<char>(OSF_YES))
         return true;
     // else work it out...
     isymbol_or_final_[state] = static_cast<char>(OSF_NO);
-    if (ifst_->Final(state) != KdLatticeWeight::Zero())
+    if( ifst_->Final(state) != KdLatticeWeight::Zero())
         isymbol_or_final_[state] = static_cast<char>(OSF_YES);
     for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, state);
          !aiter.Done();
          aiter.Next())
     {
         const KdLatticeArc &arc = aiter.Value();
-        if (arc.ilabel != 0 && arc.weight != KdLatticeWeight::Zero()) {
+        if( arc.ilabel != 0 && arc.weight != KdLatticeWeight::Zero()) {
             isymbol_or_final_[state] = static_cast<char>(OSF_YES);
             return true;
         }
@@ -806,22 +814,24 @@ void KdLatDet::ComputeBackwardWeight()
 
     // Only handle the toplogically sorted case.
     backward_costs_.resize(ifst_->NumStates());
-    for (StateId s = ifst_->NumStates() - 1; s >= 0; s--) {
+    for (StateId s = ifst_->NumStates() - 1; s >= 0; s--)
+    {
         double &cost = backward_costs_[s];
-        cost = ConvertToCost(ifst_->Final(s));
+        cost = ifst_->Final(s).getCost();
         for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, s);
-             !aiter.Done(); aiter.Next()) {
-            const KdLatticeArc &arc = aiter.Value();
+             !aiter.Done(); aiter.Next())
+        {
+            KdLatticeArc arc = aiter.Value();
             cost = std::min(cost,
-                            ConvertToCost(arc.weight) + backward_costs_[arc.nextstate]);
+                            arc.weight.getCost() + backward_costs_[arc.nextstate]);
         }
     }
 
-    if (ifst_->Start() == KD_INVALID_STATE) return; // we'll be returning
+    if( ifst_->Start() == KD_INVALID_STATE) return; // we'll be returning
     // an empty FST.
 
     double best_cost = backward_costs_[ifst_->Start()];
-    if (best_cost == std::numeric_limits<double>::infinity())
+    if( best_cost == std::numeric_limits<double>::infinity())
         KALDI_WARN << "Total weight of input lattice is zero.";
     cutoff_ = best_cost + beam_;
 }
@@ -846,7 +856,7 @@ void KdLatDet::InitializeDeterminization()
     }
 #endif
     InputStateId start_id = ifst_->Start();
-    if (start_id != KD_INVALID_STATE) {
+    if( start_id != KD_INVALID_STATE) {
         /* Create determinized-state corresponding to the start state....
      Unlike all the other states, we don't "normalize" the representation
      of this determinized-state before we put it into minimal_hash_.  This is actually

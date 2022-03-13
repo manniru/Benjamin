@@ -105,7 +105,7 @@ void bt_writeBarResult(QVector<BtWord> result)
 {
     QFile bar_file(BT_BAR_RESULT);
 
-    if (!bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
+    if( !bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         qDebug() << "Error opening" << BT_BAR_RESULT;
         return;

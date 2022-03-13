@@ -52,11 +52,11 @@ void KdDelta::Process(const MatrixBase<float> &input_feats,
         for (int32 j = -max_offset; j <= max_offset; j++) {
             // if asked to read
             int32 offset_frame = frame + j;
-            if (offset_frame < 0) offset_frame = 0;
-            else if (offset_frame >= num_frames)
+            if( offset_frame < 0) offset_frame = 0;
+            else if( offset_frame >= num_frames)
                 offset_frame = num_frames - 1;
             float scale = scales(j + max_offset);
-            if (scale != 0.0)
+            if( scale != 0.0)
                 output.AddVec(scale, input_feats.Row(offset_frame));
         }
     }

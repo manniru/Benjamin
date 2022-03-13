@@ -28,14 +28,14 @@ void KdCMVN::GetMostRecentCachedFrame(int frame,
     // to "frame".  Return if we get one.
     for (int t = frame; t >= 0 && t >= frame - ring_buffer_size; t--)
     {
-        if (t % modulus == 0)
+        if( t % modulus == 0)
         {
             // if this frame should be cached in cached_stats_modulo_, then
             // we'll look there, and we won't go back any further in time.
             break;
         }
         int index = t % ring_buffer_size;
-        if (cached_stats_ring_[index].first == t)
+        if( cached_stats_ring_[index].first == t)
         {
             *cached_frame = t;
             stats->CopyFromMat(cached_stats_ring_[index].second);
@@ -43,9 +43,9 @@ void KdCMVN::GetMostRecentCachedFrame(int frame,
         }
     }
     int n = frame / modulus;
-    if (n >= cached_stats_modulo_.size())
+    if( n >= cached_stats_modulo_.size())
     {
-        if (cached_stats_modulo_.size() == 0)
+        if( cached_stats_modulo_.size() == 0)
         {
             *cached_frame = -1;
             stats->SetZero();
@@ -75,10 +75,10 @@ void KdCMVN::InitRingBufferIfNeeded()
 void KdCMVN::CacheFrame(int frame, const MatrixBase<double> &stats)
 {
     KALDI_ASSERT(frame >= 0);
-    if (frame % modulus == 0)
+    if( frame % modulus == 0)
     {
         int n = frame / modulus;
-        if (n >= cached_stats_modulo_.size())
+        if( n >= cached_stats_modulo_.size())
         {
             // The following assert is a limitation on in what order you can call
             // CacheFrame.  Fortunately the calling code always calls it in sequence,
@@ -97,7 +97,7 @@ void KdCMVN::CacheFrame(int frame, const MatrixBase<double> &stats)
     else
     {  // store in the ring buffer.
         InitRingBufferIfNeeded();
-        if (!cached_stats_ring_.empty())
+        if( !cached_stats_ring_.empty())
         {
             int index = frame % cached_stats_ring_.size();
             cached_stats_ring_[index].first = frame;
@@ -132,19 +132,19 @@ void KdCMVN::ComputeStatsForFrame(int frame,
         feats.CopyFromVec(*(o_features->At(cur_frame)));////GET FRAME
         feats_dbl.CopyFromVec(feats);
         stats_out->Row(0).Range(0, Dim).AddVec(1.0, feats_dbl);
-        if (normalize_variance)
+        if( normalize_variance)
             stats_out->Row(1).Range(0, Dim).AddVec2(1.0, feats_dbl);
         (*stats_out)(0, Dim) += 1.0;
         // it's a sliding buffer; a frame at the back may be
         // leaving the buffer so we have to subtract that.
         int prev_frame = cur_frame - cmn_window;
-        if (prev_frame >= 0)
+        if( prev_frame >= 0)
         {
             // we need to subtract frame prev_f from the stats.
             feats.CopyFromVec(*(o_features->At(prev_frame)));////GET FRAME
             feats_dbl.CopyFromVec(feats);
             stats_out->Row(0).Range(0, Dim).AddVec(-1.0, feats_dbl);
-            if (normalize_variance)
+            if( normalize_variance)
                 stats_out->Row(1).Range(0, Dim).AddVec2(-1.0, feats_dbl);
             (*stats_out)(0, Dim) -= 1.0;
         }
@@ -158,7 +158,7 @@ void KdCMVN::SmoothOnlineCmvnStats(const MatrixBase<double> &speaker_stats,
                                    const MatrixBase<double> &global_stats,
                                    MatrixBase<double> *stats)
 {
-    if (speaker_stats.NumRows() == 2 && !normalize_variance)
+    if( speaker_stats.NumRows() == 2 && !normalize_variance)
     {
         // this is just for efficiency: don't operate on the variance if it's not
         // needed.
@@ -173,31 +173,31 @@ void KdCMVN::SmoothOnlineCmvnStats(const MatrixBase<double> &speaker_stats,
     // If count exceeded cmn_window it would be an error in how "window_stats"
     // was accumulated.
     KALDI_ASSERT(cur_count <= 1.001 * cmn_window);
-    if (cur_count >= cmn_window)
+    if( cur_count >= cmn_window)
         return;
-    if (speaker_stats.NumRows() != 0)
+    if( speaker_stats.NumRows() != 0)
     {  // if we have speaker stats..
         double count_from_speaker = cmn_window - cur_count;
         double speaker_count = speaker_stats(0, dim);
-        if (count_from_speaker > speaker_frames)
+        if( count_from_speaker > speaker_frames)
             count_from_speaker = speaker_frames;
-        if (count_from_speaker > speaker_count)
+        if( count_from_speaker > speaker_count)
             count_from_speaker = speaker_count;
-        if (count_from_speaker > 0.0)
+        if( count_from_speaker > 0.0)
             stats->AddMat(count_from_speaker / speaker_count,
                           speaker_stats);
         cur_count = (*stats)(0, dim);
     }
-    if (cur_count >= cmn_window)
+    if( cur_count >= cmn_window)
         return;
-    if (global_stats.NumRows() != 0)
+    if( global_stats.NumRows() != 0)
     {
         double count_from_global = cmn_window - cur_count,
                 global_count = global_stats(0, dim);
         KALDI_ASSERT(global_count > 0.0);
-        if (count_from_global > global_frames)
+        if( count_from_global > global_frames)
             count_from_global = global_frames;
-        if (count_from_global > 0.0)
+        if( count_from_global > 0.0)
             stats->AddMat(count_from_global / global_count,
                           global_stats);
     }
@@ -258,7 +258,7 @@ void KdCMVN::GetState(int cur_frame,
 {
     *state_out = this->orig_state_;
     { // This block updates state_out->speaker_cmvn_stats
-        if (state_out->speaker_cmvn_stats.NumRows() == 0)
+        if( state_out->speaker_cmvn_stats.NumRows() == 0)
             state_out->speaker_cmvn_stats.Resize(2, Dim + 1);
         Vector<float> feat(Dim);
         Vector<double> feat_dbl(Dim);

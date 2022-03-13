@@ -59,11 +59,11 @@ void KdOnline2FeInput::GetFrame(int frame,
     int left_frame = frame - context;
     int right_frame = frame + context;
     int src_frames_ready = o_features->Size();
-    if (left_frame < 0)
+    if( left_frame < 0)
     {
         left_frame = 0;
     }
-    if (right_frame >= src_frames_ready)
+    if( right_frame >= src_frames_ready)
     {
       right_frame = src_frames_ready - 1;
     }
@@ -143,11 +143,11 @@ void KdOnline2FeInput::ComputeFeatures()
     // necessary to compute frames in the future.
     int first_sample_of_next_frame = frame_opts.FirstSampleOfFrame(num_frames_new);
     int samples_to_discard = first_sample_of_next_frame - waveform_offset;
-    if (samples_to_discard > 0)
+    if( samples_to_discard > 0)
     {
         // discard the leftmost part of the waveform that we no longer need.
         int new_num_samples = waveform_remainder_.Dim() - samples_to_discard;
-        if (new_num_samples <= 0)
+        if( new_num_samples <= 0)
         {
             // odd, but we'll try to handle it.
             waveform_offset += waveform_remainder_.Dim();

@@ -8,20 +8,20 @@ void kd_applyCmvn(const MatrixBase<double> &stats,
 {
     KALDI_ASSERT(feats != NULL);
     int32 dim = stats.NumCols() - 1;
-    if (stats.NumRows() > 2 || stats.NumRows() < 1 || feats->NumCols() != dim)
+    if( stats.NumRows() > 2 || stats.NumRows() < 1 || feats->NumCols() != dim)
     {
         KALDI_ERR << "Dim mismatch: cmvn "
                   << stats.NumRows() << 'x' << stats.NumCols()
                   << ", feats " << feats->NumRows() << 'x' << feats->NumCols();
     }
-    if (stats.NumRows() == 1 && var_norm)
+    if( stats.NumRows() == 1 && var_norm)
         KALDI_ERR << "You requested variance normalization but no variance stats "
                   << "are supplied.";
 
     double count = stats(0, dim);
     // Do not change the threshold of 1.0 here: in the balanced-cmvn code, when
     // computing an offset and representing it as stats, we use a count of one.
-    if (count < 1.0)
+    if( count < 1.0)
         KALDI_ERR << "Insufficient stats for cepstral mean and variance normalization: "
                   << "count = " << count;
 
@@ -42,14 +42,14 @@ void kd_applyCmvn(const MatrixBase<double> &stats,
         mean = stats(0, d)/count;
         double var = (stats(1, d)/count) - mean*mean,
                 floor = 1.0e-20;
-        if (var < floor)
+        if( var < floor)
         {
             KALDI_WARN << "Flooring cepstral variance from " << var << " to "
                        << floor;
             var = floor;
         }
         scale = 1.0 / sqrt(var);
-        if (scale != scale || 1/scale == 0.0)
+        if( scale != scale || 1/scale == 0.0)
             KALDI_ERR << "NaN or infinity in cepstral mean/variance computation";
         offset = -(mean*scale);
         norm(0, d) = offset;
