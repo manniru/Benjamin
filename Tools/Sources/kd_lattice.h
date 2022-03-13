@@ -3,10 +3,10 @@
 
 #include <QDebug>
 #include "bt_config.h"
-#include <fstext/fstext-lib.h>
 #include <base/kaldi-common.h>
 #include <util/common-utils.h>
 #include <util/kaldi-table.h>
+#include "kd_lattice_weight.h"
 
 #define FST_ERROR         0x4ULL
 #define FST_PLUS_ZERO     0x8ULL // for semi ring null plus
@@ -20,7 +20,6 @@ typedef fst::StdFst        KdFST;
 typedef fst::StdFst::Arc   KdArc;
 typedef KdArc::StateId     KdStateId;
 
-typedef fst::LatticeWeightTpl<float> KdLatticeWeight;
 typedef fst::ArcTpl<KdLatticeWeight> KdLatticeArc;
 typedef fst::VectorFst<KdLatticeArc> KdLattice;
 

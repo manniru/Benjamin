@@ -82,19 +82,10 @@ bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
         // If we are using a shortest queue, no other path is going to be shorter
         // than f_distance at this point.
 
-        if( ifst->Final(s)!=KdLatticeArc::Weight::Zero() )
+        if( ifst->Final(s).isZero() )
         {
-            qDebug() << "hhhhhhhhhhhhhhhhhhhhhhhhhh";
-            const auto plus = Plus(f_distance, Times(sd, ifst->Final(s)));
-            if( f_distance!=plus )
-            {
-                f_distance = plus;
-                *f_parent = s;
-            }
-            if( !f_distance.Member() )
-            {
-                return false;
-            }
+            qDebug() << "kd_SingleShortestPath SHOULD NOT";
+            exit(2);
         }
 
         for( fst::ArcIterator<fst::Fst<KdLatticeArc>> aiter(*ifst, s) ; !aiter.Done() ; aiter.Next() )
@@ -108,15 +99,15 @@ bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
             }
 
             auto &nd = distance[arc.nextstate];
-            const auto weight = Times(sd, arc.weight);
+            const KdLatticeWeight weight = Times(sd, arc.weight);
 
             if( nd!=Plus(nd, weight) )
             {
                 nd = Plus(nd, weight);
-                if (!nd.Member())
+                if( !nd.isValid() )
                     return false;
                 (*parent)[arc.nextstate] = std::make_pair(s, aiter.Position());
-                if (!enqueued[arc.nextstate])
+                if( !enqueued[arc.nextstate] )
                 {
                     state_queue.Enqueue(arc.nextstate);
                     enqueued[arc.nextstate] = true;
@@ -173,26 +164,26 @@ fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename)
 {
     // read decoding network FST
     Input ki(filename); // use ki.Stream() instead of is.
-    if (!ki.Stream().good()) KALDI_ERR << "Could not open decoding-graph FST "
+    if( !ki.Stream().good()) KALDI_ERR << "Could not open decoding-graph FST "
                                        << filename;
 
     fst::FstHeader hdr;
-    if (!hdr.Read(ki.Stream(), "<unknown>"))
+    if( !hdr.Read(ki.Stream(), "<unknown>"))
     {
         KALDI_ERR << "Reading FST: error reading FST header.";
     }
-    if (hdr.ArcType() != fst::StdArc::Type()) {
+    if( hdr.ArcType() != fst::StdArc::Type()) {
         KALDI_ERR << "FST with arc type " << hdr.ArcType() << " not supported.";
     }
     fst::FstReadOptions ropts("<unspecified>", &hdr);
 
     fst::Fst<fst::StdArc> *decode_fst = NULL;
 
-    if (hdr.FstType() == "vector")
+    if( hdr.FstType() == "vector")
     {
         decode_fst = fst::VectorFst<fst::StdArc>::Read(ki.Stream(), ropts);
     }
-    else if (hdr.FstType() == "const")
+    else if( hdr.FstType() == "const")
     {
         decode_fst = fst::ConstFst<fst::StdArc>::Read(ki.Stream(), ropts);
     }
@@ -200,7 +191,7 @@ fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename)
     {
         KALDI_ERR << "Reading FST: unsupported FST type: " << hdr.FstType();
     }
-    if (decode_fst == NULL) { // fst code will warn.
+    if( decode_fst == NULL) { // fst code will warn.
         KALDI_ERR << "Error reading FST (after reading header).";
         return NULL;
     }

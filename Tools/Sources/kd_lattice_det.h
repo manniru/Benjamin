@@ -84,8 +84,9 @@ private:
         StringId string;
         KdLatticeWeight weight;
         bool operator != (const Element &other) const {
-            return (state != other.state || string != other.string ||
-                    weight != other.weight);
+            //            return (state != other.state || string != other.string ||
+            //                    weight != other.weight);
+            return false;
         }
         // This operator is only intended for the priority_queue in the function
         // EpsilonClosure().
@@ -140,13 +141,20 @@ private:
         bool operator ()(const std::vector<Element> * s1, const std::vector<Element> * s2) const {
             size_t sz = s1->size();
             KALDI_ASSERT(sz>=0);
-            if (sz != s2->size()) return false;
+            if( sz != s2->size()) return false;
             typename std::vector<Element>::const_iterator iter1 = s1->begin(),
                     iter1_end = s1->end(), iter2=s2->begin();
-            for (; iter1 < iter1_end; ++iter1, ++iter2) {
-                if (iter1->state != iter2->state ||
-                        iter1->string != iter2->string ||
-                        ! ApproxEqual(iter1->weight, iter2->weight, delta_)) return false;
+            for (; iter1 < iter1_end; ++iter1, ++iter2)
+            {
+                if( iter1->state != iter2->state ||
+                        iter1->string != iter2->string)
+                    return false;
+
+                KdLatticeWeight w1 = iter1->weight;
+                KdLatticeWeight w2 = iter2->weight;
+                float diff = fabs(w1.getCost() - w2.getCost());
+                if( diff>delta_ )
+                    return false;
             }
             return true;
         }
@@ -162,11 +170,11 @@ private:
         bool operator ()(const std::vector<Element> * s1, const std::vector<Element> * s2) const {
             size_t sz = s1->size();
             KALDI_ASSERT(sz>=0);
-            if (sz != s2->size()) return false;
+            if( sz != s2->size()) return false;
             typename std::vector<Element>::const_iterator iter1 = s1->begin(),
                     iter1_end = s1->end(), iter2=s2->begin();
             for (; iter1 < iter1_end; ++iter1, ++iter2) {
-                if (iter1->state != iter2->state) return false;
+                if( iter1->state != iter2->state) return false;
             }
             return true;
         }
@@ -197,15 +205,15 @@ private:
     // out its final-weight, and puts stuff on the queue relating to its
     // transitions.
     KdStateId MinimalToStateId(const std::vector<Element> &subset,
-                                   const double forward_cost);
+                               const double forward_cost);
 
 
     // Given a normalized initial subset of elements (i.e. before epsilon closure),
     // compute the corresponding output-state.
     KdStateId InitialToStateId(const std::vector<Element> &subset_in,
-                                   double forward_cost,
-                                   KdLatticeWeight *remaining_weight,
-                                   StringId *common_prefix);
+                               double forward_cost,
+                               KdLatticeWeight *remaining_weight,
+                               StringId *common_prefix);
 
     // returns the Compare value (-1 if a < b, 0 if a == b, 1 if a > b) according
     // to the ordering we defined on strings for the CompactLatticeWeightTpl.
@@ -214,8 +222,8 @@ private:
     //                     const CompactLatticeWeightTpl<WeightType,IntType> &w2)
     // in lattice-weight.h.
     // this is the same as that, but optimized for our data structures.
-    int Compare(const KdLatticeWeight &a_w, StringId a_str,
-                       const KdLatticeWeight &b_w, StringId b_str);
+    int CompareDet(const KdLatticeWeight &a_w, StringId a_str,
+                const KdLatticeWeight &b_w, StringId b_str);
 
     // This function computes epsilon closure of subset of states by following epsilon links.
     // Called by InitialToStateId and Initialize.
@@ -259,8 +267,8 @@ private:
     class PairComparator {
     public:
         inline bool operator () (const std::pair<Label, Element> &p1, const std::pair<Label, Element> &p2) {
-            if (p1.first < p2.first) return true;
-            else if (p1.first > p2.first) return false;
+            if( p1.first < p2.first) return true;
+            else if( p1.first > p2.first) return false;
             else {
                 return p1.second.state < p2.second.state;
             }

@@ -52,6 +52,7 @@ HEADERS += \
     Sources/kd_lattice_compact.h \
     Sources/kd_lattice_det.h \
     Sources/kd_lattice_functions.h \
+    Sources/kd_lattice_weight.h \
     Sources/kd_matrix.h \
     Sources/kd_mbr.h \
     Sources/kd_mbr_base.h \
@@ -84,6 +85,7 @@ SOURCES += \
     Sources/kd_lattice_compact.cpp \
     Sources/kd_lattice_det.cpp \
     Sources/kd_lattice_functions.cpp \
+    Sources/kd_lattice_weight.cpp \
     Sources/kd_matrix.cpp \
     Sources/kd_mbr.cpp \
     Sources/kd_mbr_base.cpp \
