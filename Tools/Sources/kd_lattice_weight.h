@@ -3,10 +3,7 @@
 
 #include <QDebug>
 #include "bt_config.h"
-#include <fstext/fstext-lib.h>
-#include <base/kaldi-common.h>
-#include <util/common-utils.h>
-#include <util/kaldi-table.h>
+#include "fst/fstlib.h"
 
 class KdLatticeWeight
 {
@@ -144,7 +141,7 @@ inline KdLatticeWeight Divide(const KdLatticeWeight &w1,
     if( a != a || b != b || a == -std::numeric_limits<float>::infinity()
             || b == -std::numeric_limits<float>::infinity())
     {
-        KALDI_WARN << "LatticeWeightTpl::Divide, NaN or invalid number produced. "
+        qDebug() << "LatticeWeightTpl::Divide, NaN or invalid number produced. "
                    << "[dividing by zero?]  Returning zero";
         return KdLatticeWeight::Zero();
     }

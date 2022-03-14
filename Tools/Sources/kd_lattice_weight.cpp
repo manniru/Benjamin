@@ -1,8 +1,6 @@
 ﻿#include "kd_lattice_weight.h"
 #include <QDebug>
 
-using namespace kaldi;
-
 KdLatticeWeight::KdLatticeWeight()
 {
     value1_ = std::numeric_limits<float>::infinity();
