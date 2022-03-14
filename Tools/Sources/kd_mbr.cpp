@@ -496,7 +496,7 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
         for (fst::ArcIterator<KdCompactLattice> aiter(*clat, n-1);
              !aiter.Done(); aiter.Next())
         {
-            const KdCompactLatticeArc &carc = aiter.Value();
+            const KdCLatArc &carc = aiter.Value();
             KdMBRArc arc; // in our local format.
             arc.word = carc.ilabel; // == carc.olabel
             arc.start_node = n;

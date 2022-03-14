@@ -40,6 +40,7 @@ HEADERS += \
     Sources/bt_cyclic.h \
     Sources/bt_recorder.h \
     Sources/bt_test.h \
+    Sources/kd_clat_weight.h \
     Sources/kd_cmvn.h \
     Sources/kd_cmvn_base.h \
     Sources/kd_cmvn_state.h \
@@ -73,6 +74,7 @@ SOURCES += \
     Sources/bt_cyclic.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_test.cpp \
+    Sources/kd_clat_weight.cpp \
     Sources/kd_cmvn.cpp \
     Sources/kd_cmvn_base.cpp \
     Sources/kd_cmvn_state.cpp \

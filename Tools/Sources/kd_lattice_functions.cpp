@@ -168,7 +168,7 @@ bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
         KALDI_WARN << "Both --phone-determinize and --word-determinize are set to "
                    << "false, copying lattice without determinization.";
         // We are expecting the words on the input side.
-        fst::ConvertLattice<KdLatticeWeight, int>(*ifst, ofst, false);
+        ConvertLattice(*ifst, ofst, false);
         return ans;
     }
 
@@ -189,7 +189,7 @@ bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
         if( !opts.word_determinize)
         {
             // We are expecting the words on the input side.
-            fst::ConvertLattice<KdLatticeWeight, int>(*ifst, ofst, false);
+            ConvertLattice(*ifst, ofst, false);
             return ans;
         }
     }

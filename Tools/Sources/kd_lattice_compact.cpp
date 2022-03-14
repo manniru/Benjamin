@@ -38,14 +38,14 @@ QVector<int> kd_getTimes(KdCompactLattice &lat)
      QVector<int> times;
      times.push_back(0);
 
-     KdCompactLatticeArc arc;
+     KdCLatArc arc;
      int state = 0;
      while( state<(num_states-1) )
      {
          for( fst::ArcIterator<KdCompactLattice> aiter(lat, state) ;
               !aiter.Done() ; aiter.Next() )
          {
-             arc = static_cast<KdCompactLatticeArc>(aiter.Value());
+             arc = static_cast<KdCLatArc>(aiter.Value());
              int state_start = kd_getStartTime(arc.weight.String());
              int state_len   = kd_getEndTime(arc.weight.String());
              if( state==0 )
@@ -87,9 +87,64 @@ void kd_compactLatticeStateTimes(KdCompactLattice &lat,
         for (fst::ArcIterator<KdCompactLattice> aiter(lat, state); !aiter.Done();
              aiter.Next())
         {
-            const KdCompactLatticeArc &arc = aiter.Value();
+            const KdCLatArc &arc = aiter.Value();
             int arc_len = arc.weight.String().size();
             (*times)[arc.nextstate] = cur_time + arc_len;
+        }
+    }
+}
+
+void ConvertLattice(const KdLattice &ifst, KdCompactLattice *ofst, bool invert)
+{
+    KdLattice ffst;
+    std::vector<std::vector<int> > labels;
+    if (invert) // normal case: want the ilabels as sequences on the arcs of
+    {
+        Factor(ifst, &ffst, &labels);  // the output... Factor makes seqs of
+    }
+    // ilabels.
+    else
+    {
+        KdLattice invfst(ifst);
+        fst::Invert(&invfst);
+        Factor(invfst, &ffst,  &labels);
+    }
+
+    fst::TopSort(&ffst); // Put the states in ffst in topological order, which is
+    // easier on the eye when reading the text-form lattices and corresponds to
+    // what we get when we generate the lattices in the decoder.
+
+    ofst->DeleteStates();
+
+    // The states will be numbered exactly the same as the original FST.
+    // Add the states to the new FST.
+    KdStateId num_states = ffst.NumStates();
+    for (KdStateId s = 0; s < num_states; s++)
+    {
+        KdStateId news = ofst->AddState();
+        assert(news == s);
+    }
+    ofst->SetStart(ffst.Start());
+    for (KdStateId s = 0; s < num_states; s++)
+    {
+        KdLatticeWeight final_weight = ffst.Final(s);
+        if (final_weight != KdLatticeWeight::Zero())
+        {
+            KdCLatWeight final_compact_weight(final_weight, std::vector<int>());
+            ofst->SetFinal(s, final_compact_weight);
+        }
+        for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > iter(ffst, s);
+             !iter.Done();
+             iter.Next())
+        {
+            const KdLatticeArc &arc = iter.Value();
+            KALDI_PARANOID_ASSERT(arc.weight != Weight::Zero());
+            // note: zero-weight arcs not allowed anyway so weight should not be zero,
+            // but no harm in checking.
+            KdCLatArc compact_arc(arc.olabel, arc.olabel,
+                                  KdCLatWeight(arc.weight, labels[arc.ilabel]),
+                    arc.nextstate);
+            ofst->AddArc(s, compact_arc);
         }
     }
 }

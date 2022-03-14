@@ -142,9 +142,9 @@ void kd_writeLat(KdLattice *ifst)
 {
 //    LatticeWriter lat_writer("ark:" KAL_SK_DIR "out.ark");
 //    lat_writer.Write("f", *ifst);
-    fst::RemoveEpsLocal(ifst);
-    KdCompactLattice clat;
-    ConvertLattice(*ifst, &clat);
+//    fst::RemoveEpsLocal(ifst);
+//    KdCompactLattice clat;
+//    ConvertLattice(*ifst, &clat);
 
 ////////////TO WORK UNCOMMENT AND FIX THIS/////////////
 //    KdCompactLWriter lat_writer("ark:" KAL_SK_DIR "out.ark");

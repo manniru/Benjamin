@@ -27,10 +27,10 @@ void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
         for (;iter != end; ++iter)
         {
             const TempArc &temp_arc(*iter);
-            KdCompactLatticeArc new_arc;
+            KdCLatArc new_arc;
             std::vector<Label> olabel_seq;
             repository_.ConvertToVector(temp_arc.string, &olabel_seq);
-            CompactLatticeWeight weight(temp_arc.weight, olabel_seq);
+            KdCLatWeight weight(temp_arc.weight, olabel_seq);
             if( temp_arc.nextstate == KD_INVALID_STATE )
             {  // is really final weight.
                 ofst->SetFinal(this_state_id, weight);
@@ -281,7 +281,8 @@ bool KdLatDet::CheckMemoryUsage()
     return true;
 }
 
-bool KdLatDet::Determinize(double *effective_beam) {
+bool KdLatDet::Determinize(double *effective_beam)
+{
     KALDI_ASSERT(!determinized_);
     // This determinizes the input fst but leaves it in the "special format"
     // in "output_arcs_".  Must be called after Initialize().  To get the

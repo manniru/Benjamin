@@ -80,7 +80,8 @@ elif [[ "$WORD" == "slash" ]]; then
 
 elif [[ "$WORD" == "underline" ]]; then
     
-    xdotool key shift+minus
+    OUTPUT="53"
+#    xdotool key shift+minus
 
 elif [[ "$WORD" == "departure" ]]; then
     
