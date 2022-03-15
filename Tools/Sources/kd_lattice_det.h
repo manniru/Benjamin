@@ -5,6 +5,7 @@
 #include "kd_token.h"
 #include "kd_lattice.h"
 #include "kd_lattice_compact.h"
+#include "kd_lattice_string.h"
 
 // A representable float near .001.
 #define KD_KDELTA fst::kDelta
@@ -73,8 +74,7 @@ private:
     typedef typename KdLatticeArc::StateId KdStateId;  // same as above but distinguish
     // states in output Fst.
 
-    typedef fst::LatticeStringRepository<int> StringRepositoryType;
-    typedef const typename StringRepositoryType::Entry* StringId;
+    typedef const typename KdLatString::Entry* StringId;
 
     // Element of a subset [of original states]
     struct Element
@@ -364,7 +364,7 @@ private:
     // each state is (emitting or final) where emitting means it has at least one
     // non-epsilon output arc.  Only accessed by IsIsymbolOrFinal()
 
-    fst::LatticeStringRepository<int> repository_;  // defines a compact and fast way of
+    KdLatString repository_;  // defines a compact and fast way of
     // storing sequences of labels.
 
     void AddStrings(const std::vector<Element> &vec,

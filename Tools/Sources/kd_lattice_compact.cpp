@@ -1,4 +1,5 @@
 #include "kd_lattice_compact.h"
+#include "fstext/factor.h"
 
 #define MAX_SIL_COUNT 20
 
@@ -100,14 +101,14 @@ void ConvertLattice(const KdLattice &ifst, KdCompactLattice *ofst, bool invert)
     std::vector<std::vector<int> > labels;
     if (invert) // normal case: want the ilabels as sequences on the arcs of
     {
-        Factor(ifst, &ffst, &labels);  // the output... Factor makes seqs of
+        fst::Factor(ifst, &ffst, &labels);  // the output... Factor makes seqs of
     }
     // ilabels.
     else
     {
         KdLattice invfst(ifst);
         fst::Invert(&invfst);
-        Factor(invfst, &ffst,  &labels);
+        fst::Factor(invfst, &ffst,  &labels);
     }
 
     fst::TopSort(&ffst); // Put the states in ffst in topological order, which is

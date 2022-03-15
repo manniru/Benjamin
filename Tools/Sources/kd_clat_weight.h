@@ -220,19 +220,22 @@ inline KdCLatWeight Divide(const KdCLatWeight &w1,
         }
         else
         {
-            KALDI_ERR << "Division by zero [0/0]";
+            qDebug() << "Division by zero [0/0]";
+            exit(5);
         }
     }
     else if (w2.Weight() == KdLatticeWeight::Zero())
     {
-        KALDI_ERR << "Error: division by zero";
+        qDebug() << "Error: division by zero";
+        exit(5);
     }
     KdLatticeWeight w = Divide(w1.Weight(), w2.Weight());
 
     const std::vector<int> v1 = w1.String(), v2 = w2.String();
     if (v2.size() > v1.size())
     {
-        KALDI_ERR << "Cannot divide, length mismatch";
+        qDebug() << "Cannot divide, length mismatch";
+        exit(5);
     }
     typename std::vector<int>::const_iterator v1b = v1.begin(),
             v1e = v1.end(), v2b = v2.begin(), v2e = v2.end();
@@ -240,15 +243,18 @@ inline KdCLatWeight Divide(const KdCLatWeight &w1,
     {
         if (!std::equal(v2b, v2e, v1b))
         { // v2 must be identical to first part of v1.
-            KALDI_ERR << "Cannot divide, data mismatch";
+            qDebug() << "Cannot divide, data mismatch";
+            exit(5);
         }
         return KdCLatWeight(
                     w, std::vector<int>(v1b+(v2e-v2b), v1e)); // return last part of v1.
     }
     else if (div == fst::DIVIDE_RIGHT)
     {
-        if (!std::equal(v2b, v2e, v1e-(v2e-v2b))) { // v2 must be identical to last part of v1.
-            KALDI_ERR << "Cannot divide, data mismatch";
+        if (!std::equal(v2b, v2e, v1e-(v2e-v2b)))
+        { // v2 must be identical to last part of v1.
+            qDebug() << "Cannot divide, data mismatch";
+            exit(5);
         }
         return KdCLatWeight(
                     w, std::vector<int>(v1b, v1e-(v2e-v2b))); // return first part of v1.
@@ -256,7 +262,8 @@ inline KdCLatWeight Divide(const KdCLatWeight &w1,
     }
     else
     {
-        KALDI_ERR << "Cannot divide KdCLatWeight with DIVIDE_ANY";
+        qDebug() << "Cannot divide KdCLatWeight with DIVIDE_ANY";
+        exit(5);
     }
     return KdCLatWeight::Zero(); // keep compiler happy.
 }

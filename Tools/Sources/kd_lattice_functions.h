@@ -13,17 +13,17 @@
 
 struct KdPrunedOpt
 {
-  // delta: a small offset used to measure equality of weights.
-  float delta = KD_KDELTA;
-  // determinization will fail when the
-  // algorithm's (approximate) memory consumption crosses this threshold.
-  int max_mem = 50000000;
-  // do a first pass determinization on both phones and words.
-  bool phone_determinize = true;
-  // do a second pass determinization on words only.
-  bool word_determinize = true;
-  // push and minimize after determinization if true, .
-  bool minimize = false;
+    // delta: a small offset used to measure equality of weights.
+    float delta = KD_KDELTA;
+    // determinization will fail when the
+    // algorithm's (approximate) memory consumption crosses this threshold.
+    int max_mem = 50000000;
+    // do a first pass determinization on both phones and words.
+    bool phone_determinize = true;
+    // do a second pass determinization on words only.
+    bool word_determinize = true;
+    // push and minimize after determinization if true, .
+    bool minimize = false;
 };
 
 void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times);
@@ -53,10 +53,11 @@ bool kd_detLatPruned(KdLattice &ifst, double beam,
                      KdCompactLattice *ofst, KdDetOpt opts);
 
 KdLatticeArc::Label kd_DetLatInsertPhones(kaldi::TransitionModel &trans_model,
-    KdLattice *fst);
+                                          KdLattice *fst);
 
 void kd_DetLatDeletePhones( KdLatticeArc::Label first_phone_label,
                             KdLattice *fst);
 
 
+int kd_highestNumberedInputSymbol(KdLattice &fst);
 #endif // KD_LATTICE_FUNCTIONS_H

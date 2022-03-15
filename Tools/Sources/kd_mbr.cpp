@@ -33,7 +33,7 @@ KdMBR::KdMBR(KdCompactLattice *clat_in)
     fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
     std::vector<int> alignment, words;
     fst::TropicalWeight weight;
-    fst::GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
+    GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
     KALDI_ASSERT(alignment.empty()); // we removed the alignment.
     one_best_id = words;
     L_ = 0.0; // Set current edit-distance to 0 [just so we know

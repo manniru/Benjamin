@@ -235,7 +235,7 @@ KdLatticeArc::Label kd_DetLatInsertPhones(
     // Work out the first phone symbol. This is more related to the phone
     // insertion function, so we put it here and make it the returning value of
     // DeterminizeLatticeInsertPhones().
-    Label first_phone_label = HighestNumberedInputSymbol(*fst) + 1;
+    Label first_phone_label = kd_highestNumberedInputSymbol(*fst) + 1;
 
     // Insert phones here.
     for (fst::StateIterator<KdLattice > siter(*fst);
@@ -402,4 +402,19 @@ void kd_DetLatDeletePhones(
             aiter.SetValue(arc);
         }
     }
+}
+
+int kd_highestNumberedInputSymbol(KdLattice &fst)
+{
+    int ans = 0;
+    for (fst::StateIterator<KdLattice> siter(fst); !siter.Done(); siter.Next())
+    {
+        KdStateId s = siter.Value();
+        for(fst::ArcIterator<KdLattice> aiter(fst, s); !aiter.Done();  aiter.Next())
+        {
+            const KdLatticeArc &arc = aiter.Value();
+            ans = std::max(ans, arc.ilabel);
+        }
+    }
+    return ans;
 }

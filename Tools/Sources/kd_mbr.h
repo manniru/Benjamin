@@ -10,6 +10,7 @@
 #include "backend.h"
 #include "kd_mbr_base.h"
 #include "kd_lattice_compact.h"
+#include "kd_fst_util.h"
 
 class KdMBR
 {

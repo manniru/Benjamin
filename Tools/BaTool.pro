@@ -49,10 +49,12 @@ HEADERS += \
     Sources/kd_delta.h \
     Sources/kd_f_token.h \
     Sources/kd_fft.h \
+    Sources/kd_fst_util.h \
     Sources/kd_lattice.h \
     Sources/kd_lattice_compact.h \
     Sources/kd_lattice_det.h \
     Sources/kd_lattice_functions.h \
+    Sources/kd_lattice_string.h \
     Sources/kd_lattice_weight.h \
     Sources/kd_matrix.h \
     Sources/kd_mbr.h \
@@ -83,10 +85,12 @@ SOURCES += \
     Sources/kd_delta.cpp \
     Sources/kd_f_token.cpp \
     Sources/kd_fft.cpp \
+    Sources/kd_fst_util.cpp \
     Sources/kd_lattice.cpp \
     Sources/kd_lattice_compact.cpp \
     Sources/kd_lattice_det.cpp \
     Sources/kd_lattice_functions.cpp \
+    Sources/kd_lattice_string.cpp \
     Sources/kd_lattice_weight.cpp \
     Sources/kd_matrix.cpp \
     Sources/kd_mbr.cpp \
