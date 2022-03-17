@@ -36,7 +36,7 @@ void KdDecoder::InitDecoding(KdDecodable *dcodable)
     cost_offsets.clear();
     ClearActiveTokens();
     frame_toks.resize(1);
-    KdToken *start_tok = new KdToken(0.0, 0.0);
+    KdToken *start_tok = new KdToken(0.0);
     KdStateId start_state = fst_->Start();
     start_tok->state = start_state;
     frame_toks[0].insert(start_tok);
@@ -53,8 +53,7 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
     bool changed = false;
     if( all_tokens[state]==NULL )
     {
-        float extra_cost = 0.0;
-        KdToken *new_tok = new KdToken(tot_cost, extra_cost);
+        KdToken *new_tok = new KdToken(tot_cost);
         new_tok->state = state;
         frame_toks.last().insert(new_tok);
         all_tokens[state] = new_tok;
@@ -63,9 +62,9 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
     else// update old token
     {
         KdToken *tok = all_tokens[state];
-        if( tok->tot_cost > tot_cost )
+        if( tok->cost > tot_cost )
         {
-            tok->tot_cost = tot_cost;
+            tok->cost = tot_cost;
             // we don't allocate a new token, the old stays linked in frame_toks
             // we only replace the tot_cost
             changed = true;
@@ -79,66 +78,40 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
 float KdDecoder::GetCutoff(KdToken **best_tok)
 {
     float best_cost = std::numeric_limits<float>::infinity();
-    size_t count = 0;
 
-    std::vector<float> tmp;
+    std::vector<float> cf_costs; //current frame cost
     KdToken *head = frame_toks[uframe].head;
     for( KdToken *tok=head ; tok!=NULL ; tok=tok->next )
     {
         KdStateId state = tok->state;
         if( state!=-1 )
         {
-            float cost = tok->tot_cost;
-            tmp.push_back(cost);
+            float cost = tok->cost;
+            cf_costs.push_back(cost);
             if( cost<best_cost )
             {
                 best_cost = cost;
                 *best_tok = tok;
             }
-            count++;
         }
     }
 
     float beam_cutoff = best_cost + config.beam;
-    float min_active_cutoff = std::numeric_limits<float>::infinity();
-    float max_active_cutoff = std::numeric_limits<float>::infinity();
 
-    KALDI_VLOG(6) << "Number of tokens active on frame " << frame_num
-                  << " is " << tmp.size();
+    int tok_count = cf_costs.size();
+    if( tok_count>config.min_active )
+    {
+        //sub sort to nth element
+        std::nth_element(cf_costs.begin(),
+                         cf_costs.begin() + config.min_active,
+                         cf_costs.end());
+        float min_active_cutoff = cf_costs[config.min_active];
 
-    if( tmp.size()>config.max_active )
-    {
-        std::nth_element(tmp.begin(),
-                         tmp.begin() + config.max_active,
-                         tmp.end());
-        max_active_cutoff = tmp[config.max_active];
-    }
-    if( max_active_cutoff < beam_cutoff)
-    {
-        // max_active is tighter than beam.
-        adaptive_beam = max_active_cutoff - best_cost + config.beam_delta;
-        return max_active_cutoff;
-    }
-    if( tmp.size() > static_cast<size_t>(config.min_active))
-    {
-        if( config.min_active == 0)
-        {
-            min_active_cutoff = best_cost;
+        if( min_active_cutoff>beam_cutoff )
+        { // min_active is looser than beam.
+            adaptive_beam = min_active_cutoff - best_cost + config.beam_delta;
+            return min_active_cutoff;
         }
-        else
-        {
-            std::nth_element(tmp.begin(),
-                             tmp.begin() + config.min_active,
-                             tmp.size() > static_cast<size_t>(config.max_active) ?
-                                 tmp.begin() + config.max_active :
-                                 tmp.end());
-            min_active_cutoff = tmp[config.min_active];
-        }
-    }
-    if( min_active_cutoff > beam_cutoff)
-    { // min_active is looser than beam.
-        adaptive_beam = min_active_cutoff - best_cost + config.beam_delta;
-        return min_active_cutoff;
     }
     else
     {
@@ -154,7 +127,7 @@ double KdDecoder::GetBestCutoff(KdToken *tok)
 
     cost_offsets.push_back(0.0);
 
-    float cost_offset = -tok->tot_cost;
+    float cost_offset = -tok->cost;
 
     for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ; !aiter.Done() ; aiter.Next() )
     {
@@ -162,7 +135,7 @@ double KdDecoder::GetBestCutoff(KdToken *tok)
         if( arc.ilabel!=0 )
         {
             float arc_cost = -decodable->LogLikelihood(frame_num, arc.ilabel);
-            float new_weight = arc.weight.Value() + (cost_offset + tok->tot_cost)
+            float new_weight = arc.weight.Value() + (cost_offset + tok->cost)
                     + arc_cost + adaptive_beam;
             if( new_weight<cutoff )
             {
@@ -192,7 +165,7 @@ float KdDecoder::ProcessEmitting()
         KdStateId state = tok->state;
         if( state!=-1 )
         {
-            float cost = tok->tot_cost;
+            float cost = tok->cost;
             if( cost<=cutoff )
             {
                 next_cutoff = PEmittingState(tok, next_cutoff);
@@ -236,7 +209,7 @@ float KdDecoder::PEmittingState(KdToken *tok, float next_cutoff)
             float new_weight = decodable->LogLikelihood(frame_num, arc.ilabel);
             float ac_cost = cost_offsets[frame] - new_weight;
             float graph_cost = arc.weight.Value();
-            float tot_cost = tok->tot_cost + ac_cost + graph_cost;
+            float tot_cost = tok->cost + ac_cost + graph_cost;
 
             if( tot_cost>=next_cutoff )
             {
@@ -251,10 +224,6 @@ float KdDecoder::PEmittingState(KdToken *tok, float next_cutoff)
             KdToken *ef_tok;
             updateToken(arc.nextstate, tot_cost, &ef_tok);
 
-            ef_tok->ilabel = arc.ilabel;
-            ef_tok->olabel = arc.olabel;
-            ef_tok->graph_cost = graph_cost;
-            ef_tok->acoustic_cost = ac_cost;
             // Add ForwardLink from tok to next_tok (put on head of list tok->links)
             tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
                                        graph_cost , ac_cost, tok->links);
@@ -266,7 +235,7 @@ float KdDecoder::PEmittingState(KdToken *tok, float next_cutoff)
 // Processes Single Non Emiting State
 void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
 {
-    float cur_cost = tok->tot_cost;
+    float cur_cost = tok->cost;
     if( cur_cost>=cutoff )
     {
         return;// Don't bother processing
@@ -288,11 +257,6 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
                 KdToken *ef_tok;
                 bool changed = updateToken(arc.nextstate, tot_cost,
                                              &ef_tok);
-
-                ef_tok->ilabel = 0;
-                ef_tok->olabel = arc.olabel;
-                ef_tok->graph_cost = graph_cost;
-                ef_tok->acoustic_cost = 0;
 
                 tok->links = new KdFLink(ef_tok, 0, arc.olabel,
                                          graph_cost, 0, tok->links);

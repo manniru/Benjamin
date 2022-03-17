@@ -501,8 +501,8 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
             arc.word = carc.ilabel; // == carc.olabel
             arc.start_node = n;
             arc.end_node = carc.nextstate + 1; // convert to 1-based.
-            arc.loglike = - (carc.weight.weight.value1 +
-                             carc.weight.weight.value2);
+            arc.loglike = - (carc.weight.weight.g_cost +
+                             carc.weight.weight.a_cost);
             // loglike: sum graph/LM and acoustic cost, and negate to
             // convert to loglikes.  We assume acoustic scaling is already done.
 

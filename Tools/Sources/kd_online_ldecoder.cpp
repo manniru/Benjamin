@@ -36,28 +36,29 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
         for( KdToken *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
         {
             KdFLink *link;
-            for ( link=tok->links; link!=NULL; link=link->next )
+            for ( link=tok->links; link!=NULL ; link=link->next )
             {
                 KdStateId nextstate = link->next_tok->m_state;
 
                 float cost_offset = 0.0;
                 if( link->ilabel!=0 ) // emitting
                 {
-                    KALDI_ASSERT(f >= 0 && f<cost_offsets.length() );
+                    KALDI_ASSERT( f<cost_offsets.length() );
                     cost_offset = cost_offsets[f];
                 }
-                KdLatticeArc::Weight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
+                KdLatticeWeight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
                 KdLatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
                 ofst->AddArc(tok->m_state, arc);
             }
 
-            if( f==end-1)
+            if( f==end-1 )
             {
                 //this should not be m_state
                 float final_cost = fst_->Final(tok->state).Value();
                 if( final_cost!=infinity )
                 {
                     ofst->SetFinal(tok->m_state, KdLatticeWeight(final_cost, 0));
+//                    ofst->SetFinal();
                 }
             }
         }

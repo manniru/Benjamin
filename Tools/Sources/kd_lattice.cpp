@@ -45,7 +45,7 @@ void kd_fstSSPathBacktrace(KdLattice *ifst, KdLattice *ofst,
 bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
                            std::vector<std::pair<KdStateId, size_t>> *parent)
 {
-    std::vector<KdLatticeArc::Weight> distance;
+    std::vector<KdLatticeWeight> distance;
     parent->clear();
     fst::AnyArcFilter<KdLatticeArc> arc_filter;
     fst::AutoQueue<KdStateId> state_queue(*ifst, &distance, arc_filter);
@@ -57,18 +57,18 @@ bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
     }
     std::vector<bool> enqueued;
     KdStateId source = ifst->Start();
-    KdLatticeArc::Weight f_distance = KdLatticeArc::Weight::Zero();
+    KdLatticeWeight f_distance = KdLatticeWeight::Zero();
     distance.clear();
     state_queue.Clear();
 
     while( distance.size()<source )
     {
-        distance.push_back(KdLatticeArc::Weight::Zero());
+        distance.push_back(KdLatticeWeight::Zero());
         enqueued.push_back(false);
         parent->emplace_back(KD_INVALID_STATE, KD_INVALID_ARC);
     }
 
-    distance.push_back(KdLatticeArc::Weight::One());
+    distance.push_back(KdLatticeWeight::One());
     parent->emplace_back(KD_INVALID_STATE, KD_INVALID_ARC);
     state_queue.Enqueue(source);
     enqueued.push_back(true);
@@ -93,7 +93,7 @@ bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
             const auto &arc = aiter.Value();
             while (distance.size() <= arc.nextstate)
             {
-                distance.push_back(KdLatticeArc::Weight::Zero());
+                distance.push_back(KdLatticeWeight::Zero());
                 enqueued.push_back(false);
                 parent->emplace_back(KD_INVALID_STATE, KD_INVALID_ARC);
             }

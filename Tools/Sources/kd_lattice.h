@@ -7,6 +7,7 @@
 #include <util/common-utils.h>
 #include <util/kaldi-table.h>
 #include "kd_lattice_weight.h"
+#include "fst/fstlib.h"
 
 #define FST_ERROR         0x4ULL
 #define FST_PLUS_ZERO     0x8ULL // for semi ring null plus
