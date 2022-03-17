@@ -1,6 +1,5 @@
 ﻿#include "kd_fst_util.h"
 
-
 bool kd_GetLinearSymbolSequence(const fst::Fst<KdArc> &fst, std::vector<int> *isymbols_out, std::vector<int> *osymbols_out, KdArc::Weight *tot_weight_out)
 {
     KdArc::Weight tot_weight = KdArc::Weight::One();
@@ -49,51 +48,4 @@ bool kd_GetLinearSymbolSequence(const fst::Fst<KdArc> &fst, std::vector<int> *is
             cur_state = arc.nextstate;
         }
     }
-}
-
-KdStateId kd_CreateSuperFinal(KdCompactLattice *fst)
-{
-    assert(fst != NULL);
-
-    KdStateId num_states = fst->NumStates();
-    KdStateId num_final = 0;
-
-    std::vector<KdStateId> final_states;
-    for (KdStateId s = 0; s < num_states; s++)
-    {
-        if (fst->Final(s) != KdCLatWeight::Zero())
-        {
-            num_final++;
-            final_states.push_back(s);
-        }
-    }
-    if (final_states.size() == 1)
-    {
-        if (fst->Final(final_states[0]) == KdCLatWeight::One())
-        {
-            fst::ArcIterator<KdCompactLattice> iter(*fst, final_states[0]);
-            if (iter.Done())
-            {
-                // We already have a final state w/ no transitions out and unit weight.
-                // So we're done.
-                return final_states[0];
-            }
-        }
-    }
-
-    KdStateId final_state = fst->AddState();
-    fst->SetFinal(final_state, KdCLatWeight::One());
-    for (size_t idx = 0; idx < final_states.size(); idx++)
-    {
-        KdStateId s = final_states[idx];
-        KdCLatWeight weight = fst->Final(s);
-        fst->SetFinal(s, KdCLatWeight::Zero());
-        KdCLatArc arc;
-        arc.ilabel = 0;
-        arc.olabel = 0;
-        arc.nextstate = final_state;
-        arc.weight = weight;
-        fst->AddArc(s, arc);
-    }
-    return final_state;
 }

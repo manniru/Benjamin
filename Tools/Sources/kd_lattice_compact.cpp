@@ -1,8 +1,6 @@
 #include "kd_lattice_compact.h"
-#include "fstext/factor.h"
 
 #define MAX_SIL_COUNT 20
-
 using namespace kaldi;
 
 int kd_getStartTime(std::vector<int> input)
@@ -95,61 +93,6 @@ void kd_compactLatticeStateTimes(KdCompactLattice &lat,
     }
 }
 
-void kd_ConvertLattice(KdLattice &ifst, KdCompactLattice *ofst, bool invert)
-{
-    KdLattice ffst;
-    std::vector<std::vector<int> > labels;
-    if (invert) // normal case: want the ilabels as sequences on the arcs of
-    {
-        fst::Factor(ifst, &ffst, &labels);  // the output... Factor makes seqs of
-    }
-    // ilabels.
-    else
-    {
-        KdLattice invfst(ifst);
-        fst::Invert(&invfst);
-        fst::Factor(invfst, &ffst,  &labels);
-    }
-
-    fst::TopSort(&ffst); // Put the states in ffst in topological order, which is
-    // easier on the eye when reading the text-form lattices and corresponds to
-    // what we get when we generate the lattices in the decoder.
-
-    ofst->DeleteStates();
-
-    // The states will be numbered exactly the same as the original FST.
-    // Add the states to the new FST.
-    KdStateId num_states = ffst.NumStates();
-    for (KdStateId s = 0; s < num_states; s++)
-    {
-        KdStateId news = ofst->AddState();
-        assert(news == s);
-    }
-    ofst->SetStart(ffst.Start());
-    for (KdStateId s = 0; s < num_states; s++)
-    {
-        KdLatticeWeight final_weight = ffst.Final(s);
-        if (final_weight != KdLatticeWeight::Zero())
-        {
-            KdCLatWeight final_compact_weight(final_weight, std::vector<int>());
-            ofst->SetFinal(s, final_compact_weight);
-        }
-        for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > iter(ffst, s);
-             !iter.Done();
-             iter.Next())
-        {
-            const KdLatticeArc &arc = iter.Value();
-            KALDI_PARANOID_ASSERT(arc.weight != Weight::Zero());
-            // note: zero-weight arcs not allowed anyway so weight should not be zero,
-            // but no harm in checking.
-            KdCLatArc compact_arc(arc.olabel, arc.olabel,
-                                  KdCLatWeight(arc.weight, labels[arc.ilabel]),
-                    arc.nextstate);
-            ofst->AddArc(s, compact_arc);
-        }
-    }
-}
-
 void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
 {
     ofst->DeleteStates();
@@ -238,3 +181,51 @@ void kd_RemoveAlignmentsFromCompactLattice(KdCompactLattice *fst)
         }
     }
 }
+
+KdStateId kd_CreateSuperFinal(KdCompactLattice *fst)
+{
+    assert(fst != NULL);
+
+    KdStateId num_states = fst->NumStates();
+    KdStateId num_final = 0;
+
+    std::vector<KdStateId> final_states;
+    for (KdStateId s = 0; s < num_states; s++)
+    {
+        if (fst->Final(s) != KdCLatWeight::Zero())
+        {
+            num_final++;
+            final_states.push_back(s);
+        }
+    }
+    if (final_states.size() == 1)
+    {
+        if (fst->Final(final_states[0]) == KdCLatWeight::One())
+        {
+            fst::ArcIterator<KdCompactLattice> iter(*fst, final_states[0]);
+            if (iter.Done())
+            {
+                // We already have a final state w/ no transitions out and unit weight.
+                // So we're done.
+                return final_states[0];
+            }
+        }
+    }
+
+    KdStateId final_state = fst->AddState();
+    fst->SetFinal(final_state, KdCLatWeight::One());
+    for (size_t idx = 0; idx < final_states.size(); idx++)
+    {
+        KdStateId s = final_states[idx];
+        KdCLatWeight weight = fst->Final(s);
+        fst->SetFinal(s, KdCLatWeight::Zero());
+        KdCLatArc arc;
+        arc.ilabel = 0;
+        arc.olabel = 0;
+        arc.nextstate = final_state;
+        arc.weight = weight;
+        fst->AddArc(s, arc);
+    }
+    return final_state;
+}
+

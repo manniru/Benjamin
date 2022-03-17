@@ -4,6 +4,7 @@
 #include<QVector>
 #include "kd_lattice.h"
 #include "kd_clat_weight.h"
+#include "kd_fst_util.h"
 
 typedef fst::ArcTpl<KdCLatWeight> KdCLatArc;
 typedef fst::VectorFst<KdCLatArc> KdCompactLattice;
@@ -15,16 +16,11 @@ QVector<int> kd_getTimes(KdCompactLattice &lat);
 void kd_compactLatticeStateTimes(KdCompactLattice &clat,
                                  std::vector<int> *times);
 
-
-void kd_ConvertLattice(KdLattice &ifst,
-                    KdCompactLattice *ofst, bool invert = true);
-
-
 void kd_ConvertLattice(KdCompactLattice &ifst,
         KdLattice *ofst, bool invert = true);
 
-
-
 void kd_RemoveAlignmentsFromCompactLattice(KdCompactLattice *fst);
+
+KdStateId kd_CreateSuperFinal(KdCompactLattice *fst);
 
 #endif // KD_LATTICE_COMPACT_H

@@ -165,11 +165,10 @@ bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
     // is not false, otherwise calling this function doesn't make any sense.
     if( (opts.phone_determinize || opts.word_determinize) == false)
     {
-        KALDI_WARN << "Both --phone-determinize and --word-determinize are set to "
-                   << "false, copying lattice without determinization.";
+        qDebug() << "Both --phone-determinize and --word-determinize are set to "
+                 << "false, copying lattice without determinization.";
         // We are expecting the words on the input side.
-        kd_ConvertLattice(*ifst, ofst, false);
-        return ans;
+        exit(0);
     }
 
     // Determinization options.
@@ -179,28 +178,15 @@ bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
 
     // If --phone-determinize is true, do the determinization on phone + word
     // lattices.
-    if( opts.phone_determinize)
+    if( opts.phone_determinize )
     {
         KALDI_VLOG(3) << "Doing first pass of determinization on phone + word "
                       << "lattices.";
         ans = kd_DetLatFirstPass(trans_model, beam, ifst, &det_opts) && ans;
-
-        // If --word-determinize is false, we've finished the job and return here.
-        if( !opts.word_determinize)
-        {
-            // We are expecting the words on the input side.
-            kd_ConvertLattice(*ifst, ofst, false);
-            return ans;
-        }
     }
 
     // If --word-determinize is true, do the determinization on word lattices.
-    if( opts.word_determinize)
-    {
-        KALDI_VLOG(3) << "Doing second pass of determinization on word lattices.";
-        ans = kd_detLatPruned(*ifst, beam,
-                              ofst, det_opts) && ans;
-    }
+    ans = kd_detLatPruned(*ifst, beam, ofst, det_opts) && ans;
 
     return ans;
 }
