@@ -24,11 +24,11 @@ KdMBR::KdMBR(KdCompactLattice *clat_in)
 
     PrepareLatticeAndInitStats(&clat);
 
-    RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
+    kd_RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
     KdLattice lat;
-    ConvertLattice(clat, &lat); // convert from KdCompactLattice to KdLattice.
+    kd_ConvertLattice(clat, &lat); // convert from KdCompactLattice to KdLattice.
     fst::VectorFst<fst::StdArc> fst;
-    ConvertLattice(lat, &fst); // convert from lattice to normal FST.
+    kd_ConvertLattice(lat, &fst); // convert from lattice to normal FST.
     fst::VectorFst<fst::StdArc> fst_shortest_path;
     fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
     std::vector<int> alignment, words;

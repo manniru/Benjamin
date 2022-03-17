@@ -34,5 +34,7 @@ void kd_writeLat(KdLattice *ifst);
 fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename);
 
 
+void kd_ConvertLattice(KdLattice &ifst,
+                       fst::VectorFst<fst::StdArc> *ofst);
 
 #endif // KD_LATTICE_H

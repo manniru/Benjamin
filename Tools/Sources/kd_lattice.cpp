@@ -200,3 +200,39 @@ fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename)
         return decode_fst;
     }
 }
+
+void kd_ConvertLattice(KdLattice &ifst, fst::VectorFst<fst::StdArc> *ofst)
+{
+    ofst->DeleteStates();
+    // The states will be numbered exactly the same as the original FST.
+    // Add the states to the new FST.
+    KdStateId num_states = ifst.NumStates();
+    for( KdStateId s=0 ; s<num_states; s++ )
+    {
+        KdStateId news = ofst->AddState();
+        assert(news == s);
+    }
+    ofst->SetStart(ifst.Start());
+    for (KdStateId s = 0; s < num_states; s++)
+    {
+        KdLatticeWeight final_iweight = ifst.Final(s);
+        if( final_iweight!=KdLatticeWeight::Zero() )
+        {
+            fst::StdArc::Weight final_oweight;
+            ConvertLatticeWeight(final_iweight, &final_oweight);
+            ofst->SetFinal(s, final_oweight);
+        }
+        for( fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > iter(ifst, s);
+             !iter.Done();
+             iter.Next())
+        {
+            KdLatticeArc arc = iter.Value();
+            fst::StdArc oarc;
+            ConvertLatticeWeight(arc.weight, &oarc.weight);
+            oarc.ilabel = arc.ilabel;
+            oarc.olabel = arc.olabel;
+            oarc.nextstate = arc.nextstate;
+            ofst->AddArc(s, oarc);
+        }
+    }
+}
