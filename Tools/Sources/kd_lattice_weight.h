@@ -8,20 +8,12 @@
 class KdLatticeWeight
 {
 public:
-    inline float Value1() const { return value1_; }
-
-    inline float Value2() const { return value2_; }
-
-    inline void SetValue1(float f) { value1_ = f; }
-
-    inline void SetValue2(float f) { value2_ = f; }
-
     KdLatticeWeight();
     KdLatticeWeight(float a, float b);
 
     KdLatticeWeight &operator=(const KdLatticeWeight &w) {
-        value1_ = w.value1_;
-        value2_ = w.value2_;
+        value1 = w.value1;
+        value2 = w.value2;
         return *this;
     }
 
@@ -69,9 +61,8 @@ public:
         return strm;
     }
 
-private:
-    float value1_;
-    float value2_;
+    float value1;
+    float value2;
 };
 
 inline bool operator!=(const KdLatticeWeight &wa,
@@ -79,24 +70,24 @@ inline bool operator!=(const KdLatticeWeight &wa,
 {
     // Volatile qualifier thwarts over-aggressive compiler optimizations
     // that lead to problems esp. with NaturalLess().
-    float va1 = wa.Value1();
-    float va2 = wa.Value2();
-    float vb1 = wb.Value1();
-    float vb2 = wb.Value2();
+    float va1 = wa.value1;
+    float va2 = wa.value2;
+    float vb1 = wb.value1;
+    float vb2 = wb.value2;
     return (va1 != vb1 || va2 != vb2);
 }
 
 inline KdLatticeWeight Times(const KdLatticeWeight &w1,
                              const KdLatticeWeight &w2)
 {
-    return KdLatticeWeight(w1.Value1()+w2.Value1(), w1.Value2()+w2.Value2());
+    return KdLatticeWeight(w1.value1+w2.value1, w1.value2+w2.value2);
 }
 
 inline int Compare (const KdLatticeWeight &w1,
                     const KdLatticeWeight &w2)
 {
-    float f1 = w1.Value1() + w1.Value2();
-    float f2 = w2.Value1() + w2.Value2();
+    float f1 = w1.value1 + w1.value2;
+    float f2 = w2.value1 + w2.value2;
     if( f1 < f2)
     {
         return 1;
@@ -109,11 +100,11 @@ inline int Compare (const KdLatticeWeight &w1,
     // mathematically we should be comparing (w1.value1_-w1.value2_ < w2.value1_-w2.value2_)
     // in the next line, but add w1.value1_+w1.value2_ = w2.value1_+w2.value2_ to both sides and
     // divide by two, and we get the simpler equivalent form w1.value1_ < w2.value1_.
-    else if( w1.Value1() < w2.Value1())
+    else if( w1.value1 < w2.value1)
     {
         return 1;
     }
-    else if( w1.Value1() > w2.Value1())
+    else if( w1.value1 > w2.value1)
     {
         return -1;
     }
@@ -135,8 +126,8 @@ inline KdLatticeWeight Divide(const KdLatticeWeight &w1,
                               const KdLatticeWeight &w2,
                               fst::DivideType=fst::DIVIDE_LEFT)
 {
-    float a = w1.Value1() - w2.Value1();
-    float b = w1.Value2() - w2.Value2();
+    float a = w1.value1 - w2.value1;
+    float b = w1.value2 - w2.value2;
 
     if( a != a || b != b || a == -std::numeric_limits<float>::infinity()
             || b == -std::numeric_limits<float>::infinity())
@@ -152,23 +143,19 @@ inline KdLatticeWeight Divide(const KdLatticeWeight &w1,
     }
     return KdLatticeWeight(a, b);
 }
+
 inline bool operator==(const KdLatticeWeight &wa,
                        const KdLatticeWeight &wb)
 {
     // Volatile qualifier thwarts over-aggressive compiler optimizations
     // that lead to problems esp. with NaturalLess().
-    volatile float va1 = wa.Value1(), va2 = wa.Value2(),
-            vb1 = wb.Value1(), vb2 = wb.Value2();
+    volatile float va1 = wa.value1, va2 = wa.value2,
+            vb1 = wb.value1, vb2 = wb.value2;
     return (va1 == vb1 && va2 == vb2);
 }
 
 // to convert from Lattice to standard FST
-inline void ConvertLatticeWeight(const KdLatticeWeight &w_in,
-                                 fst::TropicalWeightTpl<float> *w_out)
-{
-    fst::TropicalWeightTpl<float> w1(w_in.Value1());
-    fst::TropicalWeightTpl<float> w2(w_in.Value2());
-    *w_out = Times(w1, w2);
-}
+void ConvertLatticeWeight(const KdLatticeWeight &w_in,
+                                 fst::TropicalWeightTpl<float> *w_out);
 
 #endif // KD_LATTICE_WEIGHT_H

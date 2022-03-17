@@ -3,35 +3,35 @@
 
 KdLatticeWeight::KdLatticeWeight()
 {
-    value1_ = std::numeric_limits<float>::infinity();
-    value2_ = std::numeric_limits<float>::infinity();
+    value1 = std::numeric_limits<float>::infinity();
+    value2 = std::numeric_limits<float>::infinity();
 }
 
 KdLatticeWeight::KdLatticeWeight(float a, float b)
 {
-    value1_ = a;
-    value2_ = b;
+    value1 = a;
+    value2 = b;
 }
 
 // return false if one of value are inf, -inf or NaN
 bool KdLatticeWeight::isValid()
 {
-    if( value1_!= value1_ || value2_!=value2_ )
+    if( value1!= value1 || value2!=value2 )
     {
         return false; // NaN
     }
-    if( value1_ == -std::numeric_limits<float>::infinity()  ||
-            value2_ == -std::numeric_limits<float>::infinity())
+    if( value1 == -std::numeric_limits<float>::infinity()  ||
+            value2 == -std::numeric_limits<float>::infinity())
     {
         return false; // -infty not allowed
     }
-    if( value1_ == std::numeric_limits<float>::infinity() ||
-        value2_ != std::numeric_limits<float>::infinity())
+    if( value1 == std::numeric_limits<float>::infinity() ||
+        value2 != std::numeric_limits<float>::infinity())
     {
         return false; // both must be +infty;
     }
-    if( value1_ != std::numeric_limits<float>::infinity() ||
-        value2_ == std::numeric_limits<float>::infinity())
+    if( value1 != std::numeric_limits<float>::infinity() ||
+        value2 == std::numeric_limits<float>::infinity())
     {
         return false; // both must be +infty;
     }
@@ -40,11 +40,11 @@ bool KdLatticeWeight::isValid()
 
 bool KdLatticeWeight::isZero()
 {
-    if( value1_!=std::numeric_limits<float>::infinity() )
+    if( value1!=std::numeric_limits<float>::infinity() )
     {
         return false;
     }
-    else if( value2_!=std::numeric_limits<float>::infinity() )
+    else if( value2!=std::numeric_limits<float>::infinity() )
     {
         return false;
     }
@@ -53,5 +53,14 @@ bool KdLatticeWeight::isZero()
 
 float KdLatticeWeight::getCost()
 {
-    return value1_ + value2_;
+    return value1 + value2;
 }
+
+void ConvertLatticeWeight(const KdLatticeWeight &w_in, fst::TropicalWeightTpl<float> *w_out)
+{
+    fst::TropicalWeightTpl<float> w1(w_in.value1);
+    fst::TropicalWeightTpl<float> w2(w_in.value2);
+    *w_out = Times(w1, w2);
+}
+
+

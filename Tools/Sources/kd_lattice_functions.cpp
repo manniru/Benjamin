@@ -96,7 +96,7 @@ bool kd_PruneLattice(float beam, KdLattice *lat)
     {
         double this_forward_cost = forward_cost[state];
         KdLatticeWeight w = lat->Final(state);
-        double this_backward_cost = w.Value1() + w.Value2();
+        double this_backward_cost = w.value1 + w.value2;
         if( this_backward_cost + this_forward_cost > cutoff
                 && this_backward_cost != std::numeric_limits<double>::infinity())
         {

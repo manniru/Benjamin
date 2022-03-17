@@ -45,8 +45,8 @@ QVector<int> kd_getTimes(KdCompactLattice &lat)
               !aiter.Done() ; aiter.Next() )
          {
              arc = static_cast<KdCLatArc>(aiter.Value());
-             int state_start = kd_getStartTime(arc.weight.String());
-             int state_len   = kd_getEndTime(arc.weight.String());
+             int state_start = kd_getStartTime(arc.weight.string);
+             int state_len   = kd_getEndTime(arc.weight.string);
              if( state==0 )
              {
                  times[0]  += state_start;
@@ -54,7 +54,7 @@ QVector<int> kd_getTimes(KdCompactLattice &lat)
                  state_len -= 1;
              }
 
-             if( arc.weight.String().size()>1 )
+             if( arc.weight.string.size()>1 )
              {
                  times.push_back(times.last() + state_len + 1);
              }
@@ -87,7 +87,7 @@ void kd_compactLatticeStateTimes(KdCompactLattice &lat,
              aiter.Next())
         {
             const KdCLatArc &arc = aiter.Value();
-            int arc_len = arc.weight.String().size();
+            int arc_len = arc.weight.string.size();
             (*times)[arc.nextstate] = cur_time + arc_len;
         }
     }
@@ -112,25 +112,25 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
         if (final_weight != KdCLatWeight::Zero())
         {
             KdStateId cur_state = s;
-            size_t string_length = final_weight.String().size();
+            size_t string_length = final_weight.string.size();
             for (size_t n = 0; n < string_length; n++) {
                 KdStateId next_state = ofst->AddState();
                 int ilabel = 0;
-                KdLatticeArc arc(ilabel, final_weight.String()[n],
-                                 (n == 0 ? final_weight.Weight() : KdLatticeWeight::One()),
+                KdLatticeArc arc(ilabel, final_weight.string[n],
+                                 (n == 0 ? final_weight.weight : KdLatticeWeight::One()),
                                  next_state);
                 if (invert) std::swap(arc.ilabel, arc.olabel);
                 ofst->AddArc(cur_state, arc);
                 cur_state = next_state;
             }
             ofst->SetFinal(cur_state,
-                           string_length > 0 ? KdLatticeWeight::One() : final_weight.Weight());
+                           string_length > 0 ? KdLatticeWeight::One() : final_weight.weight);
         }
         for( fst::ArcIterator<fst::ExpandedFst<KdCLatArc> > iter(ifst, s);
              !iter.Done() ; iter.Next())
         {
             const KdCLatArc &arc = iter.Value();
-            size_t string_length = arc.weight.String().size();
+            size_t string_length = arc.weight.string.size();
             KdStateId cur_state = s;
             // for all but the last element in the string--
             // add a temporary state.
@@ -138,8 +138,8 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
             {
                 KdStateId next_state = ofst->AddState();
                 int ilabel = (n == 0 ? arc.ilabel : 0);
-                int olabel = static_cast<int>(arc.weight.String()[n]);
-                KdLatticeWeight weight = (n == 0 ? arc.weight.Weight() : KdLatticeWeight::One());
+                int olabel = static_cast<int>(arc.weight.string[n]);
+                KdLatticeWeight weight = (n == 0 ? arc.weight.weight : KdLatticeWeight::One());
                 KdLatticeArc new_arc(ilabel, olabel, weight, next_state);
                 if( invert )
                 {
@@ -149,8 +149,8 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
                 cur_state = next_state;
             }
             int ilabel = (string_length <= 1 ? arc.ilabel : 0);
-            int olabel = (string_length > 0 ? arc.weight.String()[string_length-1] : 0);
-            KdLatticeWeight weight = (string_length <= 1 ? arc.weight.Weight() : KdLatticeWeight::One());
+            int olabel = (string_length > 0 ? arc.weight.string[string_length-1] : 0);
+            KdLatticeWeight weight = (string_length <= 1 ? arc.weight.weight : KdLatticeWeight::One());
             KdLatticeArc new_arc(ilabel, olabel, weight, arc.nextstate);
             if( invert )
             {
@@ -171,13 +171,13 @@ void kd_RemoveAlignmentsFromCompactLattice(KdCompactLattice *fst)
              !aiter.Done(); aiter.Next())
         {
             KdCLatArc arc = aiter.Value();
-            arc.weight = KdCLatWeight(arc.weight.Weight(), std::vector<int>());
+            arc.weight = KdCLatWeight(arc.weight.weight, std::vector<int>());
             aiter.SetValue(arc);
         }
         KdCLatWeight final_weight = fst->Final(s);
         if (final_weight != KdCLatWeight::Zero())
         {
-            fst->SetFinal(s, KdCLatWeight(final_weight.Weight(), std::vector<int>()));
+            fst->SetFinal(s, KdCLatWeight(final_weight.weight, std::vector<int>()));
         }
     }
 }
