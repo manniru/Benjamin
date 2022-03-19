@@ -26,4 +26,4 @@ if [[ ! -d audio/train/$SPEAKER ]]; then
 fi
 
 python3 $ST/recorder.py "$AUDIO_DIR" $SPEAKER $REC_NUM $LEXICON_COUNT
-$ST/check_audio.sh $LEXICON_COUNT
+python3 $ST/check_audio.py
