@@ -22,27 +22,24 @@ cd ../src
 make
 ```
 
-## Step 2: Prepare Model
+## Step 2: Train Your Model
 
-1. Import Neccesary Tools.
-
-   From `Kaldi/egs/wsj/s5` copy `steps` into Nato Project.
-
-2. Train the model. These bash scripts are available for the NATO task
+Bash scripts available for the NATO task:
 
 ```
-# Record Train Audio Data
+# Record Audio Data
 ./train.sh <category> <number>
-# Train Model
-./run.sh
 # Create Lexicon (must run if the word_list changed)
 ./lang_word.sh
+# Train the Model
+./run.sh
 ```
 
 ## Step 3: Compile and Run BaTool
 
-use qmake to compile BaTool and Execute
+Use qmake to compile BaTool and Execute.
 
+----------
 
 ### Windows Cygwin
 Use autotools instead of CMake. Kaldi CMake is deprecated
@@ -50,3 +47,5 @@ Use autotools instead of CMake. Kaldi CMake is deprecated
 ```
 apt-cyg install portaudio
 ```
+
+* Look `steps` and `utils` inside `Kaldi/egs/wsj/s5` for complete set of tools.

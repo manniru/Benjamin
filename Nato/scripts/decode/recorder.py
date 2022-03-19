@@ -1,3 +1,6 @@
+# written in python 3
+# Author: MP Zanoosi Aug-2020
+
 import pyaudio
 import wave
 import random
@@ -13,7 +16,7 @@ file_name = sys.argv[1]
 RECORD_SECONDS = int(sys.argv[2])
 
 # start Recording
-audio = pyaudio.PyAudio()
+audio  = pyaudio.PyAudio()
 stream = audio.open(format=FORMAT, channels=CHANNELS,
 	                rate=RATE, input=True,
 	                frames_per_buffer=CHUNK)

@@ -1,3 +1,6 @@
+# written in python 3
+# Author: MP Zanoosi Aug-2020
+
 import random
 import os
 import time
