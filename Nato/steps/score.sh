@@ -48,6 +48,6 @@ $cmd LMWT=$min_lmwt:$max_lmwt $dir/scoring/log/score.LMWT.log \
      ark:$dir/scoring/test_filt.txt  ark,p:- ">&" $dir/wer_LMWT || exit 1;
 
 # Show results
-python3 steps/print_wer.py
+python3 steps/print_wer.py $lang_or_graph $dir
 
 exit 0;

@@ -1,5 +1,6 @@
 # written in python 3
 # Author: MP Zanoosi Aug-2020
+# Example: python print_wer.py exp/tri1/graph exp/tri1/decode
 
 import random
 import os
@@ -7,15 +8,16 @@ import sys
 import subprocess # runing bash cmd
 import math # floor float
 
+GRA = sys.argv[1] #1
+DIR = sys.argv[2] #2
 AUD_PATH = "audio/train"
 WRD_FILE = "word_list"
-SYM_FILE = "exp/tri1/graph/words.txt"
+SYM_FILE = f"{GRA}/words.txt"
 MIN_LMWT = 7
 MAX_LMWT = 17
-DIR = "exp/tri1/decode" #3
 
 def printWord(word):
-	if( len(word)<4 ):
+	if( len(word)<2 ):
 		return
 
 	w_filename = word[0]
@@ -43,9 +45,12 @@ def printWord(word):
 
 	for i in range(1,len(word_id)):
 		word1 = lexicon[int(word_id[i])]
-		word2 = symbols[int(word[i])]
+		word2 = ""
+		if( i<len(word)):
+			word2 = symbols[int(word[i])]
 		if( word1!=word2 ):
 			is_wrong = 1
+			break
 
 	if( is_wrong ):
 		print(f"{orig_id:<8} {orig:<25} {det}")

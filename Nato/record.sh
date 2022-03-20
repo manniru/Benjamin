@@ -10,8 +10,6 @@ RESULT_PATH="$DECODE_PATH/result"
 UTT2SPK="$AUDIO_PATH/utt2spk"
 SPK2UTT="$AUDIO_PATH/spk2utt"
 
-DBUS_PATH="--dest=com.binaee.batool / com.binaee.batool"
-
 source path.sh
 mkdir -p "$WAV_DIR"
 mkdir -p "$RESULT_PATH"
