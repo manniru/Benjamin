@@ -48,45 +48,6 @@ $cmd LMWT=$min_lmwt:$max_lmwt $dir/scoring/log/score.LMWT.log \
      ark:$dir/scoring/test_filt.txt  ark,p:- ">&" $dir/wer_LMWT || exit 1;
 
 # Show results
-for i in $(seq $min_lmwt $max_lmwt); do
-
-    echo "####### lmwt=$i #######";
-    
-    egrep '(WER)|(SER)' < $dir/wer_$i
-	
-	while read f; do
-	
-		WORD_COUNT=$(echo "$f" | wc -w)
-        FILENAME=$(echo "$f" | cut -d " " -f 1 | cut -d "_" -f 2-)
-        
-        SYM1=$(echo "$f" | cut -d " " -f 2)
-        SYM2=$(echo "$f" | cut -d " " -f 3)
-        SYM3=$(echo "$f" | cut -d " " -f 4)
-        
-        WORD1=$(cat $symtab | head -$((SYM1+1)) | tail -1 | cut -d " " -f 1)
-        WORD2=$(cat $symtab | head -$((SYM2+1)) | tail -1 | cut -d " " -f 1)
-        WORD3=$(cat $symtab | head -$((SYM3+1)) | tail -1 | cut -d " " -f 1)
-        
-        ID1=$(cat word_list | grep -n -w "$WORD1" | cut -d ":" -f 1)
-        ID2=$(cat word_list | grep -n -w "$WORD2" | cut -d ":" -f 1)
-        ID3=$(cat word_list | grep -n -w "$WORD3" | cut -d ":" -f 1)
-        
-        ID1=$((ID1-1))
-        ID2=$((ID2-1))
-        ID3=$((ID3-1))
-
-        if [[ "$WORD_COUNT" != "4" ]]; then
-            
-            echo "WORD_SIZE_WRONG $FILENAME ${WORD1} ${WORD2} ${WORD3}"
-            
-        elif [[ "$FILENAME" != "${ID1}_${ID2}_${ID3}" ]]; then
-        
-	        echo "$FILENAME ${WORD1} ${WORD2} ${WORD3}"
-	        
-        fi
-		
-	done <$dir/scoring/$i.tra
-
-done
+python3 steps/print_wer.py
 
 exit 0;
