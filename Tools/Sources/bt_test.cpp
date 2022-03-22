@@ -74,7 +74,11 @@ void BtTest::openWave(QString filename)
 {
     wav_file = new QFile;
     wav_file->setFileName(filename);
-    wav_file->open(QIODevice::ReadWrite);
+    if( !wav_file->open(QIODevice::ReadWrite) )
+    {
+        qDebug() << "Failed To Open" << filename;
+        exit(1);
+    }
 
     char buff[200];
 
