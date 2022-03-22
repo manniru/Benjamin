@@ -67,6 +67,7 @@ void KdOnline::startDecode()
         if( o_decoder->status.state!=KD_STATE_NORMAL )
         {
             status.word_count = 0;
+            emit reset();
         }
     }
 }
@@ -80,12 +81,12 @@ void KdOnline::processResult(QVector<BtWord> result)
 
     QVector<BtWord> buf;
 
-    for( int i=status.word_count ; i<result.size() ; i++ )
+    for( int i=0 ; i<result.size() ; i++ )
     {
         if( i==0 )
         {
             if( result[i].conf<0.75 &&
-                result.size()==1 )
+                result.size()<3 )
             {
                 continue;
             }
@@ -93,10 +94,6 @@ void KdOnline::processResult(QVector<BtWord> result)
             {
                 continue;
             }
-        }
-        if( result[i].is_final )
-        {
-            status.word_count = i+1;
         }
         result[i].time += o_decoder->frame_num/100.0;
         buf += result[i];

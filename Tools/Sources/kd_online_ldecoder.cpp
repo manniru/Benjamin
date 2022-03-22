@@ -146,6 +146,8 @@ void KdOnlineLDecoder::CalcFinal()
         buf += result[i].word;
         buf += "(";
         buf += QString::number(f_end);
+        buf += ",";
+        buf += QString::number(result[i].conf);
         buf += ")";
         buf += " ";
     }

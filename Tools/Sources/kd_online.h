@@ -26,6 +26,7 @@ public slots:
 
 signals:
     void resultReady(QVector<BtWord> result);
+    void reset(); //inform captain the decoder reseted
 
 private:
     void processResult(QVector<BtWord> result);

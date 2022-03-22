@@ -2,6 +2,7 @@
 #define KD_MBR_BASE_H
 
 #include <QString>
+#include <QFile>
 #include "kd_lattice.h"
 #include "kd_lattice_compact.h"
 
@@ -22,5 +23,7 @@ typedef struct BtWord
     double  conf;
     int     is_final;
 }BtWord;
+
+void bt_writeBarResult(QVector<BtWord> result);
 
 #endif // KD_MBR_BASE_H

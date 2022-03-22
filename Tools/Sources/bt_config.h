@@ -36,3 +36,26 @@
 //#define BT_TEST_MODE      // If defined then read from wav file instead of online
 
 #endif // BT_CONFIG_H
+
+
+//sample_rate: 16000 channel: 2 chunk_size: 57344
+//Check Reset " E:15ms"
+//Check Reset "S:0ms F:0ms C:30ms R:27ms P:68ms D:7ms E:193ms"
+//>>>  1.93 194 "delta oscar mike " 3
+//Check Reset "S:0ms F:0ms C:57ms R:50ms P:126ms D:11ms E:297ms"
+//>>>  2.93 294 "delta oscar mike super one " 5
+//Check Reset "S:0ms F:0ms C:87ms R:78ms P:193ms D:17ms E:436ms"
+//>>>  3.43 394 "delta oscar mike super one november " 6
+//Check Reset "S:0ms F:0ms C:108ms R:97ms P:243ms D:24ms E:523ms"
+//------------Reset Sil 343 51 394
+
+//sample_rate: 16000 channel: 2 chunk_size: 57344
+//Check Reset " E:15ms"
+//Check Reset "S:0ms C:7ms R:32ms P:76ms D:12ms E:189ms"
+//>>>  1.93 194 "delta(110) oscar(147) mike(193) " 3
+//Check Reset "S:0ms C:12ms R:57ms P:134ms D:12ms E:266ms"
+//>>>  2.93 294 "delta(110) oscar(147) mike(211) super(247) one(281) november(293) " 6
+//Check Reset "S:0ms C:17ms R:86ms P:209ms D:16ms E:384ms"
+//>>>  3.44 394 "delta(110) oscar(147) mike(211) super(247) one(281) november(344) " 6
+//Check Reset "S:0ms C:19ms R:109ms P:262ms D:25ms E:461ms"
+//------------Reset Sil 344 50 394
