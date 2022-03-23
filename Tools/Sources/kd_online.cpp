@@ -11,9 +11,9 @@ KdOnline2Model   *o2_model; //gaussain online 2 model
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
+    cap = new BtCaptain;
 
     ab_src = new BtRecorder(cy_buf);
-    status.word_count = 0;
 
     std::string model_rxfilename = BT_OAMDL_PATH;
 
@@ -66,8 +66,7 @@ void KdOnline::startDecode()
 
         if( o_decoder->status.state!=KD_STATE_NORMAL )
         {
-            status.word_count = 0;
-            emit reset();
+            cap->flush();
         }
     }
 }
@@ -86,7 +85,8 @@ void KdOnline::processResult(QVector<BtWord> result)
         if( i==0 )
         {
             if( result[i].conf<0.75 &&
-                result.size()<3 )
+                result.size()<3 && //this is realy hard? no!
+                o_decoder->status.state==KD_STATE_NORMAL)
             {
                 continue;
             }
@@ -98,5 +98,5 @@ void KdOnline::processResult(QVector<BtWord> result)
         result[i].time += o_decoder->frame_num/100.0;
         buf += result[i];
     }
-    emit resultReady(buf);
+    cap->parse(buf);
 }

@@ -32,7 +32,6 @@ struct KdOnlineStatus
     int state = KD_STATE_NORMAL;
     int max_frame = 0;
     int min_frame = 0;
-    int word_count = 0;
 };
 
 class KdOnlineLDecoder : public KdDecoder

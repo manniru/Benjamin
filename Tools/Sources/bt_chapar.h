@@ -20,7 +20,6 @@ signals:
 
 private:
     QThread     *kaldi_thread;
-    BtCaptain   *cap;
 };
 
 #endif // BT_CHAPAR_H

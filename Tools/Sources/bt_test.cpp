@@ -19,8 +19,6 @@ BtTest::~BtTest()
 
 void BtTest::init()
 {
-    status.word_count = 0;
-
     std::string model_rxfilename = BT_OAMDL_PATH;
 
     TransitionModel *trans_model = new TransitionModel;
@@ -60,11 +58,6 @@ void BtTest::startDecode()
         if( result.size() )
         {
             bt_writeBarResult(result);
-        }
-
-        if( o_decoder->status.state!=KD_STATE_NORMAL )
-        {
-            status.word_count = 0;
         }
 //        exit(0);
     }

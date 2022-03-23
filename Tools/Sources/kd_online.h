@@ -24,10 +24,6 @@ public:
 public slots:
     void init();
 
-signals:
-    void resultReady(QVector<BtWord> result);
-    void reset(); //inform captain the decoder reseted
-
 private:
     void processResult(QVector<BtWord> result);
 
@@ -37,6 +33,7 @@ private:
     QVector<BtWord>   last_r; //last_result
     KdOnlineStatus    status;
     BtCyclic         *cy_buf;
+    BtCaptain        *cap;
 };
 
 #endif // KD_ONLINE_H

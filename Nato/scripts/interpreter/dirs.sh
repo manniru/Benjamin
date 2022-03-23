@@ -1,16 +1,13 @@
 #!/bin/bash
 #Direction Keys
+#Number after Dir would repeat keys
 #Key Code from input-event-codes.h
 
 WORD="$1"
 DBUS_PATH="$2"
 OUTPUT=""
 
-if [[ "$WORD" == "sim" ]]; then
-
-    OUTPUT="57"
-
-elif [[ "$WORD" == "back" ]]; then
+if [[ "$WORD" == "back" ]]; then
     
     OUTPUT="14"
 
@@ -30,41 +27,9 @@ elif [[ "$WORD" == "right" ]]; then
     
     OUTPUT="106"
 
-elif [[ "$WORD" == "end" ]]; then
-    
-    OUTPUT="107"
-
-elif [[ "$WORD" == "home" ]]; then
-    
-    OUTPUT="102"
-
-elif [[ "$WORD" == "semi" ]]; then
-    
-    OUTPUT="39"
-
 elif [[ "$WORD" == "slap" ]]; then
     
     OUTPUT="28"
-
-elif [[ "$WORD" == "period" ]]; then
-    
-    OUTPUT="52"
-
-elif [[ "$WORD" == "comma" ]]; then
-    
-    OUTPUT="51"
-
-elif [[ "$WORD" == "dash" ]]; then
-    
-    OUTPUT="12"
-    
-elif [[ "$WORD" == "equal" ]]; then
-    
-    OUTPUT="13"
-
-elif [[ "$WORD" == "plus" ]]; then
-    
-    OUTPUT="78"
 
 elif [[ "$WORD" == "tab" ]]; then
     
@@ -73,15 +38,6 @@ elif [[ "$WORD" == "tab" ]]; then
 elif [[ "$WORD" == "delete" ]]; then
     
     OUTPUT="111"
-
-elif [[ "$WORD" == "slash" ]]; then
-    
-    OUTPUT="53"
-
-elif [[ "$WORD" == "underline" ]]; then
-    
-    OUTPUT="53"
-#    xdotool key shift+minus
 
 elif [[ "$WORD" == "departure" ]]; then
     
