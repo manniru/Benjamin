@@ -52,6 +52,8 @@ public:
     void CalcFinal();
     KdOnlineStatus status;
 
+    int wav_id = 0; //used for cyclyic test mode
+
 private:
     void checkReset();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);

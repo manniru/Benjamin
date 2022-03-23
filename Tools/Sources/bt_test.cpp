@@ -65,8 +65,7 @@ void BtTest::startDecode()
 
 void BtTest::openWave(QString filename)
 {
-    wav_file = new QFile;
-    wav_file->setFileName(filename);
+    wav_file = new QFile(filename);
     if( !wav_file->open(QIODevice::ReadWrite) )
     {
         qDebug() << "Failed To Open" << filename;
@@ -77,27 +76,26 @@ void BtTest::openWave(QString filename)
 
     wav_file->read(4); // ="RIFF" is the father of wav
     wav_file->read(buff,4);//chunk size(int)
-    wav_file->read(buff,4);//format=WAVE(str)
-    wav_file->read(buff,4);//subchunk1 id(str)
-    wav_file->read(buff,4);//subchunk1 size(int)
+    wav_file->read(buff,4);//format="WAVE"
+    wav_file->read(buff,4);//subchunk1 id(str="fmt ")
+    wav_file->read(buff,4);//subchunk1(fmt) size(int=16)
     wav_file->read(buff,2);//wav format=1(PCM)(int)
 
-    wav_file->read(buff,2);
+    wav_file->read(buff,2);//Channel Count(int=2)
     uint16_t channel_count = *((uint16_t *)buff);
-    wav_file->read(buff,4);
+    wav_file->read(buff,4);//Sample Rate(int=16K)
     uint32_t sample_rate = *((uint32_t *)buff);
 
-    wav_file->read(buff,4);//Byte rate(int, 64K=16*4)
+    wav_file->read(buff,4);//Byte per sec(int, 64K=16*4)
+    wav_file->read(buff,2);//Byte Per Block(int, 4(2*2))
+    wav_file->read(buff,2);//Bit Per Sample(int, 16 bit)
 
-    wav_file->read(buff,2);//Block Allign(int, 4(2*2))
-    wav_file->read(buff,2);//BitPerSample(int, 16 bit)
-
-    wav_file->read(buff,4);//subchunk2 id(str=data)
-    wav_file->read(buff,4);//subchunk2 size(int)
-    uint16_t chunk_size = *((uint32_t *)buff);
+    wav_file->read(buff,4);//subchunk2 id(str="data")
+    wav_file->read(buff,4);//subchunk2 size(int=sample count)
+    uint16_t data_size = *((uint32_t *)buff);
     qDebug() << "sample_rate:"  << sample_rate
              << "channel:" << channel_count
-             << "chunk_size:" << chunk_size;
+             << "chunk_size:" << data_size;
 }
 
 int BtTest::readWav(int count, BtCyclic *out)

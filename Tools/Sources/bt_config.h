@@ -8,6 +8,7 @@
 #define KAL_SI_DIR        KAL_NATO_DIR"scripts/interpreter/"
 #define KAL_SD_DIR        KAL_NATO_DIR"scripts/decode/"
 #define KAL_SK_DIR        KAL_NATO_DIR"scripts/kaldi/"
+#define KAL_AU_DIR        KAL_NATO_DIR"audio/"
 #define KAL_RESULT_DIR    KAL_DECODE_DIR"result/"
 #define KAL_WAV_DIR       KAL_DECODE_DIR"wav/"
 #define KAL_MODE          "tri1"
@@ -34,6 +35,7 @@
 #define BT_DOUBLE_BUF     //If undefined encoded file not replaced
 #define BT_IMMDT_EXEC     0 //if is non-zero execute immediately commands on puase
 //#define BT_TEST_MODE      // If defined then read from wav file instead of online
+#define BT_WAV_MAX        100 // Max recording number(circular)
 
 #endif // BT_CONFIG_H
 

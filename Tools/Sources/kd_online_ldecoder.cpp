@@ -154,8 +154,14 @@ void KdOnlineLDecoder::CalcFinal()
 
     if( word_count )
     {
-        qDebug() << ">>> " << result.last().end
-                 << uframe << buf << result.size();
+        QString msg = "<";
+        msg += QString::number(wav_id+1);
+        msg += "> ";
+        msg += QString::number(result.last().end);
+        msg += " ";
+        msg += QString::number(uframe);
+        msg += " " + buf;
+        qDebug() << msg << result.size();
     }
 }
 

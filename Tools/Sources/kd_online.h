@@ -26,6 +26,8 @@ public slots:
 
 private:
     void processResult(QVector<BtWord> result);
+    void writeWav(BtCyclic *buf, int len);
+    void writeWavHeader(QFile *file, int len);
 
     void processLat(KdCompactLattice *clat, clock_t start);
 
@@ -34,6 +36,9 @@ private:
     KdOnlineStatus    status;
     BtCyclic         *cy_buf;
     BtCaptain        *cap;
+
+    KdOnlineLDecoder *o_decoder;
+    KdOnline2Model   *o2_model; //gaussain online 2 model
 };
 
 #endif // KD_ONLINE_H

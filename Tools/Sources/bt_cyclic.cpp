@@ -16,7 +16,7 @@ BtCyclic::BtCyclic(int size, QObject *parent) : QObject(parent)
 }
 
 // return negative on erorr
-// can be read without changing read_p to be used
+// use "fake" to read without changing read_p to be used
 // in multicore mode
 int BtCyclic::read(int16_t *data, int size, int *fake)
 {

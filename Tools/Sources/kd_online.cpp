@@ -5,8 +5,6 @@ using namespace fst;
 
 AmDiagGmm        *am_gmm;
 TransitionModel  *trans_model;
-KdOnlineLDecoder *o_decoder;
-KdOnline2Model   *o2_model; //gaussain online 2 model
 
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
@@ -67,6 +65,10 @@ void KdOnline::startDecode()
         if( o_decoder->status.state!=KD_STATE_NORMAL )
         {
             cap->flush();
+            if( result.length() )
+            {
+                writeWav(cy_buf, o_decoder->uframe*160);
+            }
         }
     }
 }
@@ -99,4 +101,63 @@ void KdOnline::processResult(QVector<BtWord> result)
         buf += result[i];
     }
     cap->parse(buf);
+}
+
+void KdOnline::writeWav(BtCyclic *buf, int len)
+{
+    int16_t *data = (int16_t *)malloc(len*sizeof(int16_t));
+    buf->rewind(len);
+    buf->read(data, len);
+
+    if ( o_decoder->wav_id<BT_WAV_MAX )
+    {
+        o_decoder->wav_id++;
+    }
+    else
+    {
+        o_decoder->wav_id = 0;
+    }
+    QString filename = KAL_AU_DIR"/online/";
+    filename += QString::number(o_decoder->wav_id);
+    QFile *file = new QFile(filename);
+
+    if( !file->open(QIODevice::WriteOnly) )
+    {
+        qDebug() << "Failed To Open" << filename;
+        exit(1);
+    }
+
+    writeWavHeader(file, len);
+    for( int i=0 ; i<len ; i++ )
+    {
+        int16_t *pt = &data[i];
+        file->write((char *)pt, 2);
+    }
+    file->close();
+}
+
+void KdOnline::writeWavHeader(QFile *file, int len)
+{
+    char buff[200];
+    int32_t buf_i;
+    int16_t buf_s; //short
+
+    file->write("RIFF", 4); // "RIFF" is the father of wav
+    buf_i = len + 44 - 8; // 44=Header Size
+    file->write((char*)&buf_i,4);//chunk size(int=filesize-8)
+    file->write("WAVE",4);//format="WAVE"
+    file->write("fmt ",4);//subchunk1 id(str="fmt ")
+    buf_i = 16; file->write((char*)&buf_i,4);//subchunk1(fmt) size(int=16)
+    buf_s = 1;  file->write((char*)&buf_s,2);//wav format(int) 1=PCM
+
+    buf_s = 1;     file->write((char*)&buf_s,2);//Channel Count(int=1)
+    buf_i = 16000; file->write((char*)&buf_i,4);//Sample Rate(int=16K)
+
+    buf_i = 64000; file->write((char*)&buf_i,4);//Byte per sec(int, 64K=16*4)
+    buf_s = 2;     file->write((char*)&buf_s,2);//Byte Per Block(int, 2)
+    buf_s = 16;    file->write((char*)&buf_s,2);//Bit Per Sample(int, 16 bit)
+
+    file->write("data",4);//subchunk2 id(str="data")
+    buf_i = len; file->write(buff,4);//subchunk2 size(int=sample count)
+    qDebug() << "sample_rate:"  << buf_i;
 }
