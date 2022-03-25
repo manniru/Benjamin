@@ -3,11 +3,7 @@
 WORD="$1"
 OUTPUT=""
 
-if [[ "$WORD" == "go" ]]; then
-		
-	OUTPUT="alt raise"
-				
-elif [[ "$WORD" == "fox" ]]; then
+if [[ "$WORD" == "fox" ]]; then
 
 	OUTPUT="alt"
 

@@ -2,8 +2,6 @@
 #define KD_CMVN_H
 
 #include <QObject>
-#include <QThread>
-
 #include "kd_cmvn_base.h"
 
 class KdCMVN

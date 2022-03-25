@@ -105,6 +105,12 @@ void KdOnline::processResult(QVector<BtWord> result)
 
 void KdOnline::writeWav(BtCyclic *buf, int len)
 {
+    QString status_path = getenv("HOME");
+    status_path += "/.config/polybar/awesomewm/ben_status";
+    if( QFile::exists(status_path) )
+    {
+        return; //sleep mode
+    }
     int16_t *data = (int16_t *)malloc(len*sizeof(int16_t));
     buf->rewind(len);
     buf->read(data, len);
@@ -119,6 +125,7 @@ void KdOnline::writeWav(BtCyclic *buf, int len)
     }
     QString filename = KAL_AU_DIR"/online/";
     filename += QString::number(o_decoder->wav_id);
+    filename += ".wav";
     QFile *file = new QFile(filename);
 
     if( !file->open(QIODevice::WriteOnly) )
@@ -131,6 +138,8 @@ void KdOnline::writeWav(BtCyclic *buf, int len)
     for( int i=0 ; i<len ; i++ )
     {
         int16_t *pt = &data[i];
+        // kaldi should be 2 channel
+        file->write((char *)pt, 2);
         file->write((char *)pt, 2);
     }
     file->close();
@@ -150,11 +159,12 @@ void KdOnline::writeWavHeader(QFile *file, int len)
     buf_i = 16; file->write((char*)&buf_i,4);//subchunk1(fmt) size(int=16)
     buf_s = 1;  file->write((char*)&buf_s,2);//wav format(int) 1=PCM
 
-    buf_s = 1;     file->write((char*)&buf_s,2);//Channel Count(int=1)
+    //channel must be stereo for kaldi
+    buf_s = 2;     file->write((char*)&buf_s,2);//Channel Count(int=2)
     buf_i = 16000; file->write((char*)&buf_i,4);//Sample Rate(int=16K)
 
     buf_i = 64000; file->write((char*)&buf_i,4);//Byte per sec(int, 64K=16*4)
-    buf_s = 2;     file->write((char*)&buf_s,2);//Byte Per Block(int, 2)
+    buf_s = 4;     file->write((char*)&buf_s,2);//Byte Per Block(int, 4=2ch*2)
     buf_s = 16;    file->write((char*)&buf_s,2);//Bit Per Sample(int, 16 bit)
 
     file->write("data",4);//subchunk2 id(str="data")

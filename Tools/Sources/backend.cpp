@@ -1,5 +1,4 @@
 #include "backend.h"
-#include <QThread>
 
 clock_t bt_last_clock;
 

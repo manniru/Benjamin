@@ -38,7 +38,6 @@ private:
 
     KdDelta    *delta;
     BtRecorder *rec_src;
-    QThread    *rec_thread;
 };
 
 #endif // KD_ONLINE2_FEINPUT_H

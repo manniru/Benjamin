@@ -2,8 +2,6 @@
 #define KD_CMVN_BASE_H
 
 #include <QObject>
-#include <QThread>
-
 #include "kd_cmvn_state.h"
 #include "matrix/matrix-lib.h"
 #include "util/common-utils.h"

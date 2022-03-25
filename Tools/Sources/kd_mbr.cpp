@@ -65,7 +65,7 @@ void KdMBR::MbrDecode()
             int new_word = this_gamma[0].first; // new_word: new word
             for( int j=0 ; j<this_gamma.size() ; j++ )
             {
-                list[q].push_back(lexicon[this_gamma[j].first]);
+//                list[q].push_back(lexicon[this_gamma[j].first]);
                 if( this_gamma[j].first==old_word )
                 {
                     old_gamma = this_gamma[j].second;
