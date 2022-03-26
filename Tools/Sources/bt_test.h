@@ -33,6 +33,7 @@ private:
     KdOnlineLDecoder *o_decoder;
     KdOnline2Model   *o2_model; //gaussain online 2 model
     QFile            *wav_file;
+    QStringList       file_list;
 };
 
 #endif // BT_TEST_H

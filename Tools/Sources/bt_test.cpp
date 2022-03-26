@@ -7,7 +7,17 @@ BtTest::BtTest(QString filename, QObject *parent): QObject(parent)
 {
     wav_file = NULL;
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
-    openWave(filename);
+
+    QDir p_dir(filename);
+    QStringList fmt;
+    fmt.append("*.wav");
+    file_list = p_dir.entryList(fmt, QDir::Files);
+
+    for( int i = 0 ; i<file_list.size() ; i++ )
+    {
+        file_list[i] = filename + file_list[i];
+    }
+
     init();
 }
 
@@ -39,7 +49,7 @@ void BtTest::init()
 void BtTest::startDecode()
 {
     float acoustic_scale = 0.05;
-    int chunk_size = 1600; // 1000ms
+    int chunk_size = 16000; // 1000ms
 
     KdDecodable decodable(NULL, o2_model,
                              acoustic_scale);
@@ -48,18 +58,28 @@ void BtTest::startDecode()
     KdCompactLattice out_fst;
     QVector<BtWord> result;
 
-    int read_size = chunk_size;
-    while( read_size==chunk_size )
+
+    qDebug() << file_list.size();
+    for( int i = 0 ; i<3 ; i++ )
     {
-        read_size = readWav(chunk_size, cy_buf);
-        decodable.features->AcceptWaveform(cy_buf);
-        o_decoder->Decode();
-        result = o_decoder->getResult(&out_fst);
-        if( result.size() )
+        openWave(file_list[i]);
+        int read_size = chunk_size;
+        while( read_size==chunk_size )
         {
-            bt_writeBarResult(result);
+            read_size = readWav(chunk_size, cy_buf);
+            decodable.features->AcceptWaveform(cy_buf);
+            o_decoder->Decode();
+            result = o_decoder->getResult(&out_fst);
+            if( result.size() )
+            {
+                bt_writeBarResult(result);
+            }
+    //        exit(0);
         }
-//        exit(0);
+        o_decoder->wav_id++;
+        o_decoder->status.min_frame = o_decoder->frame_num;
+        o_decoder->status.max_frame = 0;
+        o_decoder->ResetDecoder(); // this reset uframe
     }
 }
 
@@ -71,6 +91,7 @@ void BtTest::openWave(QString filename)
         qDebug() << "Failed To Open" << filename;
         exit(1);
     }
+    qDebug() << filename;
 
     char buff[200];
 

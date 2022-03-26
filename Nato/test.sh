@@ -17,17 +17,17 @@ if [[ "$1" == "r" ]]; then
 elif [[ "$1" == "t" ]]; then
 
 	echo "Test Mode"
+	TEST_DIR="audio/t2/"
     
-    TEST_NAME=$(ls audio/test/)
-    find "audio/test/$TEST_NAME" -type f > list_file
-    sed -i '1d' list_file #remove first line
+    find "${TEST_DIR}" -type f > list_file
 
-    while read p; do
+    while read in_line; do
 	    
-	    cp "$p" "$DECODE_PATH/wav/rec1.wav"
+	    cp "$in_line" "$DECODE_PATH/wav/rec1.wav"
+		echo "$in_line"
+		#ffmpeg -i "$in_line" -hide_banner -loglevel error -y -af "pan=stereo|c0=c0|c1=c0" "$DECODE_PATH/wav/rec1.wav" 
         $SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH" 1
-	    
-		    
+		
     done <list_file
 
     rm list_file

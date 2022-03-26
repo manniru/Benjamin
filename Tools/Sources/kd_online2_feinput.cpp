@@ -28,9 +28,9 @@ void KdOnline2FeInput::Init()
     delta = new KdDelta;
 }
 
-void KdOnline2FeInput::FreezeCmvn()
+void KdOnline2FeInput::resetCmvn()
 {
-    cmvn->Freeze(o_features->Size() - 1, o_features);
+//    cmvn->SetState(global_cmvn_stats_);
 }
 
 int KdOnline2FeInput::Dim()

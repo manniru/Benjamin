@@ -19,7 +19,7 @@ public:
     int  Dim();
     int  NumFramesReady();
     void GetFrame(int frame, kaldi::VectorBase<float> *feat);
-    void FreezeCmvn();
+    void resetCmvn();
 
     void AcceptWaveform(BtCyclic *buf, int len=0);
     void ComputeFeatures();

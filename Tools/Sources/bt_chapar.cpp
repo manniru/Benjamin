@@ -6,7 +6,7 @@ ReChapar::ReChapar(QObject *parent) : QObject(parent)
     kaldi_thread = new QThread;
 
 #ifdef BT_TEST_MODE
-    BtTest *test = new BtTest(KAL_WAV_DIR"rec_test.wav");
+    BtTest *test = new BtTest(KAL_WAV_DIR);
 #else
     KdOnline  *kaldi = new KdOnline;
     kaldi->moveToThread(kaldi_thread);
