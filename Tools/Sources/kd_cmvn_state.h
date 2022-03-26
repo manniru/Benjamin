@@ -7,17 +7,6 @@
 #include <matrix/kaldi-matrix.h>
 #include <deque>
 
-struct KdCmvnState  //OnlineCmvnState
-{
-    // total CMVN stats for this speaker (up till now)
-    kaldi::Matrix<double> speaker_cmvn_stats;
-
-    // format, of [     sum-stats      count
-    //              sum-squared-stats    0    ]
-    kaldi::Matrix<double> global_cmvn_stats;
-    kaldi::Matrix<double> frozen_state;
-};
-
 /// storage to limit the memory usage by removing old elements.
 class KdRecyclingVector
 {

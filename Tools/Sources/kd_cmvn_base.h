@@ -8,7 +8,6 @@
 #include "base/kaldi-error.h"
 
 void kd_applyCmvn(const kaldi::MatrixBase<double> &stats,
-               bool var_norm,
                kaldi::MatrixBase<float> *feats);
 
 #endif // KD_CMVN_BASE_H

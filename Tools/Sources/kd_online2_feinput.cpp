@@ -20,10 +20,8 @@ void KdOnline2FeInput::Init()
     mfcc = new KdMFCC;
     o_features = new KdRecyclingVector;
     KALDI_ASSERT(global_cmvn_stats_.NumRows() != 0);
-    Matrix<double> global_cmvn_stats_dbl(global_cmvn_stats_);
-    KdCmvnState initial_state;
-    initial_state.global_cmvn_stats = global_cmvn_stats_dbl;
-    cmvn = new KdCMVN(initial_state, mfcc->Dim());
+    Matrix<double> global_cmvn(global_cmvn_stats_); //convert to double
+    cmvn = new KdCMVN(global_cmvn, mfcc->Dim());
 
     delta = new KdDelta;
 }

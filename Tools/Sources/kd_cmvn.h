@@ -14,17 +14,9 @@ public:
 
     /// If you do have previous utterances from the same speaker
     /// you are supposed to initialize it by calling SetState
-    KdCMVN(KdCmvnState &cmvn_state, int dim);
+    KdCMVN(kaldi::Matrix<double> cmvn_state, int dim);
 
-    void GetState(int cur_frame, KdRecyclingVector *o_features,
-                  KdCmvnState *cmvn_state);
-
-    // This function can be used to modify the state of the CMVN computation
-    // from outside, but must only be called before you have processed any data
-    // (otherwise it will crash).
-    void SetState(KdCmvnState cmvn_state);
-    void Freeze(int cur_frame,
-                KdRecyclingVector *o_features);
+    kaldi::Matrix<double> state_;   // reflects the state before we saw this
 
     virtual ~KdCMVN();
 protected:
@@ -32,8 +24,7 @@ protected:
     /// Smooth by possibly adding some stats from "global_stats"
     /// and/or "speaker_stats", controlled by the config.  The best way to
     /// understand the smoothing rule we use is just to look at the code.
-    void SmoothOnlineCmvnStats(const kaldi::MatrixBase<double> &speaker_stats,
-                               const kaldi::MatrixBase<double> &global_stats,
+    void SmoothOnlineCmvnStats(const kaldi::MatrixBase<double> &global_stats,
                                kaldi::MatrixBase<double> *stats);
 
     /// Get the most recent cached frame of CMVN stats.  [If no frames
@@ -46,7 +37,7 @@ protected:
     void CacheFrame(int frame, const kaldi::MatrixBase<double> &stats);
 
     /// Initialize ring buffer for caching stats.
-    inline void InitRingBufferIfNeeded();
+    inline void InitRingBuffer();
 
     /// Computes the raw CMVN stats for this frame, making use of (and updating if
     /// necessary) the cached statistics in raw_stats_.  This means the (x,
@@ -54,11 +45,7 @@ protected:
     void ComputeStatsForFrame(int frame, KdRecyclingVector *o_features,
                               kaldi::MatrixBase<double> *stats);
 
-    KdCmvnState orig_state_;   // reflects the state before we saw this
     // utterance.
-    kaldi::Matrix<double> frozen_state_;  // If the user called Freeze(), this variable
-    // will reflect the CMVN state that we froze
-    // at.
 
     // The variable below reflects the raw (count, x, x^2) statistics of the
     // input, computed every opts_.modulus frames.  raw_stats_[n / opts_.modulus]
