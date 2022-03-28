@@ -7,7 +7,7 @@
 #include "gmm/am-diag-gmm.h"
 #include "hmm/transition-model.h"
 #include "kd_model.h"
-#include "kd_online2_feinput.h"
+#include "kd_feinput.h"
 
 #define MAX_FRAME_CNT 400
 typedef struct KdPDF

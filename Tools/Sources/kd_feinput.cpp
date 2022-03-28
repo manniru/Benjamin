@@ -1,4 +1,4 @@
-#include "kd_online2_feinput.h"
+#include "kd_feinput.h"
 
 using namespace kaldi;
 
@@ -7,28 +7,27 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
 {
     rec_src = au_src;
     waveform_offset = 0;
-    std::string gcmvn__path = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
+    mfcc = new KdMFCC;
+    delta = new KdDelta;
+    o_features = new KdRecyclingVector;
 
-    kd_readMatrix(gcmvn__path, &global_cmvn_stats_);
     Init();
 }
 
-// Init() is to be called from the constructor; it assumes the pointer
-// members are all uninitialized
 void KdOnline2FeInput::Init()
 {
-    mfcc = new KdMFCC;
-    o_features = new KdRecyclingVector;
-    KALDI_ASSERT(global_cmvn_stats_.NumRows() != 0);
-    Matrix<double> global_cmvn(global_cmvn_stats_); //convert to double
-    cmvn = new KdCMVN(global_cmvn, mfcc->Dim());
+    kaldi::Matrix<float> global_cmvn;
+    std::string gcmvn_path = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
 
-    delta = new KdDelta;
+    bool binary_in;
+    Input ki(gcmvn_path, &binary_in);
+    global_cmvn.Read(ki.Stream(), binary_in);
+    cmvn = new KdCMVN(global_cmvn, mfcc->Dim());
 }
 
 void KdOnline2FeInput::resetCmvn()
 {
-//    cmvn->SetState(global_cmvn_stats_);
+//    cmvn->resetStat();
 }
 
 int KdOnline2FeInput::Dim()

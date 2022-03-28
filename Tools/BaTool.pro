@@ -47,6 +47,7 @@ HEADERS += \
     Sources/kd_decoder.h \
     Sources/kd_delta.h \
     Sources/kd_f_token.h \
+    Sources/kd_feinput.h \
     Sources/kd_fft.h \
     Sources/kd_fst_util.h \
     Sources/kd_lattice.h \
@@ -62,7 +63,6 @@ HEADERS += \
     Sources/kd_melbank.h \
     Sources/kd_mfcc.h \
     Sources/kd_model.h \
-    Sources/kd_online2_feinput.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
     Sources/kd_token.h \
@@ -83,6 +83,7 @@ SOURCES += \
     Sources/kd_decoder.cpp \
     Sources/kd_delta.cpp \
     Sources/kd_f_token.cpp \
+    Sources/kd_feinput.cpp \
     Sources/kd_fft.cpp \
     Sources/kd_fst_util.cpp \
     Sources/kd_lattice.cpp \
@@ -98,7 +99,6 @@ SOURCES += \
     Sources/kd_melbank.cpp \
     Sources/kd_mfcc.cpp \
     Sources/kd_model.cpp \
-    Sources/kd_online2_feinput.cpp \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
     Sources/kd_token.cpp \

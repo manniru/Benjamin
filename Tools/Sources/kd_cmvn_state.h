@@ -15,7 +15,7 @@ public:
     KdRecyclingVector(int items_to_hold = -1);
 
     /// The ownership is being retained by this collection - do not delete the item.
-    kaldi::Vector<float> *At(int index) const;
+    kaldi::Vector<float> *At(int index);
 
     /// The ownership of the item is passed to this collection - do not delete the item.
     void PushBack(kaldi::Vector<float> *item);
@@ -28,8 +28,8 @@ public:
 
 private:
     std::deque<kaldi::Vector<float>*> items_;
-    int items_to_hold_;
-    int first_available_index_;
+    int max_size;
+    int index_min;
 };
 
 #endif // KD_CMVN_STATE_H
