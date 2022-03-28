@@ -29,20 +29,10 @@ BtTest::~BtTest()
 
 void BtTest::init()
 {
-    std::string model_rxfilename = BT_OAMDL_PATH;
+    std::string model_filename = BT_OAMDL_PATH;
+    o2_model = new KdModel(model_filename);
+    o_decoder = new KdOnlineLDecoder(*(o2_model->t_model));
 
-    TransitionModel *trans_model = new TransitionModel;
-    AmDiagGmm       *am_gmm = new AmDiagGmm;
-
-    bool rx_binary;
-    Input ki(model_rxfilename, &rx_binary);
-    trans_model->Read(ki.Stream(), rx_binary);
-    am_gmm->Read(ki.Stream(), rx_binary);
-
-    std::string online_alimdl = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
-    o2_model = new KdOnline2Model(trans_model, am_gmm, online_alimdl);
-
-    o_decoder = new KdOnlineLDecoder(*trans_model);
     startDecode();
 }
 

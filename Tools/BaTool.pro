@@ -42,7 +42,6 @@ HEADERS += \
     Sources/bt_test.h \
     Sources/kd_clat_weight.h \
     Sources/kd_cmvn.h \
-    Sources/kd_cmvn_base.h \
     Sources/kd_cmvn_state.h \
     Sources/kd_decodable.h \
     Sources/kd_decoder.h \
@@ -57,12 +56,13 @@ HEADERS += \
     Sources/kd_lattice_string.h \
     Sources/kd_lattice_weight.h \
     Sources/kd_matrix.h \
+    Sources/kd_matrix_dbg.h \
     Sources/kd_mbr.h \
     Sources/kd_mbr_base.h \
     Sources/kd_melbank.h \
     Sources/kd_mfcc.h \
+    Sources/kd_model.h \
     Sources/kd_online2_feinput.h \
-    Sources/kd_online2_model.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
     Sources/kd_token.h \
@@ -78,7 +78,6 @@ SOURCES += \
     Sources/bt_test.cpp \
     Sources/kd_clat_weight.cpp \
     Sources/kd_cmvn.cpp \
-    Sources/kd_cmvn_base.cpp \
     Sources/kd_cmvn_state.cpp \
     Sources/kd_decodable.cpp \
     Sources/kd_decoder.cpp \
@@ -93,12 +92,13 @@ SOURCES += \
     Sources/kd_lattice_string.cpp \
     Sources/kd_lattice_weight.cpp \
     Sources/kd_matrix.cpp \
+    Sources/kd_matrix_dbg.cpp \
     Sources/kd_mbr.cpp \
     Sources/kd_mbr_base.cpp \
     Sources/kd_melbank.cpp \
     Sources/kd_mfcc.cpp \
+    Sources/kd_model.cpp \
     Sources/kd_online2_feinput.cpp \
-    Sources/kd_online2_model.cpp \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
     Sources/kd_token.cpp \

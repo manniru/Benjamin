@@ -4,13 +4,13 @@
 using namespace kaldi;
 using namespace fst;
 
-KdDecodable::KdDecodable(BtRecorder *au_src, KdOnline2Model *mdl, float scale)
+KdDecodable::KdDecodable(BtRecorder *au_src, KdModel *mdl, float scale)
 {
     ac_scale_ = scale;
     cur_frame_ = -1;
 
-    ac_model = mdl->GetOnlineAlignmentModel();
-    trans_model = mdl->GetTransitionModel();
+    ac_model = mdl->oa_model;
+    trans_model = mdl->t_model;
 
     int num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int,float>(-1, 0.0f));

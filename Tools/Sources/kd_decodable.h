@@ -6,7 +6,7 @@
 #include "matrix/matrix-lib.h"
 #include "gmm/am-diag-gmm.h"
 #include "hmm/transition-model.h"
-#include "kd_online2_model.h"
+#include "kd_model.h"
 #include "kd_online2_feinput.h"
 
 #define MAX_FRAME_CNT 400
@@ -26,7 +26,7 @@ typedef struct KdPDF
 class KdDecodable
 {
 public:
-    KdDecodable(BtRecorder *au_src, KdOnline2Model *mdl, float scale);
+    KdDecodable(BtRecorder *au_src, KdModel *mdl, float scale);
     ~KdDecodable();
 
     /// Returns the scaled log likelihood

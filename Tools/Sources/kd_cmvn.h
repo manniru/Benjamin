@@ -2,7 +2,7 @@
 #define KD_CMVN_H
 
 #include <QObject>
-#include "kd_cmvn_base.h"
+#include "kd_cmvn_state.h"
 
 class KdCMVN
 {

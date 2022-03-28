@@ -8,7 +8,7 @@
 
 #include "bt_recorder.h"
 #include "bt_captain.h" //For BtWord
-#include "kd_online2_model.h"
+#include "kd_model.h"
 #include "kd_decodable.h"
 #include "kd_online_ldecoder.h"
 
@@ -38,7 +38,7 @@ private:
     BtCaptain        *cap;
 
     KdOnlineLDecoder *o_decoder;
-    KdOnline2Model   *o2_model; //gaussain online 2 model
+    KdModel   *o2_model; //gaussain online 2 model
 };
 
 #endif // KD_ONLINE_H

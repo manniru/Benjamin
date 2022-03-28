@@ -3,9 +3,6 @@
 using namespace kaldi;
 using namespace fst;
 
-AmDiagGmm        *am_gmm;
-TransitionModel  *trans_model;
-
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
@@ -15,24 +12,12 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
 
     std::string model_rxfilename = BT_OAMDL_PATH;
 
-    trans_model = new TransitionModel;
-    am_gmm = new AmDiagGmm;
-
-    bool rx_binary;
-    Input ki(model_rxfilename, &rx_binary);
-    trans_model->Read(ki.Stream(), rx_binary);
-    am_gmm->Read(ki.Stream(), rx_binary);
-
-    std::string online_alimdl = KAL_NATO_DIR"exp/tri1_online/final.oalimdl";
-    o2_model = new KdOnline2Model(trans_model, am_gmm, online_alimdl);
-
-    o_decoder = new KdOnlineLDecoder(*trans_model);
+    o2_model = new KdModel(model_rxfilename);
+    o_decoder = new KdOnlineLDecoder(*(o2_model->t_model));
 }
 
 KdOnline::~KdOnline()
 {
-    delete am_gmm;
-    delete trans_model;
     delete o2_model;
     delete o_decoder;
 }
@@ -97,7 +82,7 @@ void KdOnline::processResult(QVector<BtWord> result)
                 continue;
             }
         }
-        result[i].time += o_decoder->frame_num/100.0;
+        result[i].time += o_decoder->status.min_frame/100.0;
         buf += result[i];
     }
     cap->parse(buf);
