@@ -13,14 +13,13 @@ KdCMVN::KdCMVN(Matrix<double> cmvn_state,
     temp_feats_dbl_.Resize(dim);
     temp_feats_.Resize(dim);
     temp_stats_.Resize(2, dim + 1);
-    state_ = cmvn_state;
+    global_state = cmvn_state;
     Dim = dim;
 }
 
-void KdCMVN::GetMostRecentCachedFrame(int frame,
-                                          int *cached_frame,
-                                          MatrixBase<double> *stats)
+int KdCMVN::getLastCachedFrame(int frame, MatrixBase<double> *stats)
 {
+    int cached_frame;
     KALDI_ASSERT(frame >= 0);
     InitRingBuffer();
     // look for a cached frame on a previous frame as close as possible in time
@@ -36,28 +35,27 @@ void KdCMVN::GetMostRecentCachedFrame(int frame,
         int index = t % ring_buffer_size;
         if( cached_stats_ring_[index].first == t)
         {
-            *cached_frame = t;
             stats->CopyFromMat(cached_stats_ring_[index].second);
-            return;
+            return t;
         }
     }
     int n = frame / modulus;
-    if( n >= cached_stats_modulo_.size())
+    if( n>=cached_stats_modulo_.size() )
     {
-        if( cached_stats_modulo_.size() == 0)
+        if( cached_stats_modulo_.size()==0 )
         {
-            *cached_frame = -1;
             stats->SetZero();
-            return;
+            return -1;
         }
         else
         {
             n = static_cast<int>(cached_stats_modulo_.size() - 1);
         }
     }
-    *cached_frame = n * modulus;
+    cached_frame = n * modulus;
     KALDI_ASSERT(cached_stats_modulo_[n] != NULL);
     stats->CopyFromMat(*(cached_stats_modulo_[n]));
+    return cached_frame;
 }
 
 // Initialize ring buffer for caching stats.
@@ -114,23 +112,21 @@ KdCMVN::~KdCMVN()
     cached_stats_modulo_.clear();
 }
 
-void KdCMVN::ComputeStatsForFrame(int frame,
-                                  KdRecyclingVector *o_features,
-                                  MatrixBase<double> *stats_out)
+void KdCMVN::ComputeStats(int frame,
+                          KdRecyclingVector *o_features,
+                          MatrixBase<double> *stats_out)
 {
     KALDI_ASSERT(frame >= 0 && frame < o_features->Size());
 
     int cur_frame;
-    GetMostRecentCachedFrame(frame, &cur_frame, stats_out);
+    cur_frame = getLastCachedFrame(frame, stats_out);
 
-    Vector<float> &feats(temp_feats_);
-    Vector<double> &feats_dbl(temp_feats_dbl_);
-    while (cur_frame < frame)
+    while( cur_frame<frame )
     {
         cur_frame++;
-        feats.CopyFromVec(*(o_features->At(cur_frame)));////GET FRAME
-        feats_dbl.CopyFromVec(feats);
-        stats_out->Row(0).Range(0, Dim).AddVec(1.0, feats_dbl);
+        temp_feats_.CopyFromVec(*(o_features->At(cur_frame)));////GET FRAME
+        temp_feats_dbl_.CopyFromVec(temp_feats_);
+        stats_out->Row(0).Range(0, Dim).AddVec(1.0, temp_feats_dbl_);
         (*stats_out)(0, Dim) += 1.0;
         // it's a sliding buffer; a frame at the back may be
         // leaving the buffer so we have to subtract that.
@@ -138,19 +134,17 @@ void KdCMVN::ComputeStatsForFrame(int frame,
         if( prev_frame >= 0)
         {
             // we need to subtract frame prev_f from the stats.
-            feats.CopyFromVec(*(o_features->At(prev_frame)));////GET FRAME
-            feats_dbl.CopyFromVec(feats);
-            stats_out->Row(0).Range(0, Dim).AddVec(-1.0, feats_dbl);
+            temp_feats_.CopyFromVec(*(o_features->At(prev_frame)));////GET FRAME
+            temp_feats_dbl_.CopyFromVec(temp_feats_);
+            stats_out->Row(0).Range(0, Dim).AddVec(-1.0, temp_feats_dbl_);
             (*stats_out)(0, Dim) -= 1.0;
         }
         CacheFrame(cur_frame, (*stats_out));
     }
 }
 
-
-// static
-void KdCMVN::SmoothOnlineCmvnStats(const MatrixBase<double> &global_stats,
-                                   MatrixBase<double> *stats)
+// SmoothOnlineCmvnStats
+void KdCMVN::smoothStats(MatrixBase<double> *stats)
 {
     int dim = stats->NumCols() - 1;
     double cur_count = (*stats)(0, dim);
@@ -161,39 +155,37 @@ void KdCMVN::SmoothOnlineCmvnStats(const MatrixBase<double> &global_stats,
         return;
     if( cur_count >= cmn_window)
         return;
-    if( global_stats.NumRows()==0 )
-    {
-        KALDI_ERR << "Global CMN stats are required";
-    }
 
-    double count_from_global = cmn_window - cur_count,
-            global_count = global_stats(0, dim);
-    KALDI_ASSERT(global_count > 0.0);
-    if( count_from_global > global_frames)
+    double count_from_global = cmn_window - cur_count;
+    double global_dim = global_state(0, dim);
+    if( count_from_global>global_frames )
+    {
         count_from_global = global_frames;
-    if( count_from_global > 0.0)
-        stats->AddMat(count_from_global / global_count,
-                      global_stats);
+    }
+    if( count_from_global>0 )
+    {
+        stats->AddMat(count_from_global / global_dim,
+                      global_state);
+    }
 }
 
+//called from outside
 void KdCMVN::GetFrame(int frame,
                       KdRecyclingVector *o_features,
                       VectorBase<float> *feat)
 {
-    KALDI_ASSERT(feat->Dim() == Dim);
-    Matrix<double> &stats(temp_stats_);
+    KALDI_ASSERT(feat->Dim() == Dim); // = 13
+    Matrix<double> stats(temp_stats_);
     stats.Resize(2, Dim + 1, kUndefined);  // Will do nothing if size was correct.
-    // first get the raw CMVN stats (this involves caching..)
-    ComputeStatsForFrame(frame, o_features, &stats);
-    // now smooth them.
-    SmoothOnlineCmvnStats(state_,
-                          &stats);
+    ComputeStats(frame, o_features, &stats);
+//    smoothStats(&stats);
 
-    SubMatrix<float> feat_mat(feat->Data(), 1, Dim, Dim);
-    // the function ApplyCmvn takes a matrix, so form a one-row matrix
-    // to give it.
-    if( normalize_mean )
+    // ApplyCmvn
+    double N = -global_state(0, Dim); //count
+
+    for( int i=0 ; i<Dim ; i++ )
     {
-        kd_applyCmvn(stats, &feat_mat);
+//        qDebug() << i << global_state(0, i)/N;
+        (*feat)(i) += global_state(0, i)/N;
     }
 }

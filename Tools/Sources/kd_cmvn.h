@@ -7,16 +7,14 @@
 class KdCMVN
 {
 public:
-
-    void GetFrame(int frame,
-                  KdRecyclingVector *o_features,
-                  kaldi::VectorBase<float> *feat);
-
     /// If you do have previous utterances from the same speaker
     /// you are supposed to initialize it by calling SetState
     KdCMVN(kaldi::Matrix<double> cmvn_state, int dim);
 
-    kaldi::Matrix<double> state_;   // reflects the state before we saw this
+    kaldi::Matrix<double> global_state;   // reflects the state before we saw this
+    void GetFrame(int frame,
+                  KdRecyclingVector *o_features,
+                  kaldi::VectorBase<float> *feat);
 
     virtual ~KdCMVN();
 protected:
@@ -24,13 +22,11 @@ protected:
     /// Smooth by possibly adding some stats from "global_stats"
     /// and/or "speaker_stats", controlled by the config.  The best way to
     /// understand the smoothing rule we use is just to look at the code.
-    void SmoothOnlineCmvnStats(const kaldi::MatrixBase<double> &global_stats,
-                               kaldi::MatrixBase<double> *stats);
+    void smoothStats(kaldi::MatrixBase<double> *stats);
 
     /// Get the most recent cached frame of CMVN stats.  [If no frames
     /// were cached, sets up empty stats for frame zero and returns that].
-    void GetMostRecentCachedFrame(int frame,
-                                  int *cached_frame,
+    int getLastCachedFrame(int frame,
                                   kaldi::MatrixBase<double> *stats);
 
     /// Cache this frame of stats.
@@ -42,7 +38,7 @@ protected:
     /// Computes the raw CMVN stats for this frame, making use of (and updating if
     /// necessary) the cached statistics in raw_stats_.  This means the (x,
     /// x^2, count) stats for the last up to opts_.cmn_window frames.
-    void ComputeStatsForFrame(int frame, KdRecyclingVector *o_features,
+    void ComputeStats(int frame, KdRecyclingVector *o_features,
                               kaldi::MatrixBase<double> *stats);
 
     // utterance.
@@ -62,11 +58,8 @@ protected:
     kaldi::Vector<float>  temp_feats_;
     kaldi::Vector<double> temp_feats_dbl_;
 
-    int cmn_window = 600;
-    int speaker_frames = 600;  // must be <= cmn_window
-    int global_frames = 200;  // must be <= speaker_frames.
-    bool normalize_mean = true;
-    bool normalize_variance = false;
+    int cmn_window = 2000;
+    int global_frames = 200;  // not used much
     int Dim; ///REMOVE THIS
 
     int modulus = 20;  // smaller->more time-efficient but less memory-efficient.

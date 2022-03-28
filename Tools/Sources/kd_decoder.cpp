@@ -123,6 +123,11 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
 double KdDecoder::GetBestCutoff(KdToken *tok)
 {
     double cutoff = KD_INFINITY;
+    if( tok==NULL )
+    {
+         return cutoff;
+    }
+
     int frame = cost_offsets.size();
 
     cost_offsets.push_back(0.0);
@@ -298,7 +303,7 @@ void KdDecoder::ClaerAllToks()
 
 void KdDecoder::ClearActiveTokens()
 {
-    for (size_t i=0 ; i<frame_toks.size() ; i++)
+    for( int i=0 ; i<frame_toks.size() ; i++ )
     {
         KdToken *tok=frame_toks[i].head;
         while( tok!=NULL )
@@ -306,7 +311,6 @@ void KdDecoder::ClearActiveTokens()
             DeleteForwardLinks(tok);
             KdToken *next_tok = tok->next;
             delete tok;
-            max_state--;
             tok = next_tok;
         }
     }

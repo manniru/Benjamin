@@ -164,6 +164,14 @@ elif [[ "$WORD" == "underline" ]]; then
     OUTPUT="53"
 #    xdotool key shift+minus make problem when sleep
 
+elif [[ "$WORD" == "bracket" ]]; then
+    
+    OUTPUT="26"
+
+elif [[ "$WORD" == "quote" ]]; then
+    
+    OUTPUT="40"
+
 fi
 
 
