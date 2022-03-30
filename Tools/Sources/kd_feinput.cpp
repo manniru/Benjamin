@@ -2,8 +2,8 @@
 
 using namespace kaldi;
 
-KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
-                : QObject(parent)
+KdFeInput::KdFeInput(BtRecorder *au_src, QObject *parent)
+    : QObject(parent)
 {
     rec_src = au_src;
     waveform_offset = 0;
@@ -14,7 +14,7 @@ KdOnline2FeInput::KdOnline2FeInput(BtRecorder *au_src, QObject *parent)
     Init();
 }
 
-void KdOnline2FeInput::Init()
+void KdFeInput::Init()
 {
     kaldi::Matrix<float> global_cmvn;
     std::string gcmvn_path = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
@@ -25,18 +25,18 @@ void KdOnline2FeInput::Init()
     cmvn = new KdCMVN(global_cmvn, mfcc->Dim());
 }
 
-void KdOnline2FeInput::resetCmvn()
+void KdFeInput::resetCmvn()
 {
-//    cmvn->resetStat();
+    //    cmvn->resetStat();
 }
 
-int KdOnline2FeInput::Dim()
+int KdFeInput::Dim()
 {
     int mfcc_dim = mfcc->Dim();
     return mfcc_dim * (1 + delta->order);
 }
 
-int KdOnline2FeInput::NumFramesReady()
+int KdFeInput::NumFramesReady()
 {
     int num_frames = o_features->Size();
     // number of frames that is less to produce the output.
@@ -49,42 +49,42 @@ int KdOnline2FeInput::NumFramesReady()
     return 0;
 }
 
-void KdOnline2FeInput::GetFrame(int frame,
-                                VectorBase<float> *feat)
+// Call from outside(decodable)
+void KdFeInput::GetFrame(int frame, VectorBase<float> *feat)
 {
     int context = delta->order * delta->window;
     int left_frame = frame - context;
     int right_frame = frame + context;
-    int src_frames_ready = o_features->Size();
-    if( left_frame < 0)
+    int max_frame = o_features->Size();
+    if( left_frame<0 )
     {
         left_frame = 0;
     }
-    if( right_frame >= src_frames_ready)
+    if( right_frame>=max_frame )
     {
-      right_frame = src_frames_ready - 1;
+        right_frame = max_frame - 1;
     }
     if( right_frame<left_frame )
     {
         qDebug() << "right_frame" << right_frame
                  << "left_frame" << left_frame;
-        return;
+        exit(1);
     }
-    int temp_num_frames = right_frame + 1 - left_frame;
+    int len = right_frame - left_frame + 1 ;
     int mfcc_dim = mfcc->Dim();
-    Matrix<float> temp_src(temp_num_frames, mfcc_dim);
-    for( int t=left_frame ; t<=right_frame ; t++ )
+    Matrix<float> temp_src(len, mfcc_dim);
+    for( int i=0 ; i<len ; i++ )
     {
-        SubVector<float> temp_row(temp_src, t - left_frame);
-        temp_row.CopyFromVec(*(o_features->At(t)));////GET FRAME
-        cmvn->GetFrame(t, o_features, &temp_row);
+        SubVector<float> temp_row(temp_src, i);
+        temp_row.CopyFromVec(*(o_features->At(i+left_frame)));////GET FRAME
+        cmvn->GetFrame(i+left_frame, o_features, &temp_row);
     }
     int temp_t = frame - left_frame;  // temp_t is the offset of frame "frame"
-                                        // within temp_src
+    // within temp_src
     delta->Process(temp_src, temp_t, feat);
 }
 
-KdOnline2FeInput::~KdOnline2FeInput()
+KdFeInput::~KdFeInput()
 {
     // Guard against double deleting the cmvn_ ptr
     delete cmvn;
@@ -92,7 +92,7 @@ KdOnline2FeInput::~KdOnline2FeInput()
 }
 
 ///sampling_rate is fixed to 16KHz
-void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf, int len)
+void KdFeInput::AcceptWaveform(BtCyclic *buf, int len)
 {
     if( len==0 )
     {
@@ -117,7 +117,7 @@ void KdOnline2FeInput::AcceptWaveform(BtCyclic *buf, int len)
     ComputeFeatures();
 }
 
-void KdOnline2FeInput::ComputeFeatures()
+void KdFeInput::ComputeFeatures()
 {
     KdWindow &frame_opts = mfcc->frame_opts;
     int num_samples_total = waveform_offset + waveform_remainder_.Dim();
@@ -129,7 +129,7 @@ void KdOnline2FeInput::ComputeFeatures()
     for( int frame=num_frames_old ; frame<num_frames_new ; frame++)
     {
         frame_opts.ExtractWindow(waveform_offset, waveform_remainder_, frame,
-                      &window, NULL); //dont need energy
+                                 &window, NULL); //dont need energy
 
         Vector<float> *features = new Vector<float>(mfcc->Dim(), kUndefined);
 

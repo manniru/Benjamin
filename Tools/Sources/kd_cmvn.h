@@ -33,7 +33,7 @@ protected:
     void CacheFrame(int frame, const kaldi::MatrixBase<double> &stats);
 
     /// Initialize ring buffer for caching stats.
-    inline void InitRingBuffer();
+    void InitRingBuffer();
 
     /// Computes the raw CMVN stats for this frame, making use of (and updating if
     /// necessary) the cached statistics in raw_stats_.  This means the (x,

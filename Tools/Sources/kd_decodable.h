@@ -34,7 +34,7 @@ public:
     int NumFramesReady();
 
     int NumIndices();
-    KdOnline2FeInput *features;
+    KdFeInput *features;
 
 
 private:
@@ -44,7 +44,7 @@ private:
     float ac_scale_;
     kaldi::TransitionModel *trans_model;
     int feat_dim;  // dimensionality of the input features
-    kaldi::Vector<float> cur_feats_;
+    kaldi::Vector<float> feat_buf;
     int cur_frame_;
     std::vector<std::pair<int, float> > cache_;
 };

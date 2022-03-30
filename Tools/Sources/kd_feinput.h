@@ -9,13 +9,13 @@
 #include "kd_delta.h"
 
 // Feature Input
-class KdOnline2FeInput: public QObject
+class KdFeInput: public QObject
 {
     Q_OBJECT
 public:
-    explicit KdOnline2FeInput(BtRecorder *au_src,
+    explicit KdFeInput(BtRecorder *au_src,
                               QObject *parent = nullptr);
-    ~KdOnline2FeInput();
+    ~KdFeInput();
 
     int  Dim();
     int  NumFramesReady();
