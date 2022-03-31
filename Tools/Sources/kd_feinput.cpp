@@ -2,27 +2,22 @@
 
 using namespace kaldi;
 
-KdFeInput::KdFeInput(BtRecorder *au_src, QObject *parent)
-    : QObject(parent)
+KdFeInput::KdFeInput(BtRecorder *au_src, QObject *parent): QObject(parent)
 {
     rec_src = au_src;
     waveform_offset = 0;
+    o_features = new BtCFB;
+    frame_num = 0;
     mfcc = new KdMFCC;
-    delta = new KdDelta;
-    o_features = new KdRecyclingVector;
+    delta = new KdDelta(o_features);
 
-    Init();
-}
-
-void KdFeInput::Init()
-{
     kaldi::Matrix<float> global_cmvn;
     std::string gcmvn_path = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
 
     bool binary_in;
     Input ki(gcmvn_path, &binary_in);
     global_cmvn.Read(ki.Stream(), binary_in);
-    cmvn = new KdCMVN(global_cmvn, mfcc->Dim());
+    cmvn = new KdCMVN(global_cmvn, o_features);
 }
 
 void KdFeInput::resetCmvn()
@@ -33,15 +28,14 @@ void KdFeInput::resetCmvn()
 int KdFeInput::Dim()
 {
     int mfcc_dim = mfcc->Dim();
-    return mfcc_dim * (1 + KD_DELTA_ORDER);
+    return mfcc_dim * (1 + BT_DELTA_ORDER);
 }
 
 int KdFeInput::NumFramesReady()
 {
-    int num_frames = o_features->Size();
-    // number of frames that is less to produce the output.
-    int context = KD_DELTA_ORDER * KD_DELTA_ORDER; //4
-    int ret     = num_frames - context;
+    int num_frames = frame_num;
+    int offset = BT_DELTA_ORDER * BT_DELTA_ORDER; //4
+    int ret     = num_frames - offset;
     if( ret>0 )
     {
         return ret;
@@ -50,38 +44,31 @@ int KdFeInput::NumFramesReady()
 }
 
 // Call from outside(decodable)
-void KdFeInput::GetFrame(int frame, VectorBase<float> *feat)
+void KdFeInput::GetFrame(int frame, Vector<float> *feat)
 {
-    int context = KD_DELTA_ORDER * KD_DELTA_WINDOW; //4
+    int context = BT_DELTA_ORDER * KD_DELTA_WINDOW; //4
     int left_frame = frame - context;
-    int right_frame = frame + context;
-    int max_frame = o_features->Size();
+    int right_frame = frame + context + 1;
     if( left_frame<0 )
     {
         left_frame = 0;
     }
-    if( right_frame>=max_frame )
+    if( right_frame>=frame_num )
     {
-        right_frame = max_frame - 1;
+        right_frame = frame_num - 1;
     }
     if( right_frame<left_frame )
     {
         qDebug() << "right_frame" << right_frame
-                 << "left_frame" << left_frame;
+                 << "left_frame"  << left_frame;
         exit(1);
     }
-    int len = right_frame - left_frame + 1 ;
-    int mfcc_dim = mfcc->Dim();
-    Matrix<float> temp_src(len, mfcc_dim);
-    for( int i=0 ; i<len ; i++ )
+    for( int i=left_frame ; i<right_frame ; i++ )
     {
-        SubVector<float> temp_row(temp_src, i);
-        temp_row.CopyFromVec(*(o_features->At(left_frame+i)));
-        cmvn->GetFrame(left_frame+i, o_features, &temp_row); // normalize mean of temp_row
+        cmvn->calc(i);
     }
-    int temp_t = frame - left_frame;  // temp_t is the offset of frame "frame"
-    // within temp_src
-    delta->Process(temp_src, temp_t, feat);
+    delta->Process(frame, frame_num);
+    o_features->writeFeat(frame, feat);
 }
 
 KdFeInput::~KdFeInput()
@@ -121,12 +108,10 @@ void KdFeInput::ComputeFeatures()
 {
     KdWindow &frame_opts = mfcc->frame_opts;
     int num_samples_total = waveform_offset + waveform_remainder_.Dim();
-    int num_frames_old = o_features->Size();
     int num_frames_new = frame_opts.frameCount(num_samples_total);
-    KALDI_ASSERT(num_frames_new >= num_frames_old);
 
     Vector<float> window;
-    for( int frame=num_frames_old ; frame<num_frames_new ; frame++)
+    for( int frame=frame_num ; frame<num_frames_new ; frame++)
     {
         frame_opts.ExtractWindow(waveform_offset, waveform_remainder_, frame,
                                  &window, NULL); //dont need energy
@@ -134,8 +119,9 @@ void KdFeInput::ComputeFeatures()
         Vector<float> *features = new Vector<float>(mfcc->Dim(), kUndefined);
 
         mfcc->Compute(&window, features);
-        o_features->PushBack(features);
+        o_features->writeVec(frame, features);
     }
+    frame_num = num_frames_new;
     // OK, we will now discard any portion of the signal that will not be
     // necessary to compute frames in the future.
     int first_sample_of_next_frame = frame_opts.FirstSampleOfFrame(num_frames_new);
