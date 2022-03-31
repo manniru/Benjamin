@@ -35,6 +35,7 @@ OBJECTS_DIR = Build/.obj
 HEADERS += \
     Sources/backend.h \
     Sources/bt_captain.h \
+    Sources/bt_cfb.h \
     Sources/bt_chapar.h \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
@@ -72,6 +73,7 @@ HEADERS += \
 SOURCES += \
     Sources/backend.cpp \
     Sources/bt_captain.cpp \
+    Sources/bt_cfb.cpp \
     Sources/bt_chapar.cpp \
     Sources/bt_cyclic.cpp \
     Sources/bt_recorder.cpp \

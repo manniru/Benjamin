@@ -199,7 +199,7 @@ int KdOnlineLDecoder::Decode()
     checkReset(); //check if need reset
     ProcessNonemitting(std::numeric_limits<float>::max());
     int frame_max = decodable->NumFramesReady();
-//    for ( frame=0 ; frame<opts.batch_size ; frame++ )
+
     while( frame_num<frame_max )
     {
         if(  (uframe%config.prune_interval)==0 )

@@ -2,7 +2,6 @@
 
 using namespace kaldi;
 
-
 KdFFT::KdFFT(int N): KdSrcFFT(N/2)
 {
     N_ = N;

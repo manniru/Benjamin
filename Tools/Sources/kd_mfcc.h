@@ -33,8 +33,8 @@ protected:
     kaldi::Vector<float> mel_energies_;
     // 23 for 16khz-sampled data,
     // for 8khz, 15 may be better.
-    int num_ceps = 13;  // num cepstral coeffs
-    float cepstral_lifter = 22.0;  // Scaling factor on cepstra for HTK compatibility.
-    int num_bins = 23;
+    int num_ceps = 13;  // num cepstral bin
+    float cepstral_lifter = 22.0;  // Scaling factor on cepstra
+    int num_bins = 23; // mel bin
 };
 #endif // KD_MFCC_H
