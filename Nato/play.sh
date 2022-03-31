@@ -9,7 +9,7 @@ function play_data()
 	FILEBASE=$1
 
 	# \e[A: one line up - \e[K: clear line
-	printf "\e[A\e[K\r$2\n"
+	printf "\e[A\e[K\r$2     \n"
 	printf "\e[K\r"
 	sleep 0.5
 	cvlc $VLC_OPT "$AUDIO_PATH/$FILEBASE.wav" 2>/dev/null & 
@@ -36,8 +36,12 @@ printf "\n"
 
 while read line; do
 	    
-	WORD1=$(echo "$line" | awk '{print $1}' )
-	play_data "$WORD1" "$line"
+	F_BASE=$(echo "$line" | awk '{print $1}' )
+
+	# if file exist
+	if [[ -e "$AUDIO_PATH/$F_BASE.wav" ]]; then
+		play_data "$F_BASE" "$line"
+	fi
 
 done <input
 

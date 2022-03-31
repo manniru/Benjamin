@@ -1,4 +1,7 @@
 #!/bin/bash
+#test.sh <Mode>
+#r: record and decode
+#t: use t2 directory to decode
 source path.sh
 
 DECODE_PATH="decode"
@@ -31,14 +34,6 @@ elif [[ "$1" == "t" ]]; then
     done <list_file
 
     rm list_file
-    exit 0
-
-elif [[ "$1" == "v" ]]; then
-
-	echo "Verify Mode"
-    
-    steps/decode.sh --config conf/decode.config --nj 1 exp/tri1/graph data/train exp/tri1/decode
-    
     exit 0
 
 fi

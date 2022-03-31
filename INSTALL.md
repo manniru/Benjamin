@@ -28,11 +28,11 @@ Bash scripts available for the NATO task:
 
 ```
 # Record Audio Data
-./train.sh <category> <number>
+./record.sh <category> <number>
 # Create Lexicon (must run if the word_list changed)
 ./lang_word.sh
 # Train the Model
-./run.sh
+./train.sh
 ```
 
 ## Step 3: Compile and Run BaTool

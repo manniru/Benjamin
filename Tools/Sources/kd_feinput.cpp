@@ -33,14 +33,14 @@ void KdFeInput::resetCmvn()
 int KdFeInput::Dim()
 {
     int mfcc_dim = mfcc->Dim();
-    return mfcc_dim * (1 + delta->order);
+    return mfcc_dim * (1 + KD_DELTA_ORDER);
 }
 
 int KdFeInput::NumFramesReady()
 {
     int num_frames = o_features->Size();
     // number of frames that is less to produce the output.
-    int context = delta->order * delta->window;
+    int context = KD_DELTA_ORDER * KD_DELTA_ORDER; //4
     int ret     = num_frames - context;
     if( ret>0 )
     {
@@ -52,7 +52,7 @@ int KdFeInput::NumFramesReady()
 // Call from outside(decodable)
 void KdFeInput::GetFrame(int frame, VectorBase<float> *feat)
 {
-    int context = delta->order * delta->window;
+    int context = KD_DELTA_ORDER * KD_DELTA_WINDOW; //4
     int left_frame = frame - context;
     int right_frame = frame + context;
     int max_frame = o_features->Size();
@@ -76,8 +76,8 @@ void KdFeInput::GetFrame(int frame, VectorBase<float> *feat)
     for( int i=0 ; i<len ; i++ )
     {
         SubVector<float> temp_row(temp_src, i);
-        temp_row.CopyFromVec(*(o_features->At(i+left_frame)));////GET FRAME
-        cmvn->GetFrame(i+left_frame, o_features, &temp_row);
+        temp_row.CopyFromVec(*(o_features->At(left_frame+i)));
+        cmvn->GetFrame(left_frame+i, o_features, &temp_row); // normalize mean of temp_row
     }
     int temp_t = frame - left_frame;  // temp_t is the offset of frame "frame"
     // within temp_src

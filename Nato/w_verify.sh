@@ -1,11 +1,14 @@
 #! /bin/sh
-#verify.sh <AUDIO_DIR> <WORD_ID>
-#verify.sh audio/train/scarlet/ 22
+#Verify whole word in the train dir
+#verify.sh <AUDIO_DIR> <WORD>
+#verify.sh audio/train/scarlet/ wake
 
 DIR="$1"
-FILE_NUM=$2
+WORD=$2
 VLC_OPT="-q --gain 5 --play-and-exit --no-repeat --no-loop"
 
+FILE_NUM=$(grep -n "$WORD" word_list | awk -F: '{print $1}')
+FILE_NUM=$(($FILE_NUM-1))
 function convert2word()
 {
 	INDEX=$(($1+1))

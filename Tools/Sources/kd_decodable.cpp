@@ -17,7 +17,7 @@ KdDecodable::KdDecodable(BtRecorder *au_src, KdModel *mdl, float scale)
 
     features = new KdFeInput(au_src);
     feat_dim = features->Dim();
-    cur_feats_.Resize(feat_dim);
+    feat_buf.Resize(feat_dim);
 }
 
 KdDecodable::~KdDecodable()
@@ -27,7 +27,7 @@ KdDecodable::~KdDecodable()
 
 void KdDecodable::CacheFeature(int frame)
 {
-    features->GetFrame(frame, &cur_feats_);
+    features->GetFrame(frame, &feat_buf);
     cur_frame_ = frame;
 }
 
@@ -45,7 +45,7 @@ float KdDecodable::LogLikelihood(int frame, int index)
         return cache_[pdf_id].second;
     }
 
-    float ans = ac_model->LogLikelihood(pdf_id, cur_feats_) * ac_scale_;
+    float ans = ac_model->LogLikelihood(pdf_id, feat_buf) * ac_scale_;
     cache_[pdf_id].first = frame;
     cache_[pdf_id].second = ans;
 

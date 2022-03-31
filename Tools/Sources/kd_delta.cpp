@@ -1,41 +1,38 @@
 #include "kd_delta.h"
+#include <QDebug>
 
 using namespace kaldi;
 
 KdDelta::KdDelta()
 {
-    KALDI_ASSERT(order >= 0 && order < 1000);  // just make sure we don't get binary junk.
-    // opts will normally be 2 or 3.
-    KALDI_ASSERT(window > 0 && window < 1000);  // again, basic sanity check.
-    // normally the window size will be two.
+    scales.resize(KD_DELTA_ORDER+1);
+    scales[0].Resize(1);
+    scales[0](0) = 1.0;  // trivial WINDOW for 0th order delta
 
-    scales_.resize(order+1);
-    scales_[0].Resize(1);
-    scales_[0](0) = 1.0;  // trivial window for 0th order delta [i.e. baseline feats]
-
-    for (int i = 1; i <= order; i++)
+    // calc scales
+    float normalizer = sumof2N2(KD_DELTA_WINDOW);
+    for( int i=0; i<KD_DELTA_ORDER ; i++)
     {
-        Vector<float> &prev_scales = scales_[i-1];
-        Vector<float> &cur_scales = scales_[i];
-        // work if instead we later make it an array and do window[i-1],
-        // or something like that. "window" is a parameter specifying delta-window
-        // width which is actually 2*window + 1.
-        int prev_offset = (static_cast<int>(prev_scales.Dim()-1))/2;
-        int cur_offset = prev_offset + window;
-        cur_scales.Resize(prev_scales.Dim() + 2*window);  // also zeros it.
+        int l_size = scales[i].Dim(); //last size
+        int max_j = 2*KD_DELTA_WINDOW+1;
+        scales[i+1].Resize(l_size + 2*KD_DELTA_WINDOW); // init with zero
 
-        float normalizer = 0.0;
-        for (int j = -window; j <= window; j++)
+        for( int j=0 ; j<max_j ; j++ )
         {
-            normalizer += j*j;
-            for (int k = -prev_offset; k <= prev_offset; k++)
+            for (int k=0 ; k<l_size ; k++ )
             {
-                cur_scales(j+k+cur_offset) +=
-                        static_cast<float>(j) * prev_scales(k+prev_offset);
+                scales[i+1](j+k) += (j-KD_DELTA_WINDOW) * scales[i](k);
             }
         }
-        cur_scales.Scale(1.0 / normalizer);
+
+        scales[i+1].Scale(1.0 / normalizer);
     }
+}
+
+// Get sum of 2*(1^2+2^2+...+n^2)
+int KdDelta::sumof2N2(int n)
+{
+    return (n*(n+1)*(2*n+1))/3;
 }
 
 void KdDelta::Process(MatrixBase<float> &input_feats,
@@ -44,18 +41,18 @@ void KdDelta::Process(MatrixBase<float> &input_feats,
 {
     int num_frames = input_feats.NumRows();
     int feat_dim = input_feats.NumCols();
-    KALDI_ASSERT(static_cast<int>(output_frame->Dim()) == feat_dim * (order+1));
+    KALDI_ASSERT(output_frame->Dim()==(feat_dim*(KD_DELTA_ORDER+1)));
     output_frame->SetZero();
-    for( int i = 0; i <= order; i++ )
+
+    for( int i=0 ; i<(KD_DELTA_ORDER+1) ; i++ )
     {
-        const Vector<float> &scales = scales_[i];
-        int max_offset = (scales.Dim() - 1) / 2;
+        int len = scales[i].Dim();
         SubVector<float> output(*output_frame, i*feat_dim, feat_dim);
-        for( int j = -max_offset; j <= max_offset; j++)
+        for( int j=0; j<len; j++ )
         {
             // if asked to read
-            int offset_frame = frame + j;
-            if( offset_frame < 0)
+            int offset_frame = frame + j - (len-1)/2;
+            if( offset_frame<0 )
             {
                 offset_frame = 0;
             }
@@ -63,10 +60,11 @@ void KdDelta::Process(MatrixBase<float> &input_feats,
             {
                 offset_frame = num_frames - 1;
             }
-            float scale = scales(j + max_offset);
-            if( scale != 0.0)
+
+            float coeff = scales[i](j);
+            if( coeff!=0 )
             {
-                output.AddVec(scale, input_feats.Row(offset_frame));
+                output.AddVec(coeff, input_feats.Row(offset_frame));
             }
         }
     }
