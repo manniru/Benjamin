@@ -37,12 +37,12 @@ HEADERS += \
     Sources/bt_captain.h \
     Sources/bt_cfb.h \
     Sources/bt_chapar.h \
+    Sources/bt_cmvn.h \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
     Sources/bt_recorder.h \
     Sources/bt_test.h \
     Sources/kd_clat_weight.h \
-    Sources/kd_cmvn.h \
     Sources/kd_cmvn_state.h \
     Sources/kd_decodable.h \
     Sources/kd_decoder.h \
@@ -75,11 +75,11 @@ SOURCES += \
     Sources/bt_captain.cpp \
     Sources/bt_cfb.cpp \
     Sources/bt_chapar.cpp \
+    Sources/bt_cmvn.cpp \
     Sources/bt_cyclic.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_test.cpp \
     Sources/kd_clat_weight.cpp \
-    Sources/kd_cmvn.cpp \
     Sources/kd_cmvn_state.cpp \
     Sources/kd_decodable.cpp \
     Sources/kd_decoder.cpp \

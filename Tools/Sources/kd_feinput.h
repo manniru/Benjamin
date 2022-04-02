@@ -3,7 +3,7 @@
 
 #include "bt_config.h"
 #include "bt_recorder.h"
-#include "kd_cmvn.h"
+#include "bt_cmvn.h"
 #include "kd_matrix.h"
 #include "kd_mfcc.h"
 #include "kd_delta.h"
