@@ -7,11 +7,12 @@
 
 using namespace kaldi;
 
-KdCMVN::KdCMVN(kaldi::Matrix<float> g_state, int dim)
+KdCMVN::KdCMVN(kaldi::Matrix<float> g_state, BtCFB *feat)
 {
-    temp_stats_.Resize(2, dim + 1);
+    temp_stats_.Resize(2, BT_FEAT_SIZE + 1);
     global_state = g_state;
-    Dim = dim;
+    Dim = BT_FEAT_SIZE;
+    feature = feat;
 }
 
 // go back in time and find if a frame is cached
@@ -126,7 +127,7 @@ void KdCMVN::updateStats(int frame,
         // it's a sliding buffer; a frame at the back may be
         // leaving the buffer so we have to subtract that.
         int prev_frame = i - cmn_window;
-        if( prev_frame >= 0)
+        if( prev_frame>=0 )
         {
             // we need to subtract frame prev_f from the stats.
             temp_feats_.CopyFromVec(*(o_features->At(prev_frame)));////GET FRAME
@@ -155,22 +156,28 @@ void KdCMVN::addGlobal(MatrixBase<double> *stats)
 }
 
 //called from outside
-void KdCMVN::GetFrame(int frame,
-                      KdRecyclingVector *o_features,
-                      VectorBase<float> *feat)
+void KdCMVN::calc(int frame)
 {
-    KALDI_ASSERT(feat->Dim() == Dim); // = 13
     Matrix<double> stats(temp_stats_);
     stats.Resize(2, Dim + 1, kUndefined);  // Will do nothing if size was correct.
-    updateStats(frame, o_features, &stats);
+//    updateStats(frame, o_features, &stats);
 //    addGlobal(&stats);
 
     // ApplyCmvn
     double N = -global_state(0, Dim); //count
+    BtFrameBuf *buf = feature->get(frame);
 
-    for( int i=0 ; i<Dim ; i++ )
+    if( buf->have_cmvn )
+    {
+        return;
+    }
+
+    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
     {
 //        qDebug() << i << global_state(0, i)/N;
-        (*feat)(i) += global_state(0, i)/N;
+        buf->cmvn[i] += global_state(0, i)/N;
+        buf->delta[i] = buf->cmvn[i];
     }
+
+    buf->have_cmvn = true;
 }

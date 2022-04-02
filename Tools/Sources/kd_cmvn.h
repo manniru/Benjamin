@@ -3,36 +3,26 @@
 
 #include <QObject>
 #include "kd_cmvn_state.h"
+#include "bt_cfb.h"
 
 class KdCMVN
 {
 public:
-    /// If you do have previous utterances from the same speaker
-    /// you are supposed to initialize it by calling SetState
-    KdCMVN(kaldi::Matrix<float> g_state, int dim);
+    KdCMVN(kaldi::Matrix<float> g_state, BtCFB *feat);
 
     kaldi::Matrix<float> global_state;   // reflects the state before we saw this
-    void GetFrame(int frame,
-                  KdRecyclingVector *o_features,
-                  kaldi::VectorBase<float> *feat);
+    void calc(int frame);
 
     virtual ~KdCMVN();
 protected:
 
-    /// Smooth by possibly adding some stats from "global_stats"
-    /// and/or "speaker_stats", controlled by the config.  The best way to
-    /// understand the smoothing rule we use is just to look at the code.
     void addGlobal(kaldi::MatrixBase<double> *stats);
 
     /// Get the most recent cached frame of CMVN stats.  [If no frames
     /// were cached, sets up empty stats for frame zero and returns that].
-    int getLastCached(int frame,
-                                  kaldi::MatrixBase<double> *stats);
+    int getLastCached(int frame, kaldi::MatrixBase<double> *stats);
 
-    /// Cache this frame of stats.
     void CacheFrame(int frame, const kaldi::MatrixBase<double> &stats);
-
-    /// Initialize ring buffer for caching stats.
     void InitRingBuffer();
 
     /// Computes the raw CMVN stats for this frame, making use of (and updating if
@@ -41,10 +31,7 @@ protected:
     void updateStats(int frame, KdRecyclingVector *o_features,
                               kaldi::MatrixBase<double> *stats);
 
-    // utterance.
-
-    // The variable below reflects the raw (count, x, x^2) statistics of the
-    // input, computed every opts_.modulus frames.  raw_stats_[n / opts_.modulus]
+    // raw (count, x, x^2) statistics of the input, computed every opts_.modulus frames.  raw_stats_[n / opts_.modulus]
     // contains the (count, x, x^2) statistics for the frames from
     // std::max(0, n - opts_.cmn_window) through n.
     std::vector<kaldi::Matrix<double>*> cached_stats_modulo_;
@@ -55,9 +42,9 @@ protected:
     // Some temporary variables used inside functions of this class, which
     // put here to avoid reallocation.
     kaldi::Matrix<double> temp_stats_;
+    BtCFB *feature;
 
     int cmn_window = 600;
-    int global_frames = 200;  // not used much
     int Dim; ///REMOVE THIS
 
     int modulus = 20;  // smaller->more time-efficient but less memory-efficient.
