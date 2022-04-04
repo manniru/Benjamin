@@ -17,11 +17,11 @@ typedef struct BtCMVNRing
     int    len  = 0;
 }BtCMVNRing;
 
-class KdCMVN
+class BtCMVN
 {
 public:
-    KdCMVN(kaldi::Matrix<float> g_state, BtCFB *feat);
-    ~KdCMVN();
+    BtCMVN(kaldi::Matrix<float> g_state, BtCFB *feat);
+    ~BtCMVN();
 
     void calc(int frame);
 

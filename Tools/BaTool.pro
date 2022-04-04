@@ -40,6 +40,7 @@ HEADERS += \
     Sources/bt_cmvn.h \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
+    Sources/bt_feinput.h \
     Sources/bt_recorder.h \
     Sources/bt_test.h \
     Sources/kd_clat_weight.h \
@@ -48,7 +49,6 @@ HEADERS += \
     Sources/kd_decoder.h \
     Sources/kd_delta.h \
     Sources/kd_f_token.h \
-    Sources/kd_feinput.h \
     Sources/kd_fft.h \
     Sources/kd_fst_util.h \
     Sources/kd_lattice.h \
@@ -77,6 +77,7 @@ SOURCES += \
     Sources/bt_chapar.cpp \
     Sources/bt_cmvn.cpp \
     Sources/bt_cyclic.cpp \
+    Sources/bt_feinput.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_test.cpp \
     Sources/kd_clat_weight.cpp \
@@ -85,7 +86,6 @@ SOURCES += \
     Sources/kd_decoder.cpp \
     Sources/kd_delta.cpp \
     Sources/kd_f_token.cpp \
-    Sources/kd_feinput.cpp \
     Sources/kd_fft.cpp \
     Sources/kd_fst_util.cpp \
     Sources/kd_lattice.cpp \

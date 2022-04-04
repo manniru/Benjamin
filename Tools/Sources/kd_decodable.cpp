@@ -15,7 +15,7 @@ KdDecodable::KdDecodable(BtRecorder *au_src, KdModel *mdl, float scale)
     int num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int,float>(-1, 0.0f));
 
-    features = new KdFeInput(au_src);
+    features = new BtFeInput(au_src);
     feat_dim = features->Dim();
     feat_buf.Resize(feat_dim);
 }

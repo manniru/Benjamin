@@ -1,8 +1,8 @@
-#include "kd_feinput.h"
+#include "bt_feinput.h"
 
 using namespace kaldi;
 
-KdFeInput::KdFeInput(BtRecorder *au_src, QObject *parent): QObject(parent)
+BtFeInput::BtFeInput(BtRecorder *au_src, QObject *parent): QObject(parent)
 {
     rec_src = au_src;
     waveform_offset = 0;
@@ -17,21 +17,21 @@ KdFeInput::KdFeInput(BtRecorder *au_src, QObject *parent): QObject(parent)
     bool binary_in;
     Input ki(gcmvn_path, &binary_in);
     global_cmvn.Read(ki.Stream(), binary_in);
-    cmvn = new KdCMVN(global_cmvn, o_features);
+    cmvn = new BtCMVN(global_cmvn, o_features);
 }
 
-void KdFeInput::resetCmvn()
+void BtFeInput::resetCmvn()
 {
     //    cmvn->resetStat();
 }
 
-int KdFeInput::Dim()
+int BtFeInput::Dim()
 {
     int mfcc_dim = mfcc->Dim();
     return mfcc_dim * (1 + BT_DELTA_ORDER);
 }
 
-int KdFeInput::NumFramesReady()
+int BtFeInput::NumFramesReady()
 {
     int num_frames = frame_num;
     int offset = BT_DELTA_ORDER * BT_DELTA_ORDER; //4
@@ -44,7 +44,7 @@ int KdFeInput::NumFramesReady()
 }
 
 // Call from outside(decodable)
-void KdFeInput::GetFrame(int frame, Vector<float> *feat)
+void BtFeInput::GetFrame(int frame, Vector<float> *feat)
 {
     int context = BT_DELTA_ORDER * KD_DELTA_WINDOW; //4
     int left_frame = frame - context;
@@ -71,7 +71,7 @@ void KdFeInput::GetFrame(int frame, Vector<float> *feat)
     o_features->writeFeat(frame, feat);
 }
 
-KdFeInput::~KdFeInput()
+BtFeInput::~BtFeInput()
 {
     // Guard against double deleting the cmvn_ ptr
     delete cmvn;
@@ -79,7 +79,7 @@ KdFeInput::~KdFeInput()
 }
 
 ///sampling_rate is fixed to 16KHz
-void KdFeInput::AcceptWaveform(BtCyclic *buf, int len)
+void BtFeInput::AcceptWaveform(BtCyclic *buf, int len)
 {
     if( len==0 )
     {
@@ -104,7 +104,7 @@ void KdFeInput::AcceptWaveform(BtCyclic *buf, int len)
     ComputeFeatures();
 }
 
-void KdFeInput::ComputeFeatures()
+void BtFeInput::ComputeFeatures()
 {
     KdWindow &frame_opts = mfcc->frame_opts;
     int num_samples_total = waveform_offset + waveform_remainder_.Dim();

@@ -1,5 +1,5 @@
-#ifndef KD_FEINPUT_H
-#define KD_FEINPUT_H
+#ifndef BT_FEINPUT_H
+#define BT_FEINPUT_H
 
 #include "bt_config.h"
 #include "bt_recorder.h"
@@ -10,13 +10,13 @@
 #include "bt_cfb.h"
 
 // Feature Input
-class KdFeInput: public QObject
+class BtFeInput: public QObject
 {
     Q_OBJECT
 public:
-    explicit KdFeInput(BtRecorder *au_src,
+    explicit BtFeInput(BtRecorder *au_src,
                               QObject *parent = nullptr);
-    ~KdFeInput();
+    ~BtFeInput();
 
     int  Dim();
     int  NumFramesReady();
@@ -28,7 +28,7 @@ public:
 
 private:
     KdMFCC *mfcc;
-    KdCMVN *cmvn;
+    BtCMVN *cmvn;
     BtCFB  *o_features;
 
     // number of samples that discarded and were prior to 'waveform_remainder_'
@@ -40,4 +40,4 @@ private:
     BtRecorder *rec_src;
 };
 
-#endif // KD_FEINPUT_H
+#endif // BT_FEINPUT_H

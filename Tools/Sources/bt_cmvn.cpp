@@ -7,7 +7,7 @@
 
 using namespace kaldi;
 
-KdCMVN::KdCMVN(kaldi::Matrix<float> g_state, BtCFB *feat)
+BtCMVN::BtCMVN(kaldi::Matrix<float> g_state, BtCFB *feat)
 {
     i_feature = feat;
     resetSum();
@@ -18,7 +18,7 @@ KdCMVN::KdCMVN(kaldi::Matrix<float> g_state, BtCFB *feat)
     }
 }
 
-void KdCMVN::resetSum()
+void BtCMVN::resetSum()
 {
     for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
     {
@@ -31,11 +31,11 @@ void KdCMVN::resetSum()
     feature_buf.len  = 0;
 }
 
-KdCMVN::~KdCMVN()
+BtCMVN::~BtCMVN()
 {
 }
 
-void KdCMVN::updateStats(BtFrameBuf *buf)
+void BtCMVN::updateStats(BtFrameBuf *buf)
 {
     if( buf->have_cmvn )
     {
@@ -74,7 +74,7 @@ void KdCMVN::updateStats(BtFrameBuf *buf)
 }
 
 // Add from global CMVN if no frame is in stat
-void KdCMVN::computeFinalStats()
+void BtCMVN::computeFinalStats()
 {
     double remain_f = BT_CMVN_WINDOW - feature_buf.len; //number of frame needed
     double global_N = global_state[BT_FEAT_SIZE];
@@ -87,7 +87,7 @@ void KdCMVN::computeFinalStats()
 }
 
 //called from outside
-void KdCMVN::calc(int frame)
+void BtCMVN::calc(int frame)
 {
     BtFrameBuf *buf = i_feature->get(frame);
     updateStats(buf);

@@ -7,7 +7,7 @@
 #include "gmm/am-diag-gmm.h"
 #include "hmm/transition-model.h"
 #include "kd_model.h"
-#include "kd_feinput.h"
+#include "bt_feinput.h"
 
 #define MAX_FRAME_CNT 400
 typedef struct KdPDF
@@ -34,7 +34,7 @@ public:
     int NumFramesReady();
 
     int NumIndices();
-    KdFeInput *features;
+    BtFeInput *features;
 
 
 private:
