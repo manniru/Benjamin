@@ -4,7 +4,9 @@
 #include "util/kaldi-io.h"
 #include "base/kaldi-math.h"
 #include "bt_config.h"
+#include <QString>
 
+// round to power of 2
 int kd_RoundP2(int n);
 
 class KdWindow // FrameExtractionOptions + FeatureWindowFunction
@@ -15,12 +17,9 @@ public:
     int WindowSize();
     int fftSize();
     int frameCount(int num_samples);
-    void ExtractWindow(int sample_offset,
-                                 const kaldi::VectorBase<float> &wave,
-                                 int f, kaldi::Vector<float> *window,
-                                 float *log_energy_pre_window);
-    void ProcessWindow(kaldi::VectorBase<float> *win,
-                       float *log_energy_pre_window = NULL);
+    void extract(int offset, kaldi::VectorBase<float> &wave,
+                 kaldi::Vector<float> *window);
+    void ProcessWindow(kaldi::VectorBase<float> *win);
     void Preemphasize(kaldi::VectorBase<float> *waveform, float preemph_coeff);
     void Dither(kaldi::VectorBase<float> *waveform, float dither_value);
 
@@ -43,6 +42,7 @@ public:
 
 private:
     kaldi::Vector<float> window;
+    int frame_num = 0;
 };
 
 #endif // KD_WINDOW_H

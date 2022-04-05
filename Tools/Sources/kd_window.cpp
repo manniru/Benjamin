@@ -1,4 +1,5 @@
 #include "kd_window.h"
+#include <QDebug>
 
 using namespace kaldi;
 
@@ -87,70 +88,47 @@ int KdWindow::frameCount(int num_samples)
     }
 }
 
-void KdWindow::ExtractWindow(int sample_offset,
-                             const VectorBase<float> &wave,
-                             int f, Vector<float> *win,
-                             float *log_energy_pre_window)
+void KdWindow::extract(int offset, VectorBase<float> &wave,
+                       Vector<float> *win)
 {
-    KALDI_ASSERT(sample_offset >= 0 && wave.Dim() != 0);
     int frame_length = WindowSize();
-    int frame_length_padded = fftSize();
-    int num_samples = sample_offset + wave.Dim();
-    int start_sample = FirstSampleOfFrame(f);
-    int end_sample = start_sample + frame_length;
+    int fft_size = fftSize();
 
-    KALDI_ASSERT(start_sample >= sample_offset &&
-                 end_sample <= num_samples);
-
-    if( win->Dim()!=frame_length_padded )
+    if( win->Dim()!=fft_size )
     {
-        win->Resize(frame_length_padded, kUndefined);
+        win->Resize(fft_size, kUndefined);
     }
 
-    // wave_start and wave_end are start and end indexes into 'wave', for the
-    // piece of wave that we're trying to extract.
-    int wave_start = start_sample - sample_offset;
-    int wave_end = wave_start + frame_length;
-    if( wave_start >= 0 && wave_end <= wave.Dim())
+    int wave_end = offset + frame_length;
+    if( wave_end>wave.Dim() )
     {
-        // the normal case-- no edge effects to consider.
-        win->Range(0, frame_length).CopyFromVec(
-                    wave.Range(wave_start, frame_length));
+        qDebug() << "FFFFFFFFFFFFFFFFFFFFFFFFF";
     }
-    else
+    win->Range(0, frame_length).CopyFromVec(
+                wave.Range(offset, frame_length));
+
+    // add zero padded data
+    if( fft_size>frame_length )
+        win->Range(frame_length, fft_size - frame_length).SetZero();
+
+    QString buf;
+    for( int i=0 ; i<win->Dim() ; i++ )
     {
-        // Deal with any end effects by reflection, if needed.  This code will only
-        // be reached for about two frames per utterance, so we don't concern
-        // ourselves excessively with efficiency.
-        int wave_dim = wave.Dim();
-        for (int s = 0; s < frame_length; s++)
-        {
-            int s_in_wave = s + wave_start;
-            while (s_in_wave < 0 || s_in_wave >= wave_dim)
-            {
-                // reflect around the beginning or end of the wave.
-                // e.g. -1 -> 0, -2 -> 1.
-                // dim -> dim - 1, dim + 1 -> dim - 2.
-                // the code supports repeated reflections, although this
-                // would only be needed in pathological cases.
-                if( s_in_wave < 0) s_in_wave = - s_in_wave - 1;
-                else s_in_wave = 2 * wave_dim - 1 - s_in_wave;
-            }
-            (*win)(s) = wave(s_in_wave);
-        }
+        buf += QString::number((*win)(i));
+        buf += " ";
     }
 
-    if( frame_length_padded > frame_length)
-        win->Range(frame_length, frame_length_padded - frame_length).SetZero();
+    qDebug() << frame_num << frame_length
+             << win->Dim() << buf;
+    frame_num++;
 
     SubVector<float> frame(*win, 0, frame_length);
 
-    ProcessWindow(&frame, log_energy_pre_window);
+    ProcessWindow(&frame);
 }
 
 
-void KdWindow::ProcessWindow(VectorBase<float> *win,
-                   float *log_energy_pre_window)
+void KdWindow::ProcessWindow(VectorBase<float> *win)
 {
     int frame_length = WindowSize();
     KALDI_ASSERT(win->Dim() == frame_length);
@@ -160,21 +138,9 @@ void KdWindow::ProcessWindow(VectorBase<float> *win,
     // remove_dc_offset
     win->Add(-win->Sum()/frame_length);
 
-    if( log_energy_pre_window != NULL)
-    {
-        float energy = std::max<float>(VecVec(*win, *win),
-                                               std::numeric_limits<float>::epsilon());
-        *log_energy_pre_window = Log(energy);
-    }
-
     Preemphasize(win, preemph_coeff);
 
     win->MulElements(window);
-}
-
-int KdWindow::FirstSampleOfFrame(int frame)
-{
-    return frame * WindowShift();
 }
 
 void KdWindow::Dither(VectorBase<float> *waveform, float dither_value)

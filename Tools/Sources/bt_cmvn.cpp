@@ -136,5 +136,5 @@ void BtCMVN::readGlobal()
         }
     }
 
-
+    file.close();
 }

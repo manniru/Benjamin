@@ -22,6 +22,14 @@ for WORD in $BUF; do
 		KEYWORD=$($SI/z_nautilus.sh $WORD)
 	    OUTPUT="$OUTPUT $KEYWORD"
 	 
+	elif [[ "$WORD" == "love" ]]; then
+	
+	    OUTPUT="$OUTPUT control shift left"
+	 
+	elif [[ "$WORD" == "roger" ]]; then
+	
+	    OUTPUT="$OUTPUT control shift right"
+	 
 	else
 	
 	    OUTPUT="$OUTPUT $WORD"

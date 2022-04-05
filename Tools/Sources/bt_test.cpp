@@ -48,9 +48,8 @@ void BtTest::startDecode()
     KdCompactLattice out_fst;
     QVector<BtWord> result;
 
-
-    qDebug() << file_list.size();
-    for( int i = 0 ; i<3 ; i++ )
+//    qDebug() << file_list.size();
+    for( int i = 0 ; i<10 ; i++ )
     {
         openWave(file_list[i]);
         int read_size = chunk_size;
@@ -60,11 +59,12 @@ void BtTest::startDecode()
             decodable.features->AcceptWaveform(cy_buf);
             o_decoder->Decode();
             result = o_decoder->getResult(&out_fst);
-            if( result.size() )
-            {
+        }
+        if( result.size() )
+        {
                 bt_writeBarResult(result);
             }
-    //        exit(0);
+            qDebug() << buf;
         }
         o_decoder->wav_id++;
         o_decoder->status.min_frame = o_decoder->frame_num;
@@ -72,6 +72,8 @@ void BtTest::startDecode()
         o_decoder->ResetDecoder(); // this reset uframe
         o_decoder->status.state = KD_STATE_NORMAL;
     }
+    exit(0);
+
 }
 
 void BtTest::openWave(QString filename)
@@ -82,7 +84,7 @@ void BtTest::openWave(QString filename)
         qDebug() << "Failed To Open" << filename;
         exit(1);
     }
-    qDebug() << filename;
+    qDebug() << QFileInfo(filename).fileName();
 
     char buff[200];
 
@@ -105,9 +107,9 @@ void BtTest::openWave(QString filename)
     wav_file->read(buff,4);//subchunk2 id(str="data")
     wav_file->read(buff,4);//subchunk2 size(int=sample count)
     uint16_t data_size = *((uint32_t *)buff);
-    qDebug() << "sample_rate:"  << sample_rate
-             << "channel:" << channel_count
-             << "chunk_size:" << data_size;
+//    qDebug() << "sample_rate:"  << sample_rate
+//             << "channel:" << channel_count
+//             << "chunk_size:" << data_size;
 }
 
 int BtTest::readWav(int count, BtCyclic *out)
