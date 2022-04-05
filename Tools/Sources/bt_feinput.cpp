@@ -10,14 +10,7 @@ BtFeInput::BtFeInput(BtRecorder *au_src, QObject *parent): QObject(parent)
     frame_num = 0;
     mfcc = new KdMFCC;
     delta = new KdDelta(o_features);
-
-    kaldi::Matrix<float> global_cmvn;
-    std::string gcmvn_path = KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats";
-
-    bool binary_in;
-    Input ki(gcmvn_path, &binary_in);
-    global_cmvn.Read(ki.Stream(), binary_in);
-    cmvn = new BtCMVN(global_cmvn, o_features);
+    cmvn = new BtCMVN(o_features);
 }
 
 void BtFeInput::resetCmvn()

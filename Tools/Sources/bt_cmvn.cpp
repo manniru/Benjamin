@@ -1,5 +1,7 @@
 #include "bt_cmvn.h"
 #include <QDebug>
+#include <QFile>
+#include <Qt>
 
 #include <base/kaldi-common.h>
 #include <util/common-utils.h>
@@ -7,15 +9,11 @@
 
 using namespace kaldi;
 
-BtCMVN::BtCMVN(kaldi::Matrix<float> g_state, BtCFB *feat)
+BtCMVN::BtCMVN(BtCFB *feat)
 {
     i_feature = feat;
     resetSum();
-
-    for( int i=0 ; i<BT_FEAT_SIZE+1 ; i++ )
-    {
-        global_state[i] = g_state(0, i);
-    }
+    readGlobal();
 }
 
 void BtCMVN::resetSum()
@@ -105,4 +103,38 @@ void BtCMVN::calc(int frame)
     }
 
     buf->have_cmvn = true;
+}
+
+void BtCMVN::readGlobal()
+{
+    QFile file(BT_GCMVN_PATH);
+
+    if( !file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "Error opening" << BT_GCMVN_PATH;
+        return;
+    }
+
+    file.readLine(); //skip first line
+    QString line = file.readLine();
+    QStringList val = line.split(" ", QString::SkipEmptyParts);
+
+    if( val.size()!=(BT_FEAT_SIZE+2) )
+    {
+        qDebug() << "Error 122: GVMN is wrong in size" << val.size();
+        exit(1);
+    }
+
+    bool ok;
+    for( int i=0 ; i<(BT_FEAT_SIZE+1) ; i++ )
+    {
+        global_state[i] = val[i].toDouble(&ok);
+        if( !ok )
+        {
+            qDebug() << "Error 123: Error converting val in GCMVN" << val[i] << i;
+            exit(1);
+        }
+    }
+
+
 }
