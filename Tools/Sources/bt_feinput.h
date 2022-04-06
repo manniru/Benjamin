@@ -14,8 +14,8 @@ class BtFeInput: public QObject
 {
     Q_OBJECT
 public:
-    explicit BtFeInput(BtRecorder *au_src,
-                              QObject *parent = nullptr);
+    explicit BtFeInput(BtCyclic *buf,
+                       QObject *parent = nullptr);
     ~BtFeInput();
 
     int  Dim();
@@ -23,7 +23,6 @@ public:
     void GetFrame(int frame, kaldi::Vector<float> *feat);
     void resetCmvn();
 
-    void AcceptWaveform(BtCyclic *buf, int len=0);
     void ComputeFeatures();
 
 private:
@@ -31,13 +30,12 @@ private:
     BtCMVN *cmvn;
     BtCFB  *o_features;
 
-    // number of samples that discarded and were prior to 'waveform_remainder_'
-    int waveform_offset;
     long frame_num;
-    kaldi::Vector<float> waveform_remainder_;
+    int  remain_samp = 0;
+    kaldi::Vector<float> wav_buf;
 
     KdDelta    *delta;
-    BtRecorder *rec_src;
+    BtCyclic   *rec_buf;
 };
 
 #endif // BT_FEINPUT_H

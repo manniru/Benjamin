@@ -2,10 +2,9 @@
 
 using namespace kaldi;
 
-BtFeInput::BtFeInput(BtRecorder *au_src, QObject *parent): QObject(parent)
+BtFeInput::BtFeInput(BtCyclic *buf, QObject *parent): QObject(parent)
 {
-    rec_src = au_src;
-    waveform_offset = 0;
+    rec_buf = buf;
     o_features = new BtCFB;
     frame_num = 0;
     mfcc = new KdMFCC;
@@ -26,9 +25,8 @@ int BtFeInput::Dim()
 
 int BtFeInput::NumFramesReady()
 {
-    int num_frames = frame_num;
     int offset = BT_DELTA_ORDER * BT_DELTA_ORDER; //4
-    int ret     = num_frames - offset;
+    int ret     = frame_num - offset;
     if( ret>0 )
     {
         return ret;
@@ -71,71 +69,35 @@ BtFeInput::~BtFeInput()
     delete mfcc;
 }
 
-///sampling_rate is fixed to 16KHz
-void BtFeInput::AcceptWaveform(BtCyclic *buf, int len)
-{
-    if( len==0 )
-    {
-        len = buf->getDataSize()-10;
-        if( len<=0 )
-        {
-            return;
-        }
-    }
-
-    Vector<float> appended_wave;
-    int rem_size = waveform_remainder_.Dim();
-
-    appended_wave.Resize(rem_size + len);
-    if( rem_size!=0 )
-    {
-        appended_wave.Range(0, waveform_remainder_.Dim())
-                .CopyFromVec(waveform_remainder_);
-    }
-    buf->read(&appended_wave, len);
-    waveform_remainder_.Swap(&appended_wave);
-    ComputeFeatures();
-}
-
 void BtFeInput::ComputeFeatures()
 {
-    KdWindow &frame_opts = mfcc->frame_opts;
-    int num_samples_total = waveform_offset + waveform_remainder_.Dim();
-    int num_frames_new = frame_opts.frameCount(num_samples_total);
+    KdWindow &window_cal = mfcc->frame_opts;
+    rec_buf->rewind(remain_samp);
+    int len = rec_buf->getDataSize()-10;
+    int frame_length = window_cal.WindowSize();
+    if( len<frame_length )
+    {
+        return;
+    }
+
+    int frame_count = window_cal.frameCount(len);
+    int ws = window_cal.WindowShift(); //window shift
+    int read_len = (frame_count-1)*ws+frame_length;
+
+    wav_buf.Resize(read_len);
+    rec_buf->read(&wav_buf, read_len);
 
     Vector<float> window;
-    for( int frame=frame_num ; frame<num_frames_new ; frame++)
+    for( int i=0 ; i<frame_count ; i++)
     {
-        frame_opts.ExtractWindow(waveform_offset, waveform_remainder_, frame,
-                                 &window, NULL); //dont need energy
+        window_cal.extract(i*ws, wav_buf, &window);
 
-        Vector<float> *features = new Vector<float>(mfcc->Dim(), kUndefined);
+        Vector<float> *features = new Vector<float>(mfcc->Dim(),
+                                                    kUndefined);
 
         mfcc->Compute(&window, features);
-        o_features->writeVec(frame, features);
+        o_features->writeVec(frame_num, features);
+        frame_num++;
     }
-    frame_num = num_frames_new;
-    // OK, we will now discard any portion of the signal that will not be
-    // necessary to compute frames in the future.
-    int first_sample_of_next_frame = frame_opts.FirstSampleOfFrame(num_frames_new);
-    int samples_to_discard = first_sample_of_next_frame - waveform_offset;
-    if( samples_to_discard > 0)
-    {
-        // discard the leftmost part of the waveform that we no longer need.
-        int new_num_samples = waveform_remainder_.Dim() - samples_to_discard;
-        if( new_num_samples <= 0)
-        {
-            // odd, but we'll try to handle it.
-            waveform_offset += waveform_remainder_.Dim();
-            waveform_remainder_.Resize(0);
-        }
-        else
-        {
-            Vector<float> new_remainder(new_num_samples);
-            new_remainder.CopyFromVec(waveform_remainder_.Range(samples_to_discard,
-                                                                new_num_samples));
-            waveform_offset += samples_to_discard;
-            waveform_remainder_.Swap(&new_remainder);
-        }
-    }
+    remain_samp = frame_length-ws;
 }

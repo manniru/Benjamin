@@ -41,8 +41,7 @@ void BtTest::startDecode()
     float acoustic_scale = 0.05;
     int chunk_size = 16000; // 1000ms
 
-    KdDecodable decodable(NULL, o2_model,
-                             acoustic_scale);
+    KdDecodable decodable(cy_buf, o2_model, acoustic_scale);
 
     o_decoder->InitDecoding(&decodable);
     KdCompactLattice out_fst;
@@ -56,12 +55,17 @@ void BtTest::startDecode()
         while( read_size==chunk_size )
         {
             read_size = readWav(chunk_size, cy_buf);
-            decodable.features->AcceptWaveform(cy_buf);
+            decodable.features->ComputeFeatures();
             o_decoder->Decode();
             result = o_decoder->getResult(&out_fst);
         }
         if( result.size() )
         {
+            QString buf;
+            for( int i=0 ; i<result.size() ; i++ )
+            {
+                buf += result[i].word;
+                buf += " ";
                 bt_writeBarResult(result);
             }
             qDebug() << buf;

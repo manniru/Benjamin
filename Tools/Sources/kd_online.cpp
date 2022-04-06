@@ -31,8 +31,7 @@ void KdOnline::startDecode()
 {
     float acoustic_scale = 0.05;
 
-    KdDecodable decodable(ab_src, o2_model,
-                             acoustic_scale);
+    KdDecodable decodable(cy_buf, o2_model, acoustic_scale);
 
     ab_src->startStream();
 
@@ -42,7 +41,7 @@ void KdOnline::startDecode()
 
     while( 1 )
     {
-        decodable.features->AcceptWaveform(cy_buf);
+        decodable.features->ComputeFeatures();
         o_decoder->Decode();
         result = o_decoder->getResult(&out_fst);
         processResult(result);

@@ -4,7 +4,7 @@
 using namespace kaldi;
 using namespace fst;
 
-KdDecodable::KdDecodable(BtRecorder *au_src, KdModel *mdl, float scale)
+KdDecodable::KdDecodable(BtCyclic *buf, KdModel *mdl, float scale)
 {
     ac_scale_ = scale;
     cur_frame_ = -1;
@@ -15,7 +15,7 @@ KdDecodable::KdDecodable(BtRecorder *au_src, KdModel *mdl, float scale)
     int num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int,float>(-1, 0.0f));
 
-    features = new BtFeInput(au_src);
+    features = new BtFeInput(buf);
     feat_dim = features->Dim();
     feat_buf.Resize(feat_dim);
 }
@@ -29,6 +29,17 @@ void KdDecodable::CacheFeature(int frame)
 {
     features->GetFrame(frame, &feat_buf);
     cur_frame_ = frame;
+
+
+    int len = feat_buf.Dim();
+    QString buf = QString::number(frame);
+    buf += ": ";;
+    for( int i=0 ; i<len ; i++ )
+    {
+        buf += QString::number(feat_buf(i));
+        buf += " ";
+    }
+//    qDebug() << buf;
 }
 
 float KdDecodable::LogLikelihood(int frame, int index)

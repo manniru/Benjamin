@@ -26,7 +26,7 @@ typedef struct KdPDF
 class KdDecodable
 {
 public:
-    KdDecodable(BtRecorder *au_src, KdModel *mdl, float scale);
+    KdDecodable(BtCyclic *buf, KdModel *mdl, float scale);
     ~KdDecodable();
 
     /// Returns the scaled log likelihood
