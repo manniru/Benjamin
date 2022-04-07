@@ -44,7 +44,6 @@ HEADERS += \
     Sources/bt_recorder.h \
     Sources/bt_test.h \
     Sources/kd_clat_weight.h \
-    Sources/kd_cmvn_state.h \
     Sources/kd_decodable.h \
     Sources/kd_decoder.h \
     Sources/kd_delta.h \
@@ -81,7 +80,6 @@ SOURCES += \
     Sources/bt_recorder.cpp \
     Sources/bt_test.cpp \
     Sources/kd_clat_weight.cpp \
-    Sources/kd_cmvn_state.cpp \
     Sources/kd_decodable.cpp \
     Sources/kd_decoder.cpp \
     Sources/kd_delta.cpp \

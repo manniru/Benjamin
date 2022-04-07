@@ -1,9 +1,6 @@
 #ifndef KD_DELTA_H
 #define KD_DELTA_H
 
-#include "kd_cmvn_state.h"
-#include "matrix/matrix-lib.h"
-#include "util/common-utils.h"
 #include "bt_cfb.h"
 
 #define KD_DELTA_WINDOW 2 // should be  0<window<1000

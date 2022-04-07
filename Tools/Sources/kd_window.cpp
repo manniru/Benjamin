@@ -102,25 +102,16 @@ void KdWindow::extract(int offset, VectorBase<float> &wave,
     int wave_end = offset + frame_length;
     if( wave_end>wave.Dim() )
     {
-        qDebug() << "FFFFFFFFFFFFFFFFFFFFFFFFF";
+        qDebug() << "Error 131: wave dimension is not enough";
     }
     win->Range(0, frame_length).CopyFromVec(
                 wave.Range(offset, frame_length));
 
     // add zero padded data
     if( fft_size>frame_length )
-        win->Range(frame_length, fft_size - frame_length).SetZero();
-
-    QString buf;
-    for( int i=0 ; i<win->Dim() ; i++ )
     {
-        buf += QString::number((*win)(i));
-        buf += " ";
+        win->Range(frame_length, fft_size - frame_length).SetZero();
     }
-
-    qDebug() << frame_num << frame_length
-             << win->Dim() << buf;
-    frame_num++;
 
     SubVector<float> frame(*win, 0, frame_length);
 

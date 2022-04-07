@@ -23,10 +23,7 @@ void BtCaptain::parse(QVector<BtWord> in_words)
     x_buf = ""; //fill inside add word
     for( int i=0 ; i<in_words.length() ; i++ )
     {
-        if( in_words[i].time>start_treshold ) //5 second history size
-        {
-            addWord(in_words[i], i);
-        }
+        addWord(in_words[i], i);
     }
     exec(x_buf);
     writeResult();
@@ -113,15 +110,6 @@ void BtCaptain::shiftHistory()
         }
     }
 
-    for( int i=0 ; i<current.length() ; i++ )
-    {
-        if( current[i].time<start_treshold ) //5 second history size
-        {
-            current.remove(i);
-            i--;
-        }
-    }
-
     writeResult();
 }
 
@@ -143,7 +131,10 @@ void BtCaptain::writeResult()
 
     for( int i=0 ; i<current.length() ; i++ )
     {
-        out << getWordFmt(current[i]);
+        if( current[i].time>start_treshold ) //5 second history size
+        {
+            out << getWordFmt(current[i]);
+        }
     }
 
     out << "\n";
@@ -205,8 +196,8 @@ void BtCaptain::flush()
         if( current[i].time>start_treshold ) //5 second history size
         {
             history.push_back(current[i]);
-            current.remove(i);
-            i--;
         }
+        current.remove(i);
+        i--;
     }
 }

@@ -34,7 +34,7 @@ int BtFeInput::NumFramesReady()
     return 0;
 }
 
-// Call from outside(decodable)
+// Called from outside(decodable)
 void BtFeInput::GetFrame(int frame, Vector<float> *feat)
 {
     int context = BT_DELTA_ORDER * KD_DELTA_WINDOW; //4
@@ -75,12 +75,13 @@ void BtFeInput::ComputeFeatures()
     rec_buf->rewind(remain_samp);
     int len = rec_buf->getDataSize()-10;
     int frame_length = window_cal.WindowSize();
+    int frame_count = window_cal.frameCount(len);
     if( len<frame_length )
     {
+        remain_samp = 0;
         return;
     }
 
-    int frame_count = window_cal.frameCount(len);
     int ws = window_cal.WindowShift(); //window shift
     int read_len = (frame_count-1)*ws+frame_length;
 
