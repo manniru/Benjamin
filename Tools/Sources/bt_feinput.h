@@ -33,6 +33,7 @@ private:
     long frame_num;
     int  remain_samp = 0;
     kaldi::Vector<float> wav_buf;
+    float window_buf[BT_FFT_SIZE];
 
     KdDelta    *delta;
     BtCyclic   *rec_buf;

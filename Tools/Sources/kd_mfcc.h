@@ -14,15 +14,15 @@ public:
 
     int Dim();
 
-    void Compute(kaldi::VectorBase<float> *signal_frame,
+    void Compute(float *signal,
                  kaldi::VectorBase<float> *feature);
-    KdWindow frame_opts;
+    KdWindow win;
 
 protected:
     int  frame_num = 0;
     KdMelBanks *GetMelBanks();
     void ComputeLifterCoeffs(kaldi::VectorBase<float> *coeffs);
-    void ComputePowerSpectrum(kaldi::VectorBase<float> *waveform) ;
+    void ComputePowerSpectrum(float *wav, kaldi::VectorBase<float> *power);
 
     kaldi::Vector<float> lifter_coeffs_;
     kaldi::Matrix<float> dct_matrix_;  // matrix we left-multiply by to perform DCT.

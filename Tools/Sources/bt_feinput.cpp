@@ -71,34 +71,36 @@ BtFeInput::~BtFeInput()
 
 void BtFeInput::ComputeFeatures()
 {
-    KdWindow &window_cal = mfcc->frame_opts;
-    rec_buf->rewind(remain_samp);
+//    rec_buf->rewind(remain_samp);
     int len = rec_buf->getDataSize()-10;
-    int frame_length = window_cal.WindowSize();
-    int frame_count = window_cal.frameCount(len);
+    int frame_length = mfcc->win.WindowSize();
+    int frame_count  = mfcc->win.frameCount(len);
     if( len<frame_length )
     {
         remain_samp = 0;
         return;
     }
 
-    int ws = window_cal.WindowShift(); //window shift
-    int read_len = (frame_count-1)*ws+frame_length;
+    int ws = mfcc->win.WindowShift(); //window shift
+    int rewind_samp = frame_length-ws;
 
-    wav_buf.Resize(read_len);
-    rec_buf->read(&wav_buf, read_len);
-
-    Vector<float> window;
     for( int i=0 ; i<frame_count ; i++)
     {
-        window_cal.extract(i*ws, wav_buf, &window);
+        rec_buf->read(window_buf, frame_length);
+        // add zero padded data
+        for( int i=frame_length ; i<BT_FFT_SIZE ; i++ )
+        {
+            window_buf[i] = 0;
+        }
+        rec_buf->rewind(rewind_samp);
+
+        mfcc->win.ProcessWindow(window_buf);
 
         Vector<float> *features = new Vector<float>(mfcc->Dim(),
                                                     kUndefined);
 
-        mfcc->Compute(&window, features);
+        mfcc->Compute(window_buf, features);
         o_features->writeVec(frame_num, features);
         frame_num++;
     }
-    remain_samp = frame_length-ws;
 }

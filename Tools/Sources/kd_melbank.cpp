@@ -1,17 +1,13 @@
 #include "kd_melbank.h"
 
 using namespace kaldi;
-KdMelBanks::KdMelBanks(int bin_count,
-                   KdWindow &frame_opts)
+KdMelBanks::KdMelBanks(int bin_count)
 {
     int num_bins = bin_count;
 
-    if( num_bins < 3)
-        KALDI_ERR << "Must have at least 3 mel bins";
+    float sample_freq = BT_REC_RATE;
+    int window_length_padded = BT_FFT_SIZE;
 
-    float sample_freq = frame_opts.samp_freq;
-    int window_length_padded = frame_opts.fftSize();
-    KALDI_ASSERT(window_length_padded % 2 == 0);
     int num_fft_bins = window_length_padded / 2;
     float nyquist = 0.5 * sample_freq;
     high_freq = nyquist;

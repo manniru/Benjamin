@@ -3,22 +3,19 @@
 
 using namespace kaldi;
 
-void KdMFCC::Compute(VectorBase<float> *signal_frame,
+void KdMFCC::Compute(float *signal,
                      VectorBase<float> *feature)
 {
     mel_banks_ = NULL;
-    KALDI_ASSERT(signal_frame->Dim() == frame_opts.fftSize() &&
-                 feature->Dim() == this->Dim());
 
     KdMelBanks &mel_banks = *(GetMelBanks());
 
     // Compute FFT using the split-radix algorithm.
-    fft->Compute(signal_frame->Data());
+    fft->Compute(signal);
 
     // Convert the FFT into a power spectrum.
-    ComputePowerSpectrum(signal_frame);
-    SubVector<float> power_spectrum(*signal_frame, 0,
-                                        signal_frame->Dim() / 2 + 1);
+    Vector<float> power_spectrum(BT_FFT_SIZE / 2 + 1);
+    ComputePowerSpectrum(signal, &power_spectrum);
 
     mel_banks.Compute(power_spectrum, &mel_energies_);
 
@@ -55,7 +52,7 @@ KdMFCC::KdMFCC()
     lifter_coeffs_.Resize(num_ceps);
     ComputeLifterCoeffs(&lifter_coeffs_);
 
-    fft = new KdFFT(frame_opts.fftSize());
+    fft = new KdFFT(win.fftSize());
 
     // We'll definitely need the filterbanks info for VTLN warping factor 1.0.
     // [note: this call caches it.]
@@ -73,7 +70,7 @@ KdMelBanks *KdMFCC::GetMelBanks()
 {
     if( mel_banks_==NULL )
     {
-        mel_banks_ = new KdMelBanks(num_bins, frame_opts);
+        mel_banks_ = new KdMelBanks(num_bins);
     }
     return mel_banks_;
 }
@@ -88,23 +85,21 @@ void KdMFCC::ComputeLifterCoeffs(VectorBase<float> *coeffs)
     }
 }
 
-void KdMFCC::ComputePowerSpectrum(VectorBase<float> *waveform)
+void KdMFCC::ComputePowerSpectrum(float *wav, VectorBase<float> *power)
 {
-    int dim = waveform->Dim();
-
-    int half_dim = dim/2;
-    float first_energy = (*waveform)(0) * (*waveform)(0);
-    float last_energy  = (*waveform)(1) * (*waveform)(1);  // handle this special case
+    int half_dim = BT_FFT_SIZE/2;
+    float first_energy = wav[0] * wav[0];
+    float last_energy  = wav[1] * wav[1];  // handle this special case
 
     for (int i = 1; i < half_dim; i++)
     {
-        float real = (*waveform)(i*2);
-        float im = (*waveform)(i*2 + 1);
-        (*waveform)(i) = real*real + im*im;
+        float real = wav[i*2];
+        float im = wav[i*2 + 1];
+        (*power)(i) = real*real + im*im;
     }
 
-    (*waveform)(0) = first_energy;
-    (*waveform)(half_dim) = last_energy;  // Will actually never be used, and anyway
+    (*power)(0) = first_energy;
+    (*power)(half_dim) = last_energy;  // Will actually never be used, and anyway
     // if the signal has been bandlimited sensibly this should be zero.
 }
 

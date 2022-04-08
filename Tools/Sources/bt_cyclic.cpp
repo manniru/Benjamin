@@ -58,6 +58,46 @@ int BtCyclic::read(int16_t *data, int size, int *fake)
 //    qDebug() << "raad bds" << buff_data_size/BT_REC_RATE << size;
 }
 
+int BtCyclic::read(float *data, int size, int *fake)
+{
+    int num = 0;
+    int read_pf = read_p;//fake read pointer
+
+    if( fake!=NULL )
+    {
+        read_pf = *fake;
+    }
+
+    if( size>getDataSize() )
+    {
+        size = getDataSize();
+    }
+
+    for( int i=0 ; i<size ; i++ )
+    {
+        data[i] = buffer[read_pf];
+        read_pf++;
+
+        if( read_pf>buff_size)
+        {
+            read_pf = 0;
+        }
+        num++;
+    }
+
+    if( fake==NULL )
+    {
+        read_p = read_pf;
+    }
+    else
+    {
+        *fake = read_pf;
+    }
+
+    return num;
+//    qDebug() << "raad bds" << buff_data_size/BT_REC_RATE << size;
+}
+
 // return negative on erorr
 int BtCyclic::read(kaldi::Vector<float> *data, int size)
 {

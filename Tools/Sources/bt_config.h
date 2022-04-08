@@ -29,7 +29,7 @@
 
 #define BT_REC_RATE       16000 //Recording Sample Rate
 #define BT_BUF_SIZE       10    //Buffer Size Second
-#define BT_REC_SIZE       3     //Record Size Second
+#define BT_FFT_SIZE       512   //Rounded Window Size to Power of 2 (400->512)
 #define BT_DEC_TIMEOUT    0.5   //Decode Timeout in Second
 #define BT_REC_INPUT      "alsa:usbstream:CARD=Solo" //Microphone Input
 
