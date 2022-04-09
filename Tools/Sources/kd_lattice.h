@@ -32,7 +32,7 @@ void kd_fstShortestPath(KdLattice *ifst, KdLattice *ofst);
 bool kd_SingleShortestPath(KdLattice *ifst, KdStateId *f_parent,
                         std::vector<std::pair<KdStateId, size_t>> *parent);
 void kd_writeLat(KdLattice *ifst);
-fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename);
+fst::Fst<fst::StdArc> *kd_readDecodeGraph(char *filename);
 
 
 void kd_ConvertLattice(KdLattice &ifst,

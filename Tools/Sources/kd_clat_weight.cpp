@@ -37,7 +37,7 @@ string KdCLatWeight::Type()
 int Compare(const KdCLatWeight &w1, const KdCLatWeight &w2)
 {
     int c1 = Compare(w1.weight, w2.weight);
-    if (c1 != 0)
+    if (c1!=0)
         return c1;
     int l1 = w1.string.size(), l2 = w2.string.size();
     // Use opposite order on the string lengths, so that if the costs are the same,

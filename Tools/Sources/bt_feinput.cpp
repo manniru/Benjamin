@@ -12,11 +12,6 @@ BtFeInput::BtFeInput(BtCyclic *buf, QObject *parent): QObject(parent)
     cmvn = new BtCMVN(o_features);
 }
 
-void BtFeInput::resetCmvn()
-{
-    //    cmvn->resetStat();
-}
-
 int BtFeInput::Dim()
 {
     int mfcc_dim = mfcc->Dim();

@@ -35,7 +35,7 @@ public:
 
     static const std::string &Type()
     {
-        static const std::string type = (sizeof(float) == 4 ? "lattice4" : "lattice8") ;
+        static const std::string type = (sizeof(float)==4 ? "lattice4" : "lattice8") ;
         return type;
     }
 
@@ -74,7 +74,7 @@ inline bool operator!=(const KdLatticeWeight &wa,
     float va2 = wa.a_cost;
     float vb1 = wb.g_cost;
     float vb2 = wb.a_cost;
-    return (va1 != vb1 || va2 != vb2);
+    return (va1!=vb1 || va2!=vb2);
 }
 
 inline KdLatticeWeight Times(const KdLatticeWeight &w1,
@@ -129,15 +129,15 @@ inline KdLatticeWeight Divide(const KdLatticeWeight &w1,
     float a = w1.g_cost - w2.g_cost;
     float b = w1.a_cost - w2.a_cost;
 
-    if( a != a || b != b || a == -std::numeric_limits<float>::infinity()
-            || b == -std::numeric_limits<float>::infinity())
+    if( a!=a || b!=b || a==-std::numeric_limits<float>::infinity()
+            || b==-std::numeric_limits<float>::infinity())
     {
         qDebug() << "LatticeWeightTpl::Divide, NaN or invalid number produced. "
                    << "[dividing by zero?]  Returning zero";
         return KdLatticeWeight::Zero();
     }
-    if( a == std::numeric_limits<float>::infinity() ||
-            b == std::numeric_limits<float>::infinity())
+    if( a==std::numeric_limits<float>::infinity() ||
+            b==std::numeric_limits<float>::infinity())
     {
         return KdLatticeWeight::Zero(); // not a valid number if only one is infinite.
     }
@@ -151,7 +151,7 @@ inline bool operator==(const KdLatticeWeight &wa,
     // that lead to problems esp. with NaturalLess().
     volatile float va1 = wa.g_cost, va2 = wa.a_cost,
             vb1 = wb.g_cost, vb2 = wb.a_cost;
-    return (va1 == vb1 && va2 == vb2);
+    return (va1==vb1 && va2==vb2);
 }
 
 // to convert from Lattice to standard FST

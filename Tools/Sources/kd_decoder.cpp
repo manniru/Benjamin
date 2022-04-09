@@ -266,7 +266,7 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
                 tok->links = new KdFLink(ef_tok, 0, arc.olabel,
                                          graph_cost, 0, tok->links);
 
-                if( changed && fst_->NumInputEpsilons(arc.nextstate) != 0)
+                if( changed && fst_->NumInputEpsilons(arc.nextstate)!=0)
                 {
                     PNonemittingState(ef_tok, cutoff);
                 }

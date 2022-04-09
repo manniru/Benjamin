@@ -12,14 +12,14 @@ int getIntCommand(char *command)
     /* Open the command for reading. */
     fp = popen(command, "r");
 
-    if( fp == NULL)
+    if( fp==NULL)
     {
         printf("Failed to run command\n" );
         return -1;
     }
 
     /* Read the output a line at a time - output it. */
-    while (fgets(path, sizeof(path)-1, fp) != NULL)
+    while (fgets(path, sizeof(path)-1, fp)!=NULL)
     {
         returnData = atoi(path);
     }
@@ -39,13 +39,13 @@ QString getStrCommand(QString command)
     /* Open the command for reading. */
     fp = popen(command.toStdString().c_str(), "r");
 
-    if( fp == NULL) {
+    if( fp==NULL) {
       printf("Failed to run command\n" );
       return returnData;
     }
 
     /* Read the output a line at a time - output it. */
-    while (fgets(path, sizeof(path)-1, fp) != NULL) {
+    while (fgets(path, sizeof(path)-1, fp)!=NULL) {
       returnData = QString(path);
     }
 

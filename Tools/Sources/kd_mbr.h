@@ -44,7 +44,7 @@ private:
     std::vector<KdMBRArc> arcs_;
 
     // For each node in the lattice, a list of arcs entering that node.
-    // (first node == 1).
+    // (first node==1).
     std::vector<std::vector<int> > pre_;
 
     std::vector<int> one_best_id; // R in paper

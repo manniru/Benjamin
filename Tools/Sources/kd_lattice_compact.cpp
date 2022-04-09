@@ -73,7 +73,7 @@ void kd_compactLatticeStateTimes(KdCompactLattice &lat,
 {
     if( !lat.Properties(fst::kTopSorted, true) )
     {
-        KALDI_ERR << "Input lattice must be topologically sorted.";
+        qDebug() << "Input lattice must be topologically sorted.";
     }
     KALDI_ASSERT( lat.Start()==0 );
     int num_states = lat.NumStates();
@@ -103,13 +103,13 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
     for (KdStateId s = 0; s < num_states; s++)
     {
         KdStateId news = ofst->AddState();
-        assert(news == s);
+        assert(news==s);
     }
     ofst->SetStart(ifst.Start());
     for (KdStateId s = 0; s < num_states; s++)
     {
         KdCLatWeight final_weight = ifst.Final(s);
-        if (final_weight != KdCLatWeight::Zero())
+        if (final_weight!=KdCLatWeight::Zero())
         {
             KdStateId cur_state = s;
             size_t string_length = final_weight.string.size();
@@ -117,7 +117,7 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
                 KdStateId next_state = ofst->AddState();
                 int ilabel = 0;
                 KdLatticeArc arc(ilabel, final_weight.string[n],
-                                 (n == 0 ? final_weight.weight : KdLatticeWeight::One()),
+                                 (n==0 ? final_weight.weight : KdLatticeWeight::One()),
                                  next_state);
                 if (invert) std::swap(arc.ilabel, arc.olabel);
                 ofst->AddArc(cur_state, arc);
@@ -137,9 +137,9 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
             for( size_t n=0 ; n+1<string_length ; n++ )
             {
                 KdStateId next_state = ofst->AddState();
-                int ilabel = (n == 0 ? arc.ilabel : 0);
+                int ilabel = (n==0 ? arc.ilabel : 0);
                 int olabel = static_cast<int>(arc.weight.string[n]);
-                KdLatticeWeight weight = (n == 0 ? arc.weight.weight : KdLatticeWeight::One());
+                KdLatticeWeight weight = (n==0 ? arc.weight.weight : KdLatticeWeight::One());
                 KdLatticeArc new_arc(ilabel, olabel, weight, next_state);
                 if( invert )
                 {
@@ -175,7 +175,7 @@ void kd_RemoveAlignmentsFromCompactLattice(KdCompactLattice *fst)
             aiter.SetValue(arc);
         }
         KdCLatWeight final_weight = fst->Final(s);
-        if (final_weight != KdCLatWeight::Zero())
+        if (final_weight!=KdCLatWeight::Zero())
         {
             fst->SetFinal(s, KdCLatWeight(final_weight.weight, std::vector<int>()));
         }
@@ -184,7 +184,7 @@ void kd_RemoveAlignmentsFromCompactLattice(KdCompactLattice *fst)
 
 KdStateId kd_CreateSuperFinal(KdCompactLattice *fst)
 {
-    assert(fst != NULL);
+    assert(fst!=NULL);
 
     KdStateId num_states = fst->NumStates();
     KdStateId num_final = 0;
@@ -192,15 +192,15 @@ KdStateId kd_CreateSuperFinal(KdCompactLattice *fst)
     std::vector<KdStateId> final_states;
     for (KdStateId s = 0; s < num_states; s++)
     {
-        if (fst->Final(s) != KdCLatWeight::Zero())
+        if (fst->Final(s)!=KdCLatWeight::Zero())
         {
             num_final++;
             final_states.push_back(s);
         }
     }
-    if (final_states.size() == 1)
+    if (final_states.size()==1)
     {
-        if (fst->Final(final_states[0]) == KdCLatWeight::One())
+        if (fst->Final(final_states[0])==KdCLatWeight::One())
         {
             fst::ArcIterator<KdCompactLattice> iter(*fst, final_states[0]);
             if (iter.Done())

@@ -42,7 +42,7 @@ void KdFTokenDelete(KdFToken *tok)
         KdFToken *prev = tok->prev_;
         delete tok;
 
-        if( prev == NULL)
+        if( prev==NULL)
         {
             return;
         }

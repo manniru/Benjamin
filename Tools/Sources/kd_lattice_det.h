@@ -26,23 +26,23 @@ struct KdDetOpt
 // [note: the output symbols would usually be
 // p.d.f. id's in the anticipated use of this code] It has a special requirement
 // on the KdLatticeWeight type: that there should be a Compare function on the weights
-// such that Compare(w1, w2) returns -1 if w1 < w2, 0 if w1 == w2, and +1 if w1 >
+// such that Compare(w1, w2) returns -1 if w1 < w2, 0 if w1==w2, and +1 if w1 >
 // w2.  This requires that there be a total order on the weights.
 // LatticeDeterminizerPruned
 class KdLatDet
 {
 public:
     // Output to Gallic acceptor (so the strings go on weights, and there is a 1-1 correspondence
-    // between our states and the states in ofst.  If destroy == true, release memory as we go
+    // between our states and the states in ofst.  If destroy==true, release memory as we go
     // (but we cannot output again).
 
     // Output to standard FST with CompactWeightTpl<KdLatticeWeight> as its weight type (the
-    // weight stores the original output-symbol strings).  If destroy == true,
+    // weight stores the original output-symbol strings).  If destroy==true,
     // release memory as we go (but we cannot output again).
     void Output(KdCompactLattice  *ofst, bool destroy = true);
 
     // Output to standard FST with KdLatticeWeight as its weight type.  We will create extra
-    // states to handle sequences of symbols on the output.  If destroy == true,
+    // states to handle sequences of symbols on the output.  If destroy==true,
     // release memory as we go (but we cannot output again).
     void  Output(KdLattice *ofst, bool destroy = true) ;
 
@@ -83,9 +83,9 @@ private:
         // KdStateId.
         StringId string;
         KdLatticeWeight weight;
-        bool operator != (const Element &other) const {
-            //            return (state != other.state || string != other.string ||
-            //                    weight != other.weight);
+        bool operator!=(const Element &other) const {
+            //            return (state!=other.state || string!=other.string ||
+            //                    weight!=other.weight);
             return false;
         }
         // This operator is only intended for the priority_queue in the function
@@ -125,7 +125,7 @@ private:
     public:
         size_t operator ()(const std::vector<Element> * subset) const {  // hashes only the state and string.
             size_t hash = 0, factor = 1;
-            for (typename std::vector<Element>::const_iterator iter= subset->begin(); iter != subset->end(); ++iter) {
+            for (typename std::vector<Element>::const_iterator iter= subset->begin(); iter!=subset->end(); ++iter) {
                 hash *= factor;
                 hash += iter->state + reinterpret_cast<size_t>(iter->string);
                 factor *= 23531;  // these numbers are primes.
@@ -141,13 +141,13 @@ private:
         bool operator ()(const std::vector<Element> * s1, const std::vector<Element> * s2) const {
             size_t sz = s1->size();
             KALDI_ASSERT(sz>=0);
-            if( sz != s2->size()) return false;
+            if( sz!=s2->size()) return false;
             typename std::vector<Element>::const_iterator iter1 = s1->begin(),
                     iter1_end = s1->end(), iter2=s2->begin();
             for (; iter1 < iter1_end; ++iter1, ++iter2)
             {
-                if( iter1->state != iter2->state ||
-                        iter1->string != iter2->string)
+                if( iter1->state!=iter2->state ||
+                        iter1->string!=iter2->string)
                     return false;
 
                 KdLatticeWeight w1 = iter1->weight;
@@ -170,11 +170,11 @@ private:
         bool operator ()(const std::vector<Element> * s1, const std::vector<Element> * s2) const {
             size_t sz = s1->size();
             KALDI_ASSERT(sz>=0);
-            if( sz != s2->size()) return false;
+            if( sz!=s2->size()) return false;
             typename std::vector<Element>::const_iterator iter1 = s1->begin(),
                     iter1_end = s1->end(), iter2=s2->begin();
             for (; iter1 < iter1_end; ++iter1, ++iter2) {
-                if( iter1->state != iter2->state) return false;
+                if( iter1->state!=iter2->state) return false;
             }
             return true;
         }
@@ -215,7 +215,7 @@ private:
                                KdLatticeWeight *remaining_weight,
                                StringId *common_prefix);
 
-    // returns the Compare value (-1 if a < b, 0 if a == b, 1 if a > b) according
+    // returns the Compare value (-1 if a < b, 0 if a==b, 1 if a > b) according
     // to the ordering we defined on strings for the CompactLatticeWeightTpl.
     // see function
     // inline int Compare (const CompactLatticeWeightTpl<WeightType,IntType> &w1,

@@ -1,4 +1,5 @@
 ﻿#include "kd_fft.h"
+#include <QDebug>
 
 using namespace kaldi;
 
@@ -61,7 +62,7 @@ KdSrcFFT::KdSrcFFT(int N)
 {
     if(  (N & (N-1)) != 0 || N <= 1)
     {
-        KALDI_ERR << "KdSrcFFT called with invalid number of points "
+        qDebug() << "KdSrcFFT called with invalid number of points "
                   << N;
     }
     N_ = N;
@@ -229,7 +230,9 @@ void KdSrcFFT::ComputeRecursive(float *xr, float *xi, int logn)
 
     /* Check range of logn */
     if( logn < 0)
-        KALDI_ERR << "Error: logn is out of bounds in SRFFT";
+    {
+        qDebug() << "Error: logn is out of bounds in SRFFT";
+    }
 
     /* Compute trivial cases */
     if( logn < 3)

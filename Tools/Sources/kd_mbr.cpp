@@ -86,7 +86,7 @@ void KdMBR::MbrDecode()
                 int s = 0;
                 for( int j=0 ; j<gamma_[q].size() ; j++ )
                 {
-                    if( gamma_[q][j].first == one_best_id[q])
+                    if( gamma_[q][j].first==one_best_id[q])
                     {
                         s = j;
                         break;
@@ -119,7 +119,7 @@ void KdMBR::MbrDecode()
                 float confidence = 0.0;
                 for (int j = 0; j < gamma_[q].size(); j++)
                 {
-                    if( gamma_[q][j].first == one_best_id[q])
+                    if( gamma_[q][j].first==one_best_id[q])
                     {
                         confidence = gamma_[q][j].second;
                         break;
@@ -129,7 +129,7 @@ void KdMBR::MbrDecode()
             }
         }
         KALDI_VLOG(2) << "Iter = " << counter << ", delta-Q = " << delta_Q;
-        if( delta_Q == 0)
+        if( delta_Q==0)
             break;
         if( counter > 100)
         {
@@ -196,7 +196,7 @@ double KdMBR::EditDistance(int N, int Q,
             float p_a = arc.loglike;
             for (int q = 0; q <= Q; q++)
             {
-                if( q == 0)
+                if( q==0)
                 {
                     alpha_dash_arc(q) = // line 15.
                             alpha_dash(s_a, q) + l_distance(w_a, 0, true);
@@ -241,7 +241,7 @@ void KdMBR::AccStats()
     std::vector<map<int, double> > tau_b(Q+1), tau_e(Q+1);
 
     double Ltmp = EditDistance(N, Q, alpha, alpha_dash, alpha_dash_arc);
-    if( L_ != 0 && Ltmp > L_) { // L_ != 0 is to rule out 1st iter.
+    if( L_!=0 && Ltmp > L_) { // L_!=0 is to rule out 1st iter.
         KALDI_WARN << "Edit distance increased: " << Ltmp << " > "
                    << L_;
     }
@@ -258,7 +258,7 @@ void KdMBR::AccStats()
             float p_a = arc.loglike;
             alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(w_a, 0, true); // line 14.
             for (int q = 1; q <= Q; q++)
-            { // this loop == lines 15-18.
+            { // this loop==lines 15-18.
                 int r_q = one_best_id[q-1];;
                 double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
                         a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
@@ -320,7 +320,7 @@ void KdMBR::AccStats()
                     AddToMap(0, state_times_[n] * beta_dash_arc(q), &(tau_e[q]));
                     break;
                 default:
-                    KALDI_ERR << "Invalid b_arc value"; // error in code.
+                    qDebug() << "Invalid b_arc value"; // error in code.
                 }
             }
             beta_dash_arc(0) += Exp(alpha(s_a) + p_a - alpha(n)) * beta_dash(n, 0);
@@ -342,7 +342,7 @@ void KdMBR::AccStats()
     { // a check (line 35)
         double sum = 0.0;
         for (map<int, double>::iterator iter = gamma[q].begin();
-             iter != gamma[q].end(); ++iter) sum += iter->second;
+             iter!=gamma[q].end(); ++iter) sum += iter->second;
         if( fabs(sum - 1.0) > 0.1)
             KALDI_WARN << "sum of gamma[" << q << ",s] is " << sum;
     }
@@ -354,7 +354,7 @@ void KdMBR::AccStats()
     for (int q = 1; q <= Q; q++)
     {
         for (map<int, double>::iterator iter = gamma[q].begin();
-             iter != gamma[q].end(); ++iter)
+             iter!=gamma[q].end(); ++iter)
             gamma_[q-1].push_back(
                         std::make_pair(iter->first, static_cast<float>(iter->second)));
         // sort gamma_[q-1] from largest to smallest posterior.
@@ -372,7 +372,7 @@ void KdMBR::AccStats()
     {
         double t_b = 0.0, t_e = 0.0;
         for (std::vector<std::pair<int, float>>::iterator iter = gamma_[q-1].begin();
-             iter != gamma_[q-1].end(); ++iter)
+             iter!=gamma_[q-1].end(); ++iter)
         {
             double w_b = tau_b[q][iter->first], w_e = tau_e[q][iter->first];
             if( w_b > w_e)
@@ -401,7 +401,7 @@ void KdMBR::AccStats()
 
 void KdMBR::AddToMap(int i, double d, std::map<int, double> *gamma)
 {
-    if( d == 0) return;
+    if( d==0) return;
     std::pair<const int, double> pr(i, d);
     std::pair<std::map<int, double>::iterator, bool> ret = gamma->insert(pr);
     if( !ret.second) // not inserted, so add to contents.
@@ -411,7 +411,7 @@ void KdMBR::AddToMap(int i, double d, std::map<int, double> *gamma)
 // gives edit-distance function l(a,b)
 double KdMBR::l_distance(int a, int b, bool penalize)
 {
-    if( a == b)
+    if( a==b)
     {
         return 0.0;
     }
@@ -470,8 +470,8 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
     kaldi::uint64 props  = clat->Properties(fst::kFstProperties, false);
     if( !(props & fst::kTopSorted) )
     {
-        if( fst::TopSort(clat) == false)
-            KALDI_ERR << "Cycles detected in lattice.";
+        if( fst::TopSort(clat)==false)
+            qDebug() << "Cycles detected in lattice.";
     }
     kd_compactLatticeStateTimes(*clat, &state_times_); // work out times of the states in clat
     b_times = kd_getTimes(*clat);
@@ -498,7 +498,7 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
         {
             const KdCLatArc &carc = aiter.Value();
             KdMBRArc arc; // in our local format.
-            arc.word = carc.ilabel; // == carc.olabel
+            arc.word = carc.ilabel; //==carc.olabel
             arc.start_node = n;
             arc.end_node = carc.nextstate + 1; // convert to 1-based.
             arc.loglike = - (carc.weight.weight.g_cost +

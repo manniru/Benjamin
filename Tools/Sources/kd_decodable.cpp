@@ -51,7 +51,7 @@ float KdDecodable::LogLikelihood(int frame, int index)
 
     int pdf_id = trans_model->TransitionIdToPdf(index);
 
-    if( cache_[pdf_id].first == frame)
+    if( cache_[pdf_id].first==frame)
     {
         return cache_[pdf_id].second;
     }

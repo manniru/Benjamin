@@ -49,12 +49,12 @@ KdMelBanks::KdMelBanks(int bin_count)
                 else
                     weight = (right_mel-mel) / (right_mel-center_mel);
                 this_bin(i) = weight;
-                if( first_index == -1)
+                if( first_index==-1)
                     first_index = i;
                 last_index = i;
             }
         }
-        KALDI_ASSERT(first_index != -1 && last_index >= first_index
+        KALDI_ASSERT(first_index!=-1 && last_index >= first_index
                 && "You may have set --num-mel-bins too large.");
 
         bins_[bin].first = first_index;
@@ -70,7 +70,7 @@ void KdMelBanks::Compute(kaldi::VectorBase<float> &power_spectrum,
                        VectorBase<float> *mel_energies_out)
 {
     int num_bins = bins_.size();
-    KALDI_ASSERT(mel_energies_out->Dim() == num_bins);
+    KALDI_ASSERT(mel_energies_out->Dim()==num_bins);
 
     for (int i = 0; i < num_bins; i++)
     {

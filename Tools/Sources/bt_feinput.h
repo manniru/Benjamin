@@ -21,7 +21,6 @@ public:
     int  Dim();
     int  NumFramesReady();
     void GetFrame(int frame, kaldi::Vector<float> *feat);
-    void resetCmvn();
 
     void ComputeFeatures();
 

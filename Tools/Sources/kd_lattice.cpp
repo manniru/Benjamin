@@ -1,5 +1,6 @@
 ﻿#include "kd_lattice.h"
 #include "kd_lattice_compact.h"
+#include <QDebug>
 
 using namespace kaldi;
 
@@ -160,20 +161,24 @@ void kd_writeLat(KdLattice *ifst)
     }
 }
 
-fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename)
+fst::Fst<fst::StdArc> *kd_readDecodeGraph(char *filename)
 {
     // read decoding network FST
     Input ki(filename); // use ki.Stream() instead of is.
-    if( !ki.Stream().good()) KALDI_ERR << "Could not open decoding-graph FST "
-                                       << filename;
+    if( !ki.Stream().good())
+    {
+        qDebug() << "Could not open decoding-graph FST "
+                 << filename;
+    }
 
     fst::FstHeader hdr;
     if( !hdr.Read(ki.Stream(), "<unknown>"))
     {
-        KALDI_ERR << "Reading FST: error reading FST header.";
+        qDebug() << "Reading FST: error reading FST header.";
     }
-    if( hdr.ArcType() != fst::StdArc::Type()) {
-        KALDI_ERR << "FST with arc type " << hdr.ArcType() << " not supported.";
+    if( hdr.ArcType() != fst::StdArc::Type())
+    {
+        qDebug() << "FST with arc type " << hdr.ArcType().c_str() << " not supported.";
     }
     fst::FstReadOptions ropts("<unspecified>", &hdr);
 
@@ -189,10 +194,10 @@ fst::Fst<fst::StdArc> *kd_readDecodeGraph(std::string filename)
     }
     else
     {
-        KALDI_ERR << "Reading FST: unsupported FST type: " << hdr.FstType();
+        qDebug() << "Reading FST: unsupported FST type: " << hdr.FstType().c_str();
     }
     if( decode_fst == NULL) { // fst code will warn.
-        KALDI_ERR << "Error reading FST (after reading header).";
+        qDebug() << "Error reading FST (after reading header).";
         return NULL;
     }
     else
