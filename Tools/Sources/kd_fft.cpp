@@ -40,7 +40,7 @@ void KdFFT::Compute(float *data)
         ComplexAddProduct(Dk_re, Dk_im, kN_re, kN_im, &(data[2*k]), &(data[2*k+1]));
 
         int kdash = N2 - k;
-        if( kdash != k)
+        if( kdash!=k)
         {
             // Next we handle the index k' = N/2 - k.
             data[2*kdash] = Ck_re;  // A_k' <-- C_k'
@@ -60,7 +60,7 @@ void KdFFT::Compute(float *data)
 
 KdSrcFFT::KdSrcFFT(int N)
 {
-    if(  (N & (N-1)) != 0 || N <= 1)
+    if(  (N & (N-1))!=0 || N <= 1)
     {
         qDebug() << "KdSrcFFT called with invalid number of points "
                   << N;
@@ -121,7 +121,7 @@ void KdSrcFFT::ComputeTables()
             /* Compute tables */
             for (n = 1; n < m4; n++)
             {
-                if( n == m8) continue;
+                if( n==m8) continue;
                 ang = n * M_2PI / m;
                 c = std::cos(ang); s = std::sin(ang);
                 *cn++ = c; *spcn++ = - (s + c); *smcn++ = s - c;
@@ -136,7 +136,7 @@ void KdSrcFFT::ComputeTables()
 KdSrcFFT::~KdSrcFFT()
 {
     delete [] brseed_;
-    if( tab_ != NULL)
+    if( tab_!=NULL)
     {
         for (int i = 0; i < logn_-3; i++)
             delete [] tab_[i];
@@ -163,8 +163,8 @@ void KdSrcFFT::Compute(float *xr, float *xi, bool forward)
 void KdSrcFFT::Compute(float *x, bool forward,
                        std::vector<float> *temp_buffer)
 {
-    KALDI_ASSERT(temp_buffer != NULL);
-    if( temp_buffer->size() != N_)
+    KALDI_ASSERT(temp_buffer!=NULL);
+    if( temp_buffer->size()!=N_)
         temp_buffer->resize(N_);
     float *temp_ptr = &((*temp_buffer)[0]);
     for (int i = 0; i < N_; i++)
@@ -237,7 +237,7 @@ void KdSrcFFT::ComputeRecursive(float *xr, float *xi, int logn)
     /* Compute trivial cases */
     if( logn < 3)
     {
-        if( logn == 2) {  /* length m = 4 */
+        if( logn==2) {  /* length m = 4 */
             xr2  = xr + 2;
             xi2  = xi + 2;
             tmp1 = *xr + *xr2;
@@ -276,7 +276,7 @@ void KdSrcFFT::ComputeRecursive(float *xr, float *xi, int logn)
             *xi2 = tmp2;
             return;
         }
-        else if( logn == 1) {   /* length m = 2 */
+        else if( logn==1) {   /* length m = 2 */
             xr2  = xr + 1;
             xi2  = xi + 1;
             tmp1 = *xr + *xr2;
@@ -287,7 +287,7 @@ void KdSrcFFT::ComputeRecursive(float *xr, float *xi, int logn)
             *xi  = tmp1;
             return;
         }
-        else if( logn == 0) return;   /* length m = 1 */
+        else if( logn==0) return;   /* length m = 1 */
     }
 
     /* Compute a few constants */
@@ -337,7 +337,7 @@ void KdSrcFFT::ComputeRecursive(float *xr, float *xi, int logn)
     // xr1++; xi1++;
     for (n = 1; n < m4; n++)
     {
-        if( n == m8)
+        if( n==m8)
         {
             tmp1 =  sqhalf * (*xr1 + *xi1);
             *xi1 =  sqhalf * (*xi1 - *xr1);

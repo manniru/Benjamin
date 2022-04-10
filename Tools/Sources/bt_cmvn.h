@@ -23,7 +23,7 @@ public:
     BtCMVN(BtCFB *feat);
     ~BtCMVN();
 
-    void calc(int frame);
+    void calc(uint frame);
 
 private:
     void resetSum();

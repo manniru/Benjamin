@@ -198,7 +198,7 @@ int KdOnlineLDecoder::Decode()
 {
     checkReset(); //check if need reset
     ProcessNonemitting(std::numeric_limits<float>::max());
-    int frame_max = decodable->NumFramesReady();
+    uint frame_max = decodable->NumFramesReady();
 
     while( frame_num<frame_max )
     {

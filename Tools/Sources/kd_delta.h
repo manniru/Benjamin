@@ -11,7 +11,7 @@ public:
     explicit KdDelta(BtCFB *feat);
 
     void calcCoeffs();
-    void Process(int frame, int max_frame);
+    void Process(uint frame, int max_frame);
     void applyCoeff(double *i_data, double coeff, double *o_data);
     void resetDelta(BtFrameBuf *buf);
 

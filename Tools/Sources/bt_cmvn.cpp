@@ -85,7 +85,7 @@ void BtCMVN::computeFinalStats()
 }
 
 //called from outside
-void BtCMVN::calc(int frame)
+void BtCMVN::calc(uint frame)
 {
     BtFrameBuf *buf = i_feature->get(frame);
     updateStats(buf);

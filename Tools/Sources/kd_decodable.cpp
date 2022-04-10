@@ -25,7 +25,7 @@ KdDecodable::~KdDecodable()
     delete features;
 }
 
-void KdDecodable::CacheFeature(int frame)
+void KdDecodable::CacheFeature(uint frame)
 {
     features->GetFrame(frame, &feat_buf);
     cur_frame_ = frame;
@@ -42,7 +42,7 @@ void KdDecodable::CacheFeature(int frame)
 //    qDebug() << buf;
 }
 
-float KdDecodable::LogLikelihood(int frame, int index)
+float KdDecodable::LogLikelihood(uint frame, int index)
 {
     if( frame!=cur_frame_ )
     {
@@ -63,7 +63,7 @@ float KdDecodable::LogLikelihood(int frame, int index)
     return ans;
 }
 
-int KdDecodable::NumFramesReady()
+uint KdDecodable::NumFramesReady()
 {
     return features->NumFramesReady();
 }

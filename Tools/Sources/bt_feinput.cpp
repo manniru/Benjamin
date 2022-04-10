@@ -18,19 +18,19 @@ int BtFeInput::Dim()
     return mfcc_dim * (1 + BT_DELTA_ORDER);
 }
 
-int BtFeInput::NumFramesReady()
+uint BtFeInput::NumFramesReady()
 {
-    int offset = BT_DELTA_ORDER * BT_DELTA_ORDER; //4
+    uint offset = BT_DELTA_ORDER * BT_DELTA_ORDER; //4
     int ret     = frame_num - offset;
     if( ret>0 )
     {
-        return ret;
+        return frame_num - offset;
     }
     return 0;
 }
 
 // Called from outside(decodable)
-void BtFeInput::GetFrame(int frame, Vector<float> *feat)
+void BtFeInput::GetFrame(uint frame, Vector<float> *feat)
 {
     int context = BT_DELTA_ORDER * KD_DELTA_WINDOW; //4
     int left_frame = frame - context;
@@ -45,8 +45,9 @@ void BtFeInput::GetFrame(int frame, Vector<float> *feat)
     }
     if( right_frame<left_frame )
     {
-        qDebug() << "right_frame" << right_frame
-                 << "left_frame"  << left_frame;
+        qDebug() << "Error 1: rframe" << right_frame
+                 << "lframe" << left_frame
+                 << "frame:" << frame;
         exit(1);
     }
     for( int i=left_frame ; i<right_frame ; i++ )

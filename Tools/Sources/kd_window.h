@@ -24,7 +24,6 @@ public:
 
 private:
     float window[BT_FFT_SIZE];
-    int frame_num = 0;
 
     float samp_freq = BT_REC_RATE;
     float frame_shift_ms = 10.0;

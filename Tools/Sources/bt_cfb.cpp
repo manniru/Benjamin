@@ -9,13 +9,13 @@ BtCFB::BtCFB(int size, QObject *parent) : QObject(parent)
     len = size;
 }
 
-BtFrameBuf *BtCFB::get(int frame)
+BtFrameBuf *BtCFB::get(uint frame)
 {
     int index = frame%len;
     return &data[index];
 }
 
-void BtCFB::writeVec(int frame, Vector<float> *vec)
+void BtCFB::writeVec(uint frame, Vector<float> *vec)
 {
     int index = frame%len;
     BtFrameBuf *buf = &data[index];
@@ -28,7 +28,7 @@ void BtCFB::writeVec(int frame, Vector<float> *vec)
     }
 }
 
-void BtCFB::writeFeat(int frame, Vector<float> *out)
+void BtCFB::writeFeat(uint frame, Vector<float> *out)
 {
     int index = frame%len;
     BtFrameBuf *buf = &data[index];

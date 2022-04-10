@@ -165,18 +165,18 @@ fst::Fst<fst::StdArc> *kd_readDecodeGraph(char *filename)
 {
     // read decoding network FST
     Input ki(filename); // use ki.Stream() instead of is.
-    if( !ki.Stream().good())
+    if( !ki.Stream().good() )
     {
         qDebug() << "Could not open decoding-graph FST "
                  << filename;
     }
 
     fst::FstHeader hdr;
-    if( !hdr.Read(ki.Stream(), "<unknown>"))
+    if( !hdr.Read(ki.Stream(), "<unknown>") )
     {
         qDebug() << "Reading FST: error reading FST header.";
     }
-    if( hdr.ArcType() != fst::StdArc::Type())
+    if( hdr.ArcType()!=fst::StdArc::Type() )
     {
         qDebug() << "FST with arc type " << hdr.ArcType().c_str() << " not supported.";
     }
@@ -184,19 +184,21 @@ fst::Fst<fst::StdArc> *kd_readDecodeGraph(char *filename)
 
     fst::Fst<fst::StdArc> *decode_fst = NULL;
 
-    if( hdr.FstType() == "vector")
+    if( hdr.FstType()=="vector" )
     {
         decode_fst = fst::VectorFst<fst::StdArc>::Read(ki.Stream(), ropts);
     }
-    else if( hdr.FstType() == "const")
+    else if( hdr.FstType()=="const" )
     {
         decode_fst = fst::ConstFst<fst::StdArc>::Read(ki.Stream(), ropts);
     }
     else
     {
-        qDebug() << "Reading FST: unsupported FST type: " << hdr.FstType().c_str();
+        qDebug() << "Reading FST: unsupported FST type: "
+                 << hdr.FstType().c_str();
     }
-    if( decode_fst == NULL) { // fst code will warn.
+    if( decode_fst==NULL )
+    {
         qDebug() << "Error reading FST (after reading header).";
         return NULL;
     }
@@ -215,7 +217,7 @@ void kd_ConvertLattice(KdLattice &ifst, fst::VectorFst<fst::StdArc> *ofst)
     for( KdStateId s=0 ; s<num_states; s++ )
     {
         KdStateId news = ofst->AddState();
-        assert(news == s);
+        assert(news==s);
     }
     ofst->SetStart(ifst.Start());
     for (KdStateId s = 0; s < num_states; s++)

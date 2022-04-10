@@ -19,7 +19,6 @@ public:
     KdWindow win;
 
 protected:
-    int  frame_num = 0;
     KdMelBanks *GetMelBanks();
     void ComputeLifterCoeffs(kaldi::VectorBase<float> *coeffs);
     void ComputePowerSpectrum(float *wav, kaldi::VectorBase<float> *power);

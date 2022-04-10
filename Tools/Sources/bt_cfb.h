@@ -28,9 +28,9 @@ class BtCFB : public QObject
     Q_OBJECT
 public:
     explicit BtCFB(int size = BT_FB_SIZE, QObject *parent = nullptr);
-    BtFrameBuf* get(int frame);
-    void writeVec(int frame, kaldi::Vector<float> *vec);
-    void writeFeat(int frame, kaldi::Vector<float> *out);
+    BtFrameBuf* get(uint frame);
+    void writeVec(uint frame, kaldi::Vector<float> *vec);
+    void writeFeat(uint frame, kaldi::Vector<float> *out);
 
 private:
     BtFrameBuf *data;

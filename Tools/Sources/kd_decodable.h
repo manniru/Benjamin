@@ -30,15 +30,15 @@ public:
     ~KdDecodable();
 
     /// Returns the scaled log likelihood
-    float LogLikelihood(int frame, int index);
-    int NumFramesReady();
+    float LogLikelihood(uint frame, int index);
+    uint NumFramesReady();
 
     int NumIndices();
     BtFeInput *features;
 
 
 private:
-    void CacheFeature(int frame);
+    void CacheFeature(uint frame);
 
     kaldi::AmDiagGmm *ac_model;
     float ac_scale_;

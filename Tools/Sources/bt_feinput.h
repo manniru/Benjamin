@@ -19,8 +19,8 @@ public:
     ~BtFeInput();
 
     int  Dim();
-    int  NumFramesReady();
-    void GetFrame(int frame, kaldi::Vector<float> *feat);
+    uint  NumFramesReady();
+    void GetFrame(uint frame, kaldi::Vector<float> *feat);
 
     void ComputeFeatures();
 
@@ -29,7 +29,7 @@ private:
     BtCMVN *cmvn;
     BtCFB  *o_features;
 
-    long frame_num;
+    uint frame_num;
     int  remain_samp = 0;
     kaldi::Vector<float> wav_buf;
     float window_buf[BT_FFT_SIZE];

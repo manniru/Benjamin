@@ -42,7 +42,7 @@ int KdDelta::sumof2N2(int n)
 }
 
 // normalize feat
-void KdDelta::Process(int frame, int max_frame)
+void KdDelta::Process(uint frame, int max_frame)
 {
     BtFrameBuf *buf = feature->get(frame);
     resetDelta(buf);
