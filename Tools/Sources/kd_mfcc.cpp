@@ -27,7 +27,10 @@ void KdMFCC::Compute(float *signal,
     // feature = dct_matrix_ * mel_energies [which now have log]
     feature->AddMatVec(1.0, dct_matrix_, kNoTrans, mel_energies_, 0.0);
 
-    feature->MulElements(lifter_coeffs_);
+    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
+    {
+        (*feature)(i) *= lifter_coef[i];
+    }
 }
 
 KdMFCC::KdMFCC()
@@ -35,22 +38,23 @@ KdMFCC::KdMFCC()
     mel_energies_.Resize(num_bins);
     fft = NULL;
     mel_banks_ = NULL;
-    if( num_ceps>num_bins )
+    if( BT_FEAT_SIZE>num_bins )
+    {
         qDebug() << "num-ceps cannot be larger than num-mel-bins."
-                 << num_ceps << "  and num-mel-bins: "
+                 << BT_FEAT_SIZE << "  and num-mel-bins: "
                  << num_bins;
+    }
 
     Matrix<float> dct_matrix(num_bins, num_bins);
     ComputeDctMatrix(&dct_matrix);
     // Note that we include zeroth dct in either case.  If using the
     // energy we replace this with the energy.  This means a different
     // ordering of features than HTK.
-    SubMatrix<float> dct_rows(dct_matrix, 0, num_ceps, 0, num_bins);
-    dct_matrix_.Resize(num_ceps, num_bins);
+    SubMatrix<float> dct_rows(dct_matrix, 0, BT_FEAT_SIZE, 0, num_bins);
+    dct_matrix_.Resize(BT_FEAT_SIZE, num_bins);
     dct_matrix_.CopyFromMat(dct_rows);  // subset of rows.
 
-    lifter_coeffs_.Resize(num_ceps);
-    ComputeLifterCoeffs(&lifter_coeffs_);
+    ComputeLifterCoeffs();
 
     fft = new KdFFT(win.fftSize());
 
@@ -76,12 +80,12 @@ KdMelBanks *KdMFCC::GetMelBanks()
 }
 
 // Compute liftering coefficients
-void KdMFCC::ComputeLifterCoeffs(VectorBase<float> *coeffs)
+void KdMFCC::ComputeLifterCoeffs()
 {
     float Q = cepstral_lifter;
-    for( int i=0 ; i<coeffs->Dim() ; i++ )
+    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
     {
-        (*coeffs)(i) = 1.0 + 0.5 * Q * sin(M_PI*i/Q);
+        lifter_coef[i] = 1.0 + 0.5 * Q * sin(M_PI*i/Q);
     }
 }
 
@@ -101,9 +105,4 @@ void KdMFCC::ComputePowerSpectrum(float *wav, VectorBase<float> *power)
     (*power)(0) = first_energy;
     (*power)(half_dim) = last_energy;  // Will actually never be used, and anyway
     // if the signal has been bandlimited sensibly this should be zero.
-}
-
-int KdMFCC::Dim()
-{
-    return num_ceps;
 }

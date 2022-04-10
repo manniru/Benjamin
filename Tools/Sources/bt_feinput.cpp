@@ -12,12 +12,6 @@ BtFeInput::BtFeInput(BtCyclic *buf, QObject *parent): QObject(parent)
     cmvn = new BtCMVN(o_features);
 }
 
-int BtFeInput::Dim()
-{
-    int mfcc_dim = mfcc->Dim();
-    return mfcc_dim * (1 + BT_DELTA_ORDER);
-}
-
 uint BtFeInput::NumFramesReady()
 {
     uint offset = BT_DELTA_ORDER * BT_DELTA_ORDER; //4
@@ -92,7 +86,7 @@ void BtFeInput::ComputeFeatures()
 
         mfcc->win.ProcessWindow(window_buf);
 
-        Vector<float> *features = new Vector<float>(mfcc->Dim(),
+        Vector<float> *features = new Vector<float>(BT_FEAT_SIZE,
                                                     kUndefined);
 
         mfcc->Compute(window_buf, features);

@@ -16,8 +16,7 @@ KdDecodable::KdDecodable(BtCyclic *buf, KdModel *mdl, float scale)
     cache_.resize(num_pdfs, std::pair<int,float>(-1, 0.0f));
 
     features = new BtFeInput(buf);
-    feat_dim = features->Dim();
-    feat_buf.Resize(feat_dim);
+    feat_buf.Resize(BT_DELTA_SIZE);
 }
 
 KdDecodable::~KdDecodable()
@@ -29,17 +28,6 @@ void KdDecodable::CacheFeature(uint frame)
 {
     features->GetFrame(frame, &feat_buf);
     cur_frame_ = frame;
-
-
-    int len = feat_buf.Dim();
-    QString buf = QString::number(frame);
-    buf += ": ";;
-    for( int i=0 ; i<len ; i++ )
-    {
-        buf += QString::number(feat_buf(i));
-        buf += " ";
-    }
-//    qDebug() << buf;
 }
 
 float KdDecodable::LogLikelihood(uint frame, int index)

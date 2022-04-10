@@ -18,7 +18,6 @@ public:
                        QObject *parent = nullptr);
     ~BtFeInput();
 
-    int  Dim();
     uint  NumFramesReady();
     void GetFrame(uint frame, kaldi::Vector<float> *feat);
 
