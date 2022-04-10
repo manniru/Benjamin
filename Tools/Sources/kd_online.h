@@ -30,6 +30,7 @@ private:
     void writeWavHeader(QFile *file, int len);
 
     void processLat(KdCompactLattice *clat, clock_t start);
+    bool isSleep();
 
     BtRecorder       *ab_src;
     QVector<BtWord>   last_r; //last_result

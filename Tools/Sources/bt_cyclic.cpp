@@ -174,11 +174,13 @@ void BtCyclic::constWrite(int16_t data, int size)
 }
 
 // get read pointer back
-void BtCyclic::rewind(int count)
+int BtCyclic::rewind(int count)
 {
     if( count>buff_size )
     {
-        qDebug() << "wrong usage of BtCyclic::rewind function";
+        qDebug() << "Error 136: BtCyclic, rewind req"
+                 << count << "buff_size" << buff_size;
+        return 0;
     }
 
     read_p = read_p-count;
@@ -188,7 +190,7 @@ void BtCyclic::rewind(int count)
         read_p = read_p+buff_size;
     }
 
-    //    qDebug() << "buff_data_size" << buff_data_size/BT_REC_RATE;
+    return count;
 }
 
 int BtCyclic::getDataSize(int *fake)

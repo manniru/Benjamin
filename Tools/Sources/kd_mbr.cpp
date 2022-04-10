@@ -435,7 +435,7 @@ QVector<BtWord> KdMBR::getResult()
     {
         if( i>(b_times.size()-2) )
         {
-            qDebug() << "error in BTimes"
+            qDebug() << "Error 141: MBR Times"
                      << b_times.size()
                      << "on word" << lexicon[words[i]];
             break;

@@ -89,14 +89,20 @@ void KdOnline::processResult(QVector<BtWord> result)
 
 void KdOnline::writeWav(BtCyclic *buf, int len)
 {
-    QString status_path = getenv("HOME");
-    status_path += "/.config/polybar/awesomewm/ben_status";
-    if( QFile::exists(status_path) )
+    if( isSleep() )
     {
-        return; //sleep mode
+        return; //dont record in sleep
     }
+    qDebug() << "data len" << o_decoder->uframe;
     int16_t *data = (int16_t *)malloc(len*sizeof(int16_t));
-    buf->rewind(len);
+
+    int rew = buf->rewind(len);
+    if( rew==0 )
+    {
+        qDebug() << "Error 137: Failed to write wav, long len"
+                 << len;
+        return;
+    }
     buf->read(data, len);
 
     if ( o_decoder->wav_id<BT_WAV_MAX )
@@ -118,22 +124,33 @@ void KdOnline::writeWav(BtCyclic *buf, int len)
         exit(1);
     }
 
-    writeWavHeader(file, len);
+    writeWavHeader(file, len*4); // 2 channel * 2 byte per sample
+    uint16_t zero = 0;
     for( int i=0 ; i<len ; i++ )
     {
         int16_t *pt = &data[i];
         // kaldi should be 2 channel
         file->write((char *)pt, 2);
-        file->write((char *)pt, 2);
+        file->write((char *)&zero, 2);
     }
     file->close();
 }
 
+bool KdOnline::isSleep()
+{
+    QString status_path = getenv("HOME");
+    status_path += "/.config/polybar/awesomewm/ben_status";
+    if( QFile::exists(status_path) )
+    {
+        return true;
+    }
+    return false;
+}
+
 void KdOnline::writeWavHeader(QFile *file, int len)
 {
-    char buff[200];
-    int32_t buf_i;
-    int16_t buf_s; //short
+    uint32_t buf_i;
+    uint16_t buf_s; //short
 
     file->write("RIFF", 4); // "RIFF" is the father of wav
     buf_i = len + 44 - 8; // 44=Header Size
@@ -152,6 +169,7 @@ void KdOnline::writeWavHeader(QFile *file, int len)
     buf_s = 16;    file->write((char*)&buf_s,2);//Bit Per Sample(int, 16 bit)
 
     file->write("data",4);//subchunk2 id(str="data")
-    buf_i = len; file->write(buff,4);//subchunk2 size(int=sample count)
+    buf_i = len;
+    file->write((char*)&buf_i,4);//subchunk2 size(int=sample count)
     qDebug() << "sample_rate:"  << buf_i;
 }
