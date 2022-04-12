@@ -3,64 +3,23 @@
 
 using namespace kaldi;
 
-void KdMFCC::Compute(float *signal,
-                     VectorBase<float> *feature)
-{
-    mel_banks_ = NULL;
-
-    KdMelBanks &mel_banks = *(GetMelBanks());
-
-    // Compute FFT using the split-radix algorithm.
-    fft->Compute(signal);
-
-    // Convert the FFT into a power spectrum.
-    Vector<float> power_spectrum(BT_FFT_SIZE / 2 + 1);
-    ComputePowerSpectrum(signal, &power_spectrum);
-
-    mel_banks.Compute(power_spectrum, &mel_energies_);
-
-    // avoid log of zero (which should be prevented anyway by dithering).
-    mel_energies_.ApplyFloor(std::numeric_limits<float>::epsilon());
-    mel_energies_.ApplyLog();  // take the log.
-
-    feature->SetZero();  // in case there were NaNs.
-    // feature = dct_matrix_ * mel_energies [which now have log]
-    feature->AddMatVec(1.0, dct_matrix_, kNoTrans, mel_energies_, 0.0);
-
-    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
-    {
-        (*feature)(i) *= lifter_coef[i];
-    }
-}
-
 KdMFCC::KdMFCC()
 {
-    mel_energies_.Resize(num_bins);
-    fft = NULL;
-    mel_banks_ = NULL;
-    if( BT_FEAT_SIZE>num_bins )
-    {
-        qDebug() << "num-ceps cannot be larger than num-mel-bins."
-                 << BT_FEAT_SIZE << "  and num-mel-bins: "
-                 << num_bins;
-    }
+    mel_energies.Resize(BT_MFCC_BIN);
 
-    Matrix<float> dct_matrix(num_bins, num_bins);
+    Matrix<float> dct_matrix(BT_MFCC_BIN, BT_MFCC_BIN);
     ComputeDctMatrix(&dct_matrix);
     // Note that we include zeroth dct in either case.  If using the
     // energy we replace this with the energy.  This means a different
     // ordering of features than HTK.
-    SubMatrix<float> dct_rows(dct_matrix, 0, BT_FEAT_SIZE, 0, num_bins);
-    dct_matrix_.Resize(BT_FEAT_SIZE, num_bins);
+    SubMatrix<float> dct_rows(dct_matrix, 0, BT_FEAT_SIZE, 0, BT_MFCC_BIN);
+    dct_matrix_.Resize(BT_FEAT_SIZE, BT_MFCC_BIN);
     dct_matrix_.CopyFromMat(dct_rows);  // subset of rows.
 
-    ComputeLifterCoeffs();
+    ComputeLifter();
 
     fft = new KdFFT(win.fftSize());
-
-    // We'll definitely need the filterbanks info for VTLN warping factor 1.0.
-    // [note: this call caches it.]
-    GetMelBanks();
+    mel_banks_ = new KdMelBanks(BT_MFCC_BIN);
 }
 
 KdMFCC::~KdMFCC()
@@ -70,39 +29,54 @@ KdMFCC::~KdMFCC()
     delete fft;
 }
 
-KdMelBanks *KdMFCC::GetMelBanks()
+void KdMFCC::Compute(float *signal,
+                     VectorBase<float> *feature)
 {
-    if( mel_banks_==NULL )
+    fft->Compute(signal);
+    computePower(signal);
+
+    mel_banks_->Compute(power_spec, &mel_energies);
+
+    // avoid log of zero (which should be prevented anyway by dithering).
+    mel_energies.ApplyFloor(std::numeric_limits<float>::epsilon());
+    mel_energies.ApplyLog();  // take the log.
+
+    feature->SetZero();  // in case there were NaNs.
+    // feature = dct_matrix_ * mel_energies [which now have log]
+    feature->AddMatVec(1.0, dct_matrix_, kNoTrans, mel_energies, 0.0);
+
+
+//    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
+//    {
+//        for( int j=0 ; j)
+//        (*feature)(i) *= lifter_coeff[i];
+//    }
+
+    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
     {
-        mel_banks_ = new KdMelBanks(num_bins);
+        (*feature)(i) *= lifter_coeff[i];
     }
-    return mel_banks_;
 }
 
-// Compute liftering coefficients
-void KdMFCC::ComputeLifterCoeffs()
+void KdMFCC::ComputeLifter()
 {
     float Q = cepstral_lifter;
     for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
     {
-        lifter_coef[i] = 1.0 + 0.5 * Q * sin(M_PI*i/Q);
+        lifter_coeff[i] = 1.0 + 0.5 * Q * sin(M_PI*i/Q);
     }
 }
 
-void KdMFCC::ComputePowerSpectrum(float *wav, VectorBase<float> *power)
+void KdMFCC::computePower(float *wav)
 {
-    int half_dim = BT_FFT_SIZE/2;
-    float first_energy = wav[0] * wav[0];
-    float last_energy  = wav[1] * wav[1];  // handle this special case
+    int len = BT_FFT_SIZE/2;
+    power_spec[0]   = wav[0] * wav[0];
+    power_spec[len] = wav[1] * wav[1];
 
-    for (int i = 1; i < half_dim; i++)
+    for( int i=1 ; i<len ; i++ )
     {
+        float im   = wav[i*2 + 1];
         float real = wav[i*2];
-        float im = wav[i*2 + 1];
-        (*power)(i) = real*real + im*im;
+        power_spec[i] = real*real + im*im;
     }
-
-    (*power)(0) = first_energy;
-    (*power)(half_dim) = last_energy;  // Will actually never be used, and anyway
-    // if the signal has been bandlimited sensibly this should be zero.
 }

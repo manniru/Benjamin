@@ -65,25 +65,16 @@ KdMelBanks::KdMelBanks(int bin_count)
     }
 }
 
-// "power_spectrum" contains fft energies.
-void KdMelBanks::Compute(kaldi::VectorBase<float> &power_spectrum,
-                       VectorBase<float> *mel_energies_out)
+void KdMelBanks::Compute(float *power_spec,
+                       VectorBase<float> *out)
 {
     int num_bins = bins_.size();
-    KALDI_ASSERT(mel_energies_out->Dim()==num_bins);
+    KALDI_ASSERT(out->Dim()==num_bins);
 
     for (int i = 0; i < num_bins; i++)
     {
         int offset = bins_[i].first;
-        const Vector<float> &v(bins_[i].second);
-        float energy = VecVec(v, power_spectrum.Range(offset, v.Dim()));
-        // HTK-like flooring- for testing purposes (we prefer dither)
-        (*mel_energies_out)(i) = energy;
-
-        // The following assert was added due to a problem with OpenBlas that
-        // we had at one point (it was a bug in that library).  Just to detect
-        // it early.
-        KALDI_ASSERT(!KALDI_ISNAN((*mel_energies_out)(i)));
+        (*out)(i) = dotProduct(&(bins_[i].second), offset, power_spec);
     }
 }
 
@@ -95,4 +86,18 @@ float KdMelBanks::MelScale(float freq)
 float KdMelBanks::InverseMelScale(float mel_freq)
 {
     return 700.0f * (expf (mel_freq / 1127.0f) - 1.0f);
+}
+
+// return vector dot product
+float KdMelBanks::dotProduct(Vector<float> *v1,
+                             int offset, float *v2)
+{
+    int len = v1->Dim();
+    float sum = 0;
+    for( int i=0 ; i<len ; i++ )
+    {
+        sum += (*v1)(i) * v2[offset+i];
+    }
+
+    return sum;
 }

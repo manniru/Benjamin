@@ -13,8 +13,10 @@ public:
     float InverseMelScale(float mel_freq);
     float MelScale(float freq);
 
-    void Compute(kaldi::VectorBase<float> &fft_energies,
-                 kaldi::VectorBase<float> *mel_energies_out);
+    void Compute(float *power_spec,
+                 kaldi::VectorBase<float> *out);
+    float dotProduct(kaldi::Vector<float> *v1,
+                      int offset, float *v2);
 
     kaldi::Vector<float> center_freqs_;
     std::vector<std::pair<int, kaldi::Vector<float> > > bins_;

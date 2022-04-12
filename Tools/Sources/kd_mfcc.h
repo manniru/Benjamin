@@ -7,6 +7,9 @@
 #include "kd_fft.h"
 #include "bt_cfb.h"
 
+// must be >= BT_FEAT_SIZE
+#define BT_MFCC_BIN 23 // 23 for 16khz, 15 for 8khz
+
 class KdMFCC
 {
 public:
@@ -17,22 +20,20 @@ public:
                  kaldi::VectorBase<float> *feature);
     KdWindow win;
 
-protected:
-    KdMelBanks *GetMelBanks();
-    void ComputeLifterCoeffs();
-    void ComputePowerSpectrum(float *wav, kaldi::VectorBase<float> *power);
+private:
+    void ComputeLifter();
+    void computePower(float *wav);
 
-    float lifter_coef[BT_FEAT_SIZE];
+    float lifter_coeff[BT_FEAT_SIZE];
+    float power_spec[BT_FFT_SIZE/2 + 1]; // power spectrum
     kaldi::Matrix<float> dct_matrix_;  // matrix we left-multiply by to perform DCT.
     KdMelBanks* mel_banks_;
     KdFFT *fft;
 
     // note: mel_energies_ is specific to the frame we're processing, it's
     // just a temporary workspace.
-    kaldi::Vector<float> mel_energies_;
-    // 23 for 16khz-sampled data,
-    // for 8khz, 15 may be better.
-    float cepstral_lifter = 22.0;  // Scaling factor on cepstra
-    int num_bins = 23; // mel bin
+//    float *mel_energies[BT_MFCC_BIN];
+    kaldi::Vector<float> mel_energies;
+    float cepstral_lifter = 22.0;  // Scaling factor on cepstral
 };
 #endif // KD_MFCC_H
