@@ -1,4 +1,4 @@
-#include "kd_window.h"
+#include "bt_window.h"
 #include <QDebug>
 #include "base/kaldi-math.h"
 
@@ -86,7 +86,6 @@ int KdWindow::frameCount(int num_samples)
 
 void KdWindow::ProcessWindow(float *win)
 {
-    Dither(win);
     removeDC(win);
     Preemphasize(win);
 
@@ -94,16 +93,6 @@ void KdWindow::ProcessWindow(float *win)
     for( int i=0 ; i<len ; i++ )
     {
         win[i] *= window[i];
-    }
-}
-
-void KdWindow::Dither(float *wav)
-{
-    int len = WindowSize();
-    kaldi::RandomState rstate;
-    for( int i=0 ; i<len ; i++ )
-    {
-        wav[i] += kaldi::RandGauss(&rstate) * dither;
     }
 }
 

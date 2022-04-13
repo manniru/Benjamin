@@ -41,8 +41,11 @@ HEADERS += \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
     Sources/bt_feinput.h \
+    Sources/bt_melbank.h \
+    Sources/bt_mfcc.h \
     Sources/bt_recorder.h \
     Sources/bt_test.h \
+    Sources/bt_window.h \
     Sources/kd_clat_weight.h \
     Sources/kd_decodable.h \
     Sources/kd_decoder.h \
@@ -60,14 +63,11 @@ HEADERS += \
     Sources/kd_matrix_dbg.h \
     Sources/kd_mbr.h \
     Sources/kd_mbr_base.h \
-    Sources/kd_melbank.h \
-    Sources/kd_mfcc.h \
     Sources/kd_model.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
     Sources/kd_token.h \
-    Sources/kd_token_list.h \
-    Sources/kd_window.h
+    Sources/kd_token_list.h
 
 SOURCES += \
     Sources/backend.cpp \
@@ -77,8 +77,11 @@ SOURCES += \
     Sources/bt_cmvn.cpp \
     Sources/bt_cyclic.cpp \
     Sources/bt_feinput.cpp \
+    Sources/bt_melbank.cpp \
+    Sources/bt_mfcc.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_test.cpp \
+    Sources/bt_window.cpp \
     Sources/kd_clat_weight.cpp \
     Sources/kd_decodable.cpp \
     Sources/kd_decoder.cpp \
@@ -96,13 +99,10 @@ SOURCES += \
     Sources/kd_matrix_dbg.cpp \
     Sources/kd_mbr.cpp \
     Sources/kd_mbr_base.cpp \
-    Sources/kd_melbank.cpp \
-    Sources/kd_mfcc.cpp \
     Sources/kd_model.cpp \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
     Sources/kd_token.cpp \
     Sources/kd_token_list.cpp \
-    Sources/kd_window.cpp \
     Sources/main.cpp
 

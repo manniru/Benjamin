@@ -1,4 +1,4 @@
-#include "kd_melbank.h"
+#include "bt_melbank.h"
 #include <QDebug>
 
 using namespace kaldi;

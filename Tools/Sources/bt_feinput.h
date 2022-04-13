@@ -5,7 +5,7 @@
 #include "bt_recorder.h"
 #include "bt_cmvn.h"
 #include "kd_matrix.h"
-#include "kd_mfcc.h"
+#include "bt_mfcc.h"
 #include "kd_delta.h"
 #include "bt_cfb.h"
 

@@ -1,4 +1,4 @@
-#include "kd_mfcc.h"
+#include "bt_mfcc.h"
 #include <QDebug>
 
 using namespace kaldi;
