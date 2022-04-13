@@ -15,19 +15,6 @@ BtFrameBuf *BtCFB::get(uint frame)
     return &data[index];
 }
 
-void BtCFB::writeVec(uint frame, Vector<float> *vec)
-{
-    int index = frame%len;
-    BtFrameBuf *buf = &data[index];
-
-    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
-    {
-        buf->ceps[i] = (*vec)(i);
-        buf->cmvn[i] = (*vec)(i); // fill both, cmvn val adds later
-        buf->have_cmvn = false;
-    }
-}
-
 void BtCFB::writeFeat(uint frame, Vector<float> *out)
 {
     int index = frame%len;

@@ -61,7 +61,6 @@ BtFeInput::~BtFeInput()
 
 void BtFeInput::ComputeFeatures()
 {
-//    rec_buf->rewind(remain_samp);
     int len = rec_buf->getDataSize()-10;
     int frame_length = mfcc->win.WindowSize();
     int frame_count  = mfcc->win.frameCount(len);
@@ -86,11 +85,8 @@ void BtFeInput::ComputeFeatures()
 
         mfcc->win.ProcessWindow(window_buf);
 
-        Vector<float> *features = new Vector<float>(BT_FEAT_SIZE,
-                                                    kUndefined);
-
-        mfcc->Compute(window_buf, features);
-        o_features->writeVec(frame_num, features);
+        BtFrameBuf *buf = o_features->get(frame_num);
+        mfcc->Compute(window_buf, buf);
         frame_num++;
     }
 }
