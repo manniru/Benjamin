@@ -7,9 +7,6 @@
 #include "kd_fft.h"
 #include "bt_cfb.h"
 
-// must be >= BT_FEAT_SIZE
-#define BT_MFCC_BIN 23 // 23 for 16khz, 15 for 8khz
-
 class KdMFCC
 {
 public:

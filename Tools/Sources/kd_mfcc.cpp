@@ -14,7 +14,7 @@ KdMFCC::KdMFCC()
     ComputeLifter();
 
     fft = new KdFFT(win.fftSize());
-    mel_banks = new KdMelBanks(BT_MFCC_BIN);
+    mel_banks = new KdMelBanks;
 }
 
 KdMFCC::~KdMFCC()

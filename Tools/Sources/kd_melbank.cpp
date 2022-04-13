@@ -1,18 +1,16 @@
 #include "kd_melbank.h"
+#include <QDebug>
 
 using namespace kaldi;
-KdMelBanks::KdMelBanks(int bin_count)
+KdMelBanks::KdMelBanks()
 {
-    int num_bins = bin_count;
-
     float sample_freq = BT_REC_RATE;
-    int window_length_padded = BT_FFT_SIZE;
 
-    int num_fft_bins = window_length_padded / 2;
+    int num_fft_bins = BT_FFT_SIZE / 2;
     float nyquist = 0.5 * sample_freq;
-    high_freq = nyquist;
+    float high_freq = nyquist;
 
-    float fft_bin_width = sample_freq / window_length_padded;
+    float fft_bin_width = sample_freq / BT_FFT_SIZE;
     // fft-bin width [think of it as Nyquist-freq / half-window-length]
 
     float mel_low_freq = MelScale(low_freq);
@@ -20,61 +18,48 @@ KdMelBanks::KdMelBanks(int bin_count)
 
     // divide by num_bins+1 in next line because of end-effects where the bins
     // spread out to the sides.
-    float mel_freq_delta = (mel_high_freq - mel_low_freq) / (num_bins+1);
+    float mel_freq_delta = (mel_high_freq - mel_low_freq) / (BT_MFCC_BIN+1);
 
-    bins_.resize(num_bins);
-    center_freqs_.Resize(num_bins);
-
-    for (int bin = 0; bin < num_bins; bin++)
+    for( int i = 0; i<BT_MFCC_BIN ; i++ )
     {
-        float left_mel = mel_low_freq + bin * mel_freq_delta;
-        float center_mel = mel_low_freq + (bin + 1) * mel_freq_delta;
-        float right_mel = mel_low_freq + (bin + 2) * mel_freq_delta;
+        float left_mel   = mel_low_freq + i * mel_freq_delta;
+        float center_mel = mel_low_freq + (i + 1) * mel_freq_delta;
+        float right_mel  = mel_low_freq + (i + 2) * mel_freq_delta;
 
-        center_freqs_(bin) = InverseMelScale(center_mel);
-        // this_bin will be a vector of coefficients that is only
-        // nonzero where this mel bin is active.
-        Vector<float> this_bin(num_fft_bins);
-        int first_index = -1, last_index = -1;
-        for( int i = 0; i < num_fft_bins; i++)
+        freq_offset[i] = -1;
+        for( int j=0; j<num_fft_bins ; j++)
         {
-            float freq = (fft_bin_width * i);  // Center frequency of this fft
+            float freq = (fft_bin_width * j);  // Center frequency of this fft
             // bin.
             float mel = MelScale(freq);
-            if( mel > left_mel && mel < right_mel)
+            if( mel>left_mel && mel<right_mel )
             {
                 float weight;
                 if( mel <= center_mel)
+                {
                     weight = (mel - left_mel) / (center_mel - left_mel);
+                }
                 else
+                {
                     weight = (right_mel-mel) / (right_mel-center_mel);
-                this_bin(i) = weight;
-                if( first_index==-1)
-                    first_index = i;
-                last_index = i;
+                }
+                bins_[i].push_back(weight);
+                if( freq_offset[i]==-1 )
+                {
+                    freq_offset[i] = j;
+                }
             }
         }
-        KALDI_ASSERT(first_index!=-1 && last_index >= first_index
-                && "You may have set --num-mel-bins too large.");
-
-        bins_[bin].first = first_index;
-        int size = last_index + 1 - first_index;
-        bins_[bin].second.Resize(size);
-        bins_[bin].second.CopyFromVec(this_bin.Range(first_index, size));
-
     }
 }
 
 void KdMelBanks::Compute(float *power_spec,
                        VectorBase<float> *out)
 {
-    int num_bins = bins_.size();
-    KALDI_ASSERT(out->Dim()==num_bins);
-
-    for (int i = 0; i < num_bins; i++)
+    for( int i = 0; i<BT_MFCC_BIN ; i++ )
     {
-        int offset = bins_[i].first;
-        (*out)(i) = dotProduct(&(bins_[i].second), offset, power_spec);
+        int offset = freq_offset[i];
+        (*out)(i) = dotProduct(i, offset, power_spec);
     }
 }
 
@@ -89,14 +74,13 @@ float KdMelBanks::InverseMelScale(float mel_freq)
 }
 
 // return vector dot product
-float KdMelBanks::dotProduct(Vector<float> *v1,
-                             int offset, float *v2)
+float KdMelBanks::dotProduct(int bin_id, int offset, float *v2)
 {
-    int len = v1->Dim();
+    int len = bins_[bin_id].length();
     float sum = 0;
     for( int i=0 ; i<len ; i++ )
     {
-        sum += (*v1)(i) * v2[offset+i];
+        sum += bins_[bin_id][i] * v2[offset+i];
     }
 
     return sum;
