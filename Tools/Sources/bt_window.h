@@ -7,12 +7,12 @@
 // round to power of 2
 int kd_RoundP2(int n);
 
-class KdWindow // FrameExtractionOptions + FeatureWindowFunction
+class BtWindow // FrameExtractionOptions + FeatureWindowFunction
 {
 public:
-    KdWindow();
-    int WindowShift();
-    int WindowSize();
+    BtWindow();
+    int frameShift();
+    int frameLen();
     int fftSize();
     int frameCount(int num_samples);
     void ProcessWindow(float *win);

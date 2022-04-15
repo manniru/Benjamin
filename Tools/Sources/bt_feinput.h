@@ -24,7 +24,7 @@ public:
     void ComputeFeatures();
 
 private:
-    KdMFCC *mfcc;
+    BtMFCC *mfcc;
     BtCMVN *cmvn;
     BtCFB  *o_features;
 

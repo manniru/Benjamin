@@ -14,24 +14,24 @@ int kd_RoundP2(int n)
     return n+1;
 }
 
-int KdWindow::WindowShift()
+int BtWindow::frameShift()
 {
     return samp_freq * 0.001 * frame_shift_ms;
 }
 
-int KdWindow::WindowSize()
+int BtWindow::frameLen()
 {
     return samp_freq * 0.001 * frame_length_ms;
 }
 
-int KdWindow::fftSize()
+int BtWindow::fftSize()
 {
-    return kd_RoundP2(WindowSize());
+    return kd_RoundP2(frameLen());
 }
 
-KdWindow::KdWindow()
+BtWindow::BtWindow()
 {
-    int frame_length = WindowSize();
+    int frame_length = frameLen();
     double a = M_2PI / (frame_length-1);
     for (int i = 0; i < frame_length; i++)
     {
@@ -70,35 +70,35 @@ KdWindow::KdWindow()
     }
 }
 
-int KdWindow::frameCount(int num_samples)
+int BtWindow::frameCount(int num_samples)
 {
-    int frame_length = WindowSize();
+    int frame_length = frameLen();
     if( num_samples<frame_length )
     {
         return 0;
     }
     else
     {
-        int frame_shift = WindowShift();
+        int frame_shift = frameShift();
         return (1 + ((num_samples - frame_length) / frame_shift));
     }
 }
 
-void KdWindow::ProcessWindow(float *win)
+void BtWindow::ProcessWindow(float *win)
 {
     removeDC(win);
     Preemphasize(win);
 
-    int len = WindowSize();
+    int len = frameLen();
     for( int i=0 ; i<len ; i++ )
     {
         win[i] *= window[i];
     }
 }
 
-void KdWindow::removeDC(float *wav)
+void BtWindow::removeDC(float *wav)
 {
-    int len = WindowSize();
+    int len = frameLen();
     double sum = 0;
     for( int i=0 ; i<len ; i++ )
     {
@@ -111,9 +111,9 @@ void KdWindow::removeDC(float *wav)
     }
 }
 
-void KdWindow::Preemphasize(float *wav)
+void BtWindow::Preemphasize(float *wav)
 {
-    int len = WindowSize();
+    int len = frameLen();
     for( int i=len-1 ; i>0 ; i-- )
     {
         wav[i] -= preemph_coeff * wav[i-1];

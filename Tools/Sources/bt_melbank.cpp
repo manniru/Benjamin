@@ -2,7 +2,7 @@
 #include <QDebug>
 
 using namespace kaldi;
-KdMelBanks::KdMelBanks()
+BtMelBanks::BtMelBanks()
 {
     float sample_freq = BT_REC_RATE;
 
@@ -53,28 +53,27 @@ KdMelBanks::KdMelBanks()
     }
 }
 
-void KdMelBanks::Compute(float *power_spec,
-                       VectorBase<float> *out)
+void BtMelBanks::Compute(float *power_spec, float *out)
 {
     for( int i = 0; i<BT_MFCC_BIN ; i++ )
     {
         int offset = freq_offset[i];
-        (*out)(i) = dotProduct(i, offset, power_spec);
+        out[i] = dotProduct(i, offset, power_spec);
     }
 }
 
-float KdMelBanks::MelScale(float freq)
+float BtMelBanks::MelScale(float freq)
 {
     return 1127.0f * logf (1.0f + freq / 700.0f);
 }
 
-float KdMelBanks::InverseMelScale(float mel_freq)
+float BtMelBanks::InverseMelScale(float mel_freq)
 {
     return 700.0f * (expf (mel_freq / 1127.0f) - 1.0f);
 }
 
 // return vector dot product
-float KdMelBanks::dotProduct(int bin_id, int offset, float *v2)
+float BtMelBanks::dotProduct(int bin_id, int offset, float *v2)
 {
     int len = bins_[bin_id].length();
     float sum = 0;

@@ -7,14 +7,14 @@
 #include "kd_fft.h"
 #include "bt_cfb.h"
 
-class KdMFCC
+class BtMFCC
 {
 public:
-    explicit KdMFCC();
-    ~KdMFCC();
+    explicit BtMFCC();
+    ~BtMFCC();
 
     void Compute(float *signal, BtFrameBuf *out);
-    KdWindow win;
+    BtWindow win;
 
 private:
     void ComputeLifter();
@@ -24,11 +24,11 @@ private:
     float lifter_coeff[BT_FEAT_SIZE];
     float power_spec[BT_FFT_SIZE/2 + 1]; // power spectrum
     float dct_matrix[BT_MFCC_BIN][BT_MFCC_BIN];
-    KdMelBanks* mel_banks;
+    BtMelBanks* mel_banks;
     KdFFT *fft;
 
 //    float *mel_energies[BT_MFCC_BIN];
-    kaldi::Vector<float> mel_energies;
+    float mel_energies[BT_MFCC_BIN];
     float cepstral_lifter = 22.0;  // Scaling factor on cepstral
 };
 #endif // BT_MFCC_H

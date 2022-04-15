@@ -3,36 +3,38 @@
 
 using namespace kaldi;
 
-KdMFCC::KdMFCC()
+BtMFCC::BtMFCC()
 {
-    mel_energies.Resize(BT_MFCC_BIN);
-
-//    dct_matrix.Resize(BT_MFCC_BIN, BT_MFCC_BIN);
-//    ComputeDctMatrix(&dct_matrix);
     computeDCTMatrix();
 
     ComputeLifter();
 
     fft = new KdFFT(win.fftSize());
-    mel_banks = new KdMelBanks;
+    mel_banks = new BtMelBanks;
 }
 
-KdMFCC::~KdMFCC()
+BtMFCC::~BtMFCC()
 {
     delete mel_banks;
     delete fft;
 }
 
-void KdMFCC::Compute(float *signal, BtFrameBuf *out)
+void BtMFCC::Compute(float *signal, BtFrameBuf *out)
 {
     fft->Compute(signal);
     computePower(signal);
 
-    mel_banks->Compute(power_spec, &mel_energies);
+    mel_banks->Compute(power_spec, mel_energies);
 
-    // avoid log of zero (which should be prevented anyway by dithering).
-    mel_energies.ApplyFloor(std::numeric_limits<float>::epsilon());
-    mel_energies.ApplyLog();  // take the log.
+    for( int i=0 ; i<BT_MFCC_BIN ; i++ )
+    {
+        if( mel_energies[i]==0 )
+        {
+            qDebug() << "zero mel_energies";
+            mel_energies[i] = std::numeric_limits<float>::epsilon();
+        }
+        mel_energies[i] = std::log(mel_energies[i]);
+    }
 
     // feature = dct_matrix_ * mel_energies
     for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
@@ -40,7 +42,7 @@ void KdMFCC::Compute(float *signal, BtFrameBuf *out)
         out->ceps[i] = 0;
         for( int j=0 ; j<BT_MFCC_BIN ; j++ )
         {
-            out->ceps[i] += mel_energies(j)*dct_matrix[i][j];
+            out->ceps[i] += mel_energies[j]*dct_matrix[i][j];
         }
         out->ceps[i] *= lifter_coeff[i];
         out->cmvn[i] = out->ceps[i]; // cmvn val adds later
@@ -48,7 +50,7 @@ void KdMFCC::Compute(float *signal, BtFrameBuf *out)
     }
 }
 
-void KdMFCC::ComputeLifter()
+void BtMFCC::ComputeLifter()
 {
     float Q = cepstral_lifter;
     for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
@@ -57,7 +59,7 @@ void KdMFCC::ComputeLifter()
     }
 }
 
-void KdMFCC::computePower(float *wav)
+void BtMFCC::computePower(float *wav)
 {
     int len = BT_FFT_SIZE/2;
     power_spec[0]   = wav[0] * wav[0];
@@ -71,7 +73,7 @@ void KdMFCC::computePower(float *wav)
     }
 }
 
-void KdMFCC::computeDCTMatrix()
+void BtMFCC::computeDCTMatrix()
 {
     float normalizer = std::sqrt(1.0/BT_MFCC_BIN);
     for( int j=0 ; j<BT_MFCC_BIN ; j++ )

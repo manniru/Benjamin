@@ -7,7 +7,7 @@ BtFeInput::BtFeInput(BtCyclic *buf, QObject *parent): QObject(parent)
     rec_buf = buf;
     o_features = new BtCFB;
     frame_num = 0;
-    mfcc = new KdMFCC;
+    mfcc = new BtMFCC;
     delta = new KdDelta(o_features);
     cmvn = new BtCMVN(o_features);
 }
@@ -62,7 +62,7 @@ BtFeInput::~BtFeInput()
 void BtFeInput::ComputeFeatures()
 {
     int len = rec_buf->getDataSize()-10;
-    int frame_length = mfcc->win.WindowSize();
+    int frame_length = mfcc->win.frameLen();
     int frame_count  = mfcc->win.frameCount(len);
     if( len<frame_length )
     {
@@ -70,7 +70,7 @@ void BtFeInput::ComputeFeatures()
         return;
     }
 
-    int ws = mfcc->win.WindowShift(); //window shift
+    int ws = mfcc->win.frameShift(); //window shift
     int rewind_samp = frame_length-ws;
 
     for( int i=0 ; i<frame_count ; i++)
