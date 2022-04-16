@@ -15,12 +15,14 @@
 class KdMBR
 {
 public:
-    KdMBR(KdCompactLattice *clat);
+    KdMBR();
 
+    void compute(KdCompactLattice *clat_in);
     QVector<BtWord>    getResult();
 
 private:
-    void PrepareLatticeAndInitStats(KdCompactLattice *clat);
+    void createTimes(KdCompactLattice *clat);
+    void createMBRLat(KdCompactLattice *clat);
     void MbrDecode();
 
     double l_distance(int a, int b, bool penalize = false);
@@ -41,11 +43,10 @@ private:
 
     // Arcs in the topologically sorted acceptor form of the word-level lattice,
     // with one final-state
-    std::vector<KdMBRArc> arcs_;
+    std::vector<KdMBRArc> mlat_arc;
 
     // For each node in the lattice, a list of arcs entering that node.
-    // (first node==1).
-    std::vector<std::vector<int> > pre_;
+    std::vector<std::vector<int> > mlat;
 
     std::vector<int> one_best_id; // R in paper
     double L_; // current averaged edit-distance between lattice and one_best_id.

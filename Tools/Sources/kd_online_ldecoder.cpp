@@ -19,6 +19,7 @@ KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel &trans_model):
     effective_beam_ = opts.beam;
     start_t = clock();
     last_cache_f = 0;
+    mbr = new KdMBR;
 }
 
 void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
@@ -113,8 +114,8 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
         return result;
     }
 
-    KdMBR *mbr = NULL;
-    mbr = new KdMBR(out_fst);
+    mbr = new KdMBR;
+    mbr->compute(out_fst);
     result = mbr->getResult();
 
     HaveSilence();

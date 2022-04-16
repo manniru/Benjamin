@@ -58,6 +58,7 @@ private:
     void checkReset();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
     QVector<BtWord> result;
+    KdMBR *mbr;
 
     // Returns a linear fst by tracing back the last N frames, beginning
     // from the best current token

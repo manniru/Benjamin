@@ -87,6 +87,10 @@ void BtCaptain::addWord(BtWord word, int id)
 
 void BtCaptain::addXBuf(BtWord word)
 {
+    if( word.conf<KAL_HARD_TRESHOLD )
+    {
+        return;
+    }
     if( word.is_final )
     {
         if( x_buf.length() )

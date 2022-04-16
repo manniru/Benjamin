@@ -3,7 +3,6 @@
 
 using namespace kaldi;
 
-
 struct GammaCompare
 {
     // should be like operator <.  But we want reverse order
@@ -17,12 +16,17 @@ struct GammaCompare
     }
 };
 
-KdMBR::KdMBR(KdCompactLattice *clat_in)
+KdMBR::KdMBR()
 {
     lexicon = bt_parseLexicon(BT_WORDS_PATH);
+}
+
+void KdMBR::compute(KdCompactLattice *clat_in)
+{
     KdCompactLattice clat(*clat_in); // copy.
 
-    PrepareLatticeAndInitStats(&clat);
+    createTimes(&clat);
+    createMBRLat(&clat);
 
     kd_RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
     KdLattice lat;
@@ -182,16 +186,16 @@ double KdMBR::EditDistance(int N, int Q,
     for (int n = 2; n <= N; n++)
     {
         double alpha_n = kLogZeroDouble;
-        for (size_t i = 0; i < pre_[n].size(); i++)
+        for (size_t i = 0; i < mlat[n].size(); i++)
         {
-            const KdMBRArc &arc = arcs_[pre_[n][i]];
+            const KdMBRArc &arc = mlat_arc[mlat[n][i]];
             alpha_n = LogAdd(alpha_n, alpha(arc.start_node) + arc.loglike);
         }
         alpha(n) = alpha_n; // Line 10.
         // Line 11 omitted: matrix was initialized to zero.
-        for (size_t i = 0; i < pre_[n].size(); i++)
+        for (size_t i = 0; i < mlat[n].size(); i++)
         {
-            const KdMBRArc &arc = arcs_[pre_[n][i]];
+            const KdMBRArc &arc = mlat_arc[mlat[n][i]];
             int s_a = arc.start_node, w_a = arc.word;
             float p_a = arc.loglike;
             for (int q = 0; q <= Q; q++)
@@ -222,8 +226,8 @@ void KdMBR::AccStats()
 {
     using std::map;
 
-    int N = static_cast<int>(pre_.size()) - 1,
-            Q = static_cast<int>(one_best_id.size());
+    int N = mlat.size() - 1;
+    int Q = one_best_id.size();
 
     Vector<double> alpha(N+1); // index (1...N)
     Matrix<double> alpha_dash(N+1, Q+1); // index (1...N, 0...Q)
@@ -251,9 +255,9 @@ void KdMBR::AccStats()
     beta_dash(N, Q) = 1.0; // Line 11.
     for (int n = N; n >= 2; n--)
     {
-        for (size_t i = 0; i < pre_[n].size(); i++)
+        for (size_t i = 0; i < mlat[n].size(); i++)
         {
-            const KdMBRArc &arc = arcs_[pre_[n][i]];
+            const KdMBRArc &arc = mlat_arc[mlat[n][i]];
             int s_a = arc.start_node, w_a = arc.word;
             float p_a = arc.loglike;
             alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(w_a, 0, true); // line 14.
@@ -462,7 +466,7 @@ QVector<BtWord> KdMBR::getResult()
     return result;
 }
 
-void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
+void KdMBR::createTimes(KdCompactLattice *clat)
 {
     kd_CreateSuperFinal(clat); // Add super-final state (i.e. just one final state).
 
@@ -471,7 +475,9 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
     if( !(props & fst::kTopSorted) )
     {
         if( fst::TopSort(clat)==false)
+        {
             qDebug() << "Cycles detected in lattice.";
+        }
     }
     kd_compactLatticeStateTimes(*clat, &state_times_); // work out times of the states in clat
     b_times = kd_getTimes(*clat);
@@ -480,34 +486,33 @@ void KdMBR::PrepareLatticeAndInitStats(KdCompactLattice *clat)
     {
         state_times_[i] = state_times_[i-1];
     }
+}
 
-    // Now we convert the information in "clat" into a special internal
-    // format (pre_, post_ and arcs_) which allows us to access the
-    // arcs preceding any given state.
-    // Note: in our internal format the states will be numbered from 1,
-    // which involves adding 1 to the OpenFst states.
-    int N = clat->NumStates();
-    pre_.resize(N+1);
+// convert clat to mlat (lattic with KdMBRArc) and write to pre
+void KdMBR::createMBRLat(KdCompactLattice *clat)
+{
+    // convert clat" KdMBRArc
+    int state_count = clat->NumStates();
+    mlat.resize(state_count+1);
+    mlat_arc.clear();
+    int arc_id = 0;
 
-    // Careful: "Arc" is a class-member struct, not an OpenFst type of arc as one
-    // would normally assume.
-    for (int n = 1; n <= N; n++)
+    for (int n=0 ; n<state_count ; n++ )
     {
-        for (fst::ArcIterator<KdCompactLattice> aiter(*clat, n-1);
+        for (fst::ArcIterator<KdCompactLattice> aiter(*clat, n);
              !aiter.Done(); aiter.Next())
         {
             const KdCLatArc &carc = aiter.Value();
             KdMBRArc arc; // in our local format.
             arc.word = carc.ilabel; //==carc.olabel
-            arc.start_node = n;
+            arc.start_node = n+1; // add 1 (indexed from 1)
             arc.end_node = carc.nextstate + 1; // convert to 1-based.
-            arc.loglike = - (carc.weight.weight.g_cost +
-                             carc.weight.weight.a_cost);
-            // loglike: sum graph/LM and acoustic cost, and negate to
-            // convert to loglikes.  We assume acoustic scaling is already done.
+            arc.loglike = - (carc.weight.weight.g_cost*0.0 +
+                             carc.weight.weight.a_cost*0.3);
 
-            pre_[arc.end_node].push_back(arcs_.size()); // record index of this arc.
-            arcs_.push_back(arc);
+            mlat[arc.end_node].push_back(arc_id);
+            arc_id++;
+            mlat_arc.push_back(arc);
         }
     }
 }
