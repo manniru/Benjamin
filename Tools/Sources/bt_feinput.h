@@ -4,7 +4,7 @@
 #include "bt_config.h"
 #include "bt_recorder.h"
 #include "bt_cmvn.h"
-#include "kd_matrix.h"
+#include "kd_a_model.h"
 #include "bt_mfcc.h"
 #include "kd_delta.h"
 #include "bt_cfb.h"
@@ -19,14 +19,14 @@ public:
     ~BtFeInput();
 
     uint  NumFramesReady();
-    void GetFrame(uint frame, kaldi::Vector<float> *feat);
+    void computeFrame(uint frame);
 
     void ComputeFeatures();
 
+    BtCFB  *o_features;
 private:
     BtMFCC *mfcc;
     BtCMVN *cmvn;
-    BtCFB  *o_features;
 
     uint frame_num;
     int  remain_samp = 0;

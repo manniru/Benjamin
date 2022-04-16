@@ -1,7 +1,7 @@
 #include "bt_melbank.h"
+#include <math.h>
 #include <QDebug>
 
-using namespace kaldi;
 BtMelBanks::BtMelBanks()
 {
     float sample_freq = BT_REC_RATE;
@@ -64,7 +64,7 @@ void BtMelBanks::Compute(float *power_spec, float *out)
 
 float BtMelBanks::MelScale(float freq)
 {
-    return 1127.0f * logf (1.0f + freq / 700.0f);
+    return 1127.0f * log(1.0f + freq / 700.0f);
 }
 
 float BtMelBanks::InverseMelScale(float mel_freq)

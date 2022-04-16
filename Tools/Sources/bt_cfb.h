@@ -7,8 +7,6 @@
 
 #include <QObject>
 #include <QVector>
-#include "matrix/matrix-lib.h"
-#include "util/common-utils.h"
 
 #define BT_FEAT_SIZE   13    // number of cepstrum feature size
 #define BT_FB_SIZE     10000 // number of frame in cyclic buf
@@ -29,8 +27,6 @@ class BtCFB : public QObject
 public:
     explicit BtCFB(int size = BT_FB_SIZE, QObject *parent = nullptr);
     BtFrameBuf* get(uint frame);
-    void writeVec(uint frame, kaldi::Vector<float> *vec);
-    void writeFeat(uint frame, kaldi::Vector<float> *out);
 
 private:
     BtFrameBuf *data;

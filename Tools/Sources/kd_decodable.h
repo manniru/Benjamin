@@ -7,6 +7,7 @@
 #include "gmm/am-diag-gmm.h"
 #include "hmm/transition-model.h"
 #include "kd_model.h"
+#include "kd_a_model.h"
 #include "bt_feinput.h"
 
 #define MAX_FRAME_CNT 400
@@ -26,7 +27,8 @@ typedef struct KdPDF
 class KdDecodable
 {
 public:
-    KdDecodable(BtCyclic *buf, KdModel *mdl, float scale);
+    KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
+                kaldi::TransitionModel *t_mdl, float scale);
     ~KdDecodable();
 
     /// Returns the scaled log likelihood
@@ -40,11 +42,11 @@ public:
 private:
     void CacheFeature(uint frame);
 
-    kaldi::AmDiagGmm *ac_model;
+    KdAModel *ac_model;
     float ac_scale_;
     kaldi::TransitionModel *trans_model;
     int feat_dim;  // dimensionality of the input features
-    kaldi::Vector<float> feat_buf;
+    BtFrameBuf *feat_buf;
     int cur_frame_;
     std::vector<std::pair<int, float> > cache_;
 };

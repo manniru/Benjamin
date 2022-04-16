@@ -24,7 +24,7 @@ uint BtFeInput::NumFramesReady()
 }
 
 // Called from outside(decodable)
-void BtFeInput::GetFrame(uint frame, Vector<float> *feat)
+void BtFeInput::computeFrame(uint frame)
 {
     int context = BT_DELTA_ORDER * KD_DELTA_WINDOW; //4
     int left_frame = frame - context;
@@ -49,7 +49,6 @@ void BtFeInput::GetFrame(uint frame, Vector<float> *feat)
         cmvn->calc(i);
     }
     delta->Process(frame, frame_num);
-    o_features->writeFeat(frame, feat);
 }
 
 BtFeInput::~BtFeInput()

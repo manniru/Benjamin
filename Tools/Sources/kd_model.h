@@ -17,9 +17,6 @@ class KdModel
 public:
     KdModel(std::string model_filename);
     ~KdModel();
-
-    kaldi::TransitionModel *t_model; // trained with online-CMVN features
-    kaldi::AmDiagGmm *oa_model; //online alignment model;
 };
 
 #endif // KD_MODEL_H

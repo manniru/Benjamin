@@ -39,7 +39,9 @@ private:
     BtCaptain        *cap;
 
     KdOnlineLDecoder *o_decoder;
-    KdModel   *o2_model; //gaussain online 2 model
+
+    kaldi::TransitionModel *t_model;
+    KdAModel               *oa_model; //online accoustic model
 };
 
 #endif // KD_ONLINE_H

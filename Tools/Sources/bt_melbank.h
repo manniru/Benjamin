@@ -1,8 +1,6 @@
 #ifndef BT_MELBANK_H
 #define BT_MELBANK_H
 
-#include "util/kaldi-io.h"
-#include "base/kaldi-math.h"
 #include "bt_window.h"
 #include <QVector>
 

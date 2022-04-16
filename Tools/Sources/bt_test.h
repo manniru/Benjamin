@@ -31,7 +31,8 @@ private:
     QVector<BtWord>   last_r; //last_result
     KdOnlineStatus    status;
     KdOnlineLDecoder *o_decoder;
-    KdModel   *o2_model; //gaussain online 2 model
+    kaldi::TransitionModel *t_model;
+    KdAModel         *oa_model; //online accoustic model
     QFile            *wav_file;
     QStringList       file_list;
 };

@@ -46,6 +46,7 @@ HEADERS += \
     Sources/bt_recorder.h \
     Sources/bt_test.h \
     Sources/bt_window.h \
+    Sources/kd_a_model.h \
     Sources/kd_clat_weight.h \
     Sources/kd_decodable.h \
     Sources/kd_decoder.h \
@@ -59,7 +60,6 @@ HEADERS += \
     Sources/kd_lattice_functions.h \
     Sources/kd_lattice_string.h \
     Sources/kd_lattice_weight.h \
-    Sources/kd_matrix.h \
     Sources/kd_matrix_dbg.h \
     Sources/kd_mbr.h \
     Sources/kd_mbr_base.h \
@@ -82,6 +82,7 @@ SOURCES += \
     Sources/bt_recorder.cpp \
     Sources/bt_test.cpp \
     Sources/bt_window.cpp \
+    Sources/kd_a_model.cpp \
     Sources/kd_clat_weight.cpp \
     Sources/kd_decodable.cpp \
     Sources/kd_decoder.cpp \
@@ -95,7 +96,6 @@ SOURCES += \
     Sources/kd_lattice_functions.cpp \
     Sources/kd_lattice_string.cpp \
     Sources/kd_lattice_weight.cpp \
-    Sources/kd_matrix.cpp \
     Sources/kd_matrix_dbg.cpp \
     Sources/kd_mbr.cpp \
     Sources/kd_mbr_base.cpp \

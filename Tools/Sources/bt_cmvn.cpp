@@ -3,12 +3,6 @@
 #include <QFile>
 #include <Qt>
 
-#include <base/kaldi-common.h>
-#include <util/common-utils.h>
-#include <matrix/kaldi-matrix.h>
-
-using namespace kaldi;
-
 BtCMVN::BtCMVN(BtCFB *feat)
 {
     i_feature = feat;

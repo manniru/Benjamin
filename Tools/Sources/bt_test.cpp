@@ -23,15 +23,24 @@ BtTest::BtTest(QString filename, QObject *parent): QObject(parent)
 
 BtTest::~BtTest()
 {
-    delete o2_model;
+    delete t_model;
+    delete oa_model;
     delete o_decoder;
 }
 
 void BtTest::init()
 {
     std::string model_filename = BT_OAMDL_PATH;
-    o2_model = new KdModel(model_filename);
-    o_decoder = new KdOnlineLDecoder(*(o2_model->t_model));
+
+    oa_model = new KdAModel;
+    t_model = new TransitionModel;
+
+    bool binary;
+    Input ki(model_filename, &binary);
+    t_model->Read(ki.Stream(), binary);
+    oa_model->Read(ki.Stream(), binary);
+
+    o_decoder = new KdOnlineLDecoder(*t_model);
 
     startDecode();
 }
@@ -41,7 +50,8 @@ void BtTest::startDecode()
     float acoustic_scale = 0.05;
     int chunk_size = 16000; // 1000ms
 
-    KdDecodable decodable(cy_buf, o2_model, acoustic_scale);
+    KdDecodable decodable(cy_buf, oa_model,
+                          t_model, acoustic_scale);
 
     o_decoder->InitDecoding(&decodable);
     KdCompactLattice out_fst;

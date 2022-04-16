@@ -1,7 +1,7 @@
 #ifndef KD_FASTER_TOKEN_H
 #define KD_FASTER_TOKEN_H
 
-#include "decoder/faster-decoder.h"
+#include "fst/arc.h"
 
 class KdFToken
 {

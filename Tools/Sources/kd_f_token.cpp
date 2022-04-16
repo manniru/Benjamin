@@ -1,8 +1,6 @@
 #include "kd_f_token.h"
 #include <QDebug>
 
-using namespace kaldi;
-
 KdFToken::KdFToken(fst::StdArc &arc, float ac_cost, KdFToken *prev):
     arc_(arc), prev_(prev)
 {

@@ -1,6 +1,6 @@
 #include "bt_window.h"
 #include <QDebug>
-#include "base/kaldi-math.h"
+#include <math.h>
 
 // Round up to nearest power of two
 int kd_RoundP2(int n)
@@ -32,7 +32,7 @@ int BtWindow::fftSize()
 BtWindow::BtWindow()
 {
     int frame_length = frameLen();
-    double a = M_2PI / (frame_length-1);
+    double a = 2*M_PI / (frame_length-1);
     for (int i = 0; i < frame_length; i++)
     {
         double i_fl = i;

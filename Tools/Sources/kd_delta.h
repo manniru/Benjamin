@@ -18,7 +18,7 @@ public:
 private:
     int sumof2N2(int n);
     BtCFB *feature;
-    std::vector<kaldi::Vector<float> > coeffs; // coeff to compute smooth derivative
+    QVector<float> coeffs[BT_DELTA_ORDER+1]; // coeff to compute smooth derivative
 };
 
 #endif // KD_DELTA_H

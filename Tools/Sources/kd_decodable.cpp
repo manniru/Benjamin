@@ -4,19 +4,19 @@
 using namespace kaldi;
 using namespace fst;
 
-KdDecodable::KdDecodable(BtCyclic *buf, KdModel *mdl, float scale)
+KdDecodable::KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
+                         TransitionModel *t_mdl, float scale)
 {
     ac_scale_ = scale;
     cur_frame_ = -1;
 
-    ac_model = mdl->oa_model;
-    trans_model = mdl->t_model;
+    ac_model = a_mdl;
+    trans_model = t_mdl;
 
     int num_pdfs = trans_model->NumPdfs();
     cache_.resize(num_pdfs, std::pair<int,float>(-1, 0.0f));
 
     features = new BtFeInput(buf);
-    feat_buf.Resize(BT_DELTA_SIZE);
 }
 
 KdDecodable::~KdDecodable()
@@ -26,7 +26,8 @@ KdDecodable::~KdDecodable()
 
 void KdDecodable::CacheFeature(uint frame)
 {
-    features->GetFrame(frame, &feat_buf);
+    features->computeFrame(frame);
+    feat_buf = features->o_features->get(frame);
     cur_frame_ = frame;
 }
 
