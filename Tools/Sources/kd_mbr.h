@@ -22,7 +22,8 @@ public:
 
 private:
     void checkLattice(KdCompactLattice *clat);
-    void createTimes(KdCompactLattice *clat);
+    void createTimes (KdCompactLattice *clat);
+    void getBestWords(KdCompactLattice *clat);
     void createMBRLat(KdCompactLattice *clat);
     void MbrDecode();
 
@@ -40,6 +41,7 @@ private:
 
     void AddToMap(int i, double d, std::map<int, double> *gamma);
 
+    int max_state = 0;
     QVector<QString> lexicon;
 
     // Arcs in the topologically sorted acceptor form of the word-level lattice,

@@ -131,7 +131,7 @@ bool kd_PruneLattice(float beam, KdLattice *lat)
 }
 
 // DeterminizeLatticePhonePrunedWrapper
-bool kd_detLatPhonePrunedW(TransitionModel &trans_model,
+bool kd_detLatPhonePrunedW(TransitionModel *trans_model,
                            KdLattice *ifst,
                            double beam, KdCompactLattice *ofst,
                            KdPrunedOpt opts)
@@ -154,45 +154,27 @@ bool kd_detLatPhonePrunedW(TransitionModel &trans_model,
 }
 
 // DeterminizeLatticePhonePruned
-bool kd_detLatPhonePruned(kaldi::TransitionModel &trans_model,
+bool kd_detLatPhonePruned(kaldi::TransitionModel *trans_model,
                           KdLattice *ifst, double beam,
                           KdCompactLattice *ofst, KdPrunedOpt opts)
 {
-    // Returning status.
-    bool ans = true;
-
-    // Make sure at least one of opts.phone_determinize and opts.word_determinize
-    // is not false, otherwise calling this function doesn't make any sense.
-    if( (opts.phone_determinize || opts.word_determinize)==false)
-    {
-        qDebug() << "Both --phone-determinize and --word-determinize are set to "
-                 << "false, copying lattice without determinization.";
-        // We are expecting the words on the input side.
-        exit(0);
-    }
-
     // Determinization options.
     KdDetOpt det_opts;
     det_opts.delta = opts.delta;
     det_opts.max_mem = opts.max_mem;
 
-    // If --phone-determinize is true, do the determinization on phone + word
-    // lattices.
-    if( opts.phone_determinize )
-    {
-        KALDI_VLOG(3) << "Doing first pass of determinization on phone + word "
-                      << "lattices.";
-        ans = kd_DetLatFirstPass(trans_model, beam, ifst, &det_opts) && ans;
-    }
+    // first pass of determinization on phone + word lattices
+    // bacause of opts.phone_determinize was true
+    bool ans = kd_DetLatFirstPass(trans_model, beam, ifst, &det_opts);
 
-    // If --word-determinize is true, do the determinization on word lattices.
+    // determinization on word lattices. bacause word-determinize was true,
     ans = kd_detLatPruned(*ifst, beam, ofst, det_opts) && ans;
 
     return ans;
 }
 
 //DeterminizeLatticePhonePrunedFirstPass
-bool kd_DetLatFirstPass(kaldi::TransitionModel &trans_model,
+bool kd_DetLatFirstPass(kaldi::TransitionModel *trans_model,
                         double beam, KdLattice *fst, KdDetOpt *opts)
 {
     // First, insert the phones.
@@ -212,7 +194,7 @@ bool kd_DetLatFirstPass(kaldi::TransitionModel &trans_model,
 
 // DeterminizeLatticeInsertPhones
 KdLatticeArc::Label kd_DetLatInsertPhones(
-        kaldi::TransitionModel &trans_model, KdLattice *fst)
+        kaldi::TransitionModel *trans_model, KdLattice *fst)
 {
     // Define some types.
     typedef typename KdLatticeArc::StateId StateId;
@@ -237,10 +219,10 @@ KdLatticeArc::Label kd_DetLatInsertPhones(
             // Note: the words are on the input symbol side and transition-id's are on
             // the output symbol side.
             if( (arc.olabel!=0)
-                    && (trans_model.TransitionIdToHmmState(arc.olabel)==0)
-                    && (!trans_model.IsSelfLoop(arc.olabel))) {
+                    && (trans_model->TransitionIdToHmmState(arc.olabel)==0)
+                    && (!trans_model->IsSelfLoop(arc.olabel))) {
                 Label phone =
-                        static_cast<Label>(trans_model.TransitionIdToPhone(arc.olabel));
+                        static_cast<Label>(trans_model->TransitionIdToPhone(arc.olabel));
 
                 // Skips <eps>.
                 KALDI_ASSERT(phone!=0);
@@ -325,7 +307,7 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
 {
     ofst->SetInputSymbols(ifst.InputSymbols());
     ofst->SetOutputSymbols(ifst.OutputSymbols());
-    if( ifst.NumStates()==0)
+    if( ifst.NumStates()==0 )
     {
         ofst->DeleteStates();
         return true;
@@ -335,7 +317,7 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
     // retrying.
     KdLattice temp_fst;
 
-    for (int32 iter = 0; iter < max_num_iters; iter++)
+    for( int iter=0 ; iter<max_num_iters ; iter++ )
     {
         KdLatDet det(iter==0 ? ifst : temp_fst,
                      beam, opts);
@@ -345,8 +327,9 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
         // just with a narrower beam than "beam".  If the user specifies an infinite
         // beam we don't do this beam-narrowing.
         if( effective_beam >= beam * opts.retry_cutoff ||
-                beam==std::numeric_limits<double>::infinity() ||
-                iter + 1==max_num_iters) {
+            beam==std::numeric_limits<double>::infinity() ||
+            iter + 1==max_num_iters )
+        {
             det.Output(ofst);
             return ans;
         }
@@ -355,9 +338,15 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
             // The code below to set "beam" is a heuristic.
             // If effective_beam is very small, we want to reduce by a lot.
             // But never change the beam by more than a factor of two.
-            if( effective_beam < 0.0) effective_beam = 0.0;
+            if( effective_beam < 0.0)
+            {
+                effective_beam = 0.0;
+            }
             double new_beam = beam * sqrt(effective_beam / beam);
-            if( new_beam < 0.5 * beam) new_beam = 0.5 * beam;
+            if( new_beam < 0.5 * beam)
+            {
+                new_beam = 0.5 * beam;
+            }
             beam = new_beam;
             if( iter==0) temp_fst = ifst;
             kd_PruneLattice(beam, &temp_fst);

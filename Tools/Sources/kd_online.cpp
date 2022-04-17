@@ -20,7 +20,7 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     t_model->Read(ki.Stream(), binary);
     oa_model->Read(ki.Stream(), binary);
 
-    o_decoder = new KdOnlineLDecoder(*t_model);
+    o_decoder = new KdOnlineLDecoder(t_model);
 }
 
 KdOnline::~KdOnline()

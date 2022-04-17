@@ -6,8 +6,10 @@ void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
 {
     KALDI_ASSERT(determinized_);
     StateId nStates = static_cast<StateId>(output_states_.size());
-    if( destroy)
+    if( destroy )
+    {
         FreeMostMemory();
+    }
     ofst->DeleteStates();
     ofst->SetStart(KD_INVALID_STATE);
     if( nStates==0) {

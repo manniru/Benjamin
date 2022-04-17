@@ -37,8 +37,7 @@ struct KdOnlineStatus
 class KdOnlineLDecoder : public KdDecoder
 {
 public:
-    // "sil_phones" - the IDs of all silence phones
-    KdOnlineLDecoder(kaldi::TransitionModel &trans_model);
+    KdOnlineLDecoder(kaldi::TransitionModel *trans_model);
 
     int Decode();
 
@@ -74,7 +73,7 @@ private:
     KdLattice cache_fst2; //used for addArcs
 
     KdOnlineLDecoderOpts opts;
-    kaldi::TransitionModel &trans_model_; // needed for trans-id -> phone conversion
+    kaldi::TransitionModel *t_model; // needed for trans-id -> phone conversion
     float effective_beam_; // the currently used beam
     clock_t start_t;
 };

@@ -5,15 +5,16 @@ using namespace kaldi;
 QString dbg_times;
 #define BT_MIN_SIL 14 //150ms ((x+1)*100)
 
-KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel &trans_model):
-    trans_model_(trans_model)
+KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
 {
     fst_ = kd_readDecodeGraph(BT_FST_PATH);
+    mbr = new KdMBR;
 
     opts.max_active = 7000;
     opts.lattice_beam = 6.0;
 
     config = opts;
+    t_model = trans_model;
 
     uframe = 0;
     effective_beam_ = opts.beam;
@@ -100,7 +101,7 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
     kd_PruneLattice(lat_beam, &raw_fst);
     dbg_times += " P:";
     dbg_times += getLDiffTime();
-    kd_detLatPhonePrunedW(trans_model_, &raw_fst,
+    kd_detLatPhonePrunedW(t_model, &raw_fst,
                           lat_beam, ofst, config.det_opts);
     dbg_times += " D:";
     dbg_times += getLDiffTime();
@@ -108,13 +109,13 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 
 QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 {
+    // out_fst will be reset in MakeLattice
     MakeLattice(out_fst);
     if( out_fst->Start() )
     {
         return result;
     }
 
-    mbr = new KdMBR;
     mbr->compute(out_fst);
     result = mbr->getResult();
 

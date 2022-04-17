@@ -23,31 +23,16 @@ KdMBR::KdMBR()
 
 void KdMBR::compute(KdCompactLattice *clat_in)
 {
-    KdCompactLattice clat(*clat_in); // copy.
+    checkLattice(clat_in);
+    createTimes(clat_in);
+    createMBRLat(clat_in);
+    getBestWords(clat_in);
 
-    checkLattice(&clat);
-    createTimes(&clat);
-    createMBRLat(&clat);
-
-    kd_RemoveAlignmentsFromCompactLattice(&clat); // will be more efficient
-    KdLattice lat;
-    kd_ConvertLattice(clat, &lat); // convert from KdCompactLattice to KdLattice.
-    fst::VectorFst<fst::StdArc> fst;
-    kd_ConvertLattice(lat, &fst); // convert from lattice to normal FST.
-    fst::VectorFst<fst::StdArc> fst_shortest_path;
-    fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
-    std::vector<int> alignment, words;
-    fst::TropicalWeight weight;
-    kd_GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
-    KALDI_ASSERT(alignment.empty()); // we removed the alignment.
-    one_best_id = words;
-    L_ = 0.0; // Set current edit-distance to 0 [just so we know
-    // when we're on the 1st iter.]
+    L_ = 0.0; // Set current edit-distance to 0
 
     MbrDecode();
 }
 
-// Figure 6 of the paper.
 void KdMBR::MbrDecode()
 {
     QVector<QString> list[30];
@@ -227,8 +212,14 @@ void KdMBR::computeGamma()
 {
     using std::map;
 
-    int state_count = mlat.size() - 1;
+    int state_count = mlat.size() - 1; // = Number of words
     int word_len = one_best_id.size();
+
+    if( max_state<state_count )
+    {
+        max_state = state_count;
+        qDebug() << "st" << state_count << word_len;
+    }
 
     Vector<double> alpha(state_count+1); // index (1...N)
     Matrix<double> alpha_dash(state_count+1, word_len+1); // index (1...N, 0...Q)
@@ -414,7 +405,6 @@ void KdMBR::AddToMap(int i, double d, std::map<int, double> *gamma)
         ret.first->second += d;
 }
 
-// gives edit-distance function l(a,b)
 double KdMBR::l_distance(int a, int b, bool penalize)
 {
     if( a==b)
@@ -490,13 +480,31 @@ void KdMBR::createTimes(KdCompactLattice *clat)
     b_times = kd_getTimes(*clat);
 }
 
+void KdMBR::getBestWords(KdCompactLattice *clat)
+{
+    fst::VectorFst<fst::StdArc> fst;
+    KdLattice lat;
+    std::vector<int> alignment, words;
+    fst::VectorFst<fst::StdArc> fst_shortest_path;
+    fst::TropicalWeight weight;
+
+    kd_RemoveAlignmentsFromCompactLattice(clat); // will be more efficient
+    kd_ConvertLattice(*clat, &lat); // convert KdCompactLattice to KdLattice.
+    kd_ConvertLattice(lat, &fst); // convert to FST.
+    fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
+    kd_GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
+//    KALDI_ASSERT(alignment.empty()); // we removed the alignment.
+    one_best_id = words;
+}
+
 // convert clat to mlat (lattic with KdMBRArc) and write to pre
 void KdMBR::createMBRLat(KdCompactLattice *clat)
 {
     // convert clat" KdMBRArc
     int state_count = clat->NumStates();
-    mlat.resize(state_count+1);
+    mlat.clear();
     mlat_arc.clear();
+    mlat.resize(state_count+1);
     int arc_id = 0;
 
     for (int n=0 ; n<state_count ; n++ )
