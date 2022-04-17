@@ -24,11 +24,11 @@ for WORD in $BUF; do
 	 
 	elif [[ "$WORD" == "love" ]]; then
 	
-	    OUTPUT="$OUTPUT control shift left"
+	    OUTPUT="$OUTPUT control left"
 	 
 	elif [[ "$WORD" == "roger" ]]; then
 	
-	    OUTPUT="$OUTPUT control shift right"
+	    OUTPUT="$OUTPUT control right"
 	 
 	else
 	

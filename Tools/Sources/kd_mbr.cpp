@@ -25,6 +25,7 @@ void KdMBR::compute(KdCompactLattice *clat_in)
 {
     KdCompactLattice clat(*clat_in); // copy.
 
+    checkLattice(&clat);
     createTimes(&clat);
     createMBRLat(&clat);
 
@@ -53,7 +54,7 @@ void KdMBR::MbrDecode()
     for( size_t counter=0 ; ; counter++ )
     {
         AddEpsBest();
-        AccStats(); // writes to gamma_
+        computeGamma();
         double delta_Q = 0.0; // change in objective function.
 
         one_best_times.clear();
@@ -222,61 +223,62 @@ double KdMBR::EditDistance(int N, int Q,
 }
 
 // Figure 5 of paper.  Outputs to gamma_ and L_.
-void KdMBR::AccStats()
+void KdMBR::computeGamma()
 {
     using std::map;
 
-    int N = mlat.size() - 1;
-    int Q = one_best_id.size();
+    int state_count = mlat.size() - 1;
+    int word_len = one_best_id.size();
 
-    Vector<double> alpha(N+1); // index (1...N)
-    Matrix<double> alpha_dash(N+1, Q+1); // index (1...N, 0...Q)
-    Vector<double> alpha_dash_arc(Q+1); // index 0...Q
-    Matrix<double> beta_dash(N+1, Q+1); // index (1...N, 0...Q)
-    Vector<double> beta_dash_arc(Q+1); // index 0...Q
-    std::vector<char> b_arc(Q+1); // integer in {1,2,3}; index 1...Q
-    std::vector<map<int, double> > gamma(Q+1); // temp. form of gamma.
+    Vector<double> alpha(state_count+1); // index (1...N)
+    Matrix<double> alpha_dash(state_count+1, word_len+1); // index (1...N, 0...Q)
+    Vector<double> alpha_dash_arc(word_len+1); // index 0...Q
+    Matrix<double> beta_dash(state_count+1, word_len+1); // index (1...N, 0...Q)
+    Vector<double> beta_dash_arc(word_len+1); // index 0...Q
+    std::vector<char> arc_type(word_len+1); // integer in {1,2,3}; index 1...Q
+    std::vector<map<int, double> > gamma(word_len+1); // temp. form of gamma.
     // index 1...Q [word] -> occ.
 
     // The tau maps below are the sums over arcs with the same word label
     // of the tau_b and tau_e timing quantities mentioned in Appendix C of
     // the paper... we are using these to get averaged times for both the
     // the sausage bins and the 1-best output.
-    std::vector<map<int, double> > tau_b(Q+1), tau_e(Q+1);
+    std::vector<map<int, double> > tau_b(word_len+1), tau_e(word_len+1);
 
-    double Ltmp = EditDistance(N, Q, alpha, alpha_dash, alpha_dash_arc);
-    if( L_!=0 && Ltmp > L_) { // L_!=0 is to rule out 1st iter.
-        KALDI_WARN << "Edit distance increased: " << Ltmp << " > "
-                   << L_;
-    }
-    L_ = Ltmp;
+//    if( L_!=0 && Ltmp>L_ )
+//    {
+//        KALDI_WARN << "Edit distance increased: " << Ltmp << " > "
+//                   << L_;
+//    }
+    L_ = EditDistance(state_count, word_len, alpha, alpha_dash, alpha_dash_arc);
     KALDI_VLOG(2) << "L = " << L_;
     // omit line 10: zero when initialized.
-    beta_dash(N, Q) = 1.0; // Line 11.
-    for (int n = N; n >= 2; n--)
+    beta_dash(state_count, word_len) = 1.0; // Line 11.
+    for (int state=state_count ; state>=2 ; state-- ) // all states
     {
-        for (size_t i = 0; i < mlat[n].size(); i++)
+        for( size_t i=0 ; i<mlat[state].size() ; i++ ) // all arcs
         {
-            const KdMBRArc &arc = mlat_arc[mlat[n][i]];
-            int s_a = arc.start_node, w_a = arc.word;
+            const KdMBRArc &arc = mlat_arc[mlat[state][i]];
+            int s_a = arc.start_node;
+            int w_a = arc.word;
             float p_a = arc.loglike;
-            alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(w_a, 0, true); // line 14.
-            for (int q = 1; q <= Q; q++)
-            { // this loop==lines 15-18.
-                int r_q = one_best_id[q-1];;
-                double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
-                        a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
-                        a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
-                if( a1 <= a2)
+            alpha_dash_arc(0) = alpha_dash(arc.start_node, 0) + l_distance(w_a, 0, true); // line 14.
+            for( int q=1; q<=word_len ; q++ )
+            {
+                int w_id = one_best_id[q-1];;
+                double a1 = alpha_dash(arc.start_node, q-1) + l_distance(w_a, w_id);
+                double a2 = alpha_dash(arc.start_node, q) + l_distance(w_a, 0, true);
+                double a3 = alpha_dash_arc(q-1) + l_distance(0, w_id);
+                if( a1<=a2 )
                 {
-                    if( a1 <= a3)
+                    if( a1<=a3 )
                     {
-                        b_arc[q] = 1;
+                        arc_type[q] = 1;
                         alpha_dash_arc(q) = a1;
                     }
                     else
                     {
-                        b_arc[q] = 3;
+                        arc_type[q] = 3;
                         alpha_dash_arc(q) = a3;
                     }
                 }
@@ -284,30 +286,31 @@ void KdMBR::AccStats()
                 {
                     if( a2 <= a3)
                     {
-                        b_arc[q] = 2;
+                        arc_type[q] = 2;
                         alpha_dash_arc(q) = a2;
                     }
                     else
                     {
-                        b_arc[q] = 3;
+                        arc_type[q] = 3;
                         alpha_dash_arc(q) = a3;
                     }
                 }
             }
+
             beta_dash_arc.SetZero(); // line 19.
-            for (int q = Q; q >= 1; q--)
+            for (int q = word_len; q >= 1; q--)
             {
                 // line 21:
-                beta_dash_arc(q) += Exp(alpha(s_a) + p_a - alpha(n)) * beta_dash(n, q);
-                switch (static_cast<int>(b_arc[q]))
+                beta_dash_arc(q) += Exp(alpha(s_a) + p_a - alpha(state)) * beta_dash(state, q);
+                switch (arc_type[q])
                 { // lines 22 and 23:
                 case 1:
                     beta_dash(s_a, q-1) += beta_dash_arc(q);
                     // next: gamma(q, w(a)) += beta_dash_arc(q)
                     AddToMap(w_a, beta_dash_arc(q), &(gamma[q]));
                     // next: accumulating times, see decl for tau_b,tau_e
-                    AddToMap(w_a, state_times_[s_a] * beta_dash_arc(q), &(tau_b[q]));
-                    AddToMap(w_a, state_times_[n] * beta_dash_arc(q), &(tau_e[q]));
+                    AddToMap(w_a, s_times[s_a-1] * beta_dash_arc(q), &(tau_b[q]));
+                    AddToMap(w_a, s_times[state-1] * beta_dash_arc(q), &(tau_e[q]));
                     break;
                 case 2:
                     beta_dash(s_a, q) += beta_dash_arc(q);
@@ -320,29 +323,28 @@ void KdMBR::AccStats()
                     // WARNING: there was an error in Appendix C.  If we followed
                     // the instructions there the next line would say state_times_[sa], but
                     // it would be wrong.  I will try to publish an erratum.
-                    AddToMap(0, state_times_[n] * beta_dash_arc(q), &(tau_b[q]));
-                    AddToMap(0, state_times_[n] * beta_dash_arc(q), &(tau_e[q]));
+                    AddToMap(0, s_times[state-1] * beta_dash_arc(q), &(tau_b[q]));
+                    AddToMap(0, s_times[state-1] * beta_dash_arc(q), &(tau_e[q]));
                     break;
                 default:
                     qDebug() << "Invalid b_arc value"; // error in code.
                 }
             }
-            beta_dash_arc(0) += Exp(alpha(s_a) + p_a - alpha(n)) * beta_dash(n, 0);
+            beta_dash_arc(0) += Exp(alpha(s_a) + p_a - alpha(state)) * beta_dash(state, 0);
             beta_dash(s_a, 0) += beta_dash_arc(0); // line 26.
         }
     }
     beta_dash_arc.SetZero(); // line 29.
-    for (int q = Q; q >= 1; q--)
+    for( int q=word_len ; q>=1 ; q-- )
     {
         beta_dash_arc(q) += beta_dash(1, q);
         beta_dash_arc(q-1) += beta_dash_arc(q);
         AddToMap(0, beta_dash_arc(q), &(gamma[q]));
         // the statements below are actually redundant because
-        // state_times_[1] is zero.
-        AddToMap(0, state_times_[1] * beta_dash_arc(q), &(tau_b[q]));
-        AddToMap(0, state_times_[1] * beta_dash_arc(q), &(tau_e[q]));
+        AddToMap(0, s_times[0] * beta_dash_arc(q), &(tau_b[q]));
+        AddToMap(0, s_times[0] * beta_dash_arc(q), &(tau_e[q]));
     }
-    for (int q = 1; q <= Q; q++)
+    for (int q = 1; q <= word_len; q++)
     { // a check (line 35)
         double sum = 0.0;
         for (map<int, double>::iterator iter = gamma[q].begin();
@@ -354,8 +356,8 @@ void KdMBR::AccStats()
     // to the class member gamma_, which is using a different
     // data structure and indexed from zero, not one.
     gamma_.clear();
-    gamma_.resize(Q);
-    for (int q = 1; q <= Q; q++)
+    gamma_.resize(word_len);
+    for (int q = 1; q <= word_len; q++)
     {
         for (map<int, double>::iterator iter = gamma[q].begin();
              iter!=gamma[q].end(); ++iter)
@@ -369,10 +371,10 @@ void KdMBR::AccStats()
     // they get turned into the times_ data member, which has zero-based
     // indexing.
     times_.clear();
-    times_.resize(Q);
+    times_.resize(word_len);
     sausage_times_.clear();
-    sausage_times_.resize(Q);
-    for (int q = 1; q <= Q; q++)
+    sausage_times_.resize(word_len);
+    for (int q = 1; q <= word_len; q++)
     {
         double t_b = 0.0, t_e = 0.0;
         for (std::vector<std::pair<int, float>>::iterator iter = gamma_[q-1].begin();
@@ -466,26 +468,26 @@ QVector<BtWord> KdMBR::getResult()
     return result;
 }
 
-void KdMBR::createTimes(KdCompactLattice *clat)
+void KdMBR::checkLattice(KdCompactLattice *clat)
 {
-    kd_CreateSuperFinal(clat); // Add super-final state (i.e. just one final state).
+    kd_CreateSuperFinal(clat); // Add just one super-final state).
 
-    // Topologically sort the lattice, if not already sorted.
     kaldi::uint64 props  = clat->Properties(fst::kFstProperties, false);
+    // Check Top sort
     if( !(props & fst::kTopSorted) )
     {
-        if( fst::TopSort(clat)==false)
+        bool success = fst::TopSort(clat);
+        if( success==false )
         {
             qDebug() << "Cycles detected in lattice.";
         }
     }
-    kd_compactLatticeStateTimes(*clat, &state_times_); // work out times of the states in clat
+}
+
+void KdMBR::createTimes(KdCompactLattice *clat)
+{
+    kd_compactLatticeStateTimes(*clat, &s_times); // work out times of the states in clat
     b_times = kd_getTimes(*clat);
-    state_times_.push_back(0); // we'll convert to 1-based numbering.
-    for (size_t i = state_times_.size()-1; i > 0; i--)
-    {
-        state_times_[i] = state_times_[i-1];
-    }
 }
 
 // convert clat to mlat (lattic with KdMBRArc) and write to pre

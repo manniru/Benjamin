@@ -30,6 +30,7 @@ int kd_getEndTime(std::vector<int> input)
 
     return 0;
 }
+
 // CompactLatticeStateTimes
 QVector<int> kd_getTimes(KdCompactLattice &lat)
 {
@@ -57,6 +58,8 @@ QVector<int> kd_getTimes(KdCompactLattice &lat)
              if( arc.weight.string.size()>1 )
              {
                  times.push_back(times.last() + state_len + 1);
+//                 qDebug() << "WW" << arc.ilabel << arc.weight.weight.g_cost
+//                          << arc.weight.weight.a_cost;
              }
 
              state = arc.nextstate;

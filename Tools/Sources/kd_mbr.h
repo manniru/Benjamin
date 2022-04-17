@@ -21,6 +21,7 @@ public:
     QVector<BtWord>    getResult();
 
 private:
+    void checkLattice(KdCompactLattice *clat);
     void createTimes(KdCompactLattice *clat);
     void createMBRLat(KdCompactLattice *clat);
     void MbrDecode();
@@ -32,7 +33,7 @@ private:
                         kaldi::Matrix<double> &alpha_dash,
                         kaldi::Vector<double> &alpha_dash_arc);
 
-    void AccStats();
+    void computeGamma();
 
     void RemoveEps(std::vector<int> *vec);
     void AddEpsBest();
@@ -60,7 +61,7 @@ private:
     // do not overlap
     std::vector<std::pair<float, float> > sausage_times_;
     std::vector<std::pair<float, float> > one_best_times;
-    std::vector<int> state_times_; // time of each state in lattice,
+    std::vector<int> s_times; // time of each state in lattice,
     QVector<int> b_times; // time with benjamin flavour
 
     std::vector<float> one_best_conf;
