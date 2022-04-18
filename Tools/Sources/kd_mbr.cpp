@@ -8,11 +8,18 @@ struct GammaCompare
     // should be like operator <.  But we want reverse order
     // on the 2nd element (posterior), so it'll be like operator
     // > that looks first at the posterior.
-    bool operator () (const std::pair<int, float> &a,
-                      const std::pair<int, float> &b) const {
-        if( a.second > b.second) return true;
-        else if( a.second < b.second) return false;
-        else return a.first > b.first;
+    bool operator () (const KdGamma &a,
+                      const KdGamma &b) const
+    {
+        if( a.conf>b.conf )
+            return true;
+        else if( a.conf<b.conf )
+            return false;
+        else
+        {
+            ///FIXME: wrong result
+            return a.wid>b.wid;
+        }
     }
 };
 
@@ -47,17 +54,17 @@ void KdMBR::MbrDecode()
         for( int q=0 ; q<one_best_id.size() ; q++ )
         {// This loop updates one_best_id
             // gamma_[i] is sorted in reverse order so most likely one is first.
-            const std::vector<std::pair<int, float> > &this_gamma = gamma_[q];
+            std::vector<KdGamma > *this_gamma = &(gamma_[q]);
             double old_gamma = 0;
-            double new_gamma = this_gamma[0].second;
+            double new_gamma = (*this_gamma)[0].conf;
             int old_word = one_best_id[q];
-            int new_word = this_gamma[0].first; // new_word: new word
-            for( int j=0 ; j<this_gamma.size() ; j++ )
+            int new_word = (*this_gamma)[0].wid;
+            for( int j=0 ; j<this_gamma->size() ; j++ )
             {
 //                list[q].push_back(lexicon[this_gamma[j].first]);
-                if( this_gamma[j].first==old_word )
+                if( (*this_gamma)[j].wid==old_word )
                 {
-                    old_gamma = this_gamma[j].second;
+                    old_gamma = (*this_gamma)[j].conf;
                 }
             }
             delta_Q += (old_gamma - new_gamma); // will be 0 or negative; a bound on
@@ -73,9 +80,9 @@ void KdMBR::MbrDecode()
                 float confidence = 0.0;
                 for( int j=0 ; j<gamma_[q].size(); j++ )
                 {
-                    if( gamma_[q][j].first==one_best_id[q])
+                    if( gamma_[q][j].wid==one_best_id[q])
                     {
-                        confidence = gamma_[q][j].second;
+                        confidence = gamma_[q][j].conf;
                         break;
                     }
                 }
@@ -148,11 +155,10 @@ double KdMBR::EditDistance(int N, int Q,
         {
             KdMBRArc arc = mlat_arc[mlat[n][i]];
             int s_a = arc.start_node;
-            float p_a = arc.loglike;
 
             // for q = 0
             alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(arc.word, 0, true);
-            alpha_dash(n, 0) += Exp(alpha(s_a) + p_a - alpha(n)) * alpha_dash_arc(0);
+            alpha_dash(n, 0) += Exp(alpha(s_a) + arc.loglike - alpha(n)) * alpha_dash_arc(0);
             for( int q=1 ; q<=Q ; q++ )
             {
                 int word_id = one_best_id[q-1];
@@ -161,7 +167,7 @@ double KdMBR::EditDistance(int N, int Q,
                 double a3 = alpha_dash_arc(q-1)  + l_distance(0, word_id);
                 alpha_dash_arc(q) = std::min(a1, std::min(a2, a3));
                 // line 19:
-                alpha_dash(n, q) += Exp(alpha(s_a) + p_a - alpha(n)) * alpha_dash_arc(q);
+                alpha_dash(n, q) += Exp(alpha(s_a) + arc.loglike - alpha(n)) * alpha_dash_arc(q);
             }
         }
     }
@@ -276,28 +282,29 @@ void KdMBR::computeGamma()
         beta_dash_arc(q-1) += beta_dash_arc(q);
         AddToMap(0, beta_dash_arc(q), &(gamma_map[q]));
     }
-    for(int q = 1; q <= word_len; q++ )
-    { // a check (line 35)
-        double sum = 0.0;
-        for (map<int, double>::iterator iter = gamma_map[q].begin();
-             iter!=gamma_map[q].end(); ++iter) sum += iter->second;
-        if( fabs(sum - 1.0) > 0.1)
-            KALDI_WARN << "sum of gamma[" << q << ",s] is " << sum;
-    }
-    // The next part is where we take gamma, and convert
-    // to the class member gamma_, which is using a different
-    // data structure and indexed from zero, not one.
-    gamma_.clear();
-    gamma_.resize(word_len);
-    for (int q = 1; q <= word_len; q++)
+
+    // convert map to vec
+    convertToVec(&gamma_map, &gamma_, word_len);
+}
+
+void KdMBR::convertToVec(std::vector<std::map<int, double> > *map, KdGammaVec *out, int word_len)
+{
+    out->clear();
+    out->resize(word_len);
+
+    for (int q = 1; q<=word_len ; q++ )
     {
-        for (map<int, double>::iterator iter = gamma_map[q].begin();
-             iter!=gamma_map[q].end(); ++iter)
-            gamma_[q-1].push_back(
-                        std::make_pair(iter->first, static_cast<float>(iter->second)));
+        for( std::map<int, double>::iterator iter = (*map)[q].begin();
+             iter!=(*map)[q].end(); ++iter)
+        {
+            KdGamma g_buf;
+            g_buf.wid = iter->first;
+            g_buf.conf = iter->second;
+            (*out)[q-1].push_back(g_buf);
+        }
         // sort gamma_[q-1] from largest to smallest posterior.
         GammaCompare comp;
-        std::sort(gamma_[q-1].begin(), gamma_[q-1].end(), comp);
+        std::sort((*out)[q-1].begin(), (*out)[q-1].end(), comp);
     }
 }
 

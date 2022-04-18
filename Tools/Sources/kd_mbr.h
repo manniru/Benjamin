@@ -12,6 +12,14 @@
 #include "kd_lattice_compact.h"
 #include "kd_fst_util.h"
 
+typedef struct KdGamma
+{
+    int   wid;  // word id
+    float conf; // confidence level
+}KdGamma;
+
+typedef std::vector< std::vector<KdGamma> > KdGammaVec;
+
 class KdMBR
 {
 public:
@@ -35,6 +43,7 @@ private:
                         kaldi::Vector<double> &alpha_dash_arc);
 
     void computeGamma();
+    void convertToVec(std::vector<std::map<int, double> > *map, KdGammaVec *out, int word_len);
 
     void RemoveEps();
     void AddEpsBest();
@@ -54,8 +63,7 @@ private:
     std::vector<int> one_best_id; // R in paper
     double L_; // current averaged edit-distance between lattice and one_best_id.
 
-    std::vector<std::vector<std::pair<int, float> > > gamma_;
-    // The stats we accumulate; pair of (1.word-id, 2.posterior)
+    KdGammaVec gamma_;
 
     QVector<int> b_times; // time with benjamin flavour
     std::vector<float> one_best_conf;
