@@ -22,7 +22,7 @@ private:
     void getBestWords(KdCompactLattice *clat);
     void createMBRLat(KdCompactLattice *clat);
     void MbrDecode();
-    double decodePass();
+    void calculateConf();
 
     void computeGamma();
     void RemoveEps();
@@ -46,10 +46,10 @@ private:
     std::vector<int> best_wid; // R in paper
     double L_; // current averaged edit-distance between lattice and one_best_id.
 
-    KdGammaVec gamma_;
+    KdGammaVec lat_gamma;
 
     QVector<int> b_times; // time with benjamin flavour
-    std::vector<float> one_best_conf;
+    std::vector<float> best_conf;
 };
 
 #endif // KD_MBR_H

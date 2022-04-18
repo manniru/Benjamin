@@ -21,71 +21,33 @@ void KdMBR::compute(KdCompactLattice *clat_in)
 
 void KdMBR::MbrDecode()
 {
-    QVector<QString> list[30];
-    for( size_t counter=0 ; ; counter++ )
-    {
-        AddEpsBest();
-        computeGamma();
-
-        double delta_Q = decodePass();
-        qDebug() << "Iter = " << counter << ", delta-Q = " << delta_Q;
-        if( delta_Q==0 )
-            break;
-        if( counter > 100)
-        {
-            qDebug() << "Iterating too many times in MbrDecode; stopping.";
-            break;
-        }
-    }
+    AddEpsBest();
+    computeGamma();
+    calculateConf();
 
     RemoveEps();
 }
 
-double KdMBR::decodePass()
+void KdMBR::calculateConf()
 {
-    double delta_Q = 0.0; // change in objective function.
-
-    one_best_conf.clear();
+    best_conf.clear();
 
     for( int q=0 ; q<best_wid.size() ; q++ )
-    {// This loop updates one_best_id
-        // gamma_[i] is sorted in reverse order so most likely one is first.
-        double old_gamma = 0;
-        double new_gamma = gamma_[q][0].conf;
-        int old_word = best_wid[q];
-        int new_word = gamma_[q][0].wid;
-        for( int j=0 ; j<gamma_[q].size() ; j++ )
+    {
+        double w_conf = 0;
+        for( int j=0 ; j<lat_gamma[q].size() ; j++ )
         {
-//                list[q].push_back(lexicon[this_gamma[j].first]);
-            if( gamma_[q][j].wid==old_word )
+            if( lat_gamma[q][j].wid==best_wid[q] )
             {
-                old_gamma = gamma_[q][j].conf;
+                w_conf = lat_gamma[q][j].conf;
             }
         }
-        delta_Q += old_gamma - new_gamma; // will be 0 or negative
-        // change in error.
-        if( old_word!=new_word )
-        {
-            KALDI_VLOG(2) << "Changing word " << old_word << " to " << new_word;
-        }
-        best_wid[q] = new_word;
 
         if( best_wid[q]!=0 )
         {
-            float confidence = 0.0;
-            for( int j=0 ; j<gamma_[q].size(); j++ )
-            {
-                if( gamma_[q][j].wid==best_wid[q])
-                {
-                    confidence = gamma_[q][j].conf;
-                    break;
-                }
-            }
-            one_best_conf.push_back(confidence);
+            best_conf.push_back(w_conf);
         }
     }
-
-    return delta_Q;
 }
 
 // from words
@@ -125,7 +87,7 @@ void KdMBR::computeGamma()
     if( max_state<state_count )
     {
         max_state = state_count;
-        qDebug() << "st" << state_count << word_len;
+//        qDebug() << "st" << state_count << word_len;
     }
 
     Vector<double> alpha(state_count+1); // index (1...N)
@@ -225,30 +187,28 @@ void KdMBR::computeGamma()
     }
 
     // convert map to vec
-    kd_convertToVec(&gamma_map, &gamma_, word_len);
+    kd_convertToVec(&gamma_map, &lat_gamma, word_len);
 }
 
 QVector<BtWord> KdMBR::getResult()
 {
     QVector<BtWord> result;
-    std::vector<float> conf = one_best_conf;
-    std::vector<int> words = best_wid;
 
-    for( int i = 0; i<words.size() ; i++ )
+    for( int i = 0; i<best_wid.size() ; i++ )
     {
         if( i>(b_times.size()-2) )
         {
             qDebug() << "Error 141: MBR Times"
                      << b_times.size()
-                     << "on word" << lexicon[words[i]];
+                     << "on word" << lexicon[best_wid[i]];
             break;
         }
         BtWord word_buf;
-        word_buf.conf  = conf[i];
+        word_buf.conf  = best_conf[i];
         word_buf.start = b_times[i]  /100.0;
         word_buf.end   = b_times[i+1]/100.0;
         word_buf.time  = (word_buf.start+word_buf.end)/2;
-        word_buf.word  = lexicon[words[i]];
+        word_buf.word  = lexicon[best_wid[i]];
         word_buf.is_final = 0;
 
         result.push_back(word_buf);
