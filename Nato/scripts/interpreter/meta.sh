@@ -52,7 +52,7 @@ elif [[ "$WORD" == "mouse" ]]; then
     
     OUTPUT="12"
     
-elif [[ "$WORD" == "colon" ]]; then
+elif [[ "$WORD" == "touch" ]]; then
     
     OUTPUT="13"
     

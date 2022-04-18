@@ -2,27 +2,6 @@
 #include <QDebug>
 
 using namespace kaldi;
-
-struct GammaCompare
-{
-    // should be like operator <.  But we want reverse order
-    // on the 2nd element (posterior), so it'll be like operator
-    // > that looks first at the posterior.
-    bool operator () (const KdGamma &a,
-                      const KdGamma &b) const
-    {
-        if( a.conf>b.conf )
-            return true;
-        else if( a.conf<b.conf )
-            return false;
-        else
-        {
-            ///FIXME: wrong result
-            return a.wid>b.wid;
-        }
-    }
-};
-
 KdMBR::KdMBR()
 {
     lexicon = bt_parseLexicon(BT_WORDS_PATH);
@@ -47,54 +26,14 @@ void KdMBR::MbrDecode()
     {
         AddEpsBest();
         computeGamma();
-        double delta_Q = 0.0; // change in objective function.
 
-        one_best_conf.clear();
-
-        for( int q=0 ; q<one_best_id.size() ; q++ )
-        {// This loop updates one_best_id
-            // gamma_[i] is sorted in reverse order so most likely one is first.
-            std::vector<KdGamma > *this_gamma = &(gamma_[q]);
-            double old_gamma = 0;
-            double new_gamma = (*this_gamma)[0].conf;
-            int old_word = one_best_id[q];
-            int new_word = (*this_gamma)[0].wid;
-            for( int j=0 ; j<this_gamma->size() ; j++ )
-            {
-//                list[q].push_back(lexicon[this_gamma[j].first]);
-                if( (*this_gamma)[j].wid==old_word )
-                {
-                    old_gamma = (*this_gamma)[j].conf;
-                }
-            }
-            delta_Q += (old_gamma - new_gamma); // will be 0 or negative; a bound on
-            // change in error.
-            if( old_word!=new_word )
-            {
-                KALDI_VLOG(2) << "Changing word " << old_word << " to " << new_word;
-            }
-            one_best_id[q] = new_word;
-            // build the outputs (time, confidences),
-            if( one_best_id[q]!=0 )
-            {
-                float confidence = 0.0;
-                for( int j=0 ; j<gamma_[q].size(); j++ )
-                {
-                    if( gamma_[q][j].wid==one_best_id[q])
-                    {
-                        confidence = gamma_[q][j].conf;
-                        break;
-                    }
-                }
-                one_best_conf.push_back(confidence);
-            }
-        }
-        KALDI_VLOG(2) << "Iter = " << counter << ", delta-Q = " << delta_Q;
+        double delta_Q = decodePass();
+        qDebug() << "Iter = " << counter << ", delta-Q = " << delta_Q;
         if( delta_Q==0 )
             break;
         if( counter > 100)
         {
-            KALDI_WARN << "Iterating too many times in MbrDecode; stopping.";
+            qDebug() << "Iterating too many times in MbrDecode; stopping.";
             break;
         }
     }
@@ -102,14 +41,61 @@ void KdMBR::MbrDecode()
     RemoveEps();
 }
 
+double KdMBR::decodePass()
+{
+    double delta_Q = 0.0; // change in objective function.
+
+    one_best_conf.clear();
+
+    for( int q=0 ; q<best_wid.size() ; q++ )
+    {// This loop updates one_best_id
+        // gamma_[i] is sorted in reverse order so most likely one is first.
+        double old_gamma = 0;
+        double new_gamma = gamma_[q][0].conf;
+        int old_word = best_wid[q];
+        int new_word = gamma_[q][0].wid;
+        for( int j=0 ; j<gamma_[q].size() ; j++ )
+        {
+//                list[q].push_back(lexicon[this_gamma[j].first]);
+            if( gamma_[q][j].wid==old_word )
+            {
+                old_gamma = gamma_[q][j].conf;
+            }
+        }
+        delta_Q += old_gamma - new_gamma; // will be 0 or negative
+        // change in error.
+        if( old_word!=new_word )
+        {
+            KALDI_VLOG(2) << "Changing word " << old_word << " to " << new_word;
+        }
+        best_wid[q] = new_word;
+
+        if( best_wid[q]!=0 )
+        {
+            float confidence = 0.0;
+            for( int j=0 ; j<gamma_[q].size(); j++ )
+            {
+                if( gamma_[q][j].wid==best_wid[q])
+                {
+                    confidence = gamma_[q][j].conf;
+                    break;
+                }
+            }
+            one_best_conf.push_back(confidence);
+        }
+    }
+
+    return delta_Q;
+}
+
 // from words
 void KdMBR::RemoveEps()
 {
-    for( int i=0 ; i<one_best_id.size() ; i++ )
+    for( int i=0 ; i<best_wid.size() ; i++ )
     {
-        if( one_best_id[i]==0 )
+        if( best_wid[i]==0 )
         {
-            one_best_id.erase(one_best_id.begin()+i);
+            best_wid.erase(best_wid.begin()+i);
             i--;
         }
     }
@@ -119,59 +105,14 @@ void KdMBR::RemoveEps()
 void KdMBR::AddEpsBest()
 {
     RemoveEps();
-    one_best_id.resize(1 + one_best_id.size() * 2);
-    int len = one_best_id.size();
+    best_wid.resize(1 + best_wid.size() * 2);
+    int len = best_wid.size();
     for( int i=len/2-1 ; i>=0 ; i-- )
     {
-        one_best_id[i*2 + 1] = one_best_id[i];
-        one_best_id[i*2 + 2] = 0;
+        best_wid[i*2 + 1] = best_wid[i];
+        best_wid[i*2 + 2] = 0;
     }
-    one_best_id[0] = 0;
-}
-
-// Figure 4 of paper; called from AccStats
-double KdMBR::EditDistance(int N, int Q,
-                           Vector<double> &alpha,
-                           Matrix<double> &alpha_dash,
-                           Vector<double> &alpha_dash_arc)
-{
-    alpha(1) = 0.0; // = log(1).  Line 5.
-    alpha_dash(1, 0) = 0.0; // Line 5.
-    for (int q = 1; q <= Q; q++)
-    {
-        alpha_dash(1, q) = alpha_dash(1, q-1) + l_distance(0, one_best_id[q-1]); // Line 7.
-    }
-    for (int n = 2; n <= N; n++)
-    {
-        double alpha_n = kLogZeroDouble;
-        for (size_t i = 0; i < mlat[n].size(); i++)
-        {
-            const KdMBRArc &arc = mlat_arc[mlat[n][i]];
-            alpha_n = LogAdd(alpha_n, alpha(arc.start_node) + arc.loglike);
-        }
-        alpha(n) = alpha_n; // Line 10.
-        // Line 11 omitted: matrix was initialized to zero.
-        for (size_t i = 0; i < mlat[n].size(); i++)
-        {
-            KdMBRArc arc = mlat_arc[mlat[n][i]];
-            int s_a = arc.start_node;
-
-            // for q = 0
-            alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(arc.word, 0, true);
-            alpha_dash(n, 0) += Exp(alpha(s_a) + arc.loglike - alpha(n)) * alpha_dash_arc(0);
-            for( int q=1 ; q<=Q ; q++ )
-            {
-                int word_id = one_best_id[q-1];
-                double a1 = alpha_dash(s_a, q-1) + l_distance(arc.word, word_id);
-                double a2 = alpha_dash(s_a, q)   + l_distance(arc.word, 0, true);
-                double a3 = alpha_dash_arc(q-1)  + l_distance(0, word_id);
-                alpha_dash_arc(q) = std::min(a1, std::min(a2, a3));
-                // line 19:
-                alpha_dash(n, q) += Exp(alpha(s_a) + arc.loglike - alpha(n)) * alpha_dash_arc(q);
-            }
-        }
-    }
-    return alpha_dash(N, Q); // line 23.
+    best_wid[0] = 0;
 }
 
 void KdMBR::computeGamma()
@@ -179,7 +120,7 @@ void KdMBR::computeGamma()
     using std::map;
 
     int state_count = mlat.size() - 1; // = Number of words
-    int word_len = one_best_id.size();
+    int word_len = best_wid.size();
 
     if( max_state<state_count )
     {
@@ -200,7 +141,7 @@ void KdMBR::computeGamma()
 //        KALDI_WARN << "Edit distance increased: " << Ltmp << " > "
 //                   << L_;
 //    }
-    L_ = EditDistance(state_count, word_len, alpha, alpha_dash, alpha_dash_arc);
+    L_ = editDistance(state_count, word_len, alpha, alpha_dash, alpha_dash_arc);
     KALDI_VLOG(2) << "L = " << L_;
     // omit line 10: zero when initialized.
     beta_dash(state_count, word_len) = 1.0; // Line 11.
@@ -212,13 +153,13 @@ void KdMBR::computeGamma()
             int s_a = arc.start_node;
             int w_a = arc.word;
             float p_a = arc.loglike;
-            alpha_dash_arc(0) = alpha_dash(arc.start_node, 0) + l_distance(w_a, 0, true); // line 14.
+            alpha_dash_arc(0) = alpha_dash(arc.start_node, 0) + kd_l_distance(w_a, 0, true); // line 14.
             for( int q=1; q<=word_len ; q++ )
             {
-                int w_id = one_best_id[q-1];;
-                double a1 = alpha_dash(arc.start_node, q-1) + l_distance(w_a, w_id);
-                double a2 = alpha_dash(arc.start_node, q) + l_distance(w_a, 0, true);
-                double a3 = alpha_dash_arc(q-1) + l_distance(0, w_id);
+                int w_id = best_wid[q-1];;
+                double a1 = alpha_dash(arc.start_node, q-1) + kd_l_distance(w_a, w_id);
+                double a2 = alpha_dash(arc.start_node, q) + kd_l_distance(w_a, 0, true);
+                double a3 = alpha_dash_arc(q-1) + kd_l_distance(0, w_id);
                 if( a1<=a2 )
                 {
                     if( a1<=a3 )
@@ -257,7 +198,7 @@ void KdMBR::computeGamma()
                 case 1:
                     beta_dash(s_a, q-1) += beta_dash_arc(q);
                     // next: gamma(q, w(a)) += beta_dash_arc(q)
-                    AddToMap(w_a, beta_dash_arc(q), &(gamma_map[q]));
+                    addToGamma(w_a, beta_dash_arc(q), &(gamma_map[q]));
                     break;
                 case 2:
                     beta_dash(s_a, q) += beta_dash_arc(q);
@@ -265,7 +206,7 @@ void KdMBR::computeGamma()
                 case 3:
                     beta_dash_arc(q-1) += beta_dash_arc(q);
                     // next: gamma(q, epsilon) += beta_dash_arc(q)
-                    AddToMap(0, beta_dash_arc(q), &(gamma_map[q]));
+                    addToGamma(0, beta_dash_arc(q), &(gamma_map[q]));
                     break;
                 default:
                     qDebug() << "Invalid b_arc value"; // error in code.
@@ -280,65 +221,18 @@ void KdMBR::computeGamma()
     {
         beta_dash_arc(q) += beta_dash(1, q);
         beta_dash_arc(q-1) += beta_dash_arc(q);
-        AddToMap(0, beta_dash_arc(q), &(gamma_map[q]));
+        addToGamma(0, beta_dash_arc(q), &(gamma_map[q]));
     }
 
     // convert map to vec
-    convertToVec(&gamma_map, &gamma_, word_len);
-}
-
-void KdMBR::convertToVec(std::vector<std::map<int, double> > *map, KdGammaVec *out, int word_len)
-{
-    out->clear();
-    out->resize(word_len);
-
-    for (int q = 1; q<=word_len ; q++ )
-    {
-        for( std::map<int, double>::iterator iter = (*map)[q].begin();
-             iter!=(*map)[q].end(); ++iter)
-        {
-            KdGamma g_buf;
-            g_buf.wid = iter->first;
-            g_buf.conf = iter->second;
-            (*out)[q-1].push_back(g_buf);
-        }
-        // sort gamma_[q-1] from largest to smallest posterior.
-        GammaCompare comp;
-        std::sort((*out)[q-1].begin(), (*out)[q-1].end(), comp);
-    }
-}
-
-void KdMBR::AddToMap(int i, double d, std::map<int, double> *gamma)
-{
-    if( d==0 )
-        return;
-    std::pair<const int, double> pr(i, d);
-    std::pair<std::map<int, double>::iterator, bool> ret = gamma->insert(pr);
-    if( !ret.second) // not inserted, so add to contents.
-        ret.first->second += d;
-}
-
-double KdMBR::l_distance(int a, int b, bool penalize)
-{
-    if( a==b)
-    {
-        return 0.0;
-    }
-    else if( penalize )
-    {
-        return 1.0 + KD_MBR_DELTA;
-    }
-    else
-    {
-        return 1.0;
-    }
+    kd_convertToVec(&gamma_map, &gamma_, word_len);
 }
 
 QVector<BtWord> KdMBR::getResult()
 {
     QVector<BtWord> result;
     std::vector<float> conf = one_best_conf;
-    std::vector<int> words = one_best_id;
+    std::vector<int> words = best_wid;
 
     for( int i = 0; i<words.size() ; i++ )
     {
@@ -406,7 +300,7 @@ void KdMBR::getBestWords(KdCompactLattice *clat)
     fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
     kd_GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
 //    KALDI_ASSERT(alignment.empty()); // we removed the alignment.
-    one_best_id = words;
+    best_wid = words;
 }
 
 // convert clat to mlat (lattic with KdMBRArc) and write to pre
@@ -437,4 +331,49 @@ void KdMBR::createMBRLat(KdCompactLattice *clat)
             mlat_arc.push_back(arc);
         }
     }
+}
+
+
+double KdMBR::editDistance(int N, int Q,
+                           Vector<double> &alpha,
+                           Matrix<double> &alpha_dash,
+                           Vector<double> &alpha_dash_arc)
+{
+    alpha(1) = 0.0; // = log(1).  Line 5.
+    alpha_dash(1, 0) = 0.0; // Line 5.
+    for (int q = 1; q <= Q; q++)
+    {
+        alpha_dash(1, q) = alpha_dash(1, q-1) + kd_l_distance(0, best_wid[q-1]); // Line 7.
+    }
+    for (int n = 2; n <= N; n++)
+    {
+        double alpha_n = kLogZeroDouble;
+        for (size_t i = 0; i < mlat[n].size(); i++)
+        {
+            const KdMBRArc &arc = mlat_arc[mlat[n][i]];
+            alpha_n = LogAdd(alpha_n, alpha(arc.start_node) + arc.loglike);
+        }
+        alpha(n) = alpha_n; // Line 10.
+        // Line 11 omitted: matrix was initialized to zero.
+        for (size_t i = 0; i < mlat[n].size(); i++)
+        {
+            KdMBRArc arc = mlat_arc[mlat[n][i]];
+            int s_a = arc.start_node;
+
+            // for q = 0
+            alpha_dash_arc(0) = alpha_dash(s_a, 0) + kd_l_distance(arc.word, 0, true);
+            alpha_dash(n, 0) += Exp(alpha(s_a) + arc.loglike - alpha(n)) * alpha_dash_arc(0);
+            for( int q=1 ; q<=Q ; q++ )
+            {
+                int word_id = best_wid[q-1];
+                double a1 = alpha_dash(s_a, q-1) + kd_l_distance(arc.word, word_id);
+                double a2 = alpha_dash(s_a, q)   + kd_l_distance(arc.word, 0, true);
+                double a3 = alpha_dash_arc(q-1)  + kd_l_distance(0, word_id);
+                alpha_dash_arc(q) = std::min(a1, std::min(a2, a3));
+                // line 19:
+                alpha_dash(n, q) += Exp(alpha(s_a) + arc.loglike - alpha(n)) * alpha_dash_arc(q);
+            }
+        }
+    }
+    return alpha_dash(N, Q); // line 23.
 }
