@@ -42,7 +42,6 @@ void KdMBR::MbrDecode()
         computeGamma();
         double delta_Q = 0.0; // change in objective function.
 
-        one_best_times.clear();
         one_best_conf.clear();
 
         for( int q=0 ; q<one_best_id.size() ; q++ )
@@ -71,43 +70,8 @@ void KdMBR::MbrDecode()
             // build the outputs (time, confidences),
             if( one_best_id[q]!=0 )
             {
-                // see which 'item' from the sausage-bin should we select,
-                // (not necessarily the 1st one when MBR decoding disabled)
-                int s = 0;
-                for( int j=0 ; j<gamma_[q].size() ; j++ )
-                {
-                    if( gamma_[q][j].first==one_best_id[q])
-                    {
-                        s = j;
-                        break;
-                    }
-                }
-                one_best_times.push_back(times_[q][s]);
-                // post-process the times,
-                size_t i = one_best_times.size();
-                if( i > 1 && one_best_times[i-2].second > one_best_times[i-1].first)
-                {
-                    // It's quite possible for this to happen, but it seems like it would
-                    // have a bad effect on the downstream processing, so we fix it here.
-                    // We resolve overlaps by redistributing the available time interval.
-                    float prev_right = i > 2 ? one_best_times[i-3].second : 0.0;
-                    float left = std::max(prev_right,
-                                              std::min(one_best_times[i-2].first,
-                                              one_best_times[i-1].first));
-                    float right = std::max(one_best_times[i-2].second,
-                            one_best_times[i-1].second);
-                    float first_dur =
-                            one_best_times[i-2].second - one_best_times[i-2].first;
-                    float second_dur =
-                            one_best_times[i-1].second - one_best_times[i-1].first;
-                    float mid = first_dur > 0 ? left + (right - left) * first_dur /
-                                                    (first_dur + second_dur) : left;
-                    one_best_times[i-2].first = left;
-                    one_best_times[i-2].second = one_best_times[i-1].first = mid;
-                    one_best_times[i-1].second = right;
-                }
                 float confidence = 0.0;
-                for (int j = 0; j < gamma_[q].size(); j++)
+                for( int j=0 ; j<gamma_[q].size(); j++ )
                 {
                     if( gamma_[q][j].first==one_best_id[q])
                     {
@@ -119,7 +83,7 @@ void KdMBR::MbrDecode()
             }
         }
         KALDI_VLOG(2) << "Iter = " << counter << ", delta-Q = " << delta_Q;
-        if( delta_Q==0)
+        if( delta_Q==0 )
             break;
         if( counter > 100)
         {
@@ -128,16 +92,17 @@ void KdMBR::MbrDecode()
         }
     }
 
-    RemoveEps(&one_best_id);
+    RemoveEps();
 }
 
-void KdMBR::RemoveEps(std::vector<int> *vec)
+// from words
+void KdMBR::RemoveEps()
 {
-    for( int i=0 ; i<vec->size() ; i++ )
+    for( int i=0 ; i<one_best_id.size() ; i++ )
     {
-        if( vec->at(i)==0 )
+        if( one_best_id[i]==0 )
         {
-            vec->erase(vec->begin()+i);
+            one_best_id.erase(one_best_id.begin()+i);
             i--;
         }
     }
@@ -146,7 +111,7 @@ void KdMBR::RemoveEps(std::vector<int> *vec)
 // add eps at the beginning, end and between words
 void KdMBR::AddEpsBest()
 {
-    RemoveEps(&one_best_id);
+    RemoveEps();
     one_best_id.resize(1 + one_best_id.size() * 2);
     int len = one_best_id.size();
     for( int i=len/2-1 ; i>=0 ; i-- )
@@ -181,24 +146,20 @@ double KdMBR::EditDistance(int N, int Q,
         // Line 11 omitted: matrix was initialized to zero.
         for (size_t i = 0; i < mlat[n].size(); i++)
         {
-            const KdMBRArc &arc = mlat_arc[mlat[n][i]];
-            int s_a = arc.start_node, w_a = arc.word;
+            KdMBRArc arc = mlat_arc[mlat[n][i]];
+            int s_a = arc.start_node;
             float p_a = arc.loglike;
-            for (int q = 0; q <= Q; q++)
+
+            // for q = 0
+            alpha_dash_arc(0) = alpha_dash(s_a, 0) + l_distance(arc.word, 0, true);
+            alpha_dash(n, 0) += Exp(alpha(s_a) + p_a - alpha(n)) * alpha_dash_arc(0);
+            for( int q=1 ; q<=Q ; q++ )
             {
-                if( q==0)
-                {
-                    alpha_dash_arc(q) = // line 15.
-                            alpha_dash(s_a, q) + l_distance(w_a, 0, true);
-                }
-                else
-                {  // a1,a2,a3 are the 3 parts of min expression of line 17.
-                    int r_q = one_best_id[q-1];;
-                    double a1 = alpha_dash(s_a, q-1) + l_distance(w_a, r_q),
-                            a2 = alpha_dash(s_a, q) + l_distance(w_a, 0, true),
-                            a3 = alpha_dash_arc(q-1) + l_distance(0, r_q);
-                    alpha_dash_arc(q) = std::min(a1, std::min(a2, a3));
-                }
+                int word_id = one_best_id[q-1];
+                double a1 = alpha_dash(s_a, q-1) + l_distance(arc.word, word_id);
+                double a2 = alpha_dash(s_a, q)   + l_distance(arc.word, 0, true);
+                double a3 = alpha_dash_arc(q-1)  + l_distance(0, word_id);
+                alpha_dash_arc(q) = std::min(a1, std::min(a2, a3));
                 // line 19:
                 alpha_dash(n, q) += Exp(alpha(s_a) + p_a - alpha(n)) * alpha_dash_arc(q);
             }
@@ -207,7 +168,6 @@ double KdMBR::EditDistance(int N, int Q,
     return alpha_dash(N, Q); // line 23.
 }
 
-// Figure 5 of paper.  Outputs to gamma_ and L_.
 void KdMBR::computeGamma()
 {
     using std::map;
@@ -227,14 +187,7 @@ void KdMBR::computeGamma()
     Matrix<double> beta_dash(state_count+1, word_len+1); // index (1...N, 0...Q)
     Vector<double> beta_dash_arc(word_len+1); // index 0...Q
     std::vector<char> arc_type(word_len+1); // integer in {1,2,3}; index 1...Q
-    std::vector<map<int, double> > gamma(word_len+1); // temp. form of gamma.
-    // index 1...Q [word] -> occ.
-
-    // The tau maps below are the sums over arcs with the same word label
-    // of the tau_b and tau_e timing quantities mentioned in Appendix C of
-    // the paper... we are using these to get averaged times for both the
-    // the sausage bins and the 1-best output.
-    std::vector<map<int, double> > tau_b(word_len+1), tau_e(word_len+1);
+    std::vector<map<int, double> > gamma_map(word_len+1); // temp. form of gamma.
 
 //    if( L_!=0 && Ltmp>L_ )
 //    {
@@ -245,7 +198,7 @@ void KdMBR::computeGamma()
     KALDI_VLOG(2) << "L = " << L_;
     // omit line 10: zero when initialized.
     beta_dash(state_count, word_len) = 1.0; // Line 11.
-    for (int state=state_count ; state>=2 ; state-- ) // all states
+    for( int state=state_count ; state>=2 ; state-- ) // all states
     {
         for( size_t i=0 ; i<mlat[state].size() ; i++ ) // all arcs
         {
@@ -298,10 +251,7 @@ void KdMBR::computeGamma()
                 case 1:
                     beta_dash(s_a, q-1) += beta_dash_arc(q);
                     // next: gamma(q, w(a)) += beta_dash_arc(q)
-                    AddToMap(w_a, beta_dash_arc(q), &(gamma[q]));
-                    // next: accumulating times, see decl for tau_b,tau_e
-                    AddToMap(w_a, s_times[s_a-1] * beta_dash_arc(q), &(tau_b[q]));
-                    AddToMap(w_a, s_times[state-1] * beta_dash_arc(q), &(tau_e[q]));
+                    AddToMap(w_a, beta_dash_arc(q), &(gamma_map[q]));
                     break;
                 case 2:
                     beta_dash(s_a, q) += beta_dash_arc(q);
@@ -309,13 +259,7 @@ void KdMBR::computeGamma()
                 case 3:
                     beta_dash_arc(q-1) += beta_dash_arc(q);
                     // next: gamma(q, epsilon) += beta_dash_arc(q)
-                    AddToMap(0, beta_dash_arc(q), &(gamma[q]));
-                    // next: accumulating times, see decl for tau_b,tau_e
-                    // WARNING: there was an error in Appendix C.  If we followed
-                    // the instructions there the next line would say state_times_[sa], but
-                    // it would be wrong.  I will try to publish an erratum.
-                    AddToMap(0, s_times[state-1] * beta_dash_arc(q), &(tau_b[q]));
-                    AddToMap(0, s_times[state-1] * beta_dash_arc(q), &(tau_e[q]));
+                    AddToMap(0, beta_dash_arc(q), &(gamma_map[q]));
                     break;
                 default:
                     qDebug() << "Invalid b_arc value"; // error in code.
@@ -330,16 +274,13 @@ void KdMBR::computeGamma()
     {
         beta_dash_arc(q) += beta_dash(1, q);
         beta_dash_arc(q-1) += beta_dash_arc(q);
-        AddToMap(0, beta_dash_arc(q), &(gamma[q]));
-        // the statements below are actually redundant because
-        AddToMap(0, s_times[0] * beta_dash_arc(q), &(tau_b[q]));
-        AddToMap(0, s_times[0] * beta_dash_arc(q), &(tau_e[q]));
+        AddToMap(0, beta_dash_arc(q), &(gamma_map[q]));
     }
-    for (int q = 1; q <= word_len; q++)
+    for(int q = 1; q <= word_len; q++ )
     { // a check (line 35)
         double sum = 0.0;
-        for (map<int, double>::iterator iter = gamma[q].begin();
-             iter!=gamma[q].end(); ++iter) sum += iter->second;
+        for (map<int, double>::iterator iter = gamma_map[q].begin();
+             iter!=gamma_map[q].end(); ++iter) sum += iter->second;
         if( fabs(sum - 1.0) > 0.1)
             KALDI_WARN << "sum of gamma[" << q << ",s] is " << sum;
     }
@@ -350,55 +291,20 @@ void KdMBR::computeGamma()
     gamma_.resize(word_len);
     for (int q = 1; q <= word_len; q++)
     {
-        for (map<int, double>::iterator iter = gamma[q].begin();
-             iter!=gamma[q].end(); ++iter)
+        for (map<int, double>::iterator iter = gamma_map[q].begin();
+             iter!=gamma_map[q].end(); ++iter)
             gamma_[q-1].push_back(
                         std::make_pair(iter->first, static_cast<float>(iter->second)));
         // sort gamma_[q-1] from largest to smallest posterior.
         GammaCompare comp;
         std::sort(gamma_[q-1].begin(), gamma_[q-1].end(), comp);
     }
-    // We do the same conversion for the state times tau_b and tau_e:
-    // they get turned into the times_ data member, which has zero-based
-    // indexing.
-    times_.clear();
-    times_.resize(word_len);
-    sausage_times_.clear();
-    sausage_times_.resize(word_len);
-    for (int q = 1; q <= word_len; q++)
-    {
-        double t_b = 0.0, t_e = 0.0;
-        for (std::vector<std::pair<int, float>>::iterator iter = gamma_[q-1].begin();
-             iter!=gamma_[q-1].end(); ++iter)
-        {
-            double w_b = tau_b[q][iter->first], w_e = tau_e[q][iter->first];
-            if( w_b > w_e)
-                KALDI_WARN << "Times out of order";  // this is quite bad.
-            times_[q-1].push_back(
-                        std::make_pair(static_cast<float>(w_b / iter->second),
-                                       static_cast<float>(w_e / iter->second)));
-            t_b += w_b;
-            t_e += w_e;
-        }
-        sausage_times_[q-1].first = t_b;
-        sausage_times_[q-1].second = t_e;
-        if( sausage_times_[q-1].first > sausage_times_[q-1].second)
-            KALDI_WARN << "Times out of order";  // this is quite bad.
-        if( q > 1 && sausage_times_[q-2].second > sausage_times_[q-1].first)
-        {
-            // We previously had a warning here, but now we'll just set both
-            // those values to their average.  It's quite possible for this
-            // condition to happen, but it seems like it would have a bad effect
-            // on the downstream processing, so we fix it.
-            sausage_times_[q-2].second = sausage_times_[q-1].first =
-                    0.5 * (sausage_times_[q-2].second + sausage_times_[q-1].first);
-        }
-    }
 }
 
 void KdMBR::AddToMap(int i, double d, std::map<int, double> *gamma)
 {
-    if( d==0) return;
+    if( d==0 )
+        return;
     std::pair<const int, double> pr(i, d);
     std::pair<std::map<int, double>::iterator, bool> ret = gamma->insert(pr);
     if( !ret.second) // not inserted, so add to contents.
@@ -476,7 +382,6 @@ void KdMBR::checkLattice(KdCompactLattice *clat)
 
 void KdMBR::createTimes(KdCompactLattice *clat)
 {
-    kd_compactLatticeStateTimes(*clat, &s_times); // work out times of the states in clat
     b_times = kd_getTimes(*clat);
 }
 
@@ -517,8 +422,8 @@ void KdMBR::createMBRLat(KdCompactLattice *clat)
             arc.word = carc.ilabel; //==carc.olabel
             arc.start_node = n+1; // add 1 (indexed from 1)
             arc.end_node = carc.nextstate + 1; // convert to 1-based.
-            arc.loglike = - (carc.weight.weight.g_cost*0.0 +
-                             carc.weight.weight.a_cost*0.3);
+            arc.loglike = - (carc.weight.weight.g_cost*0.5 +
+                             carc.weight.weight.a_cost*0.8);
 
             mlat[arc.end_node].push_back(arc_id);
             arc_id++;

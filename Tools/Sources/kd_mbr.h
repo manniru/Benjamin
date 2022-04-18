@@ -36,7 +36,7 @@ private:
 
     void computeGamma();
 
-    void RemoveEps(std::vector<int> *vec);
+    void RemoveEps();
     void AddEpsBest();
 
     void AddToMap(int i, double d, std::map<int, double> *gamma);
@@ -57,15 +57,7 @@ private:
     std::vector<std::vector<std::pair<int, float> > > gamma_;
     // The stats we accumulate; pair of (1.word-id, 2.posterior)
 
-    // Appendix C of the paper.
-    // may overlap.
-    std::vector<std::vector<std::pair<float, float> > > times_;
-    // do not overlap
-    std::vector<std::pair<float, float> > sausage_times_;
-    std::vector<std::pair<float, float> > one_best_times;
-    std::vector<int> s_times; // time of each state in lattice,
     QVector<int> b_times; // time with benjamin flavour
-
     std::vector<float> one_best_conf;
 };
 
