@@ -87,6 +87,8 @@ void KdOnline::processResult(QVector<BtWord> result)
             }
             if( result[i].end<0.15 )
             {
+                qDebug() << "skipped end" << result[i].word
+                         << result[i].end;
                 continue;
             }
         }

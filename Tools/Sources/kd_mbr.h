@@ -28,10 +28,7 @@ private:
     void RemoveEps();
     void AddEpsBest();
 
-    double editDistance(int N, int Q,
-                        kaldi::Vector<double> &alpha,
-                        kaldi::Matrix<double> &alpha_dash,
-                        kaldi::Vector<double> &alpha_dash_arc);
+    double editDistance();
 
     int max_state = 0;
     QVector<QString> lexicon;
@@ -50,6 +47,10 @@ private:
 
     QVector<int> b_times; // time with benjamin flavour
     std::vector<float> best_conf;
+
+    QVector<double> alpha;
+    QVector<double> alpha_dash_arc;
+    kaldi::Matrix<double> alpha_dash;
 };
 
 #endif // KD_MBR_H

@@ -80,7 +80,6 @@ void KdMBR::AddEpsBest()
 void KdMBR::computeGamma()
 {
     using std::map;
-
     int state_count = mlat.size() - 1; // = Number of words
     int word_len = best_wid.size();
 
@@ -89,101 +88,85 @@ void KdMBR::computeGamma()
         max_state = state_count;
 //        qDebug() << "st" << state_count << word_len;
     }
-
-    Vector<double> alpha(state_count+1); // index (1...N)
-    Matrix<double> alpha_dash(state_count+1, word_len+1); // index (1...N, 0...Q)
-    Vector<double> alpha_dash_arc(word_len+1); // index 0...Q
+    QVector<double> beta_dash_arc(word_len+1, 0);
     Matrix<double> beta_dash(state_count+1, word_len+1); // index (1...N, 0...Q)
-    Vector<double> beta_dash_arc(word_len+1); // index 0...Q
     std::vector<char> arc_type(word_len+1); // integer in {1,2,3}; index 1...Q
     std::vector<map<int, double> > gamma_map(word_len+1); // temp. form of gamma.
 
-//    if( L_!=0 && Ltmp>L_ )
-//    {
-//        KALDI_WARN << "Edit distance increased: " << Ltmp << " > "
-//                   << L_;
-//    }
-    L_ = editDistance(state_count, word_len, alpha, alpha_dash, alpha_dash_arc);
+    L_ = editDistance();
     KALDI_VLOG(2) << "L = " << L_;
     // omit line 10: zero when initialized.
     beta_dash(state_count, word_len) = 1.0; // Line 11.
     for( int state=state_count ; state>=2 ; state-- ) // all states
     {
-        for( size_t i=0 ; i<mlat[state].size() ; i++ ) // all arcs
+        for( int i=0 ; i<mlat[state].size() ; i++ ) // all arcs
         {
             const KdMBRArc &arc = mlat_arc[mlat[state][i]];
             int s_a = arc.start_node;
-            int w_a = arc.word;
             float p_a = arc.loglike;
-            alpha_dash_arc(0) = alpha_dash(arc.start_node, 0) + kd_l_distance(w_a, 0, true); // line 14.
+            alpha_dash_arc[0] = alpha_dash(arc.start_node, 0) + kd_l_distance(arc.word, 0, true); // line 14.
+
+            for( int i=0 ; i<=word_len ; i++ )
+            {
+                beta_dash_arc[i] = 0;
+            }
+
             for( int q=1; q<=word_len ; q++ )
             {
                 int w_id = best_wid[q-1];;
-                double a1 = alpha_dash(arc.start_node, q-1) + kd_l_distance(w_a, w_id);
-                double a2 = alpha_dash(arc.start_node, q) + kd_l_distance(w_a, 0, true);
-                double a3 = alpha_dash_arc(q-1) + kd_l_distance(0, w_id);
-                if( a1<=a2 )
+                double a1 = alpha_dash(arc.start_node, q-1) + kd_l_distance(arc.word, w_id);
+                double a2 = alpha_dash(arc.start_node, q) + kd_l_distance(arc.word, 0, true);
+                double a3 = alpha_dash_arc[q-1] + kd_l_distance(0, w_id);
+
+                double min = std::min(a1, std::min(a2, a3));
+                alpha_dash_arc[q] = min;
+                if( a1==min )
                 {
-                    if( a1<=a3 )
-                    {
-                        arc_type[q] = 1;
-                        alpha_dash_arc(q) = a1;
-                    }
-                    else
-                    {
-                        arc_type[q] = 3;
-                        alpha_dash_arc(q) = a3;
-                    }
+                    arc_type[q] = 1;
                 }
-                else
+                else if( a2==min )
                 {
-                    if( a2 <= a3)
-                    {
-                        arc_type[q] = 2;
-                        alpha_dash_arc(q) = a2;
-                    }
-                    else
-                    {
-                        arc_type[q] = 3;
-                        alpha_dash_arc(q) = a3;
-                    }
+                    arc_type[q] = 2;
+                }
+                else // a3
+                {
+                    arc_type[q] = 3;
                 }
             }
 
-            beta_dash_arc.SetZero(); // line 19.
-            for (int q = word_len; q >= 1; q--)
+            for( int q = word_len; q >= 1; q--)
             {
-                // line 21:
-                beta_dash_arc(q) += Exp(alpha(s_a) + p_a - alpha(state)) * beta_dash(state, q);
-                switch (arc_type[q])
-                { // lines 22 and 23:
-                case 1:
-                    beta_dash(s_a, q-1) += beta_dash_arc(q);
-                    // next: gamma(q, w(a)) += beta_dash_arc(q)
-                    addToGamma(w_a, beta_dash_arc(q), &(gamma_map[q]));
-                    break;
-                case 2:
-                    beta_dash(s_a, q) += beta_dash_arc(q);
-                    break;
-                case 3:
-                    beta_dash_arc(q-1) += beta_dash_arc(q);
-                    // next: gamma(q, epsilon) += beta_dash_arc(q)
-                    addToGamma(0, beta_dash_arc(q), &(gamma_map[q]));
-                    break;
-                default:
-                    qDebug() << "Invalid b_arc value"; // error in code.
+                beta_dash_arc[q] += Exp(alpha[s_a] + p_a - alpha[state]) * beta_dash(state, q);
+                if( arc_type[q]==1 )
+                {
+                    beta_dash(s_a, q-1) += beta_dash_arc[q];
+                    // next: gamma(q, w(a)) += beta_dash_arc[q)
+                    addToGamma(arc.word, beta_dash_arc[q], &(gamma_map[q]));
+                }
+                else if( arc_type[q]==2 )
+                {
+                    beta_dash(s_a, q) += beta_dash_arc[q];
+                }
+                else // 3
+                {
+                    beta_dash_arc[q-1] += beta_dash_arc[q];
+                    addToGamma(0, beta_dash_arc[q], &(gamma_map[q]));
                 }
             }
-            beta_dash_arc(0) += Exp(alpha(s_a) + p_a - alpha(state)) * beta_dash(state, 0);
-            beta_dash(s_a, 0) += beta_dash_arc(0); // line 26.
+            beta_dash_arc[0]  += Exp(alpha[s_a] + p_a - alpha[state]) * beta_dash(state, 0);
+            beta_dash(s_a, 0) += beta_dash_arc[0];
         }
     }
-    beta_dash_arc.SetZero(); // line 29.
+
+    for( int i=0 ; i<=word_len ; i++ )
+    {
+        beta_dash_arc[i] = 0;
+    }
     for( int q=word_len ; q>=1 ; q-- )
     {
-        beta_dash_arc(q) += beta_dash(1, q);
-        beta_dash_arc(q-1) += beta_dash_arc(q);
-        addToGamma(0, beta_dash_arc(q), &(gamma_map[q]));
+        beta_dash_arc[q] += beta_dash(1, q);
+        beta_dash_arc[q-1] += beta_dash_arc[q];
+        addToGamma(0, beta_dash_arc[q], &(gamma_map[q]));
     }
 
     // convert map to vec
@@ -273,9 +256,9 @@ void KdMBR::createMBRLat(KdCompactLattice *clat)
     mlat.resize(state_count+1);
     int arc_id = 0;
 
-    for (int n=0 ; n<state_count ; n++ )
+    for( int n=0 ; n<state_count ; n++ )
     {
-        for (fst::ArcIterator<KdCompactLattice> aiter(*clat, n);
+        for( fst::ArcIterator<KdCompactLattice> aiter(*clat, n);
              !aiter.Done(); aiter.Next())
         {
             const KdCLatArc &carc = aiter.Value();
@@ -294,46 +277,50 @@ void KdMBR::createMBRLat(KdCompactLattice *clat)
 }
 
 
-double KdMBR::editDistance(int N, int Q,
-                           Vector<double> &alpha,
-                           Matrix<double> &alpha_dash,
-                           Vector<double> &alpha_dash_arc)
+double KdMBR::editDistance()
 {
-    alpha(1) = 0.0; // = log(1).  Line 5.
+    int state_count = mlat.size() - 1; // = Number of words
+    int word_len = best_wid.size();
+
+    alpha.resize(state_count+1); // index (1...N)
+    alpha_dash_arc.resize(word_len+1); // index 0...Q
+    alpha_dash.Resize(state_count+1, word_len+1); // index (1...N, 0...Q)
+
+    alpha[1] = 0.0; // = log(1)
     alpha_dash(1, 0) = 0.0; // Line 5.
-    for (int q = 1; q <= Q; q++)
+    for( int q=0 ; q<word_len ; q++ )
     {
-        alpha_dash(1, q) = alpha_dash(1, q-1) + kd_l_distance(0, best_wid[q-1]); // Line 7.
+        alpha_dash(1, q+1) = alpha_dash(1, q) + kd_l_distance(0, best_wid[q]);
     }
-    for (int n = 2; n <= N; n++)
+    for( int n=2 ; n <= state_count; n++ )
     {
         double alpha_n = kLogZeroDouble;
-        for (size_t i = 0; i < mlat[n].size(); i++)
+        for( int i=0 ; i < mlat[n].size(); i++ )
         {
             const KdMBRArc &arc = mlat_arc[mlat[n][i]];
-            alpha_n = LogAdd(alpha_n, alpha(arc.start_node) + arc.loglike);
+            alpha_n = LogAdd(alpha_n, alpha[arc.start_node] + arc.loglike);
         }
-        alpha(n) = alpha_n; // Line 10.
-        // Line 11 omitted: matrix was initialized to zero.
-        for (size_t i = 0; i < mlat[n].size(); i++)
+        alpha[n] = alpha_n;
+
+        for( int i=0 ; i<mlat[n].size() ; i++ )
         {
             KdMBRArc arc = mlat_arc[mlat[n][i]];
             int s_a = arc.start_node;
 
             // for q = 0
-            alpha_dash_arc(0) = alpha_dash(s_a, 0) + kd_l_distance(arc.word, 0, true);
-            alpha_dash(n, 0) += Exp(alpha(s_a) + arc.loglike - alpha(n)) * alpha_dash_arc(0);
-            for( int q=1 ; q<=Q ; q++ )
+            alpha_dash_arc[0] = alpha_dash(s_a, 0) + kd_l_distance(arc.word, 0, true);
+            alpha_dash(n, 0) += Exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[0];
+
+            for( int q=1 ; q<=word_len ; q++ )
             {
                 int word_id = best_wid[q-1];
                 double a1 = alpha_dash(s_a, q-1) + kd_l_distance(arc.word, word_id);
                 double a2 = alpha_dash(s_a, q)   + kd_l_distance(arc.word, 0, true);
-                double a3 = alpha_dash_arc(q-1)  + kd_l_distance(0, word_id);
-                alpha_dash_arc(q) = std::min(a1, std::min(a2, a3));
-                // line 19:
-                alpha_dash(n, q) += Exp(alpha(s_a) + arc.loglike - alpha(n)) * alpha_dash_arc(q);
+                double a3 = alpha_dash_arc[q-1]  + kd_l_distance(0, word_id);
+                alpha_dash_arc[q] = std::min(a1, std::min(a2, a3));
+                alpha_dash(n, q) += Exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[q];
             }
         }
     }
-    return alpha_dash(N, Q); // line 23.
+    return alpha_dash(state_count, word_len); // line 23.
 }
