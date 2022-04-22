@@ -54,48 +54,6 @@ void BtRecorder::startStream()
     }
 }
 
-// cy_buf will be filled from the other thread using GStreamer
-bool BtRecorder::Read(kaldi::Vector<float> *data)
-{
-    if( Pa_IsStreamStopped(pa_stream) )
-    {
-        PaError paerr = Pa_StartStream(pa_stream);
-        if( paerr )
-        {
-            qDebug() << "Error while trying to open PortAudio stream";
-            exit(0);
-        }
-    }
-    int req = data->Dim();  // number of samples to request
-    int16_t *raw = (int16_t *)malloc(sizeof(int16_t)*req);
-
-    while( true )
-    {
-        QThread::msleep(2);
-        if( req<cy_buf->getDataSize() ) //&read_pf
-        {
-            break;
-        }
-    }
-
-    int nsamples = cy_buf->read(raw, req);
-    data->Resize(nsamples);
-//    qDebug() << req << nsamples;
-
-    for( int i = 0 ; i<nsamples ; i++ )
-    {
-        (*data)(i) = raw[i];
-    }
-    free(raw);
-
-    if( nsamples==0 )
-    {
-        return false;
-    }
-
-    return true;
-}
-
 int BtRecorder::Callback(int16_t *data, int size)
 {
     if( cy_buf->getFreeSize()<size )

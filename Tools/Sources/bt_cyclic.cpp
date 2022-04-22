@@ -99,33 +99,6 @@ int BtCyclic::read(float *data, int size, int *fake)
 }
 
 // return negative on erorr
-int BtCyclic::read(kaldi::Vector<float> *data, int size)
-{
-    int num = 0;
-
-    if( size>getDataSize() )
-    {
-        size = getDataSize();
-    }
-
-    for( int i=0 ; i<size ; i++ )
-    {
-        (*data)(i) = buffer[read_p];
-        read_p++;
-
-        if( read_p>buff_size)
-        {
-            read_p = 0;
-        }
-        num++;
-    }
-
-//    qDebug() << "raad" << size << "bds"
-//             << getDataSize();
-    return num;
-}
-
-// return negative on erorr
 void BtCyclic::write(int16_t *data, int size)
 {
     for( int i=0 ; i<size ; i++ )

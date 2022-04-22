@@ -212,7 +212,7 @@ void KdMBR::checkLattice(KdCompactLattice *clat)
 {
     kd_CreateSuperFinal(clat); // Add just one super-final state).
 
-    kaldi::uint64 props  = clat->Properties(fst::kFstProperties, false);
+    uint64 props  = clat->Properties(fst::kFstProperties, false);
     // Check Top sort
     if( !(props & fst::kTopSorted) )
     {

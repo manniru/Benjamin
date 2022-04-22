@@ -4,7 +4,7 @@
 #include <QString>
 #include "bt_window.h"
 #include "bt_melbank.h"
-#include "kd_fft.h"
+#include "bt_fft.h"
 #include "bt_cfb.h"
 
 class BtMFCC

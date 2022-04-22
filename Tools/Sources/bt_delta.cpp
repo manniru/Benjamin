@@ -1,4 +1,4 @@
-#include "kd_delta.h"
+#include "bt_delta.h"
 #include <QDebug>
 
 KdDelta::KdDelta(BtCFB *feat)

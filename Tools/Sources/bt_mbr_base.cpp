@@ -1,4 +1,4 @@
-#include "kd_mbr_base.h"
+#include "bt_mbr_base.h"
 
 using namespace kaldi;
 

@@ -16,9 +16,6 @@ class BtRecorder: public QObject
 public:
     explicit BtRecorder(BtCyclic *buffer, QObject *parent = nullptr);
 
-    // Implementation of the OnlineAudioSourceItf
-    bool Read(kaldi::Vector<float> *data);
-
     // The real PortAudio callback delegates to this one
     int Callback(int16_t *data, int size);
 

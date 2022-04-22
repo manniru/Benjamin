@@ -6,7 +6,7 @@
 #include "bt_cmvn.h"
 #include "kd_a_model.h"
 #include "bt_mfcc.h"
-#include "kd_delta.h"
+#include "bt_delta.h"
 #include "bt_cfb.h"
 
 // Feature Input
@@ -30,7 +30,6 @@ private:
 
     uint frame_num;
     int  remain_samp = 0;
-    kaldi::Vector<float> wav_buf;
     float window_buf[BT_FFT_SIZE];
 
     KdDelta    *delta;
