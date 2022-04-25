@@ -3,9 +3,6 @@
 
 #include <QDebug>
 #include "bt_config.h"
-#include <base/kaldi-common.h>
-#include <util/common-utils.h>
-#include <util/kaldi-table.h>
 #include "kd_lattice_weight.h"
 #include "fst/fstlib.h"
 

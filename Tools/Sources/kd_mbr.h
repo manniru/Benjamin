@@ -1,12 +1,12 @@
 #ifndef KD_MBR_H
 #define KD_MBR_H
 
-// described in "Minimum Bayes Risk decoding and system combination based on a recursion for
-// edit distance", Haihua Xu, Daniel Povey, Lidia Mangu and Jie Zhu,
+// paper "MBR decoding and system based on a recursion for edit distance"
 
 #include <QString>
 #include "kd_levenshtein.h"
 #include "backend.h"
+#include "matrix/kaldi-matrix.h"
 
 class KdMBR
 {
@@ -33,11 +33,7 @@ private:
     int max_state = 0;
     QVector<QString> lexicon;
 
-    // Arcs in the topologically sorted acceptor form of the word-level lattice,
-    // with one final-state
     std::vector<KdMBRArc> mlat_arc;
-
-    // For each node in the lattice, a list of arcs entering that node.
     std::vector<std::vector<int> > mlat;
 
     std::vector<int> best_wid; // R in paper

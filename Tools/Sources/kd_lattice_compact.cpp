@@ -1,7 +1,7 @@
 #include "kd_lattice_compact.h"
+#include "base/kaldi-error.h"
 
 #define MAX_SIL_COUNT 20
-using namespace kaldi;
 
 int kd_getStartTime(std::vector<int> input)
 {

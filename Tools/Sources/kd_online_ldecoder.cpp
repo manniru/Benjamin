@@ -1,7 +1,6 @@
 #include "kd_online_ldecoder.h"
 #include <QDebug>
 
-using namespace kaldi;
 QString dbg_times;
 #define BT_MIN_SIL 14 //150ms ((x+1)*100)
 

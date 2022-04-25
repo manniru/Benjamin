@@ -1,6 +1,5 @@
 #include "kd_token_list.h"
 
-using namespace kaldi;
 KdTokenList::KdTokenList()
 {
     head = NULL;

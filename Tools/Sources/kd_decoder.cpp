@@ -1,8 +1,6 @@
 #include "kd_decoder.h"
 #include <QDebug>
 
-using namespace kaldi;
-
 KdDecoder::KdDecoder()
 {
     max_state = 0;

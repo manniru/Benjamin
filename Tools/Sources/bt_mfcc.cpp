@@ -1,8 +1,6 @@
 #include "bt_mfcc.h"
 #include <QDebug>
 
-using namespace kaldi;
-
 BtMFCC::BtMFCC()
 {
     computeDCTMatrix();

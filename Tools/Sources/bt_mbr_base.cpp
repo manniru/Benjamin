@@ -1,7 +1,5 @@
 #include "bt_mbr_base.h"
 
-using namespace kaldi;
-
 void bt_writeBarResult(QVector<BtWord> result)
 {
     QFile bar_file(BT_BAR_RESULT);

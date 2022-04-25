@@ -7,10 +7,6 @@
 
 #include <vector>
 
-#include "matrix/matrix-lib.h"
-#include "util/common-utils.h"
-#include "base/kaldi-error.h"
-
 // SplitRadixComplexFft
 class KdSrcFFT
 {
@@ -66,7 +62,7 @@ public:
     void Compute(float *data);
 
 private:
-    int N_;
+    int fft_size;
 };
 
 #endif // BT_FFT_H

@@ -1,8 +1,7 @@
 ﻿#include "kd_lattice.h"
 #include "kd_lattice_compact.h"
+#include "util/kaldi-io.h"
 #include <QDebug>
-
-using namespace kaldi;
 
 void kd_fstSSPathBacktrace(KdLattice *ifst, KdLattice *ofst,
     std::vector<std::pair<KdStateId, size_t>> &parent,KdStateId f_parent)
@@ -164,7 +163,7 @@ void kd_writeLat(KdLattice *ifst)
 fst::Fst<fst::StdArc> *kd_readDecodeGraph(char *filename)
 {
     // read decoding network FST
-    Input ki(filename); // use ki.Stream() instead of is.
+    kaldi::Input ki(filename); // use ki.Stream() instead of is.
     if( !ki.Stream().good() )
     {
         qDebug() << "Could not open decoding-graph FST "

@@ -1,11 +1,8 @@
 #include "kd_decodable.h"
 #include <QDebug>
 
-using namespace kaldi;
-using namespace fst;
-
 KdDecodable::KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
-                         TransitionModel *t_mdl, float scale)
+                         kaldi::TransitionModel *t_mdl, float scale)
 {
     ac_scale_ = scale;
     cur_frame_ = -1;

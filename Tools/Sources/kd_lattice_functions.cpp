@@ -1,7 +1,5 @@
 ﻿#include "kd_lattice_functions.h"
 
-using namespace kaldi;
-
 void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times)
 {
     if( !lat->Properties(fst::kTopSorted, true) )
@@ -131,7 +129,7 @@ bool kd_PruneLattice(float beam, KdLattice *lat)
 }
 
 // DeterminizeLatticePhonePrunedWrapper
-bool kd_detLatPhonePrunedW(TransitionModel *trans_model,
+bool kd_detLatPhonePrunedW(kaldi::TransitionModel *trans_model,
                            KdLattice *ifst,
                            double beam, KdCompactLattice *ofst,
                            KdPrunedOpt opts)

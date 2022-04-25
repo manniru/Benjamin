@@ -1,7 +1,5 @@
 #include "bt_feinput.h"
 
-using namespace kaldi;
-
 BtFeInput::BtFeInput(BtCyclic *buf, QObject *parent): QObject(parent)
 {
     rec_buf = buf;

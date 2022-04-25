@@ -459,8 +459,8 @@ void KdLatDet::EpsilonClosure(std::vector<Element> *subset) {
     // subset accordingly.
 
     std::priority_queue<Element, std::vector<Element>, std::greater<Element> > queue;
-    unordered_map<InputStateId, Element> cur_subset;
-    typedef typename unordered_map<InputStateId, Element>::iterator MapIter;
+    std::unordered_map<InputStateId, Element> cur_subset;
+    typedef typename std::unordered_map<InputStateId, Element>::iterator MapIter;
     typedef typename std::vector<Element>::const_iterator VecIter;
 
     for (VecIter iter = subset->begin(); iter!=subset->end(); ++iter) {

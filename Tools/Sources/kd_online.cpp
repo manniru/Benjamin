@@ -1,8 +1,5 @@
 #include "kd_online.h"
 
-using namespace kaldi;
-using namespace fst;
-
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
@@ -13,10 +10,10 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     std::string model_filename = BT_OAMDL_PATH;
 
     oa_model = new KdAModel;
-    t_model = new TransitionModel;
+    t_model = new kaldi::TransitionModel;
 
     bool binary;
-    Input ki(model_filename, &binary);
+    kaldi::Input ki(model_filename, &binary);
     t_model->Read(ki.Stream(), binary);
     oa_model->Read(ki.Stream(), binary);
 

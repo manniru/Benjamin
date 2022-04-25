@@ -1,8 +1,6 @@
 #include "kd_levenshtein.h"
 #include <QDebug>
 
-using namespace kaldi;
-
 #define KD_MBR_DELTA 1.0e-05 // used for l function
 
 void kd_convertToVec(std::vector<std::map<int, double> > *map, KdGammaVec *out, int word_len)

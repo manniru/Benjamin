@@ -1,29 +1,30 @@
 ﻿#include "bt_fft.h"
 #include <QDebug>
 
-using namespace kaldi;
+#include "util/common-utils.h"
 
 KdFFT::KdFFT(int N): KdSrcFFT(N/2)
 {
-    N_ = N;
+    fft_size = N;
 }
 
 // forward = true instead of inverse
 void KdFFT::Compute(float *data)
 {
-    int N = N_, N2 = N/2;
+    int N = fft_size;
+    int N2 = N/2;
 
     KdSrcFFT::Compute(data, true, &temp_buffer_);
 
     float rootN_re, rootN_im;  // exp(-2pi/N)
     int forward_sign = -1;
-    ComplexImExp(static_cast<float>(M_2PI/N *forward_sign), &rootN_re, &rootN_im);
+    kaldi::ComplexImExp(static_cast<float>(M_2PI/N *forward_sign), &rootN_re, &rootN_im);
     float kN_re = -forward_sign;
     float kN_im = 0.0;  // exp(-2pik/N)
 
     for (int k = 1; 2*k <= N2; k++)
     {
-        ComplexMul(rootN_re, rootN_im, &kN_re, &kN_im);
+        kaldi::ComplexMul(rootN_re, rootN_im, &kN_re, &kN_im);
 
         float Ck_re, Ck_im, Dk_re, Dk_im;
         // C_k = 1/2 (B_k + B_{N/2 - k}^*) :
@@ -37,7 +38,7 @@ void KdFFT::Compute(float *data)
         data[2*k] = Ck_re;  // A_k <-- C_k
         data[2*k+1] = Ck_im;
         // now A_k += D_k 1^(k/N)
-        ComplexAddProduct(Dk_re, Dk_im, kN_re, kN_im, &(data[2*k]), &(data[2*k+1]));
+        kaldi::ComplexAddProduct(Dk_re, Dk_im, kN_re, kN_im, &(data[2*k]), &(data[2*k+1]));
 
         int kdash = N2 - k;
         if( kdash!=k)
@@ -48,7 +49,7 @@ void KdFFT::Compute(float *data)
             // now A_k' += D_k' 1^(k'/N)
             // We use 1^(k'/N) = 1^((N/2 - k) / N) = 1^(1/2) 1^(-k/N) = -1 * (1^(k/N))^*
             // so it's the same as 1^(k/N) but with the float part negated.
-            ComplexAddProduct(Dk_re, -Dk_im, -kN_re, kN_im, &(data[2*kdash]), &(data[2*kdash+1]));
+            kaldi::ComplexAddProduct(Dk_re, -Dk_im, -kN_re, kN_im, &(data[2*kdash]), &(data[2*kdash+1]));
         }
     }
     // k = 0.

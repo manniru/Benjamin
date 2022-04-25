@@ -218,7 +218,6 @@ private:
         }
     }
 
-    KALDI_DISALLOW_COPY_AND_ASSIGN(KdLatString);
     Entry *new_entry_; // We always have a pre-allocated Entry ready to use,
     // to avoid unnecessary news and deletes.
     SetType set_;

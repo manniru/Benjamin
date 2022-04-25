@@ -6,6 +6,7 @@
 #include "kd_lattice.h"
 #include "kd_lattice_compact.h"
 #include "kd_lattice_string.h"
+#include "base/kaldi-error.h"
 
 // A representable float near .001.
 #define KD_KDELTA fst::kDelta
@@ -182,7 +183,7 @@ private:
 
     // Define the hash type we use to map subsets (in minimal
     // representation) to KdStateId.
-    typedef unordered_map<const std::vector<Element>*, KdStateId,
+    typedef std::unordered_map<const std::vector<Element>*, KdStateId,
     SubsetKey, SubsetEqual> MinimalSubsetHash;
 
     // Define the hash type we use to map subsets (in initial
@@ -190,7 +191,7 @@ private:
     // extra weight. [note: we interpret the Element.state in here
     // as an KdStateId even though it's declared as InputStateId;
     // these types are the same anyway].
-    typedef unordered_map<const std::vector<Element>*, Element,
+    typedef std::unordered_map<const std::vector<Element>*, Element,
     SubsetKey, SubsetEqual> InitialSubsetHash;
 
 
