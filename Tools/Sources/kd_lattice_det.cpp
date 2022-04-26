@@ -738,7 +738,7 @@ void KdLatDet::ProcessTransitions(KdStateId output_state_id)
         // Process ranges that share the same input symbol.
         Label ilabel = cur->first;
         task->state = output_state_id;
-        task->priority_cost = std::numeric_limits<double>::infinity();
+        task->priority_cost = KD_INFINITY_DB;
         task->label = ilabel;
         while (cur!=end && cur->first==ilabel)
         {
@@ -834,7 +834,7 @@ void KdLatDet::ComputeBackwardWeight()
     // an empty FST.
 
     double best_cost = backward_costs_[ifst_->Start()];
-    if( best_cost==std::numeric_limits<double>::infinity())
+    if( best_cost==KD_INFINITY_DB)
         KALDI_WARN << "Total weight of input lattice is zero.";
     cutoff_ = best_cost + beam_;
 }

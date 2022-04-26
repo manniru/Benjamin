@@ -15,6 +15,8 @@
 #define KD_STATE_NORMAL  2
 #define KD_STATE_BLOWN   3
 #define KD_STATE_NULL    4
+#define KD_INFINITY_DB std::numeric_limits<double>::infinity()
+#define KD_INFINITY_FL std::numeric_limits<float>::infinity()
 
 int getIntCommand(char *command);
 QString getStrCommand(QString command);

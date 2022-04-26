@@ -24,7 +24,7 @@ KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
 
 void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
 {
-    float infinity = std::numeric_limits<float>::infinity();
+    float infinity = KD_INFINITY_FL;
     int end = frame_toks.size();
     createStates(ofst);
 

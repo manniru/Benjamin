@@ -9,7 +9,6 @@
 
 // what is determinization?
 
-#define KD_INFINITY std::numeric_limits<double>::infinity()
 #define MAX_STATE_COUNT 5000 //50K
 
 struct KdDecoderConfig

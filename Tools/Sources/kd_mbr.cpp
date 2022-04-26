@@ -135,7 +135,7 @@ void KdMBR::computeGamma()
 
             for( int q = word_len; q >= 1; q--)
             {
-                beta_dash_arc[q] += kaldi::Exp(alpha[s_a] + p_a - alpha[state]) * beta_dash(state, q);
+                beta_dash_arc[q] += std::exp(alpha[s_a] + p_a - alpha[state]) * beta_dash(state, q);
                 if( arc_type[q]==1 )
                 {
                     beta_dash(s_a, q-1) += beta_dash_arc[q];
@@ -152,7 +152,7 @@ void KdMBR::computeGamma()
                     addToGamma(0, beta_dash_arc[q], &(gamma_map[q]));
                 }
             }
-            beta_dash_arc[0]  += kaldi::Exp(alpha[s_a] + p_a - alpha[state]) * beta_dash(state, 0);
+            beta_dash_arc[0]  += std::exp(alpha[s_a] + p_a - alpha[state]) * beta_dash(state, 0);
             beta_dash(s_a, 0) += beta_dash_arc[0];
         }
     }
@@ -294,7 +294,7 @@ double KdMBR::editDistance()
     for( int n=2 ; n <= state_count; n++ )
     {
         double alpha_n = kaldi::kLogZeroDouble;
-        for( int i=0 ; i < mlat[n].size(); i++ )
+        for( int i=0 ; i<mlat[n].size() ; i++ )
         {
             const KdMBRArc &arc = mlat_arc[mlat[n][i]];
             alpha_n = kaldi::LogAdd(alpha_n, alpha[arc.start_node] + arc.loglike);
@@ -308,7 +308,7 @@ double KdMBR::editDistance()
 
             // for q = 0
             alpha_dash_arc[0] = alpha_dash(s_a, 0) + kd_l_distance(arc.word, 0, true);
-            alpha_dash(n, 0) += kaldi::Exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[0];
+            alpha_dash(n, 0) += std::exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[0];
 
             for( int q=1 ; q<=word_len ; q++ )
             {
@@ -317,7 +317,7 @@ double KdMBR::editDistance()
                 double a2 = alpha_dash(s_a, q)   + kd_l_distance(arc.word, 0, true);
                 double a3 = alpha_dash_arc[q-1]  + kd_l_distance(0, word_id);
                 alpha_dash_arc[q] = std::min(a1, std::min(a2, a3));
-                alpha_dash(n, q) += kaldi::Exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[q];
+                alpha_dash(n, q) += std::exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[q];
             }
         }
     }

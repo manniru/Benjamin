@@ -58,10 +58,10 @@ bool kd_PruneLattice(float beam, KdLattice *lat)
         return false;
     }
     std::vector<double> forward_cost(num_states,
-                                     std::numeric_limits<double>::infinity());  // viterbi forward.
+                                     KD_INFINITY_DB);  // viterbi forward.
     forward_cost[start] = 0.0; // lattice can't have cycles so couldn't be
     // less than this.
-    double best_final_cost = std::numeric_limits<double>::infinity();
+    double best_final_cost = KD_INFINITY_DB;
     // Update the forward probs.
     for( int32 state=0; state<num_states ; state++ )
     {
@@ -96,7 +96,7 @@ bool kd_PruneLattice(float beam, KdLattice *lat)
         KdLatticeWeight w = lat->Final(state);
         double this_backward_cost = w.g_cost + w.a_cost;
         if( this_backward_cost + this_forward_cost > cutoff
-                && this_backward_cost!=std::numeric_limits<double>::infinity())
+                && this_backward_cost!=KD_INFINITY_DB)
         {
             lat->SetFinal(state, KdLatticeWeight::Zero());
         }
@@ -275,7 +275,7 @@ bool kd_detLatPruned(KdLattice &ifst, double beam,
         // just with a narrower beam than "beam".  If the user specifies an infinite
         // beam we don't do this beam-narrowing.
         if( effective_beam >= beam * opts.retry_cutoff ||
-                beam==std::numeric_limits<double>::infinity() ||
+                beam==KD_INFINITY_DB ||
                 iter + 1==max_num_iters)
         {
             det.Output(ofst);
@@ -325,7 +325,7 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
         // just with a narrower beam than "beam".  If the user specifies an infinite
         // beam we don't do this beam-narrowing.
         if( effective_beam >= beam * opts.retry_cutoff ||
-            beam==std::numeric_limits<double>::infinity() ||
+            beam==KD_INFINITY_DB ||
             iter + 1==max_num_iters )
         {
             det.Output(ofst);

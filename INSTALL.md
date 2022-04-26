@@ -1,10 +1,13 @@
 # Installation
 
 ## Step 1: Prepare Kakdi
-1. Clone Kaldi and Benjamin in the same folder
+1. Clone Kaldi(probably same commit) and Benjamin in the same folder
 
 ```
 git clone https://github.com/kaldi-asr/kaldi.git Kaldi
+cd Kaldi
+git checkout 579c9bf1770698f1383cb1cea5528d36fd8e7b93
+cd ..
 git clone https://github.com/bijanbina/Benjamin.git
 ```
 

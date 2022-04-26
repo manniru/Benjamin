@@ -75,7 +75,7 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
 // Get Cutoff and Also Update adaptive_beam
 float KdDecoder::GetCutoff(KdToken **best_tok)
 {
-    float best_cost = std::numeric_limits<float>::infinity();
+    float best_cost = KD_INFINITY_FL;
 
     std::vector<float> cf_costs; //current frame cost
     KdToken *head = frame_toks[uframe].head;
@@ -120,7 +120,7 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
 
 double KdDecoder::GetBestCutoff(KdToken *tok)
 {
-    double cutoff = KD_INFINITY;
+    double cutoff = KD_INFINITY_DB;
     if( tok==NULL )
     {
          return cutoff;

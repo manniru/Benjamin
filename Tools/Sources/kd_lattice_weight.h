@@ -3,6 +3,7 @@
 
 #include <QDebug>
 #include "bt_config.h"
+#include "backend.h"
 #include "fst/fstlib.h"
 
 class KdLatticeWeight
@@ -24,8 +25,8 @@ public:
 
     static const KdLatticeWeight Zero()
     {
-        return KdLatticeWeight(std::numeric_limits<float>::infinity(),
-                               std::numeric_limits<float>::infinity());
+        return KdLatticeWeight(KD_INFINITY_FL,
+                               KD_INFINITY_FL);
     }
 
     static const KdLatticeWeight One()
@@ -129,15 +130,15 @@ inline KdLatticeWeight Divide(const KdLatticeWeight &w1,
     float a = w1.g_cost - w2.g_cost;
     float b = w1.a_cost - w2.a_cost;
 
-    if( a!=a || b!=b || a==-std::numeric_limits<float>::infinity()
-            || b==-std::numeric_limits<float>::infinity())
+    if( a!=a || b!=b || a==-KD_INFINITY_FL
+            || b==-KD_INFINITY_FL)
     {
         qDebug() << "LatticeWeightTpl::Divide, NaN or invalid number produced. "
                    << "[dividing by zero?]  Returning zero";
         return KdLatticeWeight::Zero();
     }
-    if( a==std::numeric_limits<float>::infinity() ||
-            b==std::numeric_limits<float>::infinity())
+    if( a==KD_INFINITY_FL ||
+            b==KD_INFINITY_FL)
     {
         return KdLatticeWeight::Zero(); // not a valid number if only one is infinite.
     }

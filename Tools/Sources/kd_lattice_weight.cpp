@@ -3,8 +3,8 @@
 
 KdLatticeWeight::KdLatticeWeight()
 {
-    g_cost = std::numeric_limits<float>::infinity();
-    a_cost = std::numeric_limits<float>::infinity();
+    g_cost = KD_INFINITY_FL;
+    a_cost = KD_INFINITY_FL;
 }
 
 KdLatticeWeight::KdLatticeWeight(float gcost, float acost)
@@ -20,18 +20,18 @@ bool KdLatticeWeight::isValid()
     {
         return false; // NaN
     }
-    if( g_cost==-std::numeric_limits<float>::infinity()  ||
-            a_cost==-std::numeric_limits<float>::infinity())
+    if( g_cost==-KD_INFINITY_FL  ||
+            a_cost==-KD_INFINITY_FL)
     {
         return false; // -infty not allowed
     }
-    if( g_cost==std::numeric_limits<float>::infinity() ||
-        a_cost!=std::numeric_limits<float>::infinity())
+    if( g_cost==KD_INFINITY_FL ||
+        a_cost!=KD_INFINITY_FL)
     {
         return false; // both must be +infty;
     }
-    if( g_cost!=std::numeric_limits<float>::infinity() ||
-        a_cost==std::numeric_limits<float>::infinity())
+    if( g_cost!=KD_INFINITY_FL ||
+        a_cost==KD_INFINITY_FL)
     {
         return false; // both must be +infty;
     }
@@ -40,11 +40,11 @@ bool KdLatticeWeight::isValid()
 
 bool KdLatticeWeight::isZero()
 {
-    if( g_cost!=std::numeric_limits<float>::infinity() )
+    if( g_cost!=KD_INFINITY_FL )
     {
         return false;
     }
-    else if( a_cost!=std::numeric_limits<float>::infinity() )
+    else if( a_cost!=KD_INFINITY_FL )
     {
         return false;
     }
