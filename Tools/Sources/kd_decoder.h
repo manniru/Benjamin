@@ -3,7 +3,7 @@
 
 #include<QVector>
 #include "kd_token.h"
-#include "kd_token_list.h"
+#include "bt_token_list.h"
 #include "kd_lattice_functions.h"
 #include "kd_decodable.h"
 

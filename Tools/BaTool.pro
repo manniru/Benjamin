@@ -48,6 +48,8 @@ HEADERS += \
     Sources/bt_mfcc.h \
     Sources/bt_recorder.h \
     Sources/bt_test.h \
+    Sources/bt_token_list.h \
+    Sources/bt_wav_writer.h \
     Sources/bt_window.h \
     Sources/kd_a_model.h \
     Sources/kd_clat_weight.h \
@@ -66,8 +68,7 @@ HEADERS += \
     Sources/kd_model.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
-    Sources/kd_token.h \
-    Sources/kd_token_list.h
+    Sources/kd_token.h
 
 SOURCES += \
     Sources/backend.cpp \
@@ -84,6 +85,8 @@ SOURCES += \
     Sources/bt_mfcc.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_test.cpp \
+    Sources/bt_token_list.cpp \
+    Sources/bt_wav_writer.cpp \
     Sources/bt_window.cpp \
     Sources/kd_a_model.cpp \
     Sources/kd_clat_weight.cpp \
@@ -103,6 +106,5 @@ SOURCES += \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
     Sources/kd_token.cpp \
-    Sources/kd_token_list.cpp \
     Sources/main.cpp
 

@@ -6,6 +6,7 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     cap = new BtCaptain;
 
     ab_src = new BtRecorder(cy_buf);
+    wav_w  = new BtWavWriter(cy_buf);
 
     std::string model_filename = BT_OAMDL_PATH;
 
@@ -43,21 +44,20 @@ void KdOnline::startDecode()
 
     o_decoder->InitDecoding(&decodable);
     KdCompactLattice out_fst;
-    QVector<BtWord> result;
 
     while( 1 )
     {
         decodable.features->ComputeFeatures();
         o_decoder->Decode();
-        result = o_decoder->getResult(&out_fst);
-        processResult(result);
+        c_result = o_decoder->getResult(&out_fst);
+        processResult(c_result);
 
         if( o_decoder->status.state!=KD_STATE_NORMAL )
         {
             cap->flush();
-            if( result.length() )
+            if( c_result.length() )
             {
-                writeWav(cy_buf, o_decoder->uframe*160);
+                writeWav(o_decoder->uframe*160);
             }
         }
     }
@@ -95,23 +95,13 @@ void KdOnline::processResult(QVector<BtWord> result)
     cap->parse(buf);
 }
 
-void KdOnline::writeWav(BtCyclic *buf, int len)
+void KdOnline::writeWav(int len)
 {
     if( isSleep() )
     {
         return; //dont record in sleep
     }
     qDebug() << "data len" << o_decoder->uframe;
-    int16_t *data = (int16_t *)malloc(len*sizeof(int16_t));
-
-    int rew = buf->rewind(len);
-    if( rew==0 )
-    {
-        qDebug() << "Error 137: Failed to write wav, long len"
-                 << len;
-        return;
-    }
-    buf->read(data, len);
 
     if ( o_decoder->wav_id<BT_WAV_MAX )
     {
@@ -121,27 +111,8 @@ void KdOnline::writeWav(BtCyclic *buf, int len)
     {
         o_decoder->wav_id = 0;
     }
-    QString filename = KAL_AU_DIR"/online/";
-    filename += QString::number(o_decoder->wav_id);
-    filename += ".wav";
-    QFile *file = new QFile(filename);
+    wav_w->write(c_result, len, o_decoder->wav_id);
 
-    if( !file->open(QIODevice::WriteOnly) )
-    {
-        qDebug() << "Failed To Open" << filename;
-        exit(1);
-    }
-
-    writeWavHeader(file, len*4); // 2 channel * 2 byte per sample
-    uint16_t zero = 0;
-    for( int i=0 ; i<len ; i++ )
-    {
-        int16_t *pt = &data[i];
-        // kaldi should be 2 channel
-        file->write((char *)pt, 2);
-        file->write((char *)&zero, 2);
-    }
-    file->close();
 }
 
 bool KdOnline::isSleep()
@@ -153,31 +124,4 @@ bool KdOnline::isSleep()
         return true;
     }
     return false;
-}
-
-void KdOnline::writeWavHeader(QFile *file, int len)
-{
-    uint32_t buf_i;
-    uint16_t buf_s; //short
-
-    file->write("RIFF", 4); // "RIFF" is the father of wav
-    buf_i = len + 44 - 8; // 44=Header Size
-    file->write((char*)&buf_i,4);//chunk size(int=filesize-8)
-    file->write("WAVE",4);//format="WAVE"
-    file->write("fmt ",4);//subchunk1 id(str="fmt ")
-    buf_i = 16; file->write((char*)&buf_i,4);//subchunk1(fmt) size(int=16)
-    buf_s = 1;  file->write((char*)&buf_s,2);//wav format(int) 1=PCM
-
-    //channel must be stereo for kaldi
-    buf_s = 2;     file->write((char*)&buf_s,2);//Channel Count(int=2)
-    buf_i = 16000; file->write((char*)&buf_i,4);//Sample Rate(int=16K)
-
-    buf_i = 64000; file->write((char*)&buf_i,4);//Byte per sec(int, 64K=16*4)
-    buf_s = 4;     file->write((char*)&buf_s,2);//Byte Per Block(int, 4=2ch*2)
-    buf_s = 16;    file->write((char*)&buf_s,2);//Bit Per Sample(int, 16 bit)
-
-    file->write("data",4);//subchunk2 id(str="data")
-    buf_i = len;
-    file->write((char*)&buf_i,4);//subchunk2 size(int=sample count)
-//    qDebug() << "sample_rate:"  << buf_i;
 }

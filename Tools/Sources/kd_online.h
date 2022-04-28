@@ -11,6 +11,7 @@
 #include "kd_model.h"
 #include "kd_decodable.h"
 #include "kd_online_ldecoder.h"
+#include "bt_wav_writer.h"
 
 class KdOnline : public QObject
 {
@@ -26,17 +27,17 @@ public slots:
 
 private:
     void processResult(QVector<BtWord> result);
-    void writeWav(BtCyclic *buf, int len);
-    void writeWavHeader(QFile *file, int len);
+    void writeWav(int len);
 
     void processLat(KdCompactLattice *clat, clock_t start);
     bool isSleep();
 
     BtRecorder       *ab_src;
-    QVector<BtWord>   last_r; //last_result
+    QVector<BtWord>   c_result; // current_result
     KdOnlineStatus    status;
     BtCyclic         *cy_buf;
     BtCaptain        *cap;
+    BtWavWriter      *wav_w;
 
     KdOnlineLDecoder *o_decoder;
 
