@@ -23,9 +23,12 @@ private:
     void writeWavHeader(int len);
     void copyToTrain(QVector<BtWord> result, QString filename);
     bool isSleep();
+    void readWordList();
+    QString wordToId(QVector<BtWord> result);
 
     BtCyclic         *cy_buf;
     QFile            *file;
+    QStringList       word_list;
 };
 
 #endif // BT_WAV_WRITER_H

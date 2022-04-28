@@ -21,6 +21,8 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, QObject *parent): QObject(parent)
         system("mkdir -p " KAL_AU_DIR "/train/online");
     }
     file = new QFile;
+
+    readWordList();
 }
 
 BtWavWriter::~BtWavWriter()
@@ -84,6 +86,29 @@ bool BtWavWriter::isSleep()
     return false;
 }
 
+void BtWavWriter::readWordList()
+{
+    QFile wl_file(BT_WORDLIST_PATH);
+
+    if( !wl_file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        qDebug() << "Error opening" << BT_WORDLIST_PATH;
+        return;
+    }
+
+    while ( !wl_file.atEnd() )
+    {
+        QString line = QString(wl_file.readLine());
+        line.remove(QRegExp("\\n")); //remove new line
+        if( line.length() )
+        {
+            word_list.push_back(line);
+        }
+    }
+
+    wl_file.close();
+}
+
 void BtWavWriter::writeWavHeader(int len)
 {
     uint32_t buf_i;
@@ -114,12 +139,13 @@ void BtWavWriter::writeWavHeader(int len)
 void BtWavWriter::copyToTrain(QVector<BtWord> result, QString filename)
 {
     QString base_name = KAL_AU_DIR"/train/online/";
-    for( int i=0 ; i<result.size()-1 ; i++ )
-    {
-        base_name += result[i].word;
-        base_name += "_";
-    }
-    base_name += result.last().word;
+//    for( int i=0 ; i<result.size()-1 ; i++ )
+//    {
+//        base_name += result[i].word;
+//        base_name += "_";
+//    }
+//    base_name += result.last().word;
+    base_name += wordToId(result);
     QString f_name = base_name + ".wav";
 
     int ps = 0;
@@ -136,4 +162,34 @@ void BtWavWriter::copyToTrain(QVector<BtWord> result, QString filename)
     QString cmd = "cp "+ filename;
     cmd += " " + f_name;
     system(cmd.toStdString().c_str());
+}
+
+QString BtWavWriter::wordToId(QVector<BtWord> result)
+{
+    QString buf;
+
+    for( int i=0 ; i<result.length()-1 ; i++ )
+    {
+        for( int j=0 ; j<word_list.length() ; j++ )
+        {
+            if( result[i].word==word_list[j] )
+            {
+                buf += QString::number(j);
+                buf += "_";
+
+                break;
+            }
+        }
+    }
+
+    QString last_word = result.last().word;
+    for( int j=0 ; j<word_list.length() ; j++ )
+    {
+        if( last_word==word_list[j] )
+        {
+            buf += QString::number(j);
+        }
+    }
+
+    return buf;
 }

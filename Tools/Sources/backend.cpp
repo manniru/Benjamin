@@ -90,7 +90,6 @@ QVector<QString> bt_parseLexicon(QString filename)
         return lexicon;
     }
 
-
     while ( !words_file.atEnd() )
     {
         QString line = QString(words_file.readLine());

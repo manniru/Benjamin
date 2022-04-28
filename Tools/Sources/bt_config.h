@@ -15,6 +15,7 @@
 #define BT_OAMDL_PATH     KAL_NATO_DIR "exp/" KAL_MODE "_online/final.oalimdl" //Online Alignment
 #define BT_FST_PATH       KAL_NATO_DIR "exp/" KAL_MODE "/graph/HCLG.fst"
 #define BT_GCMVN_PATH     KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats"
+#define BT_WORDLIST_PATH  KAL_NATO_DIR"word_list"
 #define BT_BAR_RESULT     "Resources/bar_result"
 
 #define KAL_CONF_TRESHOLD  0.9
