@@ -178,6 +178,8 @@ void KdOnlineLDecoder::HaveSilence()
         int diff = uframe - end_time*100;
         if( diff>BT_MIN_SIL )
         {
+            qDebug() << "DETECT MIN SIL: "
+                     << end_time*100;
             status.max_frame = end_time*100;
             status.max_frame += status.min_frame;
             status.state = KD_STATE_SILENCE;
@@ -229,8 +231,9 @@ void KdOnlineLDecoder::checkReset()
     else if( status.state==KD_STATE_SILENCE )
     {
         int diff = frame_num - status.max_frame;
-        qDebug() << "------------Reset Sil"
-                 << status.max_frame << diff << uframe;
+        qDebug() << "--Reset Sil, Max Frame: "
+                 << status.max_frame << status.min_frame
+                 << diff << uframe;
         frame_num -= diff;
     }
 
@@ -242,6 +245,7 @@ void KdOnlineLDecoder::checkReset()
 
         cache_fst1.DeleteStates();
         last_cache_f = 0;
+        status.state = KD_STATE_NORMAL;
     }
     start_t = clock();
     dbg_times = "";

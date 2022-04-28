@@ -123,7 +123,9 @@ void BtCaptain::writeResult()
 
     if( !bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "Error opening" << BT_BAR_RESULT;
+        qDebug() << "Error creating" << BT_BAR_RESULT;
+        qDebug() << "Try create Resource Folder";
+        system("mkdir Resources");
         return;
     }
     QTextStream out(&bar_file);
@@ -204,4 +206,26 @@ void BtCaptain::flush()
         current.remove(i);
         i--;
     }
+    BtHistory sep;
+    sep.words.push_back(" ");
+    if( history.length() )
+    {
+        BtHistory last = history.last();
+        if( last.words[0]==" " )
+        {
+            sep.time = start_treshold+BT_HISTORY_SIZE/1000.0/2;
+        }
+        else
+        {
+            sep.time  = history.last().time;
+        }
+    }
+    else
+    {
+        sep.time = start_treshold+BT_HISTORY_SIZE/1000.0/2;
+    }
+    sep.is_final = 1;
+    sep.conf = 1;
+
+    history.push_back(sep);
 }

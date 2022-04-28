@@ -93,7 +93,7 @@ void KdMBR::computeGamma()
     std::vector<map<int, double> > gamma_map(word_len+1); // temp. form of gamma.
 
     L_ = editDistance();
-    KALDI_VLOG(2) << "L = " << L_;
+//    KALDI_VLOG(2) << "L = " << L_;
     // omit line 10: zero when initialized.
     beta_dash(state_count, word_len) = 1.0; // Line 11.
     for( int state=state_count ; state>=2 ; state-- ) // all states
@@ -241,7 +241,6 @@ void KdMBR::getBestWords(KdCompactLattice *clat)
     kd_ConvertLattice(lat, &fst); // convert to FST.
     fst::ShortestPath(fst, &fst_shortest_path); // take shortest path of FST.
     kd_GetLinearSymbolSequence(fst_shortest_path, &alignment, &words, &weight);
-//    KALDI_ASSERT(alignment.empty()); // we removed the alignment.
     best_wid = words;
 }
 
@@ -291,12 +290,13 @@ double KdMBR::editDistance()
     {
         alpha_dash(1, q+1) = alpha_dash(1, q) + kd_l_distance(0, best_wid[q]);
     }
-    for( int n=2 ; n <= state_count; n++ )
+    for( int n=2 ; n<=state_count ; n++ )
     {
-        double alpha_n = kaldi::kLogZeroDouble;
+        double alpha_n = -KD_INFINITY_DB;
         for( int i=0 ; i<mlat[n].size() ; i++ )
         {
-            const KdMBRArc &arc = mlat_arc[mlat[n][i]];
+            KdMBRArc arc = mlat_arc[mlat[n][i]];
+//            float prob = std::exp(arc.loglike) + std;
             alpha_n = kaldi::LogAdd(alpha_n, alpha[arc.start_node] + arc.loglike);
         }
         alpha[n] = alpha_n;

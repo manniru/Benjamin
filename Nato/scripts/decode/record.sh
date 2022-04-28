@@ -1,21 +1,27 @@
 #!/bin/bash
 
-SENNHEISER=$(pactl list short sources | grep "Sennheiser")
+ALIN="alsa_input.usb-"
+S_NAME="Sennheiser_Communications_Sennheiser"
+F_NAME="Focusrite_iTrack_Solo"
+SENNHEISER=$(pactl list short sources | grep "${ALIN}${S_NAME}")
+FOCUSRITE=$(pactl list short sources | grep "${ALIN}${F_NAME}")
 
 if [[ "$SENNHEISER" ]]; then
 
-	MIC_NAME="Sennheiser_Communications_Sennheiser_USB_headset-00.mono-fallback"
+	MIC_NAME="${ALIN}${S_NAME}_USB_headset-00.mono-fallback"
 	VOLUME="52430" #set volume to 80% 
 
-else
+elif [[ "$FOCUSRITE" ]]; then
 
-	MIC_NAME="Focusrite_iTrack_Solo-00.analog-stereo"
-	VOLUME="78500" #set volume to 110% 
+	MIC_NAME=$(echo "$FOCUSRITE" | cut -f 2)
+	VOLUME="100500" #set volume to 130% 
 
 fi
 
-pacmd set-default-source alsa_input.usb-$MIC_NAME #set source to Sennheier
-pacmd set-source-volume alsa_input.usb-$MIC_NAME $VOLUME
+if [[ "$MIC_NAME" ]]; then
+	pacmd set-default-source $MIC_NAME
+	pacmd set-source-volume $MIC_NAME $VOLUME
+fi
 
 FILE_NAME="$1"
 REC_TIME="$2" #second

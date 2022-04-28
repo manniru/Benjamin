@@ -179,5 +179,5 @@ void KdOnline::writeWavHeader(QFile *file, int len)
     file->write("data",4);//subchunk2 id(str="data")
     buf_i = len;
     file->write((char*)&buf_i,4);//subchunk2 size(int=sample count)
-    qDebug() << "sample_rate:"  << buf_i;
+//    qDebug() << "sample_rate:"  << buf_i;
 }
