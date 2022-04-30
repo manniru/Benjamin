@@ -171,6 +171,10 @@ elif [[ "$WORD" == "bracket" ]]; then
 elif [[ "$WORD" == "quote" ]]; then
     
     OUTPUT="40"
+    
+elif [[ "$WORD" == "github" ]]; then
+    
+    OUTPUT="58" #caps lock
 
 fi
 

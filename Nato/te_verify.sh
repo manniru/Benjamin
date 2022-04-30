@@ -1,4 +1,5 @@
 #!/bin/bash
+# test data verify
 
 CAT_NAME="scarlet"
 AUDIO_PATH="audio/train/$CAT_NAME"

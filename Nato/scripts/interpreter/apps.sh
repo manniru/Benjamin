@@ -4,37 +4,33 @@ WORD="$1"
 DBUS_PATH="$2"
 OUTPUT=""
 
-if [[ "$WORD" == "github" ]]; then
-
-    OUTPUT="1"
-
-elif [[ "$WORD" == "firefox" ]]; then
+if [[ "$WORD" == "firefox" ]]; then
     
-    OUTPUT="2"
+    OUTPUT="1"
 
 elif [[ "$WORD" == "files" ]]; then
     
-    OUTPUT="3"
+    OUTPUT="2"
 
 elif [[ "$WORD" == "spotify" ]]; then
 
-    OUTPUT="4"
+    OUTPUT="3"
 
 elif [[ "$WORD" == "atom" ]]; then
 
-    OUTPUT="5"
+    OUTPUT="4"
 
 elif [[ "$WORD" == "ding" ]]; then
 
-    OUTPUT="6"
+    OUTPUT="5"
 
 elif [[ "$WORD" == "link" ]]; then
 
-    OUTPUT="7"
+    OUTPUT="6"
 
 elif [[ "$WORD" == "sleep" ]]; then
 
-    OUTPUT="8"
+    OUTPUT="7"
 
 fi
 
