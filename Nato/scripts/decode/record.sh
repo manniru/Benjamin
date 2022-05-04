@@ -7,7 +7,7 @@ STATUS=""
 
 function bt_procInput()
 {
-	REP=$(bt_fastRead "0.1" "$REP")
+	REP=$(bt_fastRead $1 "$REP")
 
 	if [[ "$REP" ]]; then
 
@@ -35,19 +35,19 @@ bt_InitMic # only for senheiser or focusrite
 FILE_NAME="$1"
 REC_TIME="$2" #second
 
-bt_procInput
+bt_procInput "1.0"
 
 python3 scripts/decode/recorder.py "$FILE_NAME" $REC_TIME 2>/dev/null &
 
 I_VAL=0
 REC_TIME_MS=$(($REC_TIME * 1000))
 
-bt_procInput
+bt_procInput "0.1"
 
 while [[ "$I_VAL" -lt "$REC_TIME_MS" ]]; do
 
 	I_VAL=$(($I_VAL + 100))
-	bt_procInput
+	bt_procInput "0.1"
 	T_VAL=$(($I_VAL / 1000))
 	MS_VAL=$(($I_VAL % 1000))
 	printf "\r                            Time = $T_VAL:$MS_VAL"
@@ -62,6 +62,5 @@ AMP_MAX=$(echo "$BUFF" | awk '{print $3}')
 AMP_MAX=$(echo "20*l($AMP_MAX)/l(10)" | bc -l)
 
 printf "\rMax Amp=%.2fdB\n" $AMP_MAX
-echo "R=$REP"
 
 exit 0

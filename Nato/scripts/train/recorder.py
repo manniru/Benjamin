@@ -72,5 +72,3 @@ while i<REC_NUMBER:
 		continue
 	elif ret == 2: #quit
 		break
-
-

@@ -152,7 +152,7 @@ void BtWavWriter::copyToTrain(QVector<BtWord> result, QString filename)
     while( QFile::exists(f_name) )
     {
         ps++;
-        f_name  = base_name + "_";
+        f_name  = base_name + ".";
         f_name += QString::number(ps);
         f_name += ".wav";
     }
