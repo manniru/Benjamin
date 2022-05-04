@@ -3,11 +3,11 @@
 function update_data()
 {
 	mkdir -p "${DATA_DIR}/$1"
-	$ST/w_u2s.sh "$AUDIO_DIR/$1" "${DATA_DIR}/$1"
+	python3 $ST/w_u2s.py "$AUDIO_DIR/$1" "${DATA_DIR}/$1"
 	echo "$1 wav.scp and utt2spk generated"
 	$ST/spk2g.sh "$AUDIO_DIR/$1" "${DATA_DIR}/$1/spk2gender"
 	echo "$1 spk2gender generated"
-	$ST/ct.sh "$AUDIO_DIR/$1" "${DATA_DIR}" "$1"
+	python3 $ST/ct.py "$AUDIO_DIR/$1" "${DATA_DIR}" "$1"
 	echo "$1 text and corpus generated"
 	
 	$SD/sort.sh "$DATA_DIR/$1/text"
