@@ -168,6 +168,10 @@ elif [[ "$WORD" == "bracket" ]]; then
     
     OUTPUT="26"
 
+elif [[ "$WORD" == "curly" ]]; then
+    
+    OUTPUT="27"
+
 elif [[ "$WORD" == "quote" ]]; then
     
     OUTPUT="40"

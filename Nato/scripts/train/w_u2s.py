@@ -23,14 +23,21 @@ def writeWord(spk_id, w_filename):
 	TEXT_FILE.write(WAV_BUF)
 	CORPUS_FILE.write(UTT_BUF)
 
-list_dir = os.listdir(AUD_DIR)
+if( AUD_DIR=="audio/train" ):
+	list_dir = os.listdir(AUD_DIR)
+else:
+	list_dir = "test"
 
 TEXT_FILE   = open(WAV_PATH, "w")
 CORPUS_FILE = open(UTT_PATH, "w")
 
 for dir in list_dir:
 	#print("dir=" + dir)
-	list_wav = os.listdir(AUD_DIR+"/"+dir)
+	if( AUD_DIR=="audio/train" ):
+		list_wav = os.listdir(AUD_DIR+"/"+dir)
+	else:
+		list_wav = os.listdir(AUD_DIR)
+	
 	for filename in list_wav:
 		#print("file=" + filename)
 		writeWord(dir, filename)

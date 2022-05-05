@@ -36,7 +36,10 @@ def writeWord(spk_id, w_filename):
 	TEXT_FILE.write(TEXT_BUF)
 	CORPUS_FILE.write(CORPUS_BUF)
 
-list_dir = os.listdir(AUD_DIR)
+if( AUD_DIR=="audio/train" ):
+	list_dir = os.listdir(AUD_DIR)
+else:
+	list_dir = "test"
 
 word_file = open(WRD_FILE)
 lexicon = word_file.read().splitlines()
@@ -46,7 +49,11 @@ CORPUS_FILE = open(CORPUS_PATH, "w")
 
 for dir in list_dir:
 	#print("dir=" + dir)
-	list_wav = os.listdir(AUD_DIR+"/"+dir)
+	if( AUD_DIR=="audio/train" ):
+		list_wav = os.listdir(AUD_DIR+"/"+dir)
+	else:
+		list_wav = os.listdir(AUD_DIR)
+  
 	for filename in list_wav:
 		#print("file=" + filename)
 		writeWord(dir, filename)

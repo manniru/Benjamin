@@ -13,6 +13,7 @@ SPK2UTT="$AUDIO_PATH/spk2utt"
 source path.sh
 mkdir -p "$WAV_DIR"
 mkdir -p "$RESULT_PATH"
+mkdir -p "$AUDIO_PATH"
 
 $SD/clean.sh "$AUDIO_PATH" "$WAV_DIR" "$DECODE_PATH"
 

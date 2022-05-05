@@ -1,10 +1,9 @@
 #!/bin/bash
-# Bijan Binaee 2021 <bijan-at-binaee-dot-com>
+# Bijan Binaee 2021 <bijan-a/t-binaee-d0t-com>
 
 git clone https://github.com/kaldi-asr/kaldi.git Kaldi
 git clone https://github.com/bijanbina/Benjamin.git
 
-#sudo pacman -S lapack
 sudo pacman -S intel-mkl gcc-fortran subversion portaudio python-pyaudio
 cd Kaldi/tools
 extras/check_dependencies.sh

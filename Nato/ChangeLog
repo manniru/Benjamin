@@ -16,4 +16,6 @@ suggestions
 -----------------
 colon-> camel
 u-> ut
-github -> copy
+github -> caps
+firefox -> copy
+underline -> paste
