@@ -3,8 +3,12 @@
 AUDIO_DIR="$1"
 SPK2G_FILE="$2"
 
-find "$AUDIO_DIR" -type d | awk -F '/' '{print $(NF)'} > list_dir
-sed -i '1d' list_dir #remove first line
+if [[ "$AUDIO_DIR" == "audio/train" ]]; then
+	find "$AUDIO_DIR" -type d | awk -F '/' '{print $(NF)'} > list_dir
+	sed -i '1d' list_dir #remove first line
+else
+	echo "test" > list_dir	
+fi
 
 while read p; do
 	echo "$p m" >> "$SPK2G_FILE"		

@@ -39,7 +39,7 @@ def writeWord(spk_id, w_filename):
 if( AUD_DIR=="audio/train" ):
 	list_dir = os.listdir(AUD_DIR)
 else:
-	list_dir = "test"
+	list_dir = ["test"]
 
 word_file = open(WRD_FILE)
 lexicon = word_file.read().splitlines()

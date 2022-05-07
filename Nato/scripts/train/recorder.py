@@ -6,8 +6,8 @@ import os
 import time
 import sys
 
-AUDIO_DIR = sys.argv[1]
-SPEAKER = sys.argv[2]
+AUDIO_DIR  = sys.argv[1]
+SPEAKER    = sys.argv[2]
 REC_NUMBER = int(sys.argv[3])
 WORD_COUNT = int(sys.argv[4])
 
@@ -42,8 +42,8 @@ while i<REC_NUMBER:
 	#biased digit
 	#digit3 = random.randint(0,WORD_COUNT-67) + 67
 #	digit3 = 32
-	digit3 = random.randint(0,66)
-	#digit3 = random.randint(0,WORD_COUNT)
+#	digit3 = random.randint(0,66)
+	digit3 = random.randint(0,WORD_COUNT)
 	file_name = getRandomFileName(digit1, digit2, digit3)
 	file_path = str(directory) + "/" + file_name
 	script = "find " + directory + " -name \"" + file_name + "\" > files"
