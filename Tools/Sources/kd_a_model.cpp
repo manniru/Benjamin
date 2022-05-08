@@ -1,4 +1,5 @@
 #include "kd_a_model.h"
+#include <QDebug>
 
 using namespace kaldi;
 

@@ -31,9 +31,9 @@ void BtFeInput::computeFrame(uint frame)
     {
         left_frame = 0;
     }
-    if( right_frame>=frame_num )
+    if( right_frame>frame_num )
     {
-        right_frame = frame_num - 1;
+        right_frame = frame_num;
     }
     if( right_frame<left_frame )
     {

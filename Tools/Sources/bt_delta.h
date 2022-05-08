@@ -16,7 +16,9 @@ public:
     void resetDelta(BtFrameBuf *buf);
 
 private:
-    int sumof2N2(int n);
+    void initZeroCoeff(int i, int len);
+    int  sumof2N2(int n);
+
     BtCFB *feature;
     QVector<float> coeffs[BT_DELTA_ORDER+1]; // coeff to compute smooth derivative
 };

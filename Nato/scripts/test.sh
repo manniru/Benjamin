@@ -39,7 +39,3 @@ elif [[ "$1" == "t" ]]; then
 fi
 
 time $SD/decode.sh "$DECODE_PATH" "$AUDIO_PATH" "$RESULT_PATH" 1
-#time $SD/create_conf.sh decode 0.08 0.027
-#$SK/visualize.sh "$LAT_CONF" "$RESULT_PATH" #visualize
-#$SD/print_words.sh decode 0.9
-#cat "$RESULT_PATH/confidence"

@@ -18,7 +18,7 @@ void KdDelta::calcCoeffs()
     {
         int l_size = coeffs[i].length(); //last size
         int max_j = 2*KD_DELTA_WINDOW+1;
-        coeffs[i+1].resize(l_size + 2*KD_DELTA_WINDOW); // init with zero
+        initZeroCoeff(i+1, l_size + 2*KD_DELTA_WINDOW); // init with zero
 
         for( int j=0 ; j<max_j ; j++ )
         {
@@ -92,6 +92,16 @@ void KdDelta::resetDelta(BtFrameBuf *buf)
         {
             buf->delta[(i+1)*BT_FEAT_SIZE+j] = 0;
         }
+    }
+}
+
+// set delta to zero
+void KdDelta::initZeroCoeff(int i, int len)
+{
+    coeffs[i].resize(len); // init with zero
+    for( int j=0 ; j<len ; j++ )
+    {
+        coeffs[i][j] = 0;
     }
 }
 

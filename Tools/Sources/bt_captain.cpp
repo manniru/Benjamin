@@ -107,7 +107,8 @@ void BtCaptain::shiftHistory()
 
     for( int i=0 ; i<history.length() ; i++ )
     {
-        if( history[i].time<start_treshold ) //5 second history size
+        if( (history[i].time<start_treshold) || //5 second history size
+            (history.length()>BT_HISTORY_LEN) ) // max len = 8
         {
             history.remove(i);
             i--;
