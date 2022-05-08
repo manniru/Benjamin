@@ -12,6 +12,15 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, QObject *parent): QObject(parent)
         system("mkdir -p " KAL_AU_DIR "/online");
     }
 
+    QDir au_UnverifiedDir(KAL_AU_DIR"/unverified");
+
+    if( !au_UnverifiedDir.exists() )
+    {
+        qDebug() << "Creating" << KAL_AU_DIR"/unverified"
+                 << " Directory";
+        system("mkdir -p " KAL_AU_DIR "/unverified");
+    }
+
     QDir au_TrainDir(KAL_AU_DIR"/train/online");
 
     if( !au_TrainDir.exists() )
@@ -46,7 +55,7 @@ void BtWavWriter::write(QVector<BtWord> result, int len, int dbg_id)
     writeWav(len);
     file->close();
 
-    copyToTrain(result, filename);
+    copyToUnverified(result, filename);
 }
 
 void BtWavWriter::writeWav(int len)
@@ -136,31 +145,33 @@ void BtWavWriter::writeWavHeader(int len)
 //    qDebug() << "sample_rate:"  << buf_i;
 }
 
-void BtWavWriter::copyToTrain(QVector<BtWord> result, QString filename)
+void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
 {
-    QString base_name = KAL_AU_DIR"/train/online/";
-//    for( int i=0 ; i<result.size()-1 ; i++ )
-//    {
-//        base_name += result[i].word;
-//        base_name += "_";
-//    }
-//    base_name += result.last().word;
-    base_name += wordToId(result);
-    QString f_name = base_name + ".wav";
+    // verified base name
+    QString v_base_name = KAL_AU_DIR"/train/online/";
+    QString u_base_name = KAL_AU_DIR"/unverified/";
+    v_base_name += wordToId(result);
+    u_base_name += wordToId(result);
+    QString vf_name = v_base_name + ".wav";
+    QString uf_name = u_base_name + ".wav";
 
     int ps = 0;
-    while( QFile::exists(f_name) )
+    while( QFile::exists(uf_name) ||
+           QFile::exists(vf_name) )
     {
         ps++;
-        f_name  = base_name + ".";
-        f_name += QString::number(ps);
-        f_name += ".wav";
+        uf_name  = v_base_name + ".";
+        uf_name += QString::number(ps);
+        uf_name += ".wav";
+        vf_name  = v_base_name + ".";
+        vf_name += QString::number(ps);
+        vf_name += ".wav";
     }
 
-    qDebug() << "tr_filename" << f_name;
+    qDebug() << "tr_filename" << uf_name;
 
     QString cmd = "cp "+ filename;
-    cmd += " " + f_name;
+    cmd += " " + uf_name;
     system(cmd.toStdString().c_str());
 }
 

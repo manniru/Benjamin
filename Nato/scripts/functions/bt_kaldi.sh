@@ -32,5 +32,9 @@ function checkAudio()
 		printf "|"
 	done
 
-	sleep "$LEN_REMAIN"
+	if [[ "$LEN_REMAIN" == 0 ]]; then
+		mv "$FILE_PATH" "audio/train/online/"
+	else
+		sleep "$LEN_REMAIN"
+	fi
 }

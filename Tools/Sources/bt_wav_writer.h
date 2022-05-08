@@ -21,7 +21,7 @@ public:
 private:
     void writeWav(int len);
     void writeWavHeader(int len);
-    void copyToTrain(QVector<BtWord> result, QString filename);
+    void copyToUnverified(QVector<BtWord> result, QString filename);
     bool isSleep();
     void readWordList();
     QString wordToId(QVector<BtWord> result);
