@@ -33,7 +33,7 @@ private:
     KdOnlineLDecoder *o_decoder;
     kaldi::TransitionModel *t_model;
     KdAModel         *oa_model; //online accoustic model
-    QFile            *wav_file;
+    QFile             wav_file;
     QStringList       file_list;
 };
 

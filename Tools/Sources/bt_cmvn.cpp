@@ -1,7 +1,6 @@
 #include "bt_cmvn.h"
 #include <QDebug>
 #include <QFile>
-#include <Qt>
 
 BtCMVN::BtCMVN(BtCFB *feat)
 {
@@ -27,7 +26,7 @@ BtCMVN::~BtCMVN()
 {
 }
 
-void BtCMVN::updateStats(BtFrameBuf *buf)
+void BtCMVN::addFrame(BtFrameBuf *buf)
 {
     if( buf->have_cmvn )
     {
@@ -66,7 +65,7 @@ void BtCMVN::updateStats(BtFrameBuf *buf)
 }
 
 // Add from global CMVN if no frame is in stat
-void BtCMVN::computeFinalStats()
+void BtCMVN::updateStat()
 {
     double remain_f = BT_CMVN_WINDOW - feature_buf.len; //number of frame needed
     double global_N = global_state[BT_FEAT_SIZE];
@@ -82,8 +81,8 @@ void BtCMVN::computeFinalStats()
 void BtCMVN::calc(uint frame)
 {
     BtFrameBuf *buf = i_feature->get(frame);
-    updateStats(buf);
-    computeFinalStats();
+    addFrame(buf);
+    updateStat();
 
     if( buf->have_cmvn )
     {

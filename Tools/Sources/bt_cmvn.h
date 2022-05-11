@@ -28,8 +28,8 @@ public:
 private:
     void resetSum();
     void readGlobal();
-    void computeFinalStats();
-    void updateStats(BtFrameBuf *buf);
+    void updateStat();
+    void addFrame(BtFrameBuf *buf);
 
     BtCFB *i_feature; //input feature (global buffer filled from outside)
     double global_state[BT_FEAT_SIZE+1];   // reflects the state before we saw this
