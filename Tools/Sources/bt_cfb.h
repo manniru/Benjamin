@@ -26,6 +26,8 @@ class BtCFB : public QObject
     Q_OBJECT
 public:
     explicit BtCFB(int size = BT_FB_SIZE, QObject *parent = nullptr);
+    ~BtCFB();
+
     BtFrameBuf* get(uint frame);
 
 private:

@@ -22,6 +22,7 @@ BtTest::~BtTest()
     delete t_model;
     delete oa_model;
     delete o_decoder;
+    delete cy_buf;
 }
 
 void BtTest::init()

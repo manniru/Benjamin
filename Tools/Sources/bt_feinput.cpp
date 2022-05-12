@@ -10,6 +10,15 @@ BtFeInput::BtFeInput(BtCyclic *buf, QObject *parent): QObject(parent)
     cmvn = new BtCMVN(o_features);
 }
 
+BtFeInput::~BtFeInput()
+{
+    // Guard against double deleting the cmvn_ ptr
+    delete cmvn;
+    delete mfcc;
+    delete o_features;
+    delete delta;
+}
+
 uint BtFeInput::NumFramesReady()
 {
     uint offset = BT_DELTA_ORDER * BT_DELTA_ORDER; //4

@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    ReChapar *chaper = new ReChapar;
+    ReChapar chaper;
 
     return app.exec();
 }

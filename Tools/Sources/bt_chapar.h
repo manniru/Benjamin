@@ -14,12 +14,14 @@ class ReChapar : public QObject
     Q_OBJECT
 public:
     explicit ReChapar(QObject *parent = nullptr);
+    ~ReChapar();
 
 signals:
     void startDecoding();
 
 private:
-    QThread     *kaldi_thread;
+    QThread *kaldi_thread;
+    BtTest  *test;
 };
 
 #endif // BT_CHAPAR_H

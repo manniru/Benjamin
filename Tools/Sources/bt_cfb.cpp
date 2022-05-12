@@ -7,6 +7,11 @@ BtCFB::BtCFB(int size, QObject *parent) : QObject(parent)
     len = size;
 }
 
+BtCFB::~BtCFB()
+{
+    free(data);
+}
+
 BtFrameBuf *BtCFB::get(uint frame)
 {
     int index = frame%len;
