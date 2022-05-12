@@ -110,6 +110,10 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
             adaptive_beam = min_active_cutoff - best_cost + config.beam_delta;
             return min_active_cutoff;
         }
+        else
+        {
+            return beam_cutoff;
+        }
     }
     else
     {
