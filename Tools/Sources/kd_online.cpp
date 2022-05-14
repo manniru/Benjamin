@@ -47,6 +47,12 @@ void KdOnline::startDecode()
 
     while( 1 )
     {
+        if( isHalt() )
+        {
+            cy_buf->clear();
+            QThread::msleep(200);
+            continue;
+        }
         decodable.features->ComputeFeatures();
         o_decoder->Decode();
         c_result = o_decoder->getResult(&out_fst);
@@ -121,7 +127,34 @@ bool KdOnline::isSleep()
     status_path += "/.config/polybar/awesomewm/ben_status";
     if( QFile::exists(status_path) )
     {
-        return true;
+        QString cmd = "cat ";
+        cmd += status_path;
+        QString status = getStrCommand(cmd);
+
+        if( status.contains("sleep", Qt::CaseInsensitive) )
+        {
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+bool KdOnline::isHalt()
+{
+    QString status_path = getenv("HOME");
+    status_path += "/.config/polybar/awesomewm/ben_status";
+    if( QFile::exists(status_path) )
+    {
+        QString cmd = "cat ";
+        cmd += status_path;
+        QString status = getStrCommand(cmd);
+
+        if( status.contains("halt", Qt::CaseInsensitive) )
+        {
+            return true;
+        }
+        return false;
     }
     return false;
 }

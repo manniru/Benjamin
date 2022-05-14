@@ -13,6 +13,7 @@ DIR = sys.argv[2] #2
 AUD_PATH = "audio/train"
 WRD_FILE = "word_list"
 SYM_FILE = f"{GRA}/words.txt"
+OUT_FILE = f"input"
 MIN_LMWT = 7
 MAX_LMWT = 17
 
@@ -21,6 +22,7 @@ def printWord(word):
 		return
 
 	w_filename = word[0]
+	w_filename = w_filename.split('.')[0]
 	word_id = w_filename.split('_')
 
 	orig_id = ""
@@ -54,9 +56,11 @@ def printWord(word):
 
 	if( is_wrong ):
 		print(f"{orig_id:<8} {orig:<25} {det}")
+		out_file.write(f"{AUD_PATH}/{word_id[0]}/{orig_id}.wav {orig:<25} {det}\n")
 
 word_file = open(WRD_FILE)
 syms_file = open(SYM_FILE)
+out_file  = open(OUT_FILE, "w")
 lexicon = word_file.read().splitlines()
 symbols = syms_file.read().splitlines()
 
@@ -75,3 +79,8 @@ for i in range(MIN_LMWT, MAX_LMWT+1):
 	for line in open(sc_filename):
 		word = line.split()
 		printWord(word)
+  
+out_file.close()
+
+#remove duplicates
+os.system("sort -u -o input input")

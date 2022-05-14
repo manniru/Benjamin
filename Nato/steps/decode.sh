@@ -127,11 +127,6 @@ if [ $stage -le 0 ]; then
     $model $graphdir/HCLG.fst "$feats" "ark:|gzip -c > $dir/lat.JOB.gz" || exit 1;
 fi
 
-if [ $stage -le 1 ]; then
-  [ ! -z $iter ] && iter_opt="--iter $iter"
-  steps/diagnostic/analyze_lats.sh --cmd "$cmd" $iter_opt $graphdir $dir
-fi
-
 steps/score.sh --cmd "$cmd" $scoring_opts $data $graphdir $dir
 
 exit 0;

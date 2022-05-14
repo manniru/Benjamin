@@ -130,6 +130,11 @@ void BtCyclic::write(QVector<int16_t> *data)
     }
 }
 
+void BtCyclic::clear()
+{
+    read_p = write_p;
+}
+
 // return negative on erorr
 void BtCyclic::constWrite(int16_t data, int size)
 {

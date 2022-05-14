@@ -1,13 +1,13 @@
 #! /bin/sh
 # Author: M. Abdollah Zade 2022
-# ./verify_o.sh <MAX_DAY>
+# ./verify_o.sh
 
 source scripts/functions/bt_kaldi.sh
 
 AUD_DIR="audio/unverified"
 VER_DIR="audio/train/online" #verified online
-MAX_DIFF=$1
 mkdir -p "$VER_DIR"
+clear
 
 # Find with date output
 find "$AUD_DIR" -type f -printf "%T@ %Tc %p\n" > list_file
@@ -24,19 +24,7 @@ while read LINE; do
 	python3 scripts/train/print_name.py "$FILENAME"
 	
 	printf "\e[A"
-
-	FILE_DATE=$(stat $FILE | grep Change | cut -d ' ' -f2)
-	FILE_DATA_NUM=$(date -d $FILE_DATE +%s)
-
-	DATE_NOW=$(date +%s)
-	DIFF=$(( $DATE_NOW - $FILE_DATA_NUM ))
-
-	DIFF_DATE=$(( $DIFF / 86400 ))
-	#exit 0
-
-	if [[ $DIFF_DATE -lt $MAX_DIFF ]]; then
-		checkAudio $FILE
-	fi
+	checkAudio $FILE
 
 done <list_file
 

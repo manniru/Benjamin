@@ -68,3 +68,7 @@ Tools/bt2
 Tools/g_c
 
 Tools/Kaldi/final.oalimdl
+
+Tools/Resources/global_cmvn.stats
+
+*.stats

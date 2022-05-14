@@ -21,6 +21,8 @@ public:
     void write(int16_t *data, int size);
     void write(QVector<int16_t> *data);
 
+    void clear();
+
     void constWrite(int16_t data, int size);
     int  rewind(int count);
     int  getDataSize(int *fake=NULL); // Get Data size that are in Buf
