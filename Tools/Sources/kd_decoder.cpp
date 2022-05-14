@@ -294,7 +294,7 @@ void KdDecoder::DeleteForwardLinks(KdToken *tok)
 // The KdToken pointers
 void KdDecoder::ClaerAllToks()
 {
-    for( KdStateId state=1 ; state<MAX_STATE_COUNT ; state++ )
+    for( KdStateId state=0 ; state<MAX_STATE_COUNT ; state++ )
     {
         if( all_tokens[state]!=NULL )
         {

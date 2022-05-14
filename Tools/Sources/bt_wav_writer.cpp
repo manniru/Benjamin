@@ -3,31 +3,31 @@
 BtWavWriter::BtWavWriter(BtCyclic *buffer, QObject *parent): QObject(parent)
 {
     cy_buf = buffer;
-    QDir au_OnlineDir(KAL_AU_DIR"/online");
+    QDir au_OnlineDir(KAL_AU_DIR"online");
 
     if( !au_OnlineDir.exists() )
     {
-        qDebug() << "Creating" << KAL_AU_DIR"/online"
+        qDebug() << "Creating" << KAL_AU_DIR"online"
                  << " Directory";
-        system("mkdir -p " KAL_AU_DIR "/online");
+        system("mkdir -p " KAL_AU_DIR "online");
     }
 
-    QDir au_UnverifiedDir(KAL_AU_DIR"/unverified");
+    QDir au_UnverifiedDir(KAL_AU_DIR"unverified");
 
     if( !au_UnverifiedDir.exists() )
     {
-        qDebug() << "Creating" << KAL_AU_DIR"/unverified"
+        qDebug() << "Creating" << KAL_AU_DIR"unverified"
                  << " Directory";
-        system("mkdir -p " KAL_AU_DIR "/unverified");
+        system("mkdir -p " KAL_AU_DIR "unverified");
     }
 
-    QDir au_TrainDir(KAL_AU_DIR"/train/online");
+    QDir au_TrainDir(KAL_AU_DIR"train/online");
 
     if( !au_TrainDir.exists() )
     {
-        qDebug() << "Creating" << KAL_AU_DIR"/train/online"
+        qDebug() << "Creating" << KAL_AU_DIR"train/online"
                  << " Directory";
-        system("mkdir -p " KAL_AU_DIR "/train/online");
+        system("mkdir -p " KAL_AU_DIR "train/online");
     }
     file = new QFile;
 
@@ -41,7 +41,7 @@ BtWavWriter::~BtWavWriter()
 
 void BtWavWriter::write(QVector<BtWord> result, int len, int dbg_id)
 {
-    QString filename = KAL_AU_DIR"/online/";
+    QString filename = KAL_AU_DIR"online/";
     filename += QString::number(dbg_id);
     filename += ".wav";
     file->setFileName(filename);
@@ -148,8 +148,8 @@ void BtWavWriter::writeWavHeader(int len)
 void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
 {
     // verified base name
-    QString v_base_name = KAL_AU_DIR"/train/online/";
-    QString u_base_name = KAL_AU_DIR"/unverified/";
+    QString v_base_name = KAL_AU_DIR"train/online/";
+    QString u_base_name = KAL_AU_DIR"unverified/";
     v_base_name += wordToId(result);
     u_base_name += wordToId(result);
     QString vf_name = v_base_name + ".wav";

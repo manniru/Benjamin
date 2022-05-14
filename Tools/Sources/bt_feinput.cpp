@@ -55,14 +55,8 @@ void BtFeInput::computeFrame(uint frame)
     {
         cmvn->calc(i);
     }
-    delta->Process(frame, frame_num);
-}
 
-BtFeInput::~BtFeInput()
-{
-    // Guard against double deleting the cmvn_ ptr
-    delete cmvn;
-    delete mfcc;
+    delta->Process(frame, frame_num);
 }
 
 void BtFeInput::ComputeFeatures()

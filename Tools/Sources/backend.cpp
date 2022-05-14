@@ -1,5 +1,6 @@
 #include "backend.h"
 
+QFile *log_file = NULL;
 clock_t bt_last_clock;
 
 int getIntCommand(char *command)
@@ -99,4 +100,21 @@ QVector<QString> bt_parseLexicon(QString filename)
 
     words_file.close();
     return lexicon;
+}
+
+void bt_addLog(QString log)
+{
+    if( log_file==NULL )
+    {
+        log_file = new QFile("out_log");
+
+        if( !log_file->open(QIODevice::WriteOnly) )
+        {
+            qDebug() << "Failed To Create out_log";
+            exit(1);
+        }
+    }
+
+    log_file->write(log.toStdString().c_str());
+    log_file->write("\n");
 }
