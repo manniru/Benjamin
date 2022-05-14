@@ -10,7 +10,9 @@ function checkAudio()
 	
 	WORDS=$(python3 scripts/train/print_name.py "$FILENAME")
 	# \e[A: one line up - \e[K: clear line
-	printf "\r\e[A\e[K\rProcessing = $WORDS     \n"
+	U_COUNT=$(find "$AUD_DIR" -type f | wc -l)
+	V_COUNT=$(find "$VER_DIR" -type f | wc -l)
+	printf "\r\e[A\e[K\r($U_COUNT -> $V_COUNT) $WORDS     \n"
 	printf "\r\e[K\r"
 	sleep 1
 	cvlc $VLC_OPT $FILE_PATH 2>/dev/null &

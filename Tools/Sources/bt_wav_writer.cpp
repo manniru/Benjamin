@@ -160,15 +160,13 @@ void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
            QFile::exists(vf_name) )
     {
         ps++;
-        uf_name  = v_base_name + ".";
+        uf_name  = u_base_name + ".";
         uf_name += QString::number(ps);
         uf_name += ".wav";
         vf_name  = v_base_name + ".";
         vf_name += QString::number(ps);
         vf_name += ".wav";
     }
-
-    qDebug() << "tr_filename" << uf_name;
 
     QString cmd = "cp "+ filename;
     cmd += " " + uf_name;
