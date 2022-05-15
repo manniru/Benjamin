@@ -98,7 +98,7 @@ void KdOnline::processResult(QVector<BtWord> result)
         result[i].time += o_decoder->status.min_frame/100.0;
         buf += result[i];
     }
-    cap->parse(buf);
+    cap->parse(buf, o_decoder->frame_num);
 }
 
 void KdOnline::writeWav(int len)

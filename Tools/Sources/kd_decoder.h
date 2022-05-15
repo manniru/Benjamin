@@ -35,7 +35,7 @@ public:
     void ResetDecoder();
     void InitDecoding(KdDecodable *dcodable);
 
-    uint frame_num = 0; //number of decoded frame
+    uint frame_num = 0; //number of decoded frame (Support up to 1Year)
     int  uframe;       // reset on ResetDecoder(utterance)
 protected:
     // protected so classes which inherits also have access

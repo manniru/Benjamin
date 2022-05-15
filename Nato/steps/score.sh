@@ -50,4 +50,16 @@ $cmd LMWT=$min_lmwt:$max_lmwt $dir/scoring/log/score.LMWT.log \
 # Show results
 python3 steps/print_wer.py $lang_or_graph $dir
 
+if [[ "exp/tri1/decode" = "$dir" ]]; then
+
+	printf "\nDo you want to check incorrect samples[N/y]: "
+	read -rs -N1 REP </dev/tty
+	if [[ "$REP" == "y" ]]; then
+		printf "Run Verify \n"
+		scripts/verify/verify_te.sh
+	fi
+
+fi
+
+rm input
 exit 0;

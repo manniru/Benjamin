@@ -15,6 +15,7 @@
 #define BT_HISTORY_UPDATE 300  // update interval in ms
 #define BT_HISTORY_SIZE   9000 // interval in ms that preserved
 #define BT_HISTORY_LEN    10   // maximum number of words in history
+#define BT_MAXSYNC_DIFF   1.0  // maximum error on frame_num and local captain time
 
 typedef struct BtHistory
 {
@@ -30,9 +31,9 @@ class BtCaptain : public QObject
 public:
     explicit BtCaptain(QObject *parent = nullptr);
     bool isValidUtterance();
+    void parse(QVector<BtWord> in_words, uint max_frame);
 
 public slots:
-    void parse(QVector<BtWord> in_words);
     void flush(); //flush current utterance into history
     void shiftHistory();
 
@@ -42,6 +43,7 @@ private:
     void addWord(BtWord word, int id);
     QString getWordFmt(BtHistory word);
     void writeResult();
+    void syncFrame(uint max_frame);
 
     QVector<BtHistory>  history;
     QVector<BtHistory>  current;

@@ -13,7 +13,7 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
     start_treshold = -BT_HISTORY_SIZE/1000.0;
 }
 
-void BtCaptain::parse(QVector<BtWord> in_words)
+void BtCaptain::parse(QVector<BtWord> in_words, uint max_frame)
 {
     if( in_words.empty() )
     {
@@ -26,7 +26,20 @@ void BtCaptain::parse(QVector<BtWord> in_words)
         addWord(in_words[i], i);
     }
     exec(x_buf);
+    syncFrame(max_frame);
     writeResult();
+}
+
+void BtCaptain::syncFrame(uint max_frame)
+{
+    double theoretical = max_frame/100.0;
+    theoretical -= BT_HISTORY_SIZE/1000.0;
+
+    float diff = qAbs(start_treshold-theoretical);
+    if( diff>BT_MAXSYNC_DIFF )
+    {
+        start_treshold = theoretical;
+    }
 }
 
 void BtCaptain::exec(QString word)
