@@ -72,3 +72,5 @@ Tools/Kaldi/final.oalimdl
 Tools/Resources/global_cmvn.stats
 
 *.stats
+
+Tools/Scripts/prefs.js
