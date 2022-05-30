@@ -14,6 +14,10 @@ public:
 
     float lattice_beam;
 private:
+    double getCutOff(KdLattice *lat);
+
+    int num_states;
+    QVector<double> forward_cost;  // viterbi forward.
 };
 
 #endif // KD_LATTICE_PRUNE_H
