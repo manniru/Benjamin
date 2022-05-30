@@ -10,7 +10,6 @@ KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
     mbr = new KdMBR;
 
     opts.max_active = 7000;
-    opts.lattice_beam = 6.0;
 
     config = opts;
     t_model = trans_model;
@@ -88,7 +87,7 @@ void KdOnlineLDecoder::createStates(KdLattice *ofst)
 void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 {
     KdLattice raw_fst;
-    double lat_beam = config.lattice_beam;
+    double lat_beam = KD_LAT_BEAM;
     getDiffTime(start_t);
     dbg_times += "S:";
     dbg_times += getLDiffTime();
@@ -96,7 +95,8 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
     dbg_times += " R:";
     dbg_times += getLDiffTime();
 
-    kd_PruneLattice(lat_beam, &raw_fst);
+    KdPrune kp;
+    kp.prune(&raw_fst);
     dbg_times += " P:";
     dbg_times += getLDiffTime();
     kd_detLatPhonePrunedW(t_model, &raw_fst,

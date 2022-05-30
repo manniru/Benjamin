@@ -9,7 +9,7 @@
 #include <hmm/transition-model.h>
 #include "kd_lattice_det.h"
 #include "kd_token.h"
-
+#include "kd_lattice_prune.h"
 
 struct KdPrunedOpt
 {

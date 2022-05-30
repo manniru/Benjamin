@@ -61,6 +61,7 @@ HEADERS += \
     Sources/kd_lattice_compact.h \
     Sources/kd_lattice_det.h \
     Sources/kd_lattice_functions.h \
+    Sources/kd_lattice_prune.h \
     Sources/kd_lattice_string.h \
     Sources/kd_lattice_weight.h \
     Sources/kd_levenshtein.h \
@@ -98,6 +99,7 @@ SOURCES += \
     Sources/kd_lattice_compact.cpp \
     Sources/kd_lattice_det.cpp \
     Sources/kd_lattice_functions.cpp \
+    Sources/kd_lattice_prune.cpp \
     Sources/kd_lattice_string.cpp \
     Sources/kd_lattice_weight.cpp \
     Sources/kd_levenshtein.cpp \
