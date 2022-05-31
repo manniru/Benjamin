@@ -23,7 +23,7 @@ void KdAModel::Read(std::istream &in_stream, bool binary)
     ReadBasicType(in_stream, binary, &num_pdfs);
     KALDI_ASSERT(num_pdfs > 0);
     densities_.reserve(num_pdfs);
-    for (int32 i = 0; i < num_pdfs; i++)
+    for( int32 i = 0; i < num_pdfs; i++)
     {
         densities_.push_back(new DiagGmm());
         densities_.back()->Read(in_stream, binary);

@@ -17,7 +17,7 @@ void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times)
     for( int state=0 ; state<num_states; state++ )
     {
         int cur_time = (*times)[state];
-        for (fst::ArcIterator<KdLattice> aiter(*lat, state); !aiter.Done();
+        for( fst::ArcIterator<KdLattice> aiter(*lat, state); !aiter.Done();
              aiter.Next())
         {
             const KdLatticeArc &arc = aiter.Value();
@@ -117,12 +117,12 @@ KdLatticeArc::Label kd_DetLatInsertPhones(
     Label first_phone_label = kd_highestNumberedInputSymbol(*fst) + 1;
 
     // Insert phones here.
-    for (fst::StateIterator<KdLattice > siter(*fst);
+    for( fst::StateIterator<KdLattice > siter(*fst);
          !siter.Done(); siter.Next()) {
         StateId state = siter.Value();
         if( state==fst->Start())
             continue;
-        for (fst::MutableArcIterator<KdLattice > aiter(fst, state);
+        for( fst::MutableArcIterator<KdLattice > aiter(fst, state);
              !aiter.Done(); aiter.Next())
         {
             KdLatticeArc arc = aiter.Value();
@@ -179,7 +179,7 @@ bool kd_detLatPruned(KdLattice &ifst, double beam,
     // retrying.
     KdLattice temp_fst;
 
-    for (int32 iter = 0; iter < max_num_iters; iter++)
+    for( int32 iter = 0; iter < max_num_iters; iter++)
     {
         KdLatDet det(iter==0 ? ifst : temp_fst, beam, opts);
         double effective_beam;
@@ -278,11 +278,11 @@ void kd_DetLatDeletePhones(
         KdLatticeArc::Label first_phone_label, KdLattice *fst)
 {
     // Delete phones here.
-    for (fst::StateIterator<KdLattice> siter(*fst);
+    for( fst::StateIterator<KdLattice> siter(*fst);
          !siter.Done(); siter.Next())
     {
         KdStateId state = siter.Value();
-        for (fst::MutableArcIterator<KdLattice> aiter(fst, state);
+        for( fst::MutableArcIterator<KdLattice> aiter(fst, state);
              !aiter.Done(); aiter.Next())
         {
             KdLatticeArc arc = aiter.Value();
@@ -298,7 +298,7 @@ void kd_DetLatDeletePhones(
 int kd_highestNumberedInputSymbol(KdLattice &fst)
 {
     int ans = 0;
-    for (fst::StateIterator<KdLattice> siter(fst); !siter.Done(); siter.Next())
+    for( fst::StateIterator<KdLattice> siter(fst); !siter.Done(); siter.Next())
     {
         KdStateId s = siter.Value();
         for(fst::ArcIterator<KdLattice> aiter(fst, s); !aiter.Done();  aiter.Next())

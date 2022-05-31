@@ -219,7 +219,7 @@ void kd_ConvertLattice(KdLattice &ifst, fst::VectorFst<fst::StdArc> *ofst)
         assert(news==s);
     }
     ofst->SetStart(ifst.Start());
-    for (KdStateId s = 0; s < num_states; s++)
+    for( KdStateId s = 0; s < num_states; s++)
     {
         KdLatticeWeight final_iweight = ifst.Final(s);
         if( final_iweight!=KdLatticeWeight::Zero() )

@@ -22,7 +22,7 @@ void KdFFT::Compute(float *data)
     float kN_re = -forward_sign;
     float kN_im = 0.0;  // exp(-2pik/N)
 
-    for (int k = 1; 2*k <= N2; k++)
+    for( int k = 1; 2*k <= N2; k++)
     {
         kaldi::ComplexMul(rootN_re, rootN_im, &kN_re, &kN_im);
 
@@ -88,10 +88,10 @@ void KdSrcFFT::ComputeTables()
     brseed_ = new int[1 << lg2];
     brseed_[0] = 0;
     brseed_[1] = 1;
-    for (j = 2; j <= lg2; j++)
+    for( j = 2; j <= lg2; j++)
     {
         imax = 1 << (j - 1);
-        for (i = 0; i < imax; i++)
+        for( i = 0; i < imax; i++)
         {
             brseed_[i] <<= 1;
             brseed_[i + imax] = brseed_[i] + 1;
@@ -105,7 +105,7 @@ void KdSrcFFT::ComputeTables()
     else
     {
         tab_ = new float* [logn_-3];
-        for (i = logn_; i>=4 ; i--)
+        for( i = logn_; i>=4 ; i--)
         {
             /* Compute a few constants */
             m = 1 << i; m2 = m / 2; m4 = m2 / 2; m8 = m4 /2;
@@ -120,7 +120,7 @@ void KdSrcFFT::ComputeTables()
             c3n = smcn + nel;  spc3n = c3n + nel; smc3n = spc3n + nel;
 
             /* Compute tables */
-            for (n = 1; n < m4; n++)
+            for( n = 1; n < m4; n++)
             {
                 if( n==m8) continue;
                 ang = n * M_2PI / m;
@@ -139,7 +139,7 @@ KdSrcFFT::~KdSrcFFT()
     delete [] brseed_;
     if( tab_!=NULL)
     {
-        for (int i = 0; i < logn_-3; i++)
+        for( int i = 0; i < logn_-3; i++)
             delete [] tab_[i];
         delete [] tab_;
     }
@@ -168,7 +168,7 @@ void KdSrcFFT::Compute(float *x, bool forward,
     if( temp_buffer->size()!=N_)
         temp_buffer->resize(N_);
     float *temp_ptr = &((*temp_buffer)[0]);
-    for (int i = 0; i < N_; i++)
+    for( int i = 0; i < N_; i++)
     {
         x[i] = x[i * 2];  // put the float part in the first half of x.
         temp_ptr[i] = x[i * 2 + 1];  // put the imaginary part in temp_buffer.
@@ -183,7 +183,7 @@ void KdSrcFFT::Compute(float *x, bool forward,
     memcpy(static_cast<void*>(temp_ptr),
            static_cast<void*>(x + N_),
            sizeof(float) * N_);
-    for (int i = N_-1; i > 0; i--)
+    for( int i = N_-1; i > 0; i--)
     {  // don't include 0,
         // in case int is unsigned, the loop would not terminate.
         // Treat it as a special case.
@@ -204,13 +204,13 @@ void KdSrcFFT::BitReversePermute(float *x, int logn)
     if( logn & 1) lg2++;
 
     /* Unshuffling loop */
-    for (off = 1; off < n; off++)
+    for( off = 1; off < n; off++)
     {
         fj = n * brseed_[off]; i = off; j = fj;
         tmp = x[i]; x[i] = x[j]; x[j] = tmp;
         xp = &x[i];
         brp = &(brseed_[1]);
-        for (gno = 1; gno < brseed_[off]; gno++)
+        for( gno = 1; gno < brseed_[off]; gno++)
         {
             xp += n;
             j = fj + *brp++;
@@ -298,7 +298,7 @@ void KdSrcFFT::ComputeRecursive(float *xr, float *xi, int logn)
     /* Step 1 */
     xr1 = xr; xr2 = xr1 + m2;
     xi1 = xi; xi2 = xi1 + m2;
-    for (n = 0; n < m2; n++)
+    for( n = 0; n < m2; n++)
     {
         tmp1 = *xr1 + *xr2;
         *xr2 = *xr1 - *xr2;
@@ -313,7 +313,7 @@ void KdSrcFFT::ComputeRecursive(float *xr, float *xi, int logn)
     /* Step 2 */
     xr1 = xr + m2; xr2 = xr1 + m4;
     xi1 = xi + m2; xi2 = xi1 + m4;
-    for (n = 0; n < m4; n++)
+    for( n = 0; n < m4; n++)
     {
         tmp1 = *xr1 + *xi2;
         tmp2 = *xi1 + *xr2;
@@ -336,7 +336,7 @@ void KdSrcFFT::ComputeRecursive(float *xr, float *xi, int logn)
     }
     xr1++; xr2++; xi1++; xi2++;
     // xr1++; xi1++;
-    for (n = 1; n < m4; n++)
+    for( n = 1; n < m4; n++)
     {
         if( n==m8)
         {

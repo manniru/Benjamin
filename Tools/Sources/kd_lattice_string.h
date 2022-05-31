@@ -152,7 +152,7 @@ public:
     KdLatString() { new_entry_ = new Entry; }
 
     void Destroy() {
-        for (typename SetType::iterator iter = set_.begin();
+        for( typename SetType::iterator iter = set_.begin();
              iter!=set_.end();
              ++iter)
             delete *iter;
@@ -170,12 +170,12 @@ public:
     // this is to save memory.
     void Rebuild(const std::vector<const Entry*> &to_keep) {
         SetType tmp_set;
-        for (typename std::vector<const Entry*>::const_iterator
+        for( typename std::vector<const Entry*>::const_iterator
              iter = to_keep.begin();
              iter!=to_keep.end(); ++iter)
             RebuildHelper(*iter, &tmp_set);
         // Now delete all elems not in tmp_set.
-        for (typename SetType::iterator iter = set_.begin();
+        for( typename SetType::iterator iter = set_.begin();
              iter!=set_.end(); ++iter) {
             if (tmp_set.count(*iter)==0)
                 delete (*iter); // delete the Entry; not needed.

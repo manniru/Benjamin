@@ -26,18 +26,17 @@ bool KdPrune::prune(KdLattice *lat)
     int bad_state = lat->AddState(); // this state is not final.
     QVector<double> backward_cost = forward_cost;
 
-    for (int32 state=num_states-1 ; state>=0 ; state-- )
+    for( int state=num_states-1 ; state>=0 ; state-- )
     {
-        double this_forward_cost = forward_cost[state];
         KdLatticeWeight w = lat->Final(state);
-        double this_backward_cost = w.g_cost + w.a_cost;
-        if( this_backward_cost + this_forward_cost > cutoff
-                && this_backward_cost!=KD_INFINITY_DB)
+        backward_cost[state] = w.g_cost + w.a_cost;
+        double fb_cost = backward_cost[state] + forward_cost[state];
+        if( fb_cost>cutoff && backward_cost[state]!=KD_INFINITY_DB )
         {
             lat->SetFinal(state, KdLatticeWeight::Zero());
         }
 
-        for (fst::MutableArcIterator<KdLattice> aiter(lat, state);
+        for( fst::MutableArcIterator<KdLattice> aiter(lat, state);
              !aiter.Done(); aiter.Next())
         {
             KdLattice::Arc arc(aiter.Value());
@@ -45,19 +44,18 @@ bool KdPrune::prune(KdLattice *lat)
 
             double arc_cost = arc.weight.getCost();
             double arc_backward_cost = arc_cost + backward_cost[nextstate];
-            double this_fb_cost = this_forward_cost + arc_backward_cost;
-            if( arc_backward_cost<this_backward_cost )
+            double this_fab_cost = forward_cost[state] + arc_backward_cost;
+            if( arc_backward_cost<backward_cost[state] )
             {
-                this_backward_cost = arc_backward_cost;
+                backward_cost[state] = arc_backward_cost;
             }
-            if( this_fb_cost>cutoff )
+            if( this_fab_cost>cutoff )
             {
                 // Prune the arc.
                 arc.nextstate = bad_state;
                 aiter.SetValue(arc);
             }
         }
-        backward_cost[state] = this_backward_cost;
     }
     // connect would remove all arcs bad states
     fst::Connect(lat);
@@ -72,30 +70,31 @@ double KdPrune::getCutOff(KdLattice *lat)
     {
         forward_cost[i] = KD_INFINITY_DB;
     }
-    forward_cost[start] = 0.0; // lattice can't have cycles so couldn't be
-    // less than this.
+    forward_cost[start] = 0.0;
 
     double best_final_cost = KD_INFINITY_DB;
     // Update the forward probs.
-    for( int32 state=0; state<num_states ; state++ )
+    for( int state=0; state<num_states ; state++ )
     {
-        double this_forward_cost = forward_cost[state];
-        for (fst::ArcIterator<KdLattice> aiter(*lat, state);
+        for( fst::ArcIterator<KdLattice> aiter(*lat, state);
              !aiter.Done(); aiter.Next())
         {
             KdLattice::Arc arc = aiter.Value();
             KdStateId nextstate = arc.nextstate;
-//       KALDI_ASSERT(nextstate > state && nextstate < num_states);
-            double next_forward_cost = this_forward_cost +
-                    arc.weight.getCost();
-            if( forward_cost[nextstate] > next_forward_cost)
+            double next_forward_cost = forward_cost[state] +
+                                       arc.weight.getCost();
+            if( forward_cost[nextstate]>next_forward_cost )
+            { //only if cost is lower update it
                 forward_cost[nextstate] = next_forward_cost;
+            }
         }
+
         KdLatticeWeight final_weight = lat->Final(state);
-        double this_final_cost = this_forward_cost +
-                final_weight.getCost();
-        if( this_final_cost < best_final_cost)
-            best_final_cost = this_final_cost;
+        double final_cost = forward_cost[state] + final_weight.getCost();
+        if( final_cost<best_final_cost )
+        {
+            best_final_cost = final_cost;
+        }
     }
     double cutoff = best_final_cost + lattice_beam;
     return cutoff;

@@ -33,7 +33,7 @@ BtWindow::BtWindow()
 {
     int frame_length = frameLen();
     double a = 2*M_PI / (frame_length-1);
-    for (int i = 0; i < frame_length; i++)
+    for( int i = 0; i < frame_length; i++)
     {
         double i_fl = i;
         if( window_type=="hanning" )

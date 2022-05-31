@@ -82,7 +82,7 @@ void BtMFCC::computeDCTMatrix()
     // elements.
     for( int k=1 ; k<BT_MFCC_BIN ; k++ )
     {
-        for (int n=0 ; n<BT_MFCC_BIN ; n++ )
+        for( int n=0 ; n<BT_MFCC_BIN ; n++ )
         {
             dct_matrix[k][n] = normalizer
                 * std::cos( M_PI/BT_MFCC_BIN * (n + 0.5) * k );

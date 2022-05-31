@@ -126,7 +126,7 @@ private:
     public:
         size_t operator ()(const std::vector<Element> * subset) const {  // hashes only the state and string.
             size_t hash = 0, factor = 1;
-            for (typename std::vector<Element>::const_iterator iter= subset->begin(); iter!=subset->end(); ++iter) {
+            for( typename std::vector<Element>::const_iterator iter= subset->begin(); iter!=subset->end(); ++iter) {
                 hash *= factor;
                 hash += iter->state + reinterpret_cast<size_t>(iter->string);
                 factor *= 23531;  // these numbers are primes.
@@ -145,7 +145,7 @@ private:
             if( sz!=s2->size()) return false;
             typename std::vector<Element>::const_iterator iter1 = s1->begin(),
                     iter1_end = s1->end(), iter2=s2->begin();
-            for (; iter1 < iter1_end; ++iter1, ++iter2)
+            for( ; iter1 < iter1_end; ++iter1, ++iter2)
             {
                 if( iter1->state!=iter2->state ||
                         iter1->string!=iter2->string)
@@ -174,7 +174,7 @@ private:
             if( sz!=s2->size()) return false;
             typename std::vector<Element>::const_iterator iter1 = s1->begin(),
                     iter1_end = s1->end(), iter2=s2->begin();
-            for (; iter1 < iter1_end; ++iter1, ++iter2) {
+            for( ; iter1 < iter1_end; ++iter1, ++iter2) {
                 if( iter1->state!=iter2->state) return false;
             }
             return true;

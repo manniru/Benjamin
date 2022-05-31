@@ -8,7 +8,7 @@ void kd_convertToVec(std::vector<std::map<int, double> > *map, KdGammaVec *out, 
     out->clear();
     out->resize(word_len);
 
-    for (int q = 1; q<=word_len ; q++ )
+    for( int q = 1; q<=word_len ; q++ )
     {
         for( std::map<int, double>::iterator iter = (*map)[q].begin();
              iter!=(*map)[q].end(); ++iter)

@@ -22,7 +22,7 @@ void KdDelta::calcCoeffs()
 
         for( int j=0 ; j<max_j ; j++ )
         {
-            for (int k=0 ; k<l_size ; k++ )
+            for( int k=0 ; k<l_size ; k++ )
             {
                 coeffs[i+1][j+k] += (j-KD_DELTA_WINDOW) * coeffs[i][k];
             }

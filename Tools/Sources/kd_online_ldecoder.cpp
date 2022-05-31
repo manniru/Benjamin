@@ -35,7 +35,7 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
         for( KdToken *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
         {
             KdFLink *link;
-            for ( link=tok->links; link!=NULL ; link=link->next )
+            for(  link=tok->links; link!=NULL ; link=link->next )
             {
                 KdStateId nextstate = link->next_tok->m_state;
 

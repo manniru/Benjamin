@@ -83,10 +83,10 @@ void kd_compactLatticeStateTimes(KdCompactLattice &lat,
     times->clear();
     times->resize(num_states, -1);
     (*times)[0] = 0;
-    for (int state = 0; state < num_states; state++)
+    for( int state = 0; state < num_states; state++)
     {
         int cur_time = (*times)[state];
-        for (fst::ArcIterator<KdCompactLattice> aiter(lat, state); !aiter.Done();
+        for( fst::ArcIterator<KdCompactLattice> aiter(lat, state); !aiter.Done();
              aiter.Next())
         {
             const KdCLatArc &arc = aiter.Value();
@@ -103,20 +103,20 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
     // the original ones, and add chains of states as necessary
     // to encode the string-valued weights.
     KdStateId num_states = ifst.NumStates();
-    for (KdStateId s = 0; s < num_states; s++)
+    for( KdStateId s = 0; s < num_states; s++)
     {
         KdStateId news = ofst->AddState();
         assert(news==s);
     }
     ofst->SetStart(ifst.Start());
-    for (KdStateId s = 0; s < num_states; s++)
+    for( KdStateId s = 0; s < num_states; s++)
     {
         KdCLatWeight final_weight = ifst.Final(s);
         if (final_weight!=KdCLatWeight::Zero())
         {
             KdStateId cur_state = s;
             size_t string_length = final_weight.string.size();
-            for (size_t n = 0; n < string_length; n++) {
+            for( size_t n = 0; n < string_length; n++) {
                 KdStateId next_state = ofst->AddState();
                 int ilabel = 0;
                 KdLatticeArc arc(ilabel, final_weight.string[n],
@@ -170,7 +170,7 @@ void kd_RemoveAlignmentsFromCompactLattice(KdCompactLattice *fst)
     KdStateId num_states = fst->NumStates();
     for( KdStateId s=0 ; s<num_states ; s++ )
     {
-        for (fst::MutableArcIterator<Fst> aiter(fst, s);
+        for( fst::MutableArcIterator<Fst> aiter(fst, s);
              !aiter.Done(); aiter.Next())
         {
             KdCLatArc arc = aiter.Value();
@@ -193,7 +193,7 @@ KdStateId kd_CreateSuperFinal(KdCompactLattice *fst)
     KdStateId num_final = 0;
 
     std::vector<KdStateId> final_states;
-    for (KdStateId s = 0; s < num_states; s++)
+    for( KdStateId s = 0; s < num_states; s++)
     {
         if (fst->Final(s)!=KdCLatWeight::Zero())
         {
@@ -217,7 +217,7 @@ KdStateId kd_CreateSuperFinal(KdCompactLattice *fst)
 
     KdStateId final_state = fst->AddState();
     fst->SetFinal(final_state, KdCLatWeight::One());
-    for (size_t idx = 0; idx < final_states.size(); idx++)
+    for( size_t idx = 0; idx < final_states.size(); idx++)
     {
         KdStateId s = final_states[idx];
         KdCLatWeight weight = fst->Final(s);

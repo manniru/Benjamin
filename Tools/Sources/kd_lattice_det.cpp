@@ -15,18 +15,18 @@ void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
     if( nStates==0) {
         return;
     }
-    for (StateId s = 0;s < nStates;s++) {
+    for( StateId s = 0;s < nStates;s++) {
         KdStateId news = ofst->AddState();
         KALDI_ASSERT(news==s);
     }
     ofst->SetStart(0);
     // now process transitions.
-    for (StateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
+    for( StateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
         OutputState &this_state = *(output_states_[this_state_id]);
         std::vector<TempArc> &this_vec(this_state.arcs);
         typename std::vector<TempArc>::const_iterator iter = this_vec.begin(), end = this_vec.end();
 
-        for (;iter!=end; ++iter)
+        for( ;iter!=end; ++iter)
         {
             const TempArc &temp_arc(*iter);
             KdCLatArc new_arc;
@@ -72,17 +72,17 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
     if( destroy)
         FreeMostMemory();
     // Add basic states-- but we will add extra ones to account for strings on output.
-    for (KdStateId s = 0; s< nStates;s++) {
+    for( KdStateId s = 0; s< nStates;s++) {
         KdStateId news = ofst->AddState();
         KALDI_ASSERT(news==s);
     }
     ofst->SetStart(0);
-    for (KdStateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
+    for( KdStateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
         OutputState &this_state = *(output_states_[this_state_id]);
         std::vector<TempArc> &this_vec(this_state.arcs);
 
         typename std::vector<TempArc>::const_iterator iter = this_vec.begin(), end = this_vec.end();
-        for (; iter!=end; ++iter) {
+        for( ; iter!=end; ++iter) {
             const TempArc &temp_arc(*iter);
             std::vector<Label> seq;
             repository_.ConvertToVector(temp_arc.string, &seq);
@@ -91,7 +91,7 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
                 // Make a sequence of states going to a final state, with the strings
                 // as labels.  Put the weight on the first arc.
                 KdStateId cur_state = this_state_id;
-                for (size_t i = 0; i < seq.size(); i++) {
+                for( size_t i = 0; i < seq.size(); i++) {
                     KdStateId next_state = ofst->AddState();
                     KdLatticeArc arc;
                     arc.nextstate = next_state;
@@ -106,7 +106,7 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
                 KdStateId cur_state = this_state_id;
                 // Have to be careful with this integer comparison (i+1 < seq.size()) because unsigned.
                 // i < seq.size()-1 could fail for zero-length sequences.
-                for (size_t i = 0; i+1 < seq.size();i++) {
+                for( size_t i = 0; i+1 < seq.size();i++) {
                     // for all but the last element of seq, create new state.
                     KdStateId next_state = ofst->AddState();
                     KdLatticeArc arc;
@@ -146,7 +146,7 @@ KdLatDet::KdLatDet(KdLattice &ifst, double beam,
 
 void KdLatDet::FreeOutputStates()
 {
-    for (size_t i = 0; i < output_states_.size(); i++)
+    for( size_t i = 0; i < output_states_.size(); i++)
         delete output_states_[i];
     std::vector<OutputState*> temp;
     temp.swap(output_states_);
@@ -161,16 +161,16 @@ void KdLatDet::FreeMostMemory()
     }
     { MinimalSubsetHash tmp; tmp.swap(minimal_hash_); }
 
-    for (size_t i = 0; i < output_states_.size(); i++) {
+    for( size_t i = 0; i < output_states_.size(); i++) {
         std::vector<Element> empty_subset;
         empty_subset.swap(output_states_[i]->minimal_subset);
     }
 
-    for (typename InitialSubsetHash::iterator iter = initial_hash_.begin();
+    for( typename InitialSubsetHash::iterator iter = initial_hash_.begin();
          iter!=initial_hash_.end(); ++iter)
         delete iter->first;
     { InitialSubsetHash tmp; tmp.swap(initial_hash_); }
-    for (size_t i = 0; i < output_states_.size(); i++)
+    for( size_t i = 0; i < output_states_.size(); i++)
     {
         std::vector<Element> tmp;
         tmp.swap(output_states_[i]->minimal_subset);
@@ -204,9 +204,9 @@ void KdLatDet::RebuildRepository()
     // strings we need the repository to "remember", then tell it
     // to clean the repository.
     std::vector<StringId> needed_strings;
-    for (size_t i = 0; i < output_states_.size(); i++) {
+    for( size_t i = 0; i < output_states_.size(); i++) {
         AddStrings(output_states_[i]->minimal_subset, &needed_strings);
-        for (size_t j = 0; j < output_states_[i]->arcs.size(); j++)
+        for( size_t j = 0; j < output_states_[i]->arcs.size(); j++)
             needed_strings.push_back(output_states_[i]->arcs[j].string);
     }
 
@@ -219,12 +219,12 @@ void KdLatDet::RebuildRepository()
             tasks.push_back(task);
             AddStrings(task->subset, &needed_strings);
         }
-        for (size_t i = 0; i < tasks.size(); i++)
+        for( size_t i = 0; i < tasks.size(); i++)
             queue_.push(tasks[i]);
     }
 
     // the following loop covers strings present in initial_hash_.
-    for (typename InitialSubsetHash::const_iterator
+    for( typename InitialSubsetHash::const_iterator
          iter = initial_hash_.begin();
          iter!=initial_hash_.end(); ++iter) {
         const std::vector<Element> &vec = *(iter->first);
@@ -463,7 +463,7 @@ void KdLatDet::EpsilonClosure(std::vector<Element> *subset) {
     typedef typename std::unordered_map<InputStateId, Element>::iterator MapIter;
     typedef typename std::vector<Element>::const_iterator VecIter;
 
-    for (VecIter iter = subset->begin(); iter!=subset->end(); ++iter) {
+    for( VecIter iter = subset->begin(); iter!=subset->end(); ++iter) {
         queue.push(*iter);
         cur_subset[iter->state] = *iter;
     }
@@ -490,7 +490,7 @@ void KdLatDet::EpsilonClosure(std::vector<Element> *subset) {
             qDebug() << "Lattice determinization aborted since looped more than "
                       << opts_.max_loop << " times during epsilon closure.";
         }
-        for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); !aiter.Done(); aiter.Next())
+        for( fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); !aiter.Done(); aiter.Next())
         {
             KdLatticeArc arc = aiter.Value();
             if( sorted && arc.ilabel!=0) break;  // Break from the loop: due to sorting there will be no
@@ -545,7 +545,7 @@ void KdLatDet::EpsilonClosure(std::vector<Element> *subset) {
         subset->clear();
         subset->reserve(cur_subset.size());
         MapIter iter = cur_subset.begin(), end = cur_subset.end();
-        for (; iter!=end; ++iter) subset->push_back(iter->second);
+        for( ; iter!=end; ++iter) subset->push_back(iter->second);
         // sort by state ID, because the subset hash function is order-dependent(see SubsetKey)
         std::sort(subset->begin(), subset->end());
     }
@@ -563,7 +563,7 @@ void KdLatDet::ProcessFinal(KdStateId output_state_id)
     KdLatticeWeight final_weight = KdLatticeWeight::Zero();
     bool is_final = false;
     typename std::vector<Element>::const_iterator iter = minimal_subset.begin(), end = minimal_subset.end();
-    for (; iter!=end; ++iter) {
+    for( ; iter!=end; ++iter) {
         const Element &elem = *iter;
         KdLatticeWeight this_final_weight = Times(elem.weight, ifst_->Final(elem.state));
         StringId this_final_string = elem.string;
@@ -705,9 +705,9 @@ void KdLatDet::ProcessTransitions(KdStateId output_state_id)
         // Push back into "all_elems", elements corresponding to all
         // non-epsilon-input transitions out of all states in "minimal_subset".
         typename std::vector<Element>::const_iterator iter = minimal_subset.begin(), end = minimal_subset.end();
-        for (;iter!=end; ++iter) {
+        for( ;iter!=end; ++iter) {
             const Element &elem = *iter;
-            for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); ! aiter.Done(); aiter.Next()) {
+            for( fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, elem.state); ! aiter.Done(); aiter.Next()) {
                 const KdLatticeArc &arc = aiter.Value();
                 if( arc.ilabel!=0
                         && arc.weight!=KdLatticeWeight::Zero()) {  // Non-epsilon transition -- ignore epsilons here.
@@ -797,7 +797,7 @@ bool KdLatDet::IsIsymbolOrFinal(InputStateId state)
     isymbol_or_final_[state] = static_cast<char>(OSF_NO);
     if( ifst_->Final(state)!=KdLatticeWeight::Zero())
         isymbol_or_final_[state] = static_cast<char>(OSF_YES);
-    for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, state);
+    for( fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, state);
          !aiter.Done();
          aiter.Next())
     {
@@ -817,11 +817,11 @@ void KdLatDet::ComputeBackwardWeight()
 
     // Only handle the toplogically sorted case.
     backward_costs_.resize(ifst_->NumStates());
-    for (StateId s = ifst_->NumStates() - 1; s >= 0; s--)
+    for( StateId s = ifst_->NumStates() - 1; s >= 0; s--)
     {
         double &cost = backward_costs_[s];
         cost = ifst_->Final(s).getCost();
-        for (fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, s);
+        for( fst::ArcIterator<fst::ExpandedFst<KdLatticeArc> > aiter(*ifst_, s);
              !aiter.Done(); aiter.Next())
         {
             KdLatticeArc arc = aiter.Value();
@@ -896,7 +896,7 @@ void KdLatDet::InitializeDeterminization()
 void KdLatDet::AddStrings(const std::vector<Element> &vec,
                 std::vector<StringId> *needed_strings)
 {
-    for (typename std::vector<Element>::const_iterator iter = vec.begin();
+    for( typename std::vector<Element>::const_iterator iter = vec.begin();
          iter!=vec.end(); ++iter)
         needed_strings->push_back(iter->string);
 }
