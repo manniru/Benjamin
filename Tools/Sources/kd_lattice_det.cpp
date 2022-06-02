@@ -12,10 +12,12 @@ void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
     }
     ofst->DeleteStates();
     ofst->SetStart(KD_INVALID_STATE);
-    if( nStates==0) {
+    if( nStates==0 )
+    {
         return;
     }
-    for( StateId s = 0;s < nStates;s++) {
+    for( StateId s=0 ; s<nStates ; s++ )
+    {
         KdStateId news = ofst->AddState();
         KALDI_ASSERT(news==s);
     }

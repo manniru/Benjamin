@@ -56,6 +56,9 @@ public:
 private:
     void checkReset();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
+    void MakeGraph(int frame);
+    void makeNodes();
+    void makeEdge();
     QVector<BtWord> result;
     KdMBR *mbr;
 
@@ -68,9 +71,10 @@ private:
     void UpdateImmortalToken();
 
     // cache FSTs
-    int       last_cache_f; // last cache frame
-    KdLattice cache_fst1; //used for createStates
-    KdLattice cache_fst2; //used for addArcs
+    int        last_cache_f; // last cache frame
+    KdLattice  cache_fst1; //used for createStates
+    KdLattice  cache_fst2; //used for addArcs
+    QFile     *gd_file; // graph debug
 
     KdOnlineLDecoderOpts opts;
     kaldi::TransitionModel *t_model; // needed for trans-id -> phone conversion

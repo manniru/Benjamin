@@ -18,6 +18,8 @@ KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
     effective_beam_ = opts.beam;
     start_t = clock();
     last_cache_f = 0;
+
+    gd_file = new QFile(BT_GRAPH_PATH);
 }
 
 void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
@@ -82,6 +84,86 @@ void KdOnlineLDecoder::createStates(KdLattice *ofst)
             tok->m_state = ofst->AddState();
         }
     }
+}
+
+void KdOnlineLDecoder::makeNodes()
+{
+    QTextStream out(gd_file);
+    int end = frame_toks.size();
+
+    // First create all states.
+    for( int f=0 ; f<end ; f++ )
+    {
+        for( KdToken *tok=frame_toks[f].head ; tok!=NULL ; tok=tok->next )
+        {
+            out << "\"node";
+            out << QString::number(tok->tok_id);
+            out << "\" [ label = \"<f0> ";
+            out << QString::number(tok->tok_id);
+            out << " | <f1> ";
+            out << QString::number(tok->cost);
+            out << " \" shape = \"record\" ];\n";
+        }
+    }
+}
+
+void KdOnlineLDecoder::makeEdge()
+{
+    QTextStream out(gd_file);
+    int end = frame_toks.size();
+
+    // Now add arcs
+    for( int f=0 ; f<end ; f++ )
+    {
+        for( KdToken *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
+        {
+            KdFLink *link;
+            for( link=tok->links; link!=NULL ; link=link->next )
+            {
+                out << "\"node";
+                out << QString::number(tok->tok_id);
+                out << "\":f0 -> \"node";
+                out << QString::number(link->next_tok->tok_id);
+                out << "\":f0;\n";
+            }
+        }
+    }
+    out << "}\n";
+    gd_file->close();
+
+    QString cmd = "dot -Tpng graph";
+    cmd += QString::number(uframe);
+    cmd += " > out";
+    cmd += QString::number(uframe);
+    cmd += ".png";
+    system(cmd.toStdString().c_str());
+}
+
+void KdOnlineLDecoder::MakeGraph(int frame)
+{
+    QString filename = BT_GRAPH_PATH;
+    filename += QString::number(frame);
+
+    gd_file->setFileName(filename);
+    if( !gd_file->open(QIODevice::WriteOnly | QIODevice::Text) )
+    {
+        qDebug() << "Error opening" << BT_GRAPH_PATH;
+        return;
+    }
+    QTextStream out(gd_file);
+
+    out << "digraph g" << "\n";
+    out << "{" << "\n";
+    out << "fontname=\"Helvetica,Arial,sans-serif\"" << "\n";
+    out << "node [fontname=\"Helvetica,Arial,sans-serif\"]" << "\n";
+    out << "edge [fontname=\"Helvetica,Arial,sans-serif\"]" << "\n";
+    out << "fontsize = \"32\"\n";
+    out << "label=\"frame=";
+    out << QString::number(frame);
+    out << "\"\n";
+    out << "labelloc = \"t\"\n";
+    out << "graph [ rankdir = \"LR\" ];" << "\n";
+    out << "node [ fontsize = \"16\" ];" << "\n";
 }
 
 void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
@@ -212,6 +294,14 @@ int KdOnlineLDecoder::Decode()
         ProcessNonemitting(weight_cutoff);
 
         uframe++;
+
+        MakeGraph(uframe);
+        makeNodes();
+        makeEdge();
+        if( uframe>3 )
+        {
+            exit(0);
+        }
     }
 }
 

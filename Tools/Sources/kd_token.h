@@ -46,6 +46,7 @@ public:
     KdToken *prev; // used for MakeLattice
     KdStateId m_state; // used for MakeLattice
     KdStateId state; // used for Decoding
+    int       tok_id; // used for graph debug
 };
 
 typedef KdForwardLink<KdToken> KdFLink;
