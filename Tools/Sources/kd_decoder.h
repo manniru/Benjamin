@@ -50,9 +50,10 @@ protected:
     void  PNonemittingState(KdToken *tok, float cutoff);
     void  updateMaxState(KdStateId state);
 
-    void DeleteForwardLinks(KdToken *tok);
-    // map from tokens in the current frame to state id
-    KdToken    *all_tokens[MAX_STATE_COUNT];
+    void DeleteTokArcs(KdToken *tok);
+    // all tokens in current frame
+    // map from state id to token
+    KdToken    *cf_tokens[MAX_STATE_COUNT];
     KdDecodable *decodable;
 
     QVector<KdTokenList> frame_toks; // tokens indexed by frame

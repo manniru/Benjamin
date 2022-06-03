@@ -76,7 +76,7 @@ private:
     KdLattice  cache_fst2; //used for addArcs
     QFile     *gd_file; // graph debug
 
-    KdOnlineLDecoderOpts opts;
+    KdOnlineLDecoderOpts    opts;
     kaldi::TransitionModel *t_model; // needed for trans-id -> phone conversion
     float effective_beam_; // the currently used beam
     clock_t start_t;

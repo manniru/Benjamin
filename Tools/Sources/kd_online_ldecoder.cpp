@@ -36,19 +36,20 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
     {
         for( KdToken *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
         {
-            KdFLink *link;
-            for(  link=tok->links; link!=NULL ; link=link->next )
+            int len = tok->arc.length();
+            for( int i=0 ; i<len ; i++ )
             {
-                KdStateId nextstate = link->next_tok->m_state;
+                BtTokenArc link = tok->arc[i];
+                KdStateId nextstate = tok->arc_ns[i]->m_state;
 
                 float cost_offset = 0.0;
-                if( link->ilabel!=0 ) // emitting
+                if( link.ilabel!=0 ) // emitting
                 {
                     KALDI_ASSERT( f<cost_offsets.length() );
                     cost_offset = cost_offsets[f];
                 }
-                KdLatticeWeight arc_w(link->graph_cost, link->acoustic_cost - cost_offset);
-                KdLatticeArc arc(link->ilabel, link->olabel,arc_w, nextstate);
+                KdLatticeWeight arc_w(link.graph_cost, link.acoustic_cost - cost_offset);
+                KdLatticeArc arc(link.ilabel, link.olabel,arc_w, nextstate);
                 ofst->AddArc(tok->m_state, arc);
             }
 
@@ -117,13 +118,13 @@ void KdOnlineLDecoder::makeEdge()
     {
         for( KdToken *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
         {
-            KdFLink *link;
-            for( link=tok->links; link!=NULL ; link=link->next )
+            int len = tok->arc.length();
+            for( int i=0 ; i<len ; i++ )
             {
                 out << "\"node";
                 out << QString::number(tok->tok_id);
                 out << "\":f0 -> \"node";
-                out << QString::number(link->next_tok->tok_id);
+                out << QString::number(tok->arc_ns[i]->tok_id);
                 out << "\":f0;\n";
             }
         }
@@ -295,13 +296,13 @@ int KdOnlineLDecoder::Decode()
 
         uframe++;
 
-        MakeGraph(uframe);
-        makeNodes();
-        makeEdge();
-        if( uframe>3 )
-        {
-            exit(0);
-        }
+//        MakeGraph(uframe);
+//        makeNodes();
+//        makeEdge();
+//        if( uframe>3 )
+//        {
+//            exit(0);
+//        }
     }
 }
 

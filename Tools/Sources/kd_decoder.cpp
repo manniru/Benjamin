@@ -9,7 +9,7 @@ KdDecoder::KdDecoder()
 
     for( int i=0 ; i<MAX_STATE_COUNT ; i++ )
     {
-        all_tokens[i] = NULL;
+        cf_tokens[i] = NULL;
     }
 }
 
@@ -38,7 +38,7 @@ void KdDecoder::InitDecoding(KdDecodable *dcodable)
     KdStateId start_state = fst_->Start();
     start_tok->state = start_state;
     frame_toks[0].insert(start_tok);
-    all_tokens[start_state] = start_tok;
+    cf_tokens[start_state] = start_tok;
     max_state = 1;
     ProcessNonemitting(config.beam);
 }
@@ -49,26 +49,26 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
                             KdToken **tok)
 {
     bool changed = false;
-    if( all_tokens[state]==NULL )
+    if( cf_tokens[state]==NULL )
     {
         KdToken *new_tok = new KdToken(tot_cost);
         new_tok->state = state;
         frame_toks.last().insert(new_tok);
-        all_tokens[state] = new_tok;
+        cf_tokens[state] = new_tok;
         changed = true;
     }
     else// update old token
     {
-        KdToken *tok = all_tokens[state];
+        KdToken *tok = cf_tokens[state];
         if( tok->cost > tot_cost )
         {
             tok->cost = tot_cost;
-            // we don't allocate a new token, the old stays linked in frame_toks
-            // we only replace the tot_cost
+            // we don't allocate a new token, the old stays linked in
+            // frame_toks we only replace the tot_cost
             changed = true;
         }
     }
-    *tok = all_tokens[state];
+    *tok = cf_tokens[state];
     return changed;
 }
 
@@ -136,7 +136,8 @@ double KdDecoder::GetBestCutoff(KdToken *tok)
 
     float cost_offset = -tok->cost;
 
-    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ; !aiter.Done() ; aiter.Next() )
+    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ;
+         !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
         if( arc.ilabel!=0 )
@@ -206,15 +207,17 @@ void KdDecoder::ProcessNonemitting(float cutoff)
 // Processes Single Emiting State
 float KdDecoder::PEmittingState(KdToken *tok, float next_cutoff)
 {
-    int frame = frame_toks.size() - 2;
+    int frame = frame_toks.size() - 2; // Frame only used for c_offset
+    float c_offset = cost_offsets[frame];
 
-    for(fst::ArcIterator<KdFST> aiter(*fst_, tok->state); !aiter.Done(); aiter.Next() )
+    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ;
+        !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
         if( arc.ilabel!=0 )
         {
             float new_weight = decodable->LogLikelihood(frame_num, arc.ilabel);
-            float ac_cost = cost_offsets[frame] - new_weight;
+            float ac_cost = c_offset - new_weight;
             float graph_cost = arc.weight.Value();
             float tot_cost = tok->cost + ac_cost + graph_cost;
 
@@ -231,9 +234,15 @@ float KdDecoder::PEmittingState(KdToken *tok, float next_cutoff)
             KdToken *ef_tok;
             updateToken(arc.nextstate, tot_cost, &ef_tok);
 
-            // Add ForwardLink from tok to next_tok (put on head of list tok->links)
-            tok->links = new KdFLink(ef_tok, arc.ilabel, arc.olabel,
-                                       graph_cost , ac_cost, tok->links);
+            // Add ForwardLink from tok to next_tok
+            BtTokenArc n_arc; // new arc
+            n_arc.ilabel = arc.ilabel;
+            n_arc.olabel = arc.olabel;
+            n_arc.graph_cost    = graph_cost;
+            n_arc.acoustic_cost = ac_cost;
+
+            tok->arc.push_back(n_arc);
+            tok->arc_ns.push_back(ef_tok);
         }
     }
     return next_cutoff;
@@ -247,12 +256,13 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
     {
         return;// Don't bother processing
     }
-    // If "tok" has any existing forward links, delete them,
-    // because we're about to regenerate them.  This is a kind
-    // of non-optimality (since most states are emitting it's not a huge issue.)
-    DeleteForwardLinks(tok); // necessary when re-visiting
+    // delete state existing arcs, because we're about to regenerate them.
+    // This is non-optimality but since most states are emitting
+    // it's not a huge issue.
+    DeleteTokArcs(tok); // necessary when re-visiting
 
-    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ; !aiter.Done() ; aiter.Next() )
+    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state)
+         ; !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
         if( arc.ilabel==0 ) // nonemitting
@@ -265,8 +275,16 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
                 bool changed = updateToken(arc.nextstate, tot_cost,
                                              &ef_tok);
 
-                tok->links = new KdFLink(ef_tok, 0, arc.olabel,
-                                         graph_cost, 0, tok->links);
+
+                // Add ForwardLink from tok to next_tok
+                BtTokenArc n_arc; // new arc
+                n_arc.ilabel = 0;
+                n_arc.olabel = arc.olabel;
+                n_arc.graph_cost    = graph_cost;
+                n_arc.acoustic_cost = 0;
+
+                tok->arc.push_back(n_arc);
+                tok->arc_ns.push_back(ef_tok);
 
                 if( changed && fst_->NumInputEpsilons(arc.nextstate)!=0)
                 {
@@ -277,18 +295,10 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
     }
 }
 
-// Deletes the elements of the singly linked list tok->links.
-void KdDecoder::DeleteForwardLinks(KdToken *tok)
+void KdDecoder::DeleteTokArcs(KdToken *tok)
 {
-    KdFLink *l = tok->links;
-    KdFLink *m;
-    while( l!=NULL )
-    {
-        m = l->next;
-        delete l;
-        l = m;
-    }
-    tok->links = NULL;
+    tok->arc.clear();
+    tok->arc_ns.clear();
 }
 
 // The KdToken pointers
@@ -296,9 +306,9 @@ void KdDecoder::ClaerAllToks()
 {
     for( KdStateId state=0 ; state<MAX_STATE_COUNT ; state++ )
     {
-        if( all_tokens[state]!=NULL )
+        if( cf_tokens[state]!=NULL )
         {
-            all_tokens[state] = NULL;
+            cf_tokens[state] = NULL;
         }
     }
 }
@@ -310,7 +320,7 @@ void KdDecoder::ClearActiveTokens()
         KdToken *tok=frame_toks[i].head;
         while( tok!=NULL )
         {
-            DeleteForwardLinks(tok);
+            DeleteTokArcs(tok);
             KdToken *next_tok = tok->next;
             delete tok;
             tok = next_tok;

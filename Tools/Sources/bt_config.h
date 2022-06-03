@@ -17,6 +17,7 @@
 #define BT_GCMVN_PATH     KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats"
 #define BT_WORDLIST_PATH  KAL_NATO_DIR"word_list"
 #define BT_BAR_RESULT     "Resources/bar_result"
+#define BT_GRAPH_PATH     "graph"
 
 #define KAL_CONF_TRESHOLD  0.9
 #define KAL_UDET_TRESHOLD  0.7  //Utterance Total Detection
@@ -28,7 +29,7 @@
 #define BT_FFT_SIZE       512   //Rounded Window Size to Power of 2 (400->512)
 #define BT_DEC_TIMEOUT    0.5   //Decode Timeout in Second
 
-//#define BT_TEST_MODE      // If defined then read from wav file instead of online
+#define BT_TEST_MODE      // If defined then read from wav file instead of online
 #define BT_WAV_MAX        100 // Max recording number(circular)
 #define BT_TRA_MAX        5   // Max number of same sequence train
 

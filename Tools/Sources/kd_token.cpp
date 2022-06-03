@@ -7,7 +7,6 @@ KdToken::KdToken(float total_cost)
 {
     cost = total_cost;
     prune_cost = 0;
-    links = NULL;
     next = NULL;
     prev = NULL;
 

@@ -1,4 +1,4 @@
-﻿#include "kd_lattice_prune.h"
+#include "kd_lattice_prune.h"
 
 KdPrune::KdPrune(float beam)
 {
