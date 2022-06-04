@@ -275,6 +275,15 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
                 bool changed = updateToken(arc.nextstate, tot_cost,
                                              &ef_tok);
 
+                // Add ForwardLink from tok to next_tok
+                BtTokenArc n_arc; // new arc
+                n_arc.ilabel = 0;
+                n_arc.olabel = arc.olabel;
+                n_arc.graph_cost    = graph_cost;
+                n_arc.acoustic_cost = 0;
+
+                tok->arc.push_back(n_arc);
+                tok->arc_ns.push_back(ef_tok);
 
                 if( changed && fst_graph->NumInputEpsilons(arc.nextstate)!=0)
                 {
