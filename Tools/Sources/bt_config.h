@@ -1,7 +1,7 @@
 #ifndef BT_CONFIG_H
 #define BT_CONFIG_H
 
-#define KAL_NATO_DIR      "../Nato/"
+#define KAL_NATO_DIR      "../Bato/"
 #define KAL_DECODE_DIR    KAL_NATO_DIR"decode/"
 #define KAL_SI_DIR        KAL_NATO_DIR"scripts/interpreter/"
 #define KAL_SD_DIR        KAL_NATO_DIR"scripts/decode/"

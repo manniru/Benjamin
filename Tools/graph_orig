@@ -5,10 +5,22 @@ digraph g
 	edge [fontname="Helvetica,Arial,sans-serif"]
 	graph [ rankdir = "LR" ];
 	node [ fontsize = "16" ];
-	"node0" [ label = "<f0> sa | <f1>" shape = "record" ];
-	"node1" [ label = "<f0> 0xf7fc4380 | 1" shape = "record" ];
-	"node2" [ label = "<f0> 0xf7fc44b8 | 2" shape = "record" ];
+	subgraph cluster_0 
+	{
+		node [color="#005000"];
+		"node1" [ label = "<f0> 0xf7fc4380 | 1" shape = "record" ];
+		"node2" [ label = "<f0> 0xf7fc44b8 | 2" shape = "record" ];
+		label = "process #1";
+		color="#005000"
+	}
+
+	subgraph cluster_1
+	{
+		node [color="#005000"];
+		"node0" [ label = "<f0> sa | <f1>" shape = "record" ];
+		label = "process #2";
+		color = "#005000"
+	}
 	"node0":f0 -> "node1":f0;
 	"node0":f1 -> "node2":f0;
 }
-

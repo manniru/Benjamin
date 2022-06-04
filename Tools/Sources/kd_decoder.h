@@ -59,7 +59,7 @@ protected:
     QVector<KdTokenList> frame_toks; // tokens indexed by frame
 
     // fst_ is a pointer to the FST we are decoding from.
-    KdFST *fst_;
+    KdFST *fst_graph;
 
     KdDecoderConfig config;
     QVector<float> cost_offsets; //offset that keep costs close to

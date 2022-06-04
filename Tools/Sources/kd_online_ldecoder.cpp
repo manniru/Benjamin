@@ -6,7 +6,7 @@ QString dbg_times;
 
 KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
 {
-    fst_ = kd_readDecodeGraph(BT_FST_PATH);
+    fst_graph = kd_readDecodeGraph(BT_FST_PATH);
     mbr = new KdMBR;
 
     opts.max_active = 7000;
@@ -56,7 +56,7 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
             if( f==end-1 )
             {
                 //this should not be m_state
-                float final_cost = fst_->Final(tok->state).Value();
+                float final_cost = fst_graph->Final(tok->state).Value();
                 if( final_cost!=infinity )
                 {
                     ofst->SetFinal(tok->m_state, KdLatticeWeight(final_cost, 0));
@@ -95,6 +95,14 @@ void KdOnlineLDecoder::makeNodes()
     // First create all states.
     for( int f=0 ; f<end ; f++ )
     {
+        out << "subgraph cluster_";
+        out << QString::number(f);
+        out << "\n{\n";
+        out << "color = \"#005000\"\n";
+        out << "node [color=\"#005000\"]\n";
+        out << "label = \"frame: ";
+        out << QString::number(f);
+        out << "\";\n";
         for( KdToken *tok=frame_toks[f].head ; tok!=NULL ; tok=tok->next )
         {
             out << "\"node";
@@ -105,6 +113,7 @@ void KdOnlineLDecoder::makeNodes()
             out << QString::number(tok->cost);
             out << " \" shape = \"record\" ];\n";
         }
+        out << "}\n";
     }
 }
 
@@ -296,13 +305,13 @@ int KdOnlineLDecoder::Decode()
 
         uframe++;
 
-//        MakeGraph(uframe);
-//        makeNodes();
-//        makeEdge();
-//        if( uframe>3 )
-//        {
-//            exit(0);
-//        }
+        MakeGraph(uframe);
+        makeNodes();
+        makeEdge();
+        if( uframe>3 )
+        {
+            exit(0);
+        }
     }
 }
 

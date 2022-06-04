@@ -35,7 +35,7 @@ void KdDecoder::InitDecoding(KdDecodable *dcodable)
     ClearActiveTokens();
     frame_toks.resize(1);
     KdToken *start_tok = new KdToken(0.0);
-    KdStateId start_state = fst_->Start();
+    KdStateId start_state = fst_graph->Start();
     start_tok->state = start_state;
     frame_toks[0].insert(start_tok);
     cf_tokens[start_state] = start_tok;
@@ -136,7 +136,7 @@ double KdDecoder::GetBestCutoff(KdToken *tok)
 
     float cost_offset = -tok->cost;
 
-    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ;
+    for( fst::ArcIterator<KdFST> aiter(*fst_graph, tok->state) ;
          !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
@@ -196,7 +196,7 @@ void KdDecoder::ProcessNonemitting(float cutoff)
         KdStateId state = tok->state;
         if( state!=-1 )
         {
-            if( fst_->NumInputEpsilons(state)!=0 )
+            if( fst_graph->NumInputEpsilons(state)!=0 )
             {
                 PNonemittingState(tok, cutoff);
             }
@@ -210,8 +210,8 @@ float KdDecoder::PEmittingState(KdToken *tok, float next_cutoff)
     int frame = frame_toks.size() - 2; // Frame only used for c_offset
     float c_offset = cost_offsets[frame];
 
-    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state) ;
-        !aiter.Done() ; aiter.Next() )
+    for(fst::ArcIterator<KdFST> aiter(*fst_graph, tok->state) ;
+        !aiter.Done(); aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
         if( arc.ilabel!=0 )
@@ -261,8 +261,8 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
     // it's not a huge issue.
     DeleteTokArcs(tok); // necessary when re-visiting
 
-    for( fst::ArcIterator<KdFST> aiter(*fst_, tok->state)
-         ; !aiter.Done() ; aiter.Next() )
+    for( fst::ArcIterator<KdFST> aiter(*fst_graph, tok->state) ;
+         !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
         if( arc.ilabel==0 ) // nonemitting
@@ -276,17 +276,7 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
                                              &ef_tok);
 
 
-                // Add ForwardLink from tok to next_tok
-                BtTokenArc n_arc; // new arc
-                n_arc.ilabel = 0;
-                n_arc.olabel = arc.olabel;
-                n_arc.graph_cost    = graph_cost;
-                n_arc.acoustic_cost = 0;
-
-                tok->arc.push_back(n_arc);
-                tok->arc_ns.push_back(ef_tok);
-
-                if( changed && fst_->NumInputEpsilons(arc.nextstate)!=0)
+                if( changed && fst_graph->NumInputEpsilons(arc.nextstate)!=0)
                 {
                     PNonemittingState(ef_tok, cutoff);
                 }

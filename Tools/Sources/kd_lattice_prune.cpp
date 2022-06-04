@@ -29,15 +29,15 @@ bool KdPrune::prune(KdLattice *lat)
     for( int state=num_states-1 ; state>=0 ; state-- )
     {
         KdLatticeWeight w = lat->Final(state);
-        backward_cost[state] = w.g_cost + w.a_cost;
+        backward_cost[state] = w.getCost();
         double fb_cost = backward_cost[state] + forward_cost[state];
         if( fb_cost>cutoff && backward_cost[state]!=KD_INFINITY_DB )
-        {
+        {//remove whole state
             lat->SetFinal(state, KdLatticeWeight::Zero());
         }
 
-        for( fst::MutableArcIterator<KdLattice> aiter(lat, state);
-             !aiter.Done(); aiter.Next())
+        for( fst::MutableArcIterator<KdLattice> aiter(lat, state) ;
+             !aiter.Done() ; aiter.Next() )
         {
             KdLattice::Arc arc(aiter.Value());
             KdStateId nextstate = arc.nextstate;
@@ -45,7 +45,7 @@ bool KdPrune::prune(KdLattice *lat)
             double arc_cost = arc.weight.getCost();
             double arc_backward_cost = arc_cost + backward_cost[nextstate];
             double this_fab_cost = forward_cost[state] + arc_backward_cost;
-            if( arc_backward_cost<backward_cost[state] )
+            if( backward_cost[state]>arc_backward_cost )
             {
                 backward_cost[state] = arc_backward_cost;
             }
@@ -57,7 +57,7 @@ bool KdPrune::prune(KdLattice *lat)
             }
         }
     }
-    // connect would remove all arcs bad states
+    // connect would remove all arc to the bad states
     fst::Connect(lat);
     return( lat->NumStates()>0 );
 }
