@@ -17,6 +17,7 @@
 #include "kd_lattice.h"
 #include "kd_lattice_functions.h"
 #include "kd_mbr.h"
+#include "bt_graph_d.h"
 
 struct KdOnlineLDecoderOpts: public KdDecoderConfig
 {
@@ -56,25 +57,17 @@ public:
 private:
     void checkReset();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
-    void MakeGraph(int frame);
-    void makeNodes();
-    void makeEdge();
-    QVector<BtWord> result;
-    KdMBR *mbr;
-
-    // Returns a linear fst by tracing back the last N frames, beginning
-    // from the best current token
-    void TracebackNFrames(int nframes, KdLattice *out_fst);
     KdToken* getBestTok();
 
-    // Searches for the last token, ancestor of all currently active tokens
-    void UpdateImmortalToken();
+    QVector<BtWord> result;
+    KdMBR *mbr;
+    BtGraphD *graph;
+
 
     // cache FSTs
     int        last_cache_f; // last cache frame
     KdLattice  cache_fst1; //used for createStates
     KdLattice  cache_fst2; //used for addArcs
-    QFile     *gd_file; // graph debug
 
     KdOnlineLDecoderOpts    opts;
     kaldi::TransitionModel *t_model; // needed for trans-id -> phone conversion

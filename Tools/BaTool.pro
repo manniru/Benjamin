@@ -44,6 +44,7 @@ HEADERS += \
     Sources/bt_enn.h \
     Sources/bt_feinput.h \
     Sources/bt_fft.h \
+    Sources/bt_graph_d.h \
     Sources/bt_mbr_base.h \
     Sources/bt_melbank.h \
     Sources/bt_mfcc.h \
@@ -83,6 +84,7 @@ SOURCES += \
     Sources/bt_enn.cpp \
     Sources/bt_feinput.cpp \
     Sources/bt_fft.cpp \
+    Sources/bt_graph_d.cpp \
     Sources/bt_mbr_base.cpp \
     Sources/bt_melbank.cpp \
     Sources/bt_mfcc.cpp \
