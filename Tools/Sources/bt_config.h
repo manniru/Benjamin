@@ -1,7 +1,7 @@
 #ifndef BT_CONFIG_H
 #define BT_CONFIG_H
 
-#define KAL_NATO_DIR      "../Bato/"
+#define KAL_NATO_DIR      "../Nato/"
 #define KAL_DECODE_DIR    KAL_NATO_DIR"decode/"
 #define KAL_SI_DIR        KAL_NATO_DIR"scripts/interpreter/"
 #define KAL_SD_DIR        KAL_NATO_DIR"scripts/decode/"
@@ -58,3 +58,5 @@
 //>>>  3.44 394 "delta(110) oscar(147) mike(211) super(247) one(281) november(344) " 6
 //Check Reset "S:0ms C:19ms R:109ms P:262ms D:25ms E:461ms"
 //------------Reset Sil 344 50 394
+//"<2> 3.94 400 tango(87,1) hotel(112,1) india(160,1) sierra(206,1) sim(238,1) delta(260,0.960216) echo(294,1) mike(321,1) oscar(354,1) sim(394,1) " 10
+//Check Reset "S:0ms C:6ms R:118ms P:528ms D:28ms E:749ms"

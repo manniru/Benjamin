@@ -24,15 +24,30 @@ KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
 
 void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
 {
-    float infinity = KD_INFINITY_FL;
     int end = frame_toks.size();
-    createStates(ofst);
+//    cache_fst1.DeleteStates();
+//    last_cache_f = 0;
+    createStates(last_cache_f, end);
 
     dbg_times += " C:";
     dbg_times += getLDiffTime();
 
+    if( last_cache_f>0 )
+    {
+        last_cache_f--;
+        int f = last_cache_f;
+        for( KdToken *tok=frame_toks[f].head ; tok!=NULL ; tok=tok->next )
+        {
+            if( tok->m_state==KD_INVALID_STATE )
+            {
+                tok->m_state = cache_fst1.AddState();
+            }
+        }
+    }
+    qDebug() << "last_cache_f" << last_cache_f;
+
     // Now add arcs
-    for( int f=0 ; f<end ; f++ )
+    for( int f=last_cache_f ; f<end-1 ; f++ )
     {
         for( KdToken *tok=frame_toks[f].tail ; tok!=NULL ; tok=tok->prev )
         {
@@ -42,6 +57,12 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                 BtTokenArc link = tok->arc[i];
                 KdStateId nextstate = tok->arc_ns[i]->m_state;
 
+                if( tok->m_state==KD_INVALID_STATE ||
+                       nextstate==KD_INVALID_STATE )
+                {
+                    qDebug() << "fuuu]u" << f << tok->m_state << nextstate;
+                }
+
                 float cost_offset = 0.0;
                 if( link.ilabel!=0 ) // emitting
                 {
@@ -50,39 +71,62 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                 }
                 KdLatticeWeight arc_w(link.graph_cost, link.acoustic_cost - cost_offset);
                 KdLatticeArc arc(link.ilabel, link.olabel,arc_w, nextstate);
-                ofst->AddArc(tok->m_state, arc);
-            }
-
-            if( f==end-1 )
-            {
-                //this should not be m_state
-                float final_cost = fst_graph->Final(tok->state).Value();
-                if( final_cost!=infinity )
-                {
-                    ofst->SetFinal(tok->m_state, KdLatticeWeight(final_cost, 0));
-//                    ofst->SetFinal();
-                }
+                cache_fst1.AddArc(tok->m_state, arc);
             }
         }
     }
 
-    ofst->SetStart(0);// sets the start state
+    cache_fst1.SetStart(0);// sets the start state
+    last_cache_f = end;
+
+    dbg_times += " A:";
+    dbg_times += getLDiffTime();
+    addFinalFrame(ofst);
 }
 
-void KdOnlineLDecoder::createStates(KdLattice *ofst)
+void KdOnlineLDecoder::createStates(int start, int end)
 {
-    int end = frame_toks.size();
-    last_cache_f = 0;
-    ofst->DeleteStates();
-
     // First create all states.
-    for( int f=last_cache_f ; f<end ; f++ )
+    qDebug() << "state frame" << last_cache_f << end << cache_fst1.NumStates();
+    for( int f=start ; f<end ; f++ )
     {
-        last_cache_f++;
-
         for( KdToken *tok=frame_toks[f].head ; tok!=NULL ; tok=tok->next )
         {
-            tok->m_state = ofst->AddState();
+            tok->m_state = cache_fst1.AddState();
+        }
+    }
+}
+
+void KdOnlineLDecoder::addFinalFrame(KdLattice *ofst)
+{
+    float infinity = KD_INFINITY_FL;
+    int lase_i = frame_toks.size()-1;
+    *ofst = cache_fst1;
+
+    for( KdToken *tok=frame_toks[lase_i].tail ; tok!=NULL ; tok=tok->prev )
+    {
+        int len = tok->arc.length();
+        for( int i=0 ; i<len ; i++ )
+        {
+            BtTokenArc link = tok->arc[i];
+            KdStateId nextstate = tok->arc_ns[i]->m_state;
+
+            float cost_offset = 0.0;
+            if( link.ilabel!=0 ) // emitting
+            {
+                KALDI_ASSERT( lase_i<cost_offsets.length() );
+                cost_offset = cost_offsets[lase_i];
+            }
+            KdLatticeWeight arc_w(link.graph_cost, link.acoustic_cost - cost_offset);
+            KdLatticeArc arc(link.ilabel, link.olabel,arc_w, nextstate);
+            ofst->AddArc(tok->m_state, arc);
+        }
+
+        //this should not be m_state
+        float final_cost = fst_graph->Final(tok->state).Value();
+        if( final_cost!=infinity )
+        {
+            ofst->SetFinal(tok->m_state, KdLatticeWeight(final_cost, 0));
         }
     }
 }
@@ -216,13 +260,13 @@ int KdOnlineLDecoder::Decode()
 
         uframe++;
 
-        graph->MakeGraph(uframe);
-        graph->makeNodes(&frame_toks);
-        graph->makeEdge(&frame_toks);
-        if( uframe>3 )
-        {
-            exit(0);
-        }
+//        graph->MakeGraph(uframe);
+//        graph->makeNodes(&frame_toks);
+//        graph->makeEdge(&frame_toks);
+//        if( uframe>3 )
+//        {
+//            exit(0);
+//        }
     }
 }
 
@@ -230,7 +274,7 @@ void KdOnlineLDecoder::checkReset()
 {
     dbg_times += " E:";
     dbg_times += getDiffTime(start_t);
-//    qDebug() << "Check Reset" << dbg_times;
+    qDebug() << "Check Reset" << dbg_times;
     if( status.state==KD_STATE_NULL ||
         status.state==KD_STATE_BLOWN  )
     {

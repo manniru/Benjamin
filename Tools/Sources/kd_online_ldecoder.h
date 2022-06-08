@@ -42,7 +42,7 @@ public:
 
     int Decode();
 
-    void createStates(KdLattice *ofst);
+    void createStates(int start, int end);
     void RawLattice(KdLattice *ofst);
     void MakeLattice(KdCompactLattice *ofst);
 
@@ -53,21 +53,19 @@ public:
     KdOnlineStatus status;
 
     int wav_id = 0; //used for cyclyic test mode
+    // cache FSTs
+    int        last_cache_f; // last cache frame
+    KdLattice  cache_fst1; //used for createStates
 
 private:
     void checkReset();
+    void addFinalFrame(KdLattice *ofst);
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
     KdToken* getBestTok();
 
     QVector<BtWord> result;
     KdMBR *mbr;
     BtGraphD *graph;
-
-
-    // cache FSTs
-    int        last_cache_f; // last cache frame
-    KdLattice  cache_fst1; //used for createStates
-    KdLattice  cache_fst2; //used for addArcs
 
     KdOnlineLDecoderOpts    opts;
     kaldi::TransitionModel *t_model; // needed for trans-id -> phone conversion

@@ -10,8 +10,12 @@ bool KdPrune::prune(KdLattice *lat)
 {
     if( !lat->Properties(fst::kTopSorted, true) )
     {
-        qDebug() << "THIS IS NOT POSSIBLE";
-        exit(0);
+        qDebug() << "prune need TopSort";
+        if( !fst::TopSort(lat) )
+        {
+            qDebug() << "Topological sorting of lattice failed.";
+            exit(0);
+        }
     }
 
     num_states = lat->NumStates();
