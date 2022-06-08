@@ -5,6 +5,9 @@ ReChapar::ReChapar(QObject *parent) : QObject(parent)
 {
 #ifdef BT_TEST_MODE
     test = new BtTest(KAL_WAV_DIR);
+#elif defined(BT_ENN_MODE)
+//    enn = new BtEnn(KAL_AU_DIR"/train/online/");
+    enn = new BtEnn(KAL_WAV_DIR);
 #else
     kaldi_thread = new QThread;
     KdOnline  *kaldi = new KdOnline;

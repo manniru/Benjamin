@@ -8,6 +8,7 @@
 #include "bt_captain.h"
 #include "kd_online.h"
 #include "bt_test.h"
+#include "bt_enn.h"
 
 class ReChapar : public QObject
 {
@@ -22,6 +23,7 @@ signals:
 private:
     QThread *kaldi_thread;
     BtTest  *test;
+    BtEnn *enn;
 };
 
 #endif // BT_CHAPAR_H

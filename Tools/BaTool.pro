@@ -41,6 +41,7 @@ HEADERS += \
     Sources/bt_config.h \
     Sources/bt_cyclic.h \
     Sources/bt_delta.h \
+    Sources/bt_enn.h \
     Sources/bt_feinput.h \
     Sources/bt_fft.h \
     Sources/bt_mbr_base.h \
@@ -79,6 +80,7 @@ SOURCES += \
     Sources/bt_cmvn.cpp \
     Sources/bt_cyclic.cpp \
     Sources/bt_delta.cpp \
+    Sources/bt_enn.cpp \
     Sources/bt_feinput.cpp \
     Sources/bt_fft.cpp \
     Sources/bt_mbr_base.cpp \

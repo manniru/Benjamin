@@ -130,11 +130,7 @@ double KdDecoder::GetBestCutoff(KdToken *tok)
          return cutoff;
     }
 
-    int frame = cost_offsets.size();
-
-    cost_offsets.push_back(0.0);
-
-    float cost_offset = -tok->cost;
+    cost_offsets.push_back(-tok->cost);
 
     for( fst::ArcIterator<KdFST> aiter(*fst_graph, tok->state) ;
          !aiter.Done() ; aiter.Next() )
@@ -143,20 +139,20 @@ double KdDecoder::GetBestCutoff(KdToken *tok)
         if( arc.ilabel!=0 )
         {
             float arc_cost = -decodable->LogLikelihood(frame_num, arc.ilabel);
-            float new_weight = arc.weight.Value() + (cost_offset + tok->cost)
-                    + arc_cost + adaptive_beam;
+            float new_weight = arc.weight.Value() +
+                               arc_cost + adaptive_beam;
             if( new_weight<cutoff )
             {
                 cutoff = new_weight;
             }
         }
     }
-    cost_offsets[frame] = cost_offset;
 
     return cutoff;
 }
 
-// Processes for one frame.
+// Create state from preveious frame to the
+// current frame(uframe not increamented here)
 float KdDecoder::ProcessEmitting()
 {
     frame_toks.push_back(KdTokenList()); //add new frame tok
