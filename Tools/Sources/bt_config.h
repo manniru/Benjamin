@@ -29,8 +29,8 @@
 #define BT_FFT_SIZE       512   //Rounded Window Size to Power of 2 (400->512)
 #define BT_DEC_TIMEOUT    0.5   //Decode Timeout in Second
 
-#define BT_TEST_MODE      // If defined then read from wav file instead of online
-//#define BT_ENN_MODE         // If defined then extract features from train wave dataset
+//#define BT_TEST_MODE      // If defined then read from wav file instead of online
+//#define BT_ENN_MODE       // If defined then extract features from train wave dataset
 #define BT_WAV_MAX        100 // Max recording number(circular)
 #define BT_TRA_MAX        5   // Max number of same sequence train
 

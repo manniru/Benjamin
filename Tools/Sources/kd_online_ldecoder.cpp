@@ -44,7 +44,6 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
             }
         }
     }
-    qDebug() << "last_cache_f" << last_cache_f;
 
     // Now add arcs
     for( int f=last_cache_f ; f<end-1 ; f++ )
@@ -56,12 +55,6 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
             {
                 BtTokenArc link = tok->arc[i];
                 KdStateId nextstate = tok->arc_ns[i]->m_state;
-
-                if( tok->m_state==KD_INVALID_STATE ||
-                       nextstate==KD_INVALID_STATE )
-                {
-                    qDebug() << "fuuu]u" << f << tok->m_state << nextstate;
-                }
 
                 float cost_offset = 0.0;
                 if( link.ilabel!=0 ) // emitting
@@ -87,7 +80,6 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
 void KdOnlineLDecoder::createStates(int start, int end)
 {
     // First create all states.
-    qDebug() << "state frame" << last_cache_f << end << cache_fst1.NumStates();
     for( int f=start ; f<end ; f++ )
     {
         for( KdToken *tok=frame_toks[f].head ; tok!=NULL ; tok=tok->next )
@@ -274,7 +266,6 @@ void KdOnlineLDecoder::checkReset()
 {
     dbg_times += " E:";
     dbg_times += getDiffTime(start_t);
-    qDebug() << "Check Reset" << dbg_times;
     if( status.state==KD_STATE_NULL ||
         status.state==KD_STATE_BLOWN  )
     {
@@ -289,6 +280,7 @@ void KdOnlineLDecoder::checkReset()
                  << status.max_frame << status.min_frame
                  << diff << uframe;
         frame_num -= diff;
+        qDebug() << "Reset Succ" << dbg_times;
     }
 
     if( status.state!=KD_STATE_NORMAL )
