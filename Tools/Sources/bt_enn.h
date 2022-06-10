@@ -21,14 +21,17 @@ public:
     explicit BtEnn(QString dir_name, QObject *parent = nullptr);
     ~BtEnn();
 
+    void   init(QString dir);
+
 private:
-    void   init();
     void   startDecode();
     void   openWave(QString filename);
-    int    readWav(int count, BtCyclic *out);
+    void   readWav(BtCyclic *out);
     void   saveFeature(QString filename, BtCFB *cfb);
-    void saveImage(QString filename, QVector<BtFrameBuf *> data);
-    void saveCSV(QString filename, QVector<BtFrameBuf *> data);
+    void   saveImage(QString filename, QVector<BtFrameBuf *> data);
+    void   saveCSV(QString filename, QVector<BtFrameBuf *> data);
+    void   mkDir(QString path);
+    bool   checkExist(QString path);
 
     BtCyclic         *cy_buf;
     QVector<BtWord>   last_r; //last_result
@@ -38,11 +41,13 @@ private:
     KdAModel         *oa_model; //online accoustic model
     QFile             wav_file;
     QStringList       file_list;
+    QStringList       exist_list;
+    QString           cat_dir; // category directory
 
     double max_delta[3];
     double min_delta[3];
-    double offset_delta[3] = {30, 10, 5};
-    double scale_delta[3] = {4, 9, 20};
+    double offset_delta[3] = {80, 40, 20};
+    double scale_delta[3] = {2/255.0, 5/255.0, 10/255.0};
 };
 
 #endif // BT_ENN_H

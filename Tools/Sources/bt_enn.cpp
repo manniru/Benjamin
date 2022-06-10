@@ -14,12 +14,16 @@ BtEnn::BtEnn(QString dir_name, QObject *parent): QObject(parent)
         file_list[i] = dir_name + file_list[i];
     }
 
-    init();
     for( int i=0 ; i<BT_DELTA_ORDER+1 ; i++)
     {
         max_delta[i] = 0;
         min_delta[i] = 10000;
     }
+
+    mkDir(KAL_AU_DIR"enn/");
+
+    QString cmd = "find " KAL_AU_DIR "enn/ -type f";
+    exist_list = getStrCommand(cmd).split("\n");
 }
 
 BtEnn::~BtEnn()
@@ -30,8 +34,9 @@ BtEnn::~BtEnn()
     delete cy_buf;
 }
 
-void BtEnn::init()
+void BtEnn::init(QString dir)
 {
+    cat_dir = dir;
     std::string model_filename = BT_OAMDL_PATH;
 
     oa_model = new KdAModel;
@@ -43,6 +48,7 @@ void BtEnn::init()
     oa_model->Read(ki.Stream(), binary);
 
     o_decoder = new KdOnlineLDecoder(t_model);
+    o_decoder->status.min_sil = 150;
 
     startDecode();
 }
@@ -50,7 +56,6 @@ void BtEnn::init()
 void BtEnn::startDecode()
 {
     float acoustic_scale = 0.05;
-    int chunk_size = 16000; // 1000ms
 
     KdDecodable decodable(cy_buf, oa_model,
                           t_model, acoustic_scale);
@@ -59,32 +64,25 @@ void BtEnn::startDecode()
     KdCompactLattice out_fst;
     QVector<BtWord> result;
 
-//    qDebug() << file_list.size();
-    for( int i = 0 ; i<4 ; i++ )
+    int len = 50;//file_list.size();
+//    qDebug() << file_list.size() << cat_dir;
+    for( int i=0 ; i<len ; i++ )
     {
-        openWave(file_list[i]);
-        int read_size = chunk_size;
-        while( read_size==chunk_size )
+        if( checkExist(file_list[i]) )
         {
-            read_size = readWav(chunk_size, cy_buf);
-            decodable.features->ComputeFeatures();
-            o_decoder->Decode();
-            result = o_decoder->getResult(&out_fst);
-            if( result.size()>=last_r.size() )
-            {
-                last_r = result;
-            }
+            continue;
         }
+        qDebug() << "Info: wave [" << i << "/" << len << "].";
+        openWave(file_list[i]);
+        readWav(cy_buf);
+        decodable.features->ComputeFeatures();
+        o_decoder->Decode();
+        last_r = o_decoder->getResult(&out_fst);
         saveFeature(file_list[i], decodable.features->o_features);
         o_decoder->wav_id++;
-        o_decoder->status.min_frame = o_decoder->frame_num;
-        o_decoder->status.max_frame = 0;
-        o_decoder->ResetDecoder(); // this reset uframe
-        o_decoder->status.state = KD_STATE_NORMAL;
+        o_decoder->resetODecoder();
         last_r.clear();
     }
-    exit(0);
-
 }
 
 void BtEnn::openWave(QString filename)
@@ -100,7 +98,7 @@ void BtEnn::openWave(QString filename)
         qDebug() << "Failed To Open" << filename;
         exit(1);
     }
-    qDebug() << ">>>>" << QFileInfo(filename).fileName();
+//    qDebug() << ">>>>" << QFileInfo(filename).fileName();
 
     char buff[200];
 
@@ -128,7 +126,7 @@ void BtEnn::openWave(QString filename)
 //             << "chunk_size:" << data_size;
 }
 
-int BtEnn::readWav(int count, BtCyclic *out)
+void BtEnn::readWav(BtCyclic *out)
 {
     QVector<int16_t> data_buff;
     char buff[200];
@@ -137,17 +135,12 @@ int BtEnn::readWav(int count, BtCyclic *out)
     while( !wav_file.atEnd() )
     {
         i++;
-        if( i>count )
-        {
-            break;
-        }
 
         wav_file.read(buff, 2);
         data_buff.push_back(*((uint16_t *)buff));
         wav_file.read(buff, 2); // skip second channel
     }
     out->write(&data_buff);
-    return i-1;
 }
 
 void BtEnn::saveFeature(QString filename, BtCFB *cfb)
@@ -159,15 +152,17 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
 
     for( int i=0 ; i<last_r.size() ; i++ )
     {
-        QString path = KAL_AU_DIR"enn/online/";
-        path += fname;
-        path += "_" + last_r[i].word;
+        QString path = KAL_AU_DIR"enn/";
+        path += last_r[i].word;
+        mkDir(path);
+        path += "/" + cat_dir;
+        path += "_" + fname;
         path += "_" + QString::number(i);
 
         int len = 100*(last_r[i].end - last_r[i].start);
         int start = 100*last_r[i].start + o_decoder->status.min_frame;
 
-        qDebug() << "timing :" << len << start << 100*last_r[i].start;
+//        qDebug() << "timing :" << len << start << 100*last_r[i].start;
 
         QVector <BtFrameBuf *> buffer;
         for( int j=0 ; j<len ; j++ )
@@ -183,34 +178,42 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
 void BtEnn::saveImage(QString filename, QVector<BtFrameBuf *> data)
 {
     int len = data.length();
-    QImage *img = new QImage(len, BT_DELTA_SIZE, QImage::Format_Grayscale8);
+    QImage *img = new QImage(len, BT_DELTA_SIZE, QImage::Format_BGR888);
 
     for( int i=0 ; i<len ; i++ )
     {
         for( int j=0 ; j<BT_DELTA_SIZE ; j++ )
         {
-            int val = data[i]->delta[j] + offset_delta[j/BT_FEAT_SIZE];
+            double val = data[i]->delta[j] + offset_delta[j/BT_FEAT_SIZE];
             val *= scale_delta[j/BT_FEAT_SIZE];
-            img->setPixel(i, j, qRgb(val,val,val));
-            if( max_delta[j/BT_FEAT_SIZE]<data[i]->delta[j] )
-            {
-                max_delta[j/BT_FEAT_SIZE] = data[i]->delta[j];
-            }
-            if( min_delta[j/BT_FEAT_SIZE]>data[i]->delta[j] )
-            {
-                min_delta[j/BT_FEAT_SIZE] = data[i]->delta[j];
-            }
+            val *= 1;
+            float sat_col = 1;
+            float hue_col = (1 - val) * 256/360.0;
+            float val_col = val;
+            qDebug() << "val" << val;
+            QColor pixel;
+            pixel.setHsvF(hue_col, sat_col, val_col);
+            img->setPixelColor(i, j, pixel);
+
+//            if( max_delta[j/BT_FEAT_SIZE]<data[i]->delta[j] )
+//            {
+//                max_delta[j/BT_FEAT_SIZE] = data[i]->delta[j];
+//            }
+//            if( min_delta[j/BT_FEAT_SIZE]>data[i]->delta[j] )
+//            {
+//                min_delta[j/BT_FEAT_SIZE] = data[i]->delta[j];
+//            }
         }
     }
 
-    QImage img_sag = img->scaled( 500, 390);
+    QImage img_sag = img->scaled(500, 390);
 
     if( !img_sag.save(filename + ".png", "PNG") )
     {
         qDebug() << "Error: saving image failed.";
     }
-    qDebug() << "E: path: " << filename << max_delta[0] << max_delta[1] << max_delta[2] << min_delta[0] << min_delta[1] << min_delta[2];
-    qDebug() << "siza :" << len;
+//    qDebug() << "E: path: " << filename << max_delta[0] << max_delta[1] << max_delta[2] << min_delta[0] << min_delta[1] << min_delta[2];
+//    qDebug() << "siza :" << len;
 }
 
 void BtEnn::saveCSV(QString filename, QVector<BtFrameBuf *> data)
@@ -240,4 +243,37 @@ void BtEnn::saveCSV(QString filename, QVector<BtFrameBuf *> data)
     }
 
     file.close();
+}
+
+void BtEnn::mkDir(QString path)
+{
+    QDir au_EnnDir(path);
+
+    if( !au_EnnDir.exists() )
+    {
+        qDebug() << "Creating" << path
+                 << " Directory";
+        QString command = "mkdir -p ";
+        command += path;
+        system( command.toStdString().c_str() );
+    }
+}
+
+bool BtEnn::checkExist(QString path)
+{
+    QFileInfo file_info(path);
+    QString fname = file_info.fileName();
+
+    fname.remove(".wav");
+
+    for( int i=0 ; i<exist_list.size() ; i++ )
+    {
+        if( exist_list[i].contains(fname) )
+        {
+//            qDebug() << exist_list[i] << fname;
+            return true;
+        }
+    }
+
+    return false;
 }

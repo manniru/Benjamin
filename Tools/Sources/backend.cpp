@@ -40,17 +40,20 @@ QString getStrCommand(QString command)
     /* Open the command for reading. */
     fp = popen(command.toStdString().c_str(), "r");
 
-    if( fp==NULL) {
-      printf("Failed to run command\n" );
-      return returnData;
+    if( fp==NULL )
+    {
+        printf("Failed to run command\n");
+        return returnData;
     }
 
     /* Read the output a line at a time - output it. */
-    while (fgets(path, sizeof(path)-1, fp)!=NULL) {
-      returnData = QString(path);
+    while( fgets(path, sizeof(path)-1, fp)!=NULL )
+    {
+        returnData += QString(path);
     }
 
-    returnData.remove('\n');
+    // Remove last \n
+    returnData.remove(returnData.length()-1, 1);
 
     /* close */
     pclose(fp);
