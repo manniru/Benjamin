@@ -2,7 +2,6 @@
 #include <QDebug>
 
 QString dbg_times;
-#define BT_MIN_SIL 14 //150ms ((x+1)*100)
 
 KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
 {
@@ -178,7 +177,7 @@ void KdOnlineLDecoder::CalcFinal()
         }
 
         int f_end = result[i].end*100;
-        if( (uframe-f_end)>BT_MIN_SIL )
+        if( (uframe-f_end)>status.min_sil )
         {
             result[i].is_final = 1;
         }
@@ -214,7 +213,7 @@ void KdOnlineLDecoder::HaveSilence()
     {
         float end_time = result.last().end;
         int diff = uframe - end_time*100;
-        if( diff>BT_MIN_SIL )
+        if( diff>status.min_sil )
         {
             qDebug() << "DETECT MIN SIL: "
                      << end_time*100;
@@ -235,7 +234,7 @@ void KdOnlineLDecoder::HaveSilence()
     }
 }
 
-int KdOnlineLDecoder::Decode()
+void KdOnlineLDecoder::Decode()
 {
     checkReset(); //check if need reset
     ProcessNonemitting(std::numeric_limits<float>::max());
@@ -262,6 +261,17 @@ int KdOnlineLDecoder::Decode()
     }
 }
 
+void KdOnlineLDecoder::resetODecoder()
+{
+    status.min_frame = frame_num;
+    status.max_frame = 0;
+    ResetDecoder(); // this reset uframe
+
+    cache_fst1.DeleteStates();
+    last_cache_f = 0;
+    status.state = KD_STATE_NORMAL;
+}
+
 void KdOnlineLDecoder::checkReset()
 {
     dbg_times += " E:";
@@ -280,18 +290,12 @@ void KdOnlineLDecoder::checkReset()
                  << status.max_frame << status.min_frame
                  << diff << uframe;
         frame_num -= diff;
-        qDebug() << "Reset Succ" << dbg_times;
+//        qDebug() << "Reset Succ" << dbg_times;
     }
 
     if( status.state!=KD_STATE_NORMAL )
     {
-        status.min_frame = frame_num;
-        status.max_frame = 0;
-        ResetDecoder(); // this reset uframe
-
-        cache_fst1.DeleteStates();
-        last_cache_f = 0;
-        status.state = KD_STATE_NORMAL;
+        resetODecoder();
     }
     start_t = clock();
     dbg_times = "";

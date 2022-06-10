@@ -9,21 +9,23 @@
 #include "kd_online.h"
 #include "bt_test.h"
 #include "bt_enn.h"
+#include "bt_state.h"
 
-class ReChapar : public QObject
+class BtChapar : public QObject
 {
     Q_OBJECT
 public:
-    explicit ReChapar(QObject *parent = nullptr);
-    ~ReChapar();
+    explicit BtChapar(BtState st, QObject *parent = nullptr);
+    ~BtChapar();
 
 signals:
     void startDecoding();
 
 private:
+    void createEnn(QString dir);
+
     QThread *kaldi_thread;
     BtTest  *test;
-    BtEnn *enn;
 };
 
 #endif // BT_CHAPAR_H

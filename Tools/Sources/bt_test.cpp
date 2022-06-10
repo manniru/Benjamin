@@ -78,12 +78,7 @@ void BtTest::startDecode()
             qDebug() << buf;
         }
         o_decoder->wav_id++;
-        o_decoder->status.min_frame = o_decoder->frame_num;
-        o_decoder->status.max_frame = 0;
-        o_decoder->ResetDecoder(); // this reset uframe
-        o_decoder->status.state = KD_STATE_NORMAL;
-        o_decoder->cache_fst1.DeleteStates();
-        o_decoder->last_cache_f = 0;
+        o_decoder->resetODecoder();
     }
     exit(0);
 

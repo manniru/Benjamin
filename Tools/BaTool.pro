@@ -49,6 +49,7 @@ HEADERS += \
     Sources/bt_melbank.h \
     Sources/bt_mfcc.h \
     Sources/bt_recorder.h \
+    Sources/bt_state.h \
     Sources/bt_test.h \
     Sources/bt_token_list.h \
     Sources/bt_wav_writer.h \
@@ -89,6 +90,7 @@ SOURCES += \
     Sources/bt_melbank.cpp \
     Sources/bt_mfcc.cpp \
     Sources/bt_recorder.cpp \
+    Sources/bt_state.cpp \
     Sources/bt_test.cpp \
     Sources/bt_token_list.cpp \
     Sources/bt_wav_writer.cpp \

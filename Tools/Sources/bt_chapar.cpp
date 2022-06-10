@@ -1,25 +1,47 @@
 #include "bt_chapar.h"
 #include <QDebug>
 
-ReChapar::ReChapar(QObject *parent) : QObject(parent)
+BtChapar::BtChapar(BtState st, QObject *parent) : QObject(parent)
 {
-#ifdef BT_TEST_MODE
-    test = new BtTest(KAL_WAV_DIR);
-#elif defined(BT_ENN_MODE)
+    if( st.state==BT_TEST_MODE )
+    {
+        test = new BtTest(KAL_WAV_DIR);
+    }
+    else if( st.state==BT_ENN_MODE )
+    {
 //    enn = new BtEnn(KAL_AU_DIR"/train/online/");
-    enn = new BtEnn(KAL_WAV_DIR);
-#else
-    kaldi_thread = new QThread;
-    KdOnline  *kaldi = new KdOnline;
-    kaldi->moveToThread(kaldi_thread);
-    kaldi_thread->start();
+        createEnn(KAL_AU_DIR"/train/");
+    }
+    else
+    {
+        kaldi_thread = new QThread;
+        KdOnline  *kaldi = new KdOnline;
+        kaldi->moveToThread(kaldi_thread);
+        kaldi_thread->start();
 
-    connect(this, SIGNAL(startDecoding()), kaldi, SLOT(init()));
-    emit startDecoding();
-#endif
+        connect(this, SIGNAL(startDecoding()), kaldi, SLOT(init()));
+        emit startDecoding();
+    }
 }
 
-ReChapar::~ReChapar()
+void BtChapar::createEnn(QString dir)
+{
+    QDir p_dir(dir);
+    QStringList fmt;
+    fmt.append("*");
+//    fmt.append("*.wav");
+    QStringList dir_list = p_dir.entryList(fmt, QDir::Dirs |
+                                           QDir::NoDotAndDotDot);
+
+    for( int i=1 ; i<dir_list.size() ; i++ )
+    {
+        BtEnn enn(dir + dir_list[i] + "/");
+        enn.init(dir_list[i]);
+    }
+    exit(0);
+}
+
+BtChapar::~BtChapar()
 {
 #ifdef BT_TEST_MODE
     delete test;

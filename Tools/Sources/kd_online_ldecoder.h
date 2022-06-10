@@ -19,6 +19,8 @@
 #include "kd_mbr.h"
 #include "bt_graph_d.h"
 
+#define BT_MIN_SIL 14 //150ms ((x+1)*100)
+
 struct KdOnlineLDecoderOpts: public KdDecoderConfig
 {
     int batch_size = 27;       // number of features decoded in one go
@@ -30,6 +32,7 @@ struct KdOnlineLDecoderOpts: public KdDecoderConfig
 
 struct KdOnlineStatus
 {
+    int min_sil = BT_MIN_SIL;
     int state = KD_STATE_NORMAL;
     uint max_frame = 0;
     uint min_frame = 0;
@@ -40,7 +43,7 @@ class KdOnlineLDecoder : public KdDecoder
 public:
     KdOnlineLDecoder(kaldi::TransitionModel *trans_model);
 
-    int Decode();
+    void Decode();
 
     void createStates(int start, int end);
     void RawLattice(KdLattice *ofst);
@@ -48,6 +51,7 @@ public:
 
     QVector<BtWord> getResult(KdCompactLattice *out_fst);
 
+    void resetODecoder();
     void HaveSilence();
     void CalcFinal();
     KdOnlineStatus status;
