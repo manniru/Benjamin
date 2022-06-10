@@ -78,3 +78,17 @@ Tools/Scripts/prefs.js
 Bato/
 
 *.png
+
+ENN/Build/.moc/
+
+ENN/Build/.obj/
+
+ENN/Sources/cereal/
+
+ENN/Sources/third_party/
+
+ENN/Sources/tiny_dnn/
+
+ENN/ENN
+
+ENN/Makefile
