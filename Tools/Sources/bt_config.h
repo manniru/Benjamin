@@ -58,3 +58,6 @@
 //------------Reset Sil 344 50 394
 //"<2> 3.94 400 tango(87,1) hotel(112,1) india(160,1) sierra(206,1) sim(238,1) delta(260,0.960216) echo(294,1) mike(321,1) oscar(354,1) sim(394,1) " 10
 //Check Reset "S:0ms C:6ms R:118ms P:528ms D:28ms E:749ms"
+//--------------------11-June-2022---------------
+// "<2> 3.94 400 tango(87,1) hotel(112,1) india(160,1) sierra(206,1) sim(238,1) delta(260,0.960216) echo(294,1) mike(321,1) oscar(354,1) sim(394,1) " 10
+// Reset Succ "S:0ms C:5ms A:34ms R:77ms P:511ms D:26ms E:725ms"

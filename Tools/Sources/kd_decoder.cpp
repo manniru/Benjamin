@@ -212,10 +212,10 @@ float KdDecoder::PEmittingState(KdToken *tok, float next_cutoff)
         const KdArc &arc = aiter.Value();
         if( arc.ilabel!=0 )
         {
-            float new_weight = decodable->LogLikelihood(frame_num, arc.ilabel);
-            float ac_cost = c_offset - new_weight;
+            float ac_cost = -decodable->LogLikelihood(frame_num, arc.ilabel);
+            float ac_offset = c_offset + ac_cost;
             float graph_cost = arc.weight.Value();
-            float tot_cost = tok->cost + ac_cost + graph_cost;
+            float tot_cost = tok->cost + ac_offset + graph_cost;
 
             if( tot_cost>=next_cutoff )
             {

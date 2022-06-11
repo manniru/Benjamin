@@ -55,13 +55,7 @@ void KdOnlineLDecoder::RawLattice(KdLattice *ofst)
                 BtTokenArc link = tok->arc[i];
                 KdStateId nextstate = tok->arc_ns[i]->m_state;
 
-                float cost_offset = 0.0;
-                if( link.ilabel!=0 ) // emitting
-                {
-                    KALDI_ASSERT( f<cost_offsets.length() );
-                    cost_offset = cost_offsets[f];
-                }
-                KdLatticeWeight arc_w(link.graph_cost, link.acoustic_cost - cost_offset);
+                KdLatticeWeight arc_w(link.graph_cost, link.acoustic_cost);
                 KdLatticeArc arc(link.ilabel, link.olabel,arc_w, nextstate);
                 cache_fst1.AddArc(tok->m_state, arc);
             }
@@ -102,13 +96,7 @@ void KdOnlineLDecoder::addFinalFrame(KdLattice *ofst)
             BtTokenArc link = tok->arc[i];
             KdStateId nextstate = tok->arc_ns[i]->m_state;
 
-            float cost_offset = 0.0;
-            if( link.ilabel!=0 ) // emitting
-            {
-                KALDI_ASSERT( lase_i<cost_offsets.length() );
-                cost_offset = cost_offsets[lase_i];
-            }
-            KdLatticeWeight arc_w(link.graph_cost, link.acoustic_cost - cost_offset);
+            KdLatticeWeight arc_w(link.graph_cost, link.acoustic_cost);
             KdLatticeArc arc(link.ilabel, link.olabel,arc_w, nextstate);
             ofst->AddArc(tok->m_state, arc);
         }

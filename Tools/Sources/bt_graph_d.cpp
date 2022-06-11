@@ -66,7 +66,7 @@ void BtGraphD::makeNodes(QVector<KdTokenList> *frame_toks)
 void BtGraphD::makeEdge(QVector<KdTokenList> *frame_toks)
 {
     QTextStream out(gd_file);
-    int end = frame_toks->size();
+    int end = frame_toks->size()-1;
 
     // Now add arcs
     for( int f=0 ; f<end ; f++ )

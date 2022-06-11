@@ -178,7 +178,7 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
 void BtEnn::saveImage(QString filename, QVector<BtFrameBuf *> data)
 {
     int len = data.length();
-    QImage *img = new QImage(len, BT_DELTA_SIZE, QImage::Format_BGR888);
+    QImage *img = new QImage(len, BT_DELTA_SIZE, QImage::Format_RGB888);
 
     for( int i=0 ; i<len ; i++ )
     {
