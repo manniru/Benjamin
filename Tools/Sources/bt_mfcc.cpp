@@ -8,7 +8,7 @@ BtMFCC::BtMFCC()
     ComputeLifter();
 
     fft = new KdFFT(win.fftSize());
-    mel_banks = new BtMelBanks;
+    mel_banks = new BtMelBanks(BT_MFCC_BIN);
 }
 
 BtMFCC::~BtMFCC()

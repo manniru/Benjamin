@@ -59,6 +59,7 @@ void BtFeInput::computeFrame(uint frame)
     delta->Process(frame, frame_num);
 }
 
+// Called from outside(online)
 void BtFeInput::ComputeFeatures()
 {
     int len = rec_buf->getDataSize()-10;
