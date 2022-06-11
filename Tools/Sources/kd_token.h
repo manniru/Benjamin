@@ -29,8 +29,8 @@ public:
 
     KdToken *next; // used for process states(emitting and non-emitting)
     KdToken *prev; // used for MakeLattice
-    KdStateId m_state; // used for MakeLattice
-    KdStateId state; // used for Decoding
+    KdStateId m_state; // state in final lattice (used in MakeLattice)
+    KdStateId g_state;   // state in LM graph (used in Decoding)
     int       tok_id; // used for graph debug
 };
 #endif // KD_TOKEN_H

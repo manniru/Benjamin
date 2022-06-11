@@ -35,4 +35,6 @@ fst::Fst<fst::StdArc> *kd_readDecodeGraph(char *filename);
 void kd_ConvertLattice(KdLattice &ifst,
                        fst::VectorFst<fst::StdArc> *ofst);
 
+int kd_NumOfStates(KdFST *fst);
+
 #endif // KD_LATTICE_H

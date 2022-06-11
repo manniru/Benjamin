@@ -10,7 +10,7 @@ KdToken::KdToken(float total_cost)
     next = NULL;
     prev = NULL;
 
-    state = KD_INVALID_STATE;
+    g_state = KD_INVALID_STATE;
     m_state = KD_INVALID_STATE;
     tok_id = global_id;
     global_id++;

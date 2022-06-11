@@ -242,3 +242,14 @@ void kd_ConvertLattice(KdLattice &ifst, fst::VectorFst<fst::StdArc> *ofst)
         }
     }
 }
+
+int kd_NumOfStates(KdFST *fst)
+{
+    int i = 0;
+    for( fst::StateIterator<KdFST> siter(*fst) ;
+         !siter.Done() ; siter.Next())
+    {
+        i++;
+    }
+    return i;
+}

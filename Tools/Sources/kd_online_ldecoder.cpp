@@ -6,9 +6,11 @@ QString dbg_times;
 KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
 {
     fst_graph = kd_readDecodeGraph(BT_FST_PATH);
+
+    qDebug() << "Graph States Count" << kd_NumOfStates(fst_graph);
     mbr = new KdMBR;
 
-    opts.max_active = 7000;
+    opts.max_active = 200;
 
     config = opts;
     t_model = trans_model;
@@ -102,7 +104,7 @@ void KdOnlineLDecoder::addFinalFrame(KdLattice *ofst)
         }
 
         //this should not be m_state
-        float final_cost = fst_graph->Final(tok->state).Value();
+        float final_cost = fst_graph->Final(tok->g_state).Value();
         if( final_cost!=infinity )
         {
             ofst->SetFinal(tok->m_state, KdLatticeWeight(final_cost, 0));
@@ -134,6 +136,7 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 {
     // out_fst will be reset in MakeLattice
+    result.clear();
     MakeLattice(out_fst);
     if( out_fst->Start() )
     {

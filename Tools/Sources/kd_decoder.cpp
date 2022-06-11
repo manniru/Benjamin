@@ -15,14 +15,14 @@ KdDecoder::KdDecoder()
 
 KdDecoder::~KdDecoder()
 {
-    ClaerAllToks();
+    ResetCFToks();
     ClearActiveTokens();
 }
 
 //frame_num would not reset
 void KdDecoder::ResetDecoder()
 {
-    ClaerAllToks();
+    ResetCFToks();
     InitDecoding(decodable);
 }
 
@@ -31,12 +31,12 @@ void KdDecoder::InitDecoding(KdDecodable *dcodable)
     // clean up from last time:
     uframe = 0;
     decodable = dcodable;
-    cost_offsets.clear();
+    best_costs.clear();
     ClearActiveTokens();
     frame_toks.resize(1);
     KdToken *start_tok = new KdToken(0.0);
     KdStateId start_state = fst_graph->Start();
-    start_tok->state = start_state;
+    start_tok->g_state = start_state;
     frame_toks[0].insert(start_tok);
     cf_tokens[start_state] = start_tok;
     max_state = 1;
@@ -52,7 +52,7 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
     if( cf_tokens[state]==NULL )
     {
         KdToken *new_tok = new KdToken(tot_cost);
-        new_tok->state = state;
+        new_tok->g_state = state;
         frame_toks.last().insert(new_tok);
         cf_tokens[state] = new_tok;
         changed = true;
@@ -72,7 +72,9 @@ bool KdDecoder::updateToken(KdStateId state, float tot_cost,
     return changed;
 }
 
-// Get Cutoff and Also Update adaptive_beam
+// Get Cutoff from last frame
+// Update adaptive_beam
+// and find best token
 float KdDecoder::GetCutoff(KdToken **best_tok)
 {
     float best_cost = KD_INFINITY_FL;
@@ -81,7 +83,7 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
     KdToken *head = frame_toks[uframe].head;
     for( KdToken *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        KdStateId state = tok->state;
+        KdStateId state = tok->g_state;
         if( state!=-1 )
         {
             float cost = tok->cost;
@@ -95,8 +97,23 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
     }
 
     float beam_cutoff = best_cost + config.beam;
+    float max_active_cutoff;
 
     int tok_count = cf_costs.size();
+    if( tok_count>config.max_active)
+    {
+        std::nth_element(cf_costs.begin(),
+                         cf_costs.begin() + config.max_active,
+                         cf_costs.end());
+        max_active_cutoff = cf_costs[config.max_active];
+        if ( max_active_cutoff<beam_cutoff)
+        {
+            // max_active is tighter than beam.
+            adaptive_beam  = max_active_cutoff - best_cost;
+            adaptive_beam += config.beam_delta;
+            return max_active_cutoff;
+        }
+    }
     if( tok_count>config.min_active )
     {
         //sub sort to nth element
@@ -122,17 +139,17 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
     }
 }
 
-double KdDecoder::GetBestCutoff(KdToken *tok)
+double KdDecoder::GetBestCutoff(KdToken *best_tok)
 {
     double cutoff = KD_INFINITY_DB;
-    if( tok==NULL )
+    if( best_tok==NULL )
     {
          return cutoff;
     }
 
-    cost_offsets.push_back(-tok->cost);
+    best_costs.push_back(best_tok->cost);
 
-    for( fst::ArcIterator<KdFST> aiter(*fst_graph, tok->state) ;
+    for( fst::ArcIterator<KdFST> aiter(*fst_graph, best_tok->g_state) ;
          !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
@@ -161,12 +178,12 @@ float KdDecoder::ProcessEmitting()
 
     float cutoff = GetCutoff(&best_tok);
     float next_cutoff = GetBestCutoff(best_tok);
-    ClaerAllToks();
+    ResetCFToks();
     KdToken *head = frame_toks[uframe].head;
 
     for( KdToken *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        KdStateId state = tok->state;
+        KdStateId state = tok->g_state;
         if( state!=-1 )
         {
             float cost = tok->cost;
@@ -181,7 +198,7 @@ float KdDecoder::ProcessEmitting()
     return next_cutoff;
 }
 
-// Processes for one frame.
+// Processes for one frame. (runs after ProcessEmitting)
 void KdDecoder::ProcessNonemitting(float cutoff)
 {
     // need for reverse
@@ -189,7 +206,7 @@ void KdDecoder::ProcessNonemitting(float cutoff)
 
     for( KdToken *tok=head ; tok!=NULL ; tok=tok->next )
     {
-        KdStateId state = tok->state;
+        KdStateId state = tok->g_state;
         if( state!=-1 )
         {
             if( fst_graph->NumInputEpsilons(state)!=0 )
@@ -203,19 +220,17 @@ void KdDecoder::ProcessNonemitting(float cutoff)
 // Processes Single Emiting State
 float KdDecoder::PEmittingState(KdToken *tok, float next_cutoff)
 {
-    int frame = frame_toks.size() - 2; // Frame only used for c_offset
-    float c_offset = cost_offsets[frame];
+    float b_cost = best_costs[uframe]; //best cost from last frame
 
-    for(fst::ArcIterator<KdFST> aiter(*fst_graph, tok->state) ;
+    for(fst::ArcIterator<KdFST> aiter(*fst_graph, tok->g_state) ;
         !aiter.Done(); aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
         if( arc.ilabel!=0 )
         {
             float ac_cost = -decodable->LogLikelihood(frame_num, arc.ilabel);
-            float ac_offset = c_offset + ac_cost;
             float graph_cost = arc.weight.Value();
-            float tot_cost = tok->cost + ac_offset + graph_cost;
+            float tot_cost = (tok->cost - b_cost) + ac_cost + graph_cost;
 
             if( tot_cost>=next_cutoff )
             {
@@ -257,7 +272,7 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
     // it's not a huge issue.
     DeleteTokArcs(tok); // necessary when re-visiting
 
-    for( fst::ArcIterator<KdFST> aiter(*fst_graph, tok->state) ;
+    for( fst::ArcIterator<KdFST> aiter(*fst_graph, tok->g_state) ;
          !aiter.Done() ; aiter.Next() )
     {
         const KdArc &arc = aiter.Value();
@@ -268,8 +283,8 @@ void KdDecoder::PNonemittingState(KdToken *tok, float cutoff)
             if( tot_cost<cutoff )
             {
                 KdToken *ef_tok;
-                bool changed = updateToken(arc.nextstate, tot_cost,
-                                             &ef_tok);
+                bool changed = updateToken(arc.nextstate,
+                                           tot_cost, &ef_tok);
 
                 // Add ForwardLink from tok to next_tok
                 BtTokenArc n_arc; // new arc
@@ -296,8 +311,8 @@ void KdDecoder::DeleteTokArcs(KdToken *tok)
     tok->arc_ns.clear();
 }
 
-// The KdToken pointers
-void KdDecoder::ClaerAllToks()
+// Reset All Current Frame Toks To Null
+void KdDecoder::ResetCFToks()
 {
     for( KdStateId state=0 ; state<MAX_STATE_COUNT ; state++ )
     {

@@ -14,12 +14,12 @@
 struct KdDecoderConfig
 {
     float beam = 16;
-    int32 max_active = 16000;
-    int32 min_active = 200;
+    int32 max_active = 200;
+    int32 min_active = 10;
     int32 prune_interval = 25;
     float beam_delta = 0.5;
     float hash_ratio = 2.0;
-    float prune_scale = 0.1; // not a very important parameter.
+//    float prune_scale = 0.1; // not a very important parameter.
 
     KdPrunedOpt det_opts;
 };
@@ -42,7 +42,7 @@ protected:
                      KdToken **tok);
 
     float GetCutoff(KdToken **best_tok);
-    double GetBestCutoff(KdToken *tok);
+    double GetBestCutoff(KdToken *best_tok);
 
     float ProcessEmitting();
     float PEmittingState(KdToken *tok, float next_cutoff);
@@ -62,7 +62,7 @@ protected:
     KdFST *fst_graph;
 
     KdDecoderConfig config;
-    QVector<float> cost_offsets; //offset that keep costs close to
+    QVector<float> best_costs; //offset that keep costs close to
     // zero, to reduce roundoff errors.
     int max_state; // current total #toks allocated...
     bool warned_;
@@ -73,7 +73,7 @@ protected:
     float final_best_cost_;
     float adaptive_beam; //updates in getcutoff
 
-    void ClaerAllToks();
+    void ResetCFToks();
     void ClearActiveTokens();
 };
 
