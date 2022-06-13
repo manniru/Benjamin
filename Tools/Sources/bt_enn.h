@@ -32,6 +32,7 @@ private:
     void   saveCSV(QString filename, QVector<BtFrameBuf *> data);
     void   mkDir(QString path);
     bool   checkExist(QString path);
+    void   calcStat(QVector<BtFrameBuf *> data, double sum);
 
     BtCyclic         *cy_buf;
     QVector<BtWord>   last_r; //last_result
@@ -46,8 +47,8 @@ private:
 
     double max_delta[3];
     double min_delta[3];
-    double offset_delta[3] = {80, 40, 20};
-    double scale_delta[3] = {2/255.0, 5/255.0, 10/255.0};
+    double offset_delta = -5;
+    double scale_delta = 19;
 };
 
 #endif // BT_ENN_H

@@ -59,12 +59,13 @@ void BtEnn::startDecode()
 
     KdDecodable decodable(cy_buf, oa_model,
                           t_model, acoustic_scale);
+    decodable.features->enableENN();
 
     o_decoder->InitDecoding(&decodable);
     KdCompactLattice out_fst;
-    QVector<BtWord> result;
 
-    int len = 50;//file_list.size();
+//    int len = 100;
+    int len = file_list.size();
 //    qDebug() << file_list.size() << cat_dir;
     for( int i=0 ; i<len ; i++ )
     {
@@ -178,33 +179,35 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
 void BtEnn::saveImage(QString filename, QVector<BtFrameBuf *> data)
 {
     int len = data.length();
+    double sum = 0;
     QImage *img = new QImage(len, BT_DELTA_SIZE, QImage::Format_RGB888);
 
     for( int i=0 ; i<len ; i++ )
     {
-        for( int j=0 ; j<BT_DELTA_SIZE ; j++ )
+        for( int j=0 ; j<BT_ENN_SIZE ; j++ )
         {
-            double val = data[i]->delta[j] + offset_delta[j/BT_FEAT_SIZE];
-            val *= scale_delta[j/BT_FEAT_SIZE];
-            val *= 1;
+            double val = data[i]->enn[j];
+            sum += val;
+            val += offset_delta;
+            val /= scale_delta;
+            if( val>1 )
+            {
+                val = 1;
+            }
+            if( val<0 )
+            {
+                val = 0;
+            }
+
             float sat_col = 1;
             float hue_col = (1 - val) * 256/360.0;
             float val_col = val;
-            qDebug() << "val" << val;
             QColor pixel;
             pixel.setHsvF(hue_col, sat_col, val_col);
             img->setPixelColor(i, j, pixel);
-
-//            if( max_delta[j/BT_FEAT_SIZE]<data[i]->delta[j] )
-//            {
-//                max_delta[j/BT_FEAT_SIZE] = data[i]->delta[j];
-//            }
-//            if( min_delta[j/BT_FEAT_SIZE]>data[i]->delta[j] )
-//            {
-//                min_delta[j/BT_FEAT_SIZE] = data[i]->delta[j];
-//            }
         }
     }
+    calcStat(data, sum);
 
     QImage img_sag = img->scaled(500, 390);
 
@@ -214,6 +217,10 @@ void BtEnn::saveImage(QString filename, QVector<BtFrameBuf *> data)
     }
 //    qDebug() << "E: path: " << filename << max_delta[0] << max_delta[1] << max_delta[2] << min_delta[0] << min_delta[1] << min_delta[2];
 //    qDebug() << "siza :" << len;
+    QString cmd = "eog ";
+    cmd += filename;
+    cmd += ".png &";
+//    system(cmd.toStdString().c_str());
 }
 
 void BtEnn::saveCSV(QString filename, QVector<BtFrameBuf *> data)
@@ -232,10 +239,10 @@ void BtEnn::saveCSV(QString filename, QVector<BtFrameBuf *> data)
 
     for( int i=0 ; i<len ; i++ )
     {
-        for( int j=0 ; j<BT_DELTA_SIZE ; j++ )
+        for( int j=0 ; j<BT_ENN_SIZE ; j++ )
         {
-            int val = data[i]->delta[j] + 270.0;
-            val *= 3;
+            int val = data[i]->enn[j];
+            val += offset_delta;
             out << QString::number(val);
             out << ",";
         }
@@ -276,4 +283,33 @@ bool BtEnn::checkExist(QString path)
     }
 
     return false;
+}
+
+void BtEnn::calcStat(QVector<BtFrameBuf *> data, double sum)
+{
+    int len = data.length();
+    double mean = sum/len/BT_ENN_SIZE;
+    double var = 0;
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        for( int j=0 ; j<BT_ENN_SIZE ; j++ )
+        {
+            double val = data[i]->enn[j];
+            var += qPow(val-mean, 2);
+//            qDebug() << "val" << val;
+
+            if( max_delta[0]<data[i]->enn[j] )
+            {
+                max_delta[0] = data[i]->enn[j];
+            }
+            if( min_delta[0]>data[i]->enn[j] )
+            {
+                min_delta[0] = data[i]->enn[j];
+            }
+        }
+    }
+    var = qSqrt(var/len/BT_ENN_SIZE);
+//    qDebug() << "min_delta" << min_delta[0] << max_delta[0] << var << mean;
+//    exit(0);
 }

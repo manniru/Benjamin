@@ -10,7 +10,7 @@ class KdPrune
 {
 public:
     KdPrune(float beam = KD_LAT_BEAM);
-    bool prune(KdLattice *lat);
+    QString prune(KdLattice *lat);
 
     float lattice_beam;
 private:

@@ -1,57 +1,98 @@
 #include "bt_mfcc.h"
 #include <QDebug>
 
-BtMFCC::BtMFCC()
+BtMFCC::BtMFCC(int ft_size, int mfcc_size)
 {
+    feat_size = ft_size;
+    bin_size  = mfcc_size;
     computeDCTMatrix();
 
-    ComputeLifter();
-
     fft = new KdFFT(win.fftSize());
-    mel_banks = new BtMelBanks(BT_MFCC_BIN);
+    mel_banks = new BtMelBanks(bin_size);
+    mel_energies = (float *)malloc(sizeof(float)*bin_size);
+    ComputeLifter();
 }
 
 BtMFCC::~BtMFCC()
 {
+    delete lifter_coeff;
+    delete mel_energies;
     delete mel_banks;
     delete fft;
+
+    for( int i=0 ; i<bin_size ; i++ )
+    {
+        delete dct_matrix[i];
+    }
+    delete dct_matrix;
 }
 
 void BtMFCC::Compute(float *signal, BtFrameBuf *out)
 {
-    fft->Compute(signal);
     computePower(signal);
 
     mel_banks->Compute(power_spec, mel_energies);
 
-    for( int i=0 ; i<BT_MFCC_BIN ; i++ )
+    for( int i=0 ; i<bin_size ; i++ )
     {
         if( mel_energies[i]==0 )
         {
-            qDebug() << "zero mel_energies";
+            qDebug() << "zero mel_energies" << feat_size;
             mel_energies[i] = std::numeric_limits<float>::epsilon();
         }
         mel_energies[i] = std::log(mel_energies[i]);
     }
 
     // feature = dct_matrix_ * mel_energies
-    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
+    double *out_buf;
+    if( feat_size>BT_FEAT_SIZE )
     {
-        out->ceps[i] = 0;
-        for( int j=0 ; j<BT_MFCC_BIN ; j++ )
+        out_buf = out->enn;
+    }
+    else
+    {
+        out_buf = out->ceps;
+    }
+
+    for( int i=0 ; i<feat_size ; i++ )
+    {
+        out_buf[i] = 0;
+        for( int j=0 ; j<bin_size ; j++ )
         {
-            out->ceps[i] += mel_energies[j]*dct_matrix[i][j];
+            out_buf[i] += mel_energies[j]*dct_matrix[i][j];
         }
-        out->ceps[i] *= lifter_coeff[i];
-        out->cmvn[i] = out->ceps[i]; // cmvn val adds later
-        out->have_cmvn = false;
+        out_buf[i] *= lifter_coeff[i];
+        if( feat_size==BT_FEAT_SIZE )
+        {
+            out->cmvn[i] = out->ceps[i]; // cmvn val adds later
+            out->have_cmvn = false;
+        }
+    }
+}
+
+void BtMFCC::ComputeENN(float *signal, BtFrameBuf *out)
+{
+    computePower(signal);
+
+    mel_banks->Compute(power_spec, mel_energies);
+
+    for( int i=0 ; i<feat_size ; i++ )
+    {
+        if( mel_energies[i]==0 )
+        {
+            qDebug() << "zero mel_energies" << feat_size;
+            mel_energies[i] = std::numeric_limits<float>::epsilon();
+        }
+        out->enn[i] = std::log(mel_energies[i]);
     }
 }
 
 void BtMFCC::ComputeLifter()
 {
+    lifter_coeff = (float *)malloc(sizeof(float)*feat_size);
+
     float Q = cepstral_lifter;
-    for( int i=0 ; i<BT_FEAT_SIZE ; i++ )
+    for( int i=0 ; i<feat_size ; i++ )
     {
         lifter_coeff[i] = 1.0 + 0.5 * Q * sin(M_PI*i/Q);
     }
@@ -73,19 +114,25 @@ void BtMFCC::computePower(float *wav)
 
 void BtMFCC::computeDCTMatrix()
 {
-    float normalizer = std::sqrt(1.0/BT_MFCC_BIN);
-    for( int j=0 ; j<BT_MFCC_BIN ; j++ )
+    dct_matrix = (float **)malloc(sizeof(float *)*bin_size);
+    for( int i=0 ; i<bin_size ; i++ )
+    {
+        dct_matrix[i] = (float *)malloc(sizeof(float)*bin_size);;
+    }
+
+    float normalizer = std::sqrt(1.0/bin_size);
+    for( int j=0 ; j<bin_size ; j++ )
     {
         dct_matrix[0][j] = normalizer;
     }
-    normalizer = std::sqrt(2.0/BT_MFCC_BIN);  // normalizer for other
+    normalizer = std::sqrt(2.0/bin_size);  // normalizer for other
     // elements.
-    for( int k=1 ; k<BT_MFCC_BIN ; k++ )
+    for( int k=1 ; k<bin_size ; k++ )
     {
-        for( int n=0 ; n<BT_MFCC_BIN ; n++ )
+        for( int n=0 ; n<bin_size ; n++ )
         {
             dct_matrix[k][n] = normalizer
-                * std::cos( M_PI/BT_MFCC_BIN * (n + 0.5) * k );
+                * std::cos( M_PI/bin_size * (n + 0.5) * k );
         }
     }
 }

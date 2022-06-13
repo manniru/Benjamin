@@ -17,6 +17,11 @@ BtFeInput::~BtFeInput()
     delete mfcc;
     delete o_features;
     delete delta;
+
+    if( mfcc_enn )
+    {
+        delete mfcc_enn;
+    }
 }
 
 uint BtFeInput::NumFramesReady()
@@ -85,9 +90,21 @@ void BtFeInput::ComputeFeatures()
         rec_buf->rewind(rewind_samp);
 
         mfcc->win.ProcessWindow(window_buf);
+        mfcc->fft->Compute(window_buf);
 
         BtFrameBuf *buf = o_features->get(frame_num);
+
         mfcc->Compute(window_buf, buf);
         frame_num++;
+
+        if( mfcc_enn )
+        {
+            mfcc_enn->ComputeENN(window_buf, buf);
+        }
     }
+}
+
+void BtFeInput::enableENN()
+{
+    mfcc_enn = new BtMFCC(BT_ENN_SIZE, BT_ENN_SIZE);
 }

@@ -6,7 +6,7 @@ KdPrune::KdPrune(float beam)
     lattice_beam = beam;
 }
 
-bool KdPrune::prune(KdLattice *lat)
+QString KdPrune::prune(KdLattice *lat)
 {
     if( !lat->Properties(fst::kTopSorted, true) )
     {
@@ -21,7 +21,7 @@ bool KdPrune::prune(KdLattice *lat)
     num_states = lat->NumStates();
     if( num_states==0 )
     {
-        return false;
+        return "";
     }
     double cutoff = getCutOff(lat);
 
@@ -29,6 +29,8 @@ bool KdPrune::prune(KdLattice *lat)
     // We prune arcs by making them point to "bad_state".
     int bad_state = lat->AddState(); // this state is not final.
     QVector<double> backward_cost = forward_cost;
+    QString dbg_times = " P0:";
+    dbg_times += getLDiffTime();
 
     for( int state=num_states-1 ; state>=0 ; state-- )
     {
@@ -61,9 +63,10 @@ bool KdPrune::prune(KdLattice *lat)
             }
         }
     }
-    // connect would remove all arc to the bad states
+
     fst::Connect(lat);
-    return( lat->NumStates()>0 );
+//    qDebug() << lat->NumStates()>0;
+    return dbg_times;
 }
 
 double KdPrune::getCutOff(KdLattice *lat)

@@ -10,7 +10,7 @@ KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
     qDebug() << "Graph States Count" << kd_NumOfStates(fst_graph);
     mbr = new KdMBR;
 
-    opts.max_active = 200;
+    opts.max_active = 300;
 
     config = opts;
     t_model = trans_model;
@@ -124,7 +124,7 @@ void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
     dbg_times += getLDiffTime();
 
     KdPrune kp;
-    kp.prune(&raw_fst);
+    dbg_times += kp.prune(&raw_fst);
     dbg_times += " P:";
     dbg_times += getLDiffTime();
     kd_detLatPhonePrunedW(t_model, &raw_fst,
@@ -267,6 +267,7 @@ void KdOnlineLDecoder::checkReset()
 {
     dbg_times += " E:";
     dbg_times += getDiffTime(start_t);
+//    qDebug() << "Reset Succ" << dbg_times;
     if( status.state==KD_STATE_NULL ||
         status.state==KD_STATE_BLOWN  )
     {

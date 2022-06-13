@@ -22,11 +22,13 @@ public:
     void computeFrame(uint frame);
 
     void ComputeFeatures();
+    void enableENN();
 
     BtCFB  *o_features;
 private:
     BtMFCC *mfcc;
     BtCMVN *cmvn;
+    BtMFCC *mfcc_enn = NULL;
 
     uint frame_num;
     int  remain_samp = 0;

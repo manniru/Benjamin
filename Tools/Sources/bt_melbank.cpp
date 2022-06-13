@@ -25,7 +25,7 @@ BtMelBanks::~BtMelBanks()
 
 void BtMelBanks::Compute(float *power_spec, float *out)
 {
-    for( int i = 0; i<BT_MFCC_BIN ; i++ )
+    for( int i = 0; i<bin_count ; i++ )
     {
         int offset = freq_offset[i];
         out[i] = dotProduct(i, offset, power_spec);
@@ -62,9 +62,9 @@ void BtMelBanks::calcBins(float mel_lfreq, float mel_hfreq)
 
     // divide by num_bins+1 in next line because of end-effects where the bins
     // spread out to the sides.
-    float mel_freq_delta = (mel_hfreq - mel_lfreq) / (BT_MFCC_BIN+1);
+    float mel_freq_delta = (mel_hfreq - mel_lfreq) / (bin_count+1);
 
-    for( int i = 0; i<BT_MFCC_BIN ; i++ )
+    for( int i = 0; i<bin_count ; i++ )
     {
         float left_mel   = mel_lfreq + i * mel_freq_delta;
         float center_mel = mel_lfreq + (i + 1) * mel_freq_delta;
