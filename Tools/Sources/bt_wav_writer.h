@@ -17,6 +17,7 @@ public:
     ~BtWavWriter();
 
     void write(QVector<BtWord> result, int len, int dbg_id);
+    void writeEnn(QString path, int len);
 
 private:
     void writeWav(int len);

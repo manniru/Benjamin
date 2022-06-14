@@ -13,6 +13,7 @@
 #include "kd_model.h"
 #include "kd_decodable.h"
 #include "kd_online_ldecoder.h"
+#include "bt_wav_writer.h"
 
 class BtEnn: public QObject
 {
@@ -24,22 +25,25 @@ public:
     void   init(QString dir);
 
 private:
-    void   startDecode();
-    void   openWave(QString filename);
-    void   readWav(BtCyclic *out);
-    void   saveFeature(QString filename, BtCFB *cfb);
-    void   saveImage(QString filename, QVector<BtFrameBuf *> data);
-    void   saveCSV(QString filename, QVector<BtFrameBuf *> data);
-    void   mkDir(QString path);
-    bool   checkExist(QString path);
-    void   calcStat(QVector<BtFrameBuf *> data, double sum);
+    void startDecode();
+    void openWave(QString filename);
+    void readWav(BtCyclic *out);
+    void saveFeature(QString filename, BtCFB *cfb);
+    void saveImage(QString filename, QVector<BtFrameBuf *> data);
+    void saveCSV(QString filename, QVector<BtFrameBuf *> data);
+    void saveWave(QString filename);
+    void mkDir(QString path);
+    bool checkExist(QString path);
+    void calcStat(QVector<BtFrameBuf *> data);
+    void preProcess();
 
     BtCyclic         *cy_buf;
-    QVector<BtWord>   last_r; //last_result
     KdOnlineStatus    status;
     KdOnlineLDecoder *o_decoder;
     kaldi::TransitionModel *t_model;
     KdAModel         *oa_model; //online accoustic model
+    BtWavWriter      *wav_w;
+    QVector<BtWord>   last_r; //last_result
     QFile             wav_file;
     QStringList       file_list;
     QStringList       exist_list;
@@ -49,6 +53,7 @@ private:
     double min_delta[3];
     double offset_delta = -5;
     double scale_delta = 19;
+    int shit_counter = 0;
 };
 
 #endif // BT_ENN_H

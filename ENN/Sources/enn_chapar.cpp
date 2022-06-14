@@ -3,73 +3,120 @@
 using namespace tiny_dnn::activation;
 using namespace tiny_dnn::layers;
 
+timer nn_t;
+int nn_epoch = 0;
+
 EnnChapar::EnnChapar()
 {
 
 }
 
+void minibatchLog()
+{
+    nn_t.elapsed();
+    nn_t.restart();
+}
+
+void EnnChapar::epochLog()
+{
+    result res = net.test(test_images, test_labels);
+    cout << res.num_success << "/" << res.num_total << endl;
+    cout << (("epoch_"+to_string(nn_epoch++)).c_str());
+//    cout << net.get_loss<mse>(train_images, train_labels);
+//    net.get_loss<tiny_dnn::mse>(X, sinusX);
+//    cout << net;
+}
+
 void EnnChapar::createEnn(QString word)
 {
-    network<sequential> net;
-
     // add layers
-    net << conv(32, 32, 5, 1, 6)  << activation::tanh() // in:32x32x1, 5x5conv, 6fmaps
-        << ave_pool(28, 28, 6, 2) << activation::tanh() // in:28x28x6, 2x2pooling
-        << fc(14 * 14 * 6, 120)   << activation::tanh() // in:14x14x6, out:120
-        << fc(120, 2);                                  // in:120,     out:10
+    net << conv(40, 40, 5, 3, 6)  << activation::tanh() // in:40x40x1, 5x5conv, 6fmaps
+        << ave_pool(36, 36, 6, 2) << activation::tanh() // in:36x36x6, 2x2pooling
+        << fc(18 * 18 * 6, 120)   << activation::tanh() // in:18x18x6, out:120
+        << fc(120, 2);                                  // in:120,     out:2
 
-    assert(net.in_data_size() == 32 * 32);
-    assert(net.out_data_size() == 10);
+//    assert(net.in_data_size() == 40 * 40);
+//    assert(net.out_data_size() == 2);
 
-    parseImages(ENN_TRAIN_DIR, word);
+    parseImagesT(ENN_TRAIN_DIR, word);
+    parseImagesF(ENN_TRAIN_DIR, word);
+
+    qDebug() << "test" << test_images.size()
+             << "train" << train_images.size();
 
     // declare optimization algorithm
     adagrad optimizer;
 
     // train (50-epoch, 30-minibatch)
-    net.train<mse, adagrad>(optimizer, train_images, train_labels, 30, 50);
+//    net.train<mse, adagrad>(optimizer, train_images, train_labels, 30, 50);
+    net.train<mse, adagrad>(optimizer, train_images, train_labels, 30, 10,
+                                     minibatchLog, [&](){epochLog();});
 
     // save
     net.save(word.toStdString().c_str());
 
+    qDebug() << "Finished!";
+    exit(0);
     // load
     // network<sequential> net2;
     // net2.load("net");
 }
 
-void EnnChapar::parseImages(QString path, QString word)
+void EnnChapar::parseImagesT(QString path, QString word)
 {
-    vector<vec_t> train_images;
-
-    QString path_word = path + "/" + word + "/";
+    QString path_word = path + word + "/";
     QStringList word_images = listImages(path_word);
+    int train_size = word_images.size()*0.9;
 
     for( int i=0 ; i<word_images.size() ; i++ )
     {
         QString img_address = path_word + word_images[i];
-        image<> rgb_img(img_address.toStdString().c_str(), tiny_dnn::image_type::rgb);
+        image<> rgb_img(img_address.toStdString().c_str(),
+                        tiny_dnn::image_type::rgb);
         vec_t vec = rgb_img.to_vec();
 
-        train_images.push_back(vec);
-        train_labels.push_back(1);
+        if( i<train_size )
+        {
+            train_images.push_back(vec);
+            train_labels.push_back(1);
+        }
+        else
+        {
+            test_images.push_back(vec);
+            test_labels.push_back(1);
+        }
     }
+}
 
+void EnnChapar::parseImagesF(QString path, QString word)
+{
     QStringList false_dirs = listDirs(path + "/");
     int word_dir_index = false_dirs.indexOf(word);
     false_dirs.removeAt(word_dir_index);
 
     for( int i=0 ; i<false_dirs.size() ; i++ )
     {
-        QStringList false_paths = listImages(path + false_dirs[i], ENN_FALSE_COUNT);
+        QStringList false_paths = listImages(path + false_dirs[i],
+                                             ENN_FALSE_COUNT);
+        int train_size = false_paths.size()*1;//0.9;
 
         for( int j=0 ; j<false_paths.size() ; j++ )
         {
-            QString img_address = path + false_dirs[i] + word_images[j];
-            image<> rgb_img(img_address.toStdString().c_str(), image_type::rgb);
+            QString img_address = path + false_dirs[i] + "/" + false_paths[j];
+            image<> rgb_img(img_address.toStdString().c_str(),
+                            image_type::rgb);
             vec_t vec = rgb_img.to_vec();
 
-            train_images.push_back(vec);
-            train_labels.push_back(0);
+            if( j<train_size )
+            {
+                train_images.push_back(vec);
+                train_labels.push_back(0);
+            }
+            else
+            {
+                test_images.push_back(vec);
+                test_labels.push_back(0);
+            }
         }
     }
 }

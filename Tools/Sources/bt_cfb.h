@@ -8,7 +8,7 @@
 #include <QObject>
 #include <QVector>
 
-#define BT_ENN_SIZE    39    // number of cepstrum feature size for enn
+#define BT_ENN_SIZE    40    // number of cepstrum feature size for enn
 #define BT_FEAT_SIZE   13    // number of cepstrum feature size
 #define BT_FB_SIZE     10000 // number of frame in cyclic buf
 #define BT_DELTA_ORDER 2

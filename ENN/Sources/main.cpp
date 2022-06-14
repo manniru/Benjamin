@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     EnnChapar chapar;
-    QString word = "arch";
+    QString word = "zero";
     chapar.createEnn(word);
 
     return app.exec();

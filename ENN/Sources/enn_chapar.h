@@ -3,10 +3,11 @@
 
 #include <QString>
 #include <QDir>
+#include <QtDebug>
 
 #include "tiny_dnn/tiny_dnn.h"
 
-#define ENN_FALSE_COUNT 10
+#define ENN_FALSE_COUNT 2
 #define ENN_TRAIN_DIR   "../Nato/audio/enn/"
 
 using namespace std;
@@ -21,12 +22,17 @@ public:
     void createEnn(QString word);
 
 private:
-    void parseImages(QString path, QString word);
+    void parseImagesT(QString path, QString word);
+    void parseImagesF(QString path, QString word);
     QStringList listImages(QString path, int num=-1);
     QStringList listDirs(QString path);
+    void epochLog();
 
-    vector<label_t> train_labels;
-    vector<vec_t> train_images;
+    network<sequential> net;
+    vector<vec_t> train_labels;
+    vector<vec_t>   train_images;
+    vector<vec_t> test_labels;
+    vector<vec_t>   test_images;
 };
 
 #endif // ENN_CHAPAR_H

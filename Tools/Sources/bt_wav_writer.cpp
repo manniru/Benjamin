@@ -58,6 +58,20 @@ void BtWavWriter::write(QVector<BtWord> result, int len, int dbg_id)
     copyToUnverified(result, filename);
 }
 
+void BtWavWriter::writeEnn(QString path, int len)
+{
+    file->setFileName(path);
+
+    if( !file->open(QIODevice::WriteOnly) )
+    {
+        qDebug() << "Failed To Create" << path;
+        exit(1);
+    }
+
+    writeWav(len);
+    file->close();
+}
+
 void BtWavWriter::writeWav(int len)
 {
     int16_t *data = (int16_t *)malloc(len*sizeof(int16_t));
