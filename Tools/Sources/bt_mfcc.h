@@ -31,6 +31,7 @@ private:
 
     float *mel_energies;
     float cepstral_lifter = 22.0;  // Scaling factor on cepstral
+    double spec_min = 999;
 
     int feat_size;
     int bin_size;

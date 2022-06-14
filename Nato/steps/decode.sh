@@ -11,7 +11,8 @@ model= # You can specify the model to use (e.g. if you want to use the .alimdl)
 stage=0
 nj=4
 cmd=run.pl
-max_active=7000
+max_active=300
+min_active=50
 beam=13.0
 lattice_beam=6.0
 acwt=0.083333 # note: only really affects pruning (scoring is on lattices).
@@ -122,7 +123,7 @@ if [ $stage -le 0 ]; then
       { echo "$0: Error: Mismatch in number of pdfs with $model"; exit 1; }
   fi
   $cmd --num-threads $num_threads JOB=1:$nj $dir/log/decode.JOB.log \
-    gmm-latgen-faster$thread_string --max-active=$max_active --beam=$beam --lattice-beam=$lattice_beam \
+    gmm-latgen-faster$thread_string --max-active=$max_active --min-active=$min_active --beam=$beam --lattice-beam=$lattice_beam \
     --acoustic-scale=$acwt --allow-partial=true --word-symbol-table=$graphdir/words.txt $decode_extra_opts \
     $model $graphdir/HCLG.fst "$feats" "ark:|gzip -c > $dir/lat.JOB.gz" || exit 1;
 fi

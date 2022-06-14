@@ -15,10 +15,9 @@ struct KdDecoderConfig
 {
     float beam = 16;
     int32 max_active = 200;
-    int32 min_active = 10;
-    int32 prune_interval = 25;
+    int32 min_active = 50;
     float beam_delta = 0.5;
-    float hash_ratio = 2.0;
+//    int32 prune_interval = 25;
 //    float prune_scale = 0.1; // not a very important parameter.
 
     KdPrunedOpt det_opts;

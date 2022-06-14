@@ -32,6 +32,7 @@ void BtMFCC::Compute(float *signal, BtFrameBuf *out)
     computePower(signal);
 
     mel_banks->Compute(power_spec, mel_energies);
+//    spec_min = 999;
 
     for( int i=0 ; i<bin_size ; i++ )
     {
@@ -41,7 +42,16 @@ void BtMFCC::Compute(float *signal, BtFrameBuf *out)
             mel_energies[i] = std::numeric_limits<float>::epsilon();
         }
         mel_energies[i] = std::log(mel_energies[i]);
+        if( mel_energies[i]<spec_min )
+        {
+            spec_min = mel_energies[i];
+        }
+        if( mel_energies[i]<11 )
+        {
+            spec_min = 11;
+        }
     }
+//    qDebug() << "min mel_energies" << spec_min;
 
     // feature = dct_matrix_ * mel_energies
     double *out_buf;

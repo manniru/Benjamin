@@ -233,10 +233,10 @@ void KdOnlineLDecoder::Decode()
 
     while( frame_num<frame_max )
     {
-        if(  (uframe%config.prune_interval)==0 )
-        {
+//        if(  (uframe%config.prune_interval)==0 )
+//        {
 //            PruneActiveTokens(config_.lattice_beam * config_.prune_scale);
-        }
+//        }
         float weight_cutoff = ProcessEmitting();
         ProcessNonemitting(weight_cutoff);
 
