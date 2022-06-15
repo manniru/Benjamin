@@ -25,9 +25,9 @@ public:
     void enableENN();
 
     BtCFB  *o_features;
+    BtCMVN *cmvn;
 private:
     BtMFCC *mfcc;
-    BtCMVN *cmvn;
     BtMFCC *mfcc_enn = NULL;
 
     uint frame_num;

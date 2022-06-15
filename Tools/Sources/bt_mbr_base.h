@@ -24,6 +24,7 @@ typedef struct BtWord
     int     is_final;
 }BtWord;
 
+void bt_printResult(QVector<BtWord> result);
 void bt_writeBarResult(QVector<BtWord> result);
 
 #endif // BT_MBR_BASE_H

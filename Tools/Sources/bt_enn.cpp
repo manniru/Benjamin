@@ -83,7 +83,10 @@ void BtEnn::startDecode()
         if( last_r.size()!=3 )
         {
             shit_counter++;
-            qDebug() << "shit [" << shit_counter << "]" << file_list[i];
+            qDebug() << "shit [" << shit_counter << "]"
+                     << file_list[i] << last_r.size();
+            bt_printResult(last_r);
+            exit(1);
             continue;
         }
         preProcess();
@@ -91,6 +94,8 @@ void BtEnn::startDecode()
         saveWave(file_list[i]);
         o_decoder->wav_id++;
         o_decoder->resetODecoder();
+        delete decodable.features->cmvn;
+        decodable.features->cmvn = new BtCMVN(decodable.features->o_features);
         last_r.clear();
     }
 }

@@ -5,7 +5,7 @@
 #include <QDir>
 #include <QtDebug>
 
-#include "tiny_dnn/tiny_dnn.h"
+#include <tiny_dnn/tiny_dnn.h>
 
 #define ENN_FALSE_COUNT 2
 #define ENN_TRAIN_DIR   "../Nato/audio/enn/"

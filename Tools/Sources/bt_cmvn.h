@@ -24,9 +24,9 @@ public:
     ~BtCMVN();
 
     void calc(uint frame);
+    void resetSum();
 
 private:
-    void resetSum();
     void readGlobal();
     void updateStat();
     void addFrame(BtFrameBuf *buf);
