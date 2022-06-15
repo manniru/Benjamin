@@ -9,6 +9,11 @@ VER_DIR="audio/train/online" #verified online
 mkdir -p "$VER_DIR"
 clear
 
+#send go sleep to BaTool
+DBUS_PATH="--dest=com.binaee.rebound / com.binaee.rebound"
+dbus-send --session $DBUS_PATH.meta string:"6"
+dbus-send --session $DBUS_PATH.apps  string:"7"
+
 # Find with date output
 find "$AUD_DIR" -type f -printf "%T@ %Tc %p\n" > list_file
 # sort by date

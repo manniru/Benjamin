@@ -24,8 +24,9 @@ public:
     void ComputeFeatures();
     void enableENN();
 
-    BtCFB  *o_features;
-    BtCMVN *cmvn;
+    BtCFB   *o_features;
+    BtCMVN  *cmvn;
+    KdDelta *delta;
 private:
     BtMFCC *mfcc;
     BtMFCC *mfcc_enn = NULL;
@@ -34,7 +35,6 @@ private:
     int  remain_samp = 0;
     float window_buf[BT_FFT_SIZE];
 
-    KdDelta    *delta;
     BtCyclic   *rec_buf;
 };
 

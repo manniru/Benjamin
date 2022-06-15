@@ -96,6 +96,7 @@ void BtEnn::startDecode()
         o_decoder->resetODecoder();
         delete decodable.features->cmvn;
         decodable.features->cmvn = new BtCMVN(decodable.features->o_features);
+        decodable.features->delta->min_frame = o_decoder->status.min_frame;
         last_r.clear();
     }
 }

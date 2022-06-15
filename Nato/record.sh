@@ -12,6 +12,7 @@ source path.sh
 LEXICON_COUNT=$(wc -l word_list | awk '{ print $1 }')
 LEXICON_COUNT=$(($LEXICON_COUNT-1))
 
+#send go sleep to BaTool
 DBUS_PATH="--dest=com.binaee.rebound / com.binaee.rebound"
 dbus-send --session $DBUS_PATH.meta string:"6"
 dbus-send --session $DBUS_PATH.apps  string:"7"

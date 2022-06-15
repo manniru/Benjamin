@@ -13,6 +13,9 @@
 using namespace std;
 using namespace tiny_dnn;
 
+#define O true
+#define X false
+
 class EnnChapar
 {
 public:
@@ -27,12 +30,24 @@ private:
     QStringList listImages(QString path, int num=-1);
     QStringList listDirs(QString path);
     void epochLog();
+    void minibatchLog();
 
+    // clang-format off
+    bool tbl[96] = {
+      O, X, X, X, O, O, O, X, X, O, O, O, O, X, O, O,
+      O, O, X, X, X, O, O, O, X, X, O, O, O, O, X, O,
+      O, O, O, X, X, X, O, O, O, X, X, O, X, O, O, O,
+      X, O, O, O, X, X, O, O, O, O, X, X, O, X, O, O,
+      X, X, O, O, O, X, X, O, O, O, O, X, O, O, X, O,
+      X, X, X, O, O, O, X, X, O, O, O, O, X, O, O, O };
     network<sequential> net;
-    vector<vec_t> train_labels;
-    vector<vec_t>   train_images;
-    vector<vec_t> test_labels;
-    vector<vec_t>   test_images;
+    progress_display *disp;
+    vector<label_t> train_labels;
+    vector<vec_t> train_images;
+    vector<label_t> test_labels;
+    vector<vec_t> test_images;
+    int n_minibatch;
+    int n_train_epochs;
 };
 
 #endif // ENN_CHAPAR_H

@@ -3,7 +3,8 @@
 
 KdDelta::KdDelta(BtCFB *feat)
 {
-    feature = feat;
+    feature   = feat;
+    min_frame = 0;
     calcCoeffs();
 }
 
@@ -54,9 +55,9 @@ void KdDelta::Process(uint frame, int max_frame)
         for( int j=-len/2; j<=len/2; j++ )
         {
             int i_frame = frame + j;
-            if( i_frame<0 )
+            if( i_frame<min_frame )
             {
-                i_frame = 0;
+                i_frame = min_frame;
             }
             else if( i_frame>max_frame )
             {

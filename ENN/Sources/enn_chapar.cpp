@@ -11,46 +11,72 @@ EnnChapar::EnnChapar()
 
 }
 
-void minibatchLog()
+void EnnChapar::minibatchLog()
 {
-    nn_t.elapsed();
-    nn_t.restart();
+    *disp += n_minibatch;
 }
 
 void EnnChapar::epochLog()
 {
     result res = net.test(test_images, test_labels);
-    cout << res.num_success << "/" << res.num_total << endl;
-    cout << (("epoch_"+to_string(nn_epoch++)).c_str());
-//    cout << net.get_loss<mse>(train_images, train_labels);
-//    net.get_loss<tiny_dnn::mse>(X, sinusX);
-//    cout << net;
+    qDebug() << res.num_success << "/" << res.num_total;
+    qDebug() << (("epoch_"+to_string(nn_epoch++)).c_str()) << nn_t.elapsed() << "s elapsed.";
+    disp->restart(train_images.size());
+    nn_t.restart();
 }
 
 void EnnChapar::createEnn(QString word)
 {
     // add layers
-    net << conv(40, 40, 5, 3, 6)  << activation::tanh() // in:40x40x1, 5x5conv, 6fmaps
-        << ave_pool(36, 36, 6, 2) << activation::tanh() // in:36x36x6, 2x2pooling
-        << fc(18 * 18 * 6, 120)   << activation::tanh() // in:18x18x6, out:120
-        << fc(120, 2);                                  // in:120,     out:2
+    // add layers
+    core::backend_t backend_type = core::default_engine();
+    net << conv(32, 32, 5, 1, 6,   // C1, 1@32x32-in, 6@28x28-out
+                 padding::valid, true, 1, 1, 1, 1, backend_type)
+         << activation::tanh()
+         << ave_pool(28, 28, 6, 2)   // S2, 6@28x28-in, 6@14x14-out
+         << activation::tanh()
+         << conv(14, 14, 5, 6, 16,   // C3, 6@14x14-in, 16@10x10-out
+                 core::connection_table(tbl, 6, 16),
+                 padding::valid, true, 1, 1, 1, 1, backend_type)
+         << activation::tanh()
+         << ave_pool(10, 10, 16, 2)  // S4, 16@10x10-in, 16@5x5-out
+         << activation::tanh()
+         << conv(5, 5, 5, 16, 120,   // C5, 16@5x5-in, 120@1x1-out
+                 padding::valid, true, 1, 1, 1, 1, backend_type)
+         << activation::tanh()
+         << fc(120, 10, true, backend_type)  // F6, 120-in, 10-out
+         << activation::tanh();
+
+    assert(net.in_data_size() == 32 * 32);
+    assert(net.out_data_size() == 10);
+
+    // load MNIST dataset
+
+
+    parse_mnist_labels("train-labels.idx1-ubyte", &train_labels);
+    parse_mnist_images("train-images.idx3-ubyte", &train_images, -1.0, 1.0, 2, 2);
+
+    parse_mnist_labels("t10k-labels.idx1-ubyte", &test_labels);
+    parse_mnist_images("t10k-images.idx3-ubyte", &test_images, -1.0, 1.0, 2, 2);
 
 //    assert(net.in_data_size() == 40 * 40);
 //    assert(net.out_data_size() == 2);
 
-    parseImagesT(ENN_TRAIN_DIR, word);
-    parseImagesF(ENN_TRAIN_DIR, word);
+//    parseImagesT(ENN_TRAIN_DIR, word);
+//    parseImagesF(ENN_TRAIN_DIR, word);
 
     qDebug() << "test" << test_images.size()
              << "train" << train_images.size();
 
     // declare optimization algorithm
     adagrad optimizer;
+    optimizer.alpha *= 4; // learning rate = 1
 
-    // train (50-epoch, 30-minibatch)
-//    net.train<mse, adagrad>(optimizer, train_images, train_labels, 30, 50);
-    net.train<mse, adagrad>(optimizer, train_images, train_labels, 30, 10,
-                                     minibatchLog, [&](){epochLog();});
+    n_minibatch = 16;
+    n_train_epochs = 50;
+    disp = new progress_display(train_images.size());
+    net.fit<mse>(optimizer, train_images, train_labels, n_minibatch, n_train_epochs,
+                 [&](){minibatchLog();}, [&](){epochLog();});
 
     // save
     net.save(word.toStdString().c_str());
@@ -78,12 +104,14 @@ void EnnChapar::parseImagesT(QString path, QString word)
         if( i<train_size )
         {
             train_images.push_back(vec);
-            train_labels.push_back(1);
+            vec_t label = {1,0};
+//            train_labels.push_back(label);
         }
         else
         {
             test_images.push_back(vec);
-            test_labels.push_back(1);
+            vec_t label = {1,0};
+//            test_labels.push_back(label);
         }
     }
 }
@@ -110,12 +138,14 @@ void EnnChapar::parseImagesF(QString path, QString word)
             if( j<train_size )
             {
                 train_images.push_back(vec);
-                train_labels.push_back(0);
+                vec_t label = {0,1};
+//                train_labels.push_back(label);
             }
             else
             {
                 test_images.push_back(vec);
-                test_labels.push_back(0);
+                vec_t label = {0,1};
+//                test_la   bels.push_back(label);
             }
         }
     }

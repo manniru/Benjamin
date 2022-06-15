@@ -15,6 +15,8 @@ public:
     void applyCoeff(double *i_data, double coeff, double *o_data);
     void resetDelta(BtFrameBuf *buf);
 
+    int  min_frame;
+
 private:
     void initZeroCoeff(int i, int len);
     int  sumof2N2(int n);
