@@ -13,42 +13,57 @@ EnnChapar::EnnChapar()
 
 void EnnChapar::minibatchLog()
 {
-    *disp += n_minibatch;
+//    *disp += n_minibatch;
 }
 
 void EnnChapar::epochLog()
 {
-    result res = net.test(test_images, test_labels);
-    qDebug() << res.num_success << "/" << res.num_total;
-    qDebug() << (("epoch_"+to_string(nn_epoch++)).c_str()) << nn_t.elapsed() << "s elapsed.";
-    disp->restart(train_images.size());
-    nn_t.restart();
+    nn_epoch++;
+    if( nn_epoch%50==0 )
+    {
+        result res = net.test(train_images, train_labels);
+        result res_test = net.test(test_images, test_labels);
+        qDebug() << res.num_success << "/" << res.num_total << "test"
+                 << res_test.num_success << "/" << res_test.num_total;
+        qDebug() << (("epoch_"+to_string(nn_epoch)).c_str()) << nn_t.elapsed() << "s elapsed.";
+//        disp->restart(train_images.size());
+        nn_t.restart();
+    }
 }
 
 void EnnChapar::createEnn(QString word)
 {
     // add layers
-    net << conv(32, 32, 5, 1, 6)   << activation::tanh()
-        << ave_pool(28, 28, 6, 2)  << activation::tanh()
-        << conv(14, 14, 5, 6, 16)  << activation::tanh()
-        << ave_pool(10, 10, 16, 2) << activation::tanh()
-        << conv(5, 5, 5, 16, 120)  << activation::tanh()
-        << fc(120, 10)             << activation::tanh();
-
-    assert(net.in_data_size() == 32 * 32);
-    assert(net.out_data_size() == 10);
+    net << conv(40, 40, 5, 3, 6)   << activation::tanh()
+        << ave_pool(36, 36, 6, 2)  << activation::tanh()
+        << conv(18, 18, 5, 6, 16)  << activation::tanh()
+        << ave_pool(14, 14, 16, 2) << activation::tanh()
+        << conv(7, 7, 5, 16, 120)  << activation::tanh()
+        << fc(3*3*120, 60)        << activation::tanh()
+        << fc(60, 2)              << activation::tanh();
 
     // load MNIST dataset
+//    parse_mnist_labels("train-labels.idx1-ubyte", &train_labels);
+//    parse_mnist_images("train-images.idx3-ubyte", &train_images, 0, 255, 2, 2);
 
+//    parse_mnist_labels("t10k-labels.idx1-ubyte", &test_labels);
+//    parse_mnist_images("t10k-images.idx3-ubyte", &test_images, 0, 255, 2, 2);
 
-    parse_mnist_labels("train-labels.idx1-ubyte", &train_labels);
-    parse_mnist_images("train-images.idx3-ubyte", &train_images, -1.0, 1.0, 2, 2);
+    std::random_device r;
+    std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
 
-    parse_mnist_labels("t10k-labels.idx1-ubyte", &test_labels);
-    parse_mnist_images("t10k-images.idx3-ubyte", &test_images, -1.0, 1.0, 2, 2);
+    // create two random engines with the same state
+    std::mt19937 eng1(seed);
+    std::mt19937 eng2 = eng1;
 
-//    parseImagesT(ENN_TRAIN_DIR, word);
-//    parseImagesF(ENN_TRAIN_DIR, word);
+    parseImagesT(ENN_TRAIN_DIR, word);
+    parseImagesF(ENN_TRAIN_DIR, word);
+
+    std::shuffle(begin(train_labels), end(train_labels), eng1);
+    std::shuffle(begin(train_images), end(train_images), eng2);
+
+    std::shuffle(begin(test_labels), end(test_labels), eng1);
+    std::shuffle(begin(test_images), end(test_images), eng2);
 
     qDebug() << "test" << test_images.size()
              << "train" << train_images.size();
@@ -58,8 +73,8 @@ void EnnChapar::createEnn(QString word)
     optimizer.alpha *= 4; // learning rate = 1
 
     n_minibatch = 16;
-    n_train_epochs = 50;
-    disp = new progress_display(train_images.size());
+    n_train_epochs = 2000;
+//    disp = new progress_display(train_images.size());
     net.fit<mse>(optimizer, train_images, train_labels, n_minibatch, n_train_epochs,
                  [&](){minibatchLog();}, [&](){epochLog();});
 
@@ -89,14 +104,16 @@ void EnnChapar::parseImagesT(QString path, QString word)
         if( i<train_size )
         {
             train_images.push_back(vec);
-            vec_t label = {1,0};
+//            vec_t label = {1,0};
 //            train_labels.push_back(label);
+            train_labels.push_back(1);
         }
         else
         {
             test_images.push_back(vec);
-            vec_t label = {1,0};
+//            vec_t label = {1,0};
 //            test_labels.push_back(label);
+            test_labels.push_back(1);
         }
     }
 }
@@ -111,7 +128,7 @@ void EnnChapar::parseImagesF(QString path, QString word)
     {
         QStringList false_paths = listImages(path + false_dirs[i],
                                              ENN_FALSE_COUNT);
-        int train_size = false_paths.size()*1;//0.9;
+        int train_size = false_paths.size()*0.9;
 
         for( int j=0 ; j<false_paths.size() ; j++ )
         {
@@ -123,14 +140,16 @@ void EnnChapar::parseImagesF(QString path, QString word)
             if( j<train_size )
             {
                 train_images.push_back(vec);
-                vec_t label = {0,1};
+//                vec_t label = {0,1};
 //                train_labels.push_back(label);
+                train_labels.push_back(0);
             }
             else
             {
                 test_images.push_back(vec);
-                vec_t label = {0,1};
-//                test_la   bels.push_back(label);
+//                vec_t label = {0,1};
+//                test_labels.push_back(label);
+                test_labels.push_back(0);
             }
         }
     }

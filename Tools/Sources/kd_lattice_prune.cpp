@@ -97,12 +97,20 @@ double KdPrune::getCutOff(KdLattice *lat)
         }
 
         KdLatticeWeight final_weight = lat->Final(state);
+        if( final_weight.getCost()!=KD_INFINITY_DB )
+        {
+//            qDebug() << "state" << state << final_weight.getCost();
+        }
         double final_cost = forward_cost[state] + final_weight.getCost();
         if( final_cost<best_final_cost )
         {
             best_final_cost = final_cost;
         }
     }
+//    if( best_final_cost!=KD_INFINITY_DB )
+//    {
+//        exit(0);
+//    }
     double cutoff = best_final_cost + lattice_beam;
     return cutoff;
 }
