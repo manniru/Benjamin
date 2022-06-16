@@ -106,3 +106,13 @@ Tools/graph2
 Tools/graph3
 
 Tools/graph4
+
+ENN/t10k-images.idx3-ubyte
+
+ENN/t10k-labels.idx1-ubyte
+
+ENN/train-images.idx3-ubyte
+
+ENN/train-labels.idx1-ubyte
+
+ENN/ENN_simple
