@@ -7,7 +7,7 @@ using namespace tiny_dnn::layers;
 #ifdef ENN_MNIST
 #define ENN_EPOCH_LOG 1
 #else
-#define ENN_EPOCH_LOG 50
+#define ENN_EPOCH_LOG 10
 #endif
 
 timer nn_t;
@@ -49,9 +49,14 @@ void EnnChapar::epochLog()
         result res_test = net.test(test_images, test_labels);
 #ifndef ENN_MNIST
         result res = net.test(train_images, train_labels);
+
+//        std::vector<vec_t> vec;
+//        net.net_.label2vec(train_labels, vec);
+
         qDebug() << res.num_success << "/" << res.num_total << "test"
                  << res_test.num_success << "/" << res_test.num_total << "loss:"
                  << net.get_loss<mse>(train_images, train_labels);
+//                 << net.get_loss<mse>(train_images, vec);
 #else
         qDebug() << res_test.num_success << "/" << res_test.num_total << "loss:";
 //                 << net.get_loss<mse>(train_images, train_labels);
@@ -66,11 +71,18 @@ void EnnChapar::createEnn(QString word)
 #ifndef ENN_MNIST
     // add layers
     net << conv(40, 40, 5, 40, 3, 10)      << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
-        << ave_pool(36, 1, 10, 2, 1, 2, 1) << activation::leaky_relu() //pool 2x1, stride 2x1
+        << ave_pool(36, 1, 10, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
         << conv(18, 1, 3, 1, 10, 20)       << activation::leaky_relu()
         << ave_pool(16, 1, 20, 2, 1, 2, 1) << activation::leaky_relu()
-        << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() //flatten
-        << fc(60, 1)                       << activation::sigmoid();
+        << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() // flatten conv
+        << fc(60, 2)                       << activation::softmax();
+
+//    net << conv(40, 40, 5, 3, 10)   << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
+//        << ave_pool(36, 36, 10, 2)  << activation::leaky_relu() // pool 2x1, stride 2x1
+//        << conv(18, 18, 3, 10, 20)  << activation::leaky_relu()
+//        << ave_pool(16, 16, 20, 2)  << activation::leaky_relu()
+//        << conv(8, 8, 8, 8, 20, 60) << activation::leaky_relu() // flatten conv
+//        << fc(60, 2)                << activation::softmax();
 
 
     parseImagesT(ENN_TRAIN_DIR, word);
@@ -105,25 +117,34 @@ void EnnChapar::createEnn(QString word)
     std::shuffle(begin(test_labels), end(test_labels), eng1);
     std::shuffle(begin(test_images), end(test_images), eng2);
 
-    qDebug() << "test" << test_images.size()
+    qDebug() << "test"  << test_images.size()
              << "train" << train_images.size();
 
     // declare optimization algorithm
     adagrad optimizer;
-    optimizer.alpha *= 4; // learning rate = 1
+    optimizer.alpha *= 0.1; // learning rate = 1E-4
 
     n_minibatch = 16;
-    n_train_epochs = 15000;
+    n_train_epochs = 40;
 #ifdef ENN_MNIST
     disp = new progress_display(train_images.size());
 #endif
-    net.fit<mse>(optimizer, train_images, train_labels, n_minibatch, n_train_epochs,
-                 [&](){minibatchLog();}, [&](){epochLog();});
+    net.fit<mse>(optimizer, train_images, train_labels, n_minibatch,
+                 n_train_epochs, [&](){minibatchLog();}, [&](){epochLog();});
 
     // save
     net.save(word.toStdString().c_str());
 
-    qDebug() << "Finished!";
+
+    tiny_dnn::timer t;  // start the timer
+
+    // predict
+    vec_t res = net.predict(test_images[0]);
+
+    double elapsed_s = t.elapsed();
+    t.stop();
+    qDebug() << "Finished!" << elapsed_s;
+
     exit(0);
     // load
     // network<sequential> net2;
@@ -133,29 +154,30 @@ void EnnChapar::createEnn(QString word)
 void EnnChapar::parseImagesT(QString path, QString word)
 {
     QString path_word = path + word + "/";
-    QStringList word_images = listImages(path_word);
-    int train_size = word_images.size()*0.9;
+    QStringList image_filenames = listImages(path_word);
+    int len = image_filenames.size();
+//    int len = 10;
+    int train_size = len*0.9;
 
-    for( int i=0 ; i<word_images.size() ; i++ )
+    for( int i=0 ; i<len ; i++ )
     {
-        QString img_address = path_word + word_images[i];
+        QString img_address = path_word + image_filenames[i];
         image<> rgb_img(img_address.toStdString().c_str(),
                         tiny_dnn::image_type::rgb);
         vec_t vec = rgb_img.to_vec();
+        vec_t label = {1,0};
 
         if( i<train_size )
         {
             train_images.push_back(vec);
-//            vec_t label = {1,0};
-//            train_labels.push_back(label);
             train_labels.push_back(1);
+            train_labels_v.push_back(label);
         }
         else
         {
             test_images.push_back(vec);
-//            vec_t label = {1,0};
-//            test_labels.push_back(label);
             test_labels.push_back(1);
+            test_labels_v.push_back(label);
         }
     }
 }
@@ -169,31 +191,32 @@ void EnnChapar::parseImagesF(QString path, QString word)
 //    for( int i=0 ; i<false_dirs.size() ; i++ )
     for( int i=0 ; i<1 ; i++ )
     {
-        QStringList false_paths = listImages(path + false_dirs[i]);
+        QStringList image_filenames = listImages(path + false_dirs[i]);
 //        QStringList false_paths = listImages(path + false_dirs[i],
 //                                             ENN_FALSE_COUNT);
-        int train_size = false_paths.size()*0.9;
+        int len = image_filenames.size();
+//        int len = 10;
+        int train_size = len*0.9;
 
-        for( int j=0 ; j<false_paths.size() ; j++ )
+        for( int j=0 ; j<len ; j++ )
         {
-            QString img_address = path + false_dirs[i] + "/" + false_paths[j];
+            QString img_address = path + false_dirs[i] + "/" + image_filenames[j];
             image<> rgb_img(img_address.toStdString().c_str(),
                             image_type::rgb);
             vec_t vec = rgb_img.to_vec();
+            vec_t label = {0,1};
 
             if( j<train_size )
             {
                 train_images.push_back(vec);
-//                vec_t label = {0,1};
-//                train_labels.push_back(label);
                 train_labels.push_back(0);
+                train_labels_v.push_back(label);
             }
             else
             {
                 test_images.push_back(vec);
-//                vec_t label = {0,1};
-//                test_labels.push_back(label);
                 test_labels.push_back(0);
+                test_labels_v.push_back(label);
             }
         }
     }

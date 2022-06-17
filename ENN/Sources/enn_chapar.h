@@ -36,10 +36,12 @@ private:
 
     network<sequential> net;
     progress_display *disp;
+    vector<vec_t>   train_images;
     vector<label_t> train_labels;
-    vector<vec_t> train_images;
+    vector<vec_t>   train_labels_v;
+    vector<vec_t>   test_images;
     vector<label_t> test_labels;
-    vector<vec_t> test_images;
+    vector<vec_t>   test_labels_v;
     int n_minibatch;
     int n_train_epochs;
 };
