@@ -2,6 +2,13 @@
 
 using namespace tiny_dnn::activation;
 using namespace tiny_dnn::layers;
+//#define ENN_MNIST
+
+#ifdef ENN_MNIST
+#define ENN_EPOCH_LOG 1
+#else
+#define ENN_EPOCH_LOG 50
+#endif
 
 timer nn_t;
 int nn_epoch = 0;
@@ -13,41 +20,77 @@ EnnChapar::EnnChapar()
 
 void EnnChapar::minibatchLog()
 {
-//    *disp += n_minibatch;
+#ifdef ENN_MNIST
+    *disp += n_minibatch;
+#endif
+}
+
+void EnnChapar::shuffleTest(std::mt19937 *eng1,
+                            std::mt19937 *eng2)
+{
+    std::vector<int> v1{1,2,3,4,5};
+    std::vector<int> v2{1,2,3,4,5};
+    std::vector<int> v3{11,12,13,14,15};
+    std::vector<int> v4{21,22,23,24,25};
+
+    std::shuffle(v1.begin(), v1.end(), *eng1);
+    std::shuffle(v2.begin(), v2.end(), *eng2);
+
+    std::shuffle(v3.begin(), v3.end(), *eng1);
+    std::shuffle(v4.begin(), v4.end(), *eng2);
 }
 
 void EnnChapar::epochLog()
 {
     nn_epoch++;
-    if( nn_epoch%50==0 )
+    if( nn_epoch%ENN_EPOCH_LOG==0 )
     {
-        result res = net.test(train_images, train_labels);
-        result res_test = net.test(test_images, test_labels);
-        qDebug() << res.num_success << "/" << res.num_total << "test"
-                 << res_test.num_success << "/" << res_test.num_total;
         qDebug() << (("epoch_"+to_string(nn_epoch)).c_str()) << nn_t.elapsed() << "s elapsed.";
-//        disp->restart(train_images.size());
+        result res_test = net.test(test_images, test_labels);
+#ifndef ENN_MNIST
+        result res = net.test(train_images, train_labels);
+        qDebug() << res.num_success << "/" << res.num_total << "test"
+                 << res_test.num_success << "/" << res_test.num_total << "loss:"
+                 << net.get_loss<mse>(train_images, train_labels);
+#else
+        qDebug() << res_test.num_success << "/" << res_test.num_total << "loss:";
+//                 << net.get_loss<mse>(train_images, train_labels);
+        disp->restart(train_images.size());
+#endif
         nn_t.restart();
     }
 }
 
 void EnnChapar::createEnn(QString word)
 {
+#ifndef ENN_MNIST
     // add layers
-    net << conv(40, 40, 5, 3, 6)   << activation::tanh()
-        << ave_pool(36, 36, 6, 2)  << activation::tanh()
-        << conv(18, 18, 5, 6, 16)  << activation::tanh()
-        << ave_pool(14, 14, 16, 2) << activation::tanh()
-        << conv(7, 7, 5, 16, 120)  << activation::tanh()
-        << fc(3*3*120, 60)        << activation::tanh()
-        << fc(60, 2)              << activation::tanh();
+    net << conv(40, 40, 5, 40, 3, 10)      << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
+        << ave_pool(36, 1, 10, 2, 1, 2, 1) << activation::leaky_relu() //pool 2x1, stride 2x1
+        << conv(18, 1, 3, 1, 10, 20)       << activation::leaky_relu()
+        << ave_pool(16, 1, 20, 2, 1, 2, 1) << activation::leaky_relu()
+        << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() //flatten
+        << fc(60, 1)                       << activation::sigmoid();
+
+
+    parseImagesT(ENN_TRAIN_DIR, word);
+    parseImagesF(ENN_TRAIN_DIR, word);
+#else
+    // add layers
+    net << conv(32, 32, 5, 5, 1, 5)         << activation::relu() // 5x5 kernel, 3 channel
+        << ave_pool(28, 28, 5, 2, 2, 2, 2)  << activation::relu() //pool 2x1, stride 2x1
+        << conv(14, 14, 5, 5, 5, 10)        << activation::relu()
+        << ave_pool(10, 10, 10, 2, 2, 2, 2) << activation::relu()
+        << conv(5, 5, 5, 5, 10, 60)         << activation::relu()
+        << fc(60, 10)                       << activation::sigmoid();
 
     // load MNIST dataset
-//    parse_mnist_labels("train-labels.idx1-ubyte", &train_labels);
-//    parse_mnist_images("train-images.idx3-ubyte", &train_images, 0, 255, 2, 2);
+    parse_mnist_labels("train-labels.idx1-ubyte", &train_labels);
+    parse_mnist_images("train-images.idx3-ubyte", &train_images, 0, 255, 2, 2);
 
-//    parse_mnist_labels("t10k-labels.idx1-ubyte", &test_labels);
-//    parse_mnist_images("t10k-images.idx3-ubyte", &test_images, 0, 255, 2, 2);
+    parse_mnist_labels("t10k-labels.idx1-ubyte", &test_labels);
+    parse_mnist_images("t10k-images.idx3-ubyte", &test_images, 0, 255, 2, 2);
+#endif
 
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
@@ -55,9 +98,6 @@ void EnnChapar::createEnn(QString word)
     // create two random engines with the same state
     std::mt19937 eng1(seed);
     std::mt19937 eng2 = eng1;
-
-    parseImagesT(ENN_TRAIN_DIR, word);
-    parseImagesF(ENN_TRAIN_DIR, word);
 
     std::shuffle(begin(train_labels), end(train_labels), eng1);
     std::shuffle(begin(train_images), end(train_images), eng2);
@@ -73,8 +113,10 @@ void EnnChapar::createEnn(QString word)
     optimizer.alpha *= 4; // learning rate = 1
 
     n_minibatch = 16;
-    n_train_epochs = 2000;
-//    disp = new progress_display(train_images.size());
+    n_train_epochs = 15000;
+#ifdef ENN_MNIST
+    disp = new progress_display(train_images.size());
+#endif
     net.fit<mse>(optimizer, train_images, train_labels, n_minibatch, n_train_epochs,
                  [&](){minibatchLog();}, [&](){epochLog();});
 
@@ -124,10 +166,12 @@ void EnnChapar::parseImagesF(QString path, QString word)
     int word_dir_index = false_dirs.indexOf(word);
     false_dirs.removeAt(word_dir_index);
 
-    for( int i=0 ; i<false_dirs.size() ; i++ )
+//    for( int i=0 ; i<false_dirs.size() ; i++ )
+    for( int i=0 ; i<1 ; i++ )
     {
-        QStringList false_paths = listImages(path + false_dirs[i],
-                                             ENN_FALSE_COUNT);
+        QStringList false_paths = listImages(path + false_dirs[i]);
+//        QStringList false_paths = listImages(path + false_dirs[i],
+//                                             ENN_FALSE_COUNT);
         int train_size = false_paths.size()*0.9;
 
         for( int j=0 ; j<false_paths.size() ; j++ )

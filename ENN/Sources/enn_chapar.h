@@ -31,15 +31,9 @@ private:
     QStringList listDirs(QString path);
     void epochLog();
     void minibatchLog();
+    void shuffleTest(mt19937 *eng1, mt19937 *eng2);
 
-    // clang-format off
-    bool tbl[96] = {
-      O, X, X, X, O, O, O, X, X, O, O, O, O, X, O, O,
-      O, O, X, X, X, O, O, O, X, X, O, O, O, O, X, O,
-      O, O, O, X, X, X, O, O, O, X, X, O, X, O, O, O,
-      X, O, O, O, X, X, O, O, O, O, X, X, O, X, O, O,
-      X, X, O, O, O, X, X, O, O, O, O, X, O, O, X, O,
-      X, X, X, O, O, O, X, X, O, O, O, O, X, O, O, O };
+
     network<sequential> net;
     progress_display *disp;
     vector<label_t> train_labels;
