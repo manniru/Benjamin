@@ -86,12 +86,21 @@ void BtEnn::startDecode()
             qDebug() << "shit [" << shit_counter << "]"
                      << file_list[i] << last_r.size();
             bt_printResult(last_r);
+            if( shit_counter<4 )
+            {
+                o_decoder->wav_id++;
+                o_decoder->resetODecoder();
+                delete decodable.features->cmvn;
+                decodable.features->cmvn = new BtCMVN(decodable.features->o_features);
+                decodable.features->delta->min_frame = o_decoder->status.min_frame;
+                last_r.clear();
+                continue;
+            }
             exit(1);
-            continue;
         }
         preProcess();
         saveFeature(file_list[i], decodable.features->o_features);
-        saveWave(file_list[i]);
+//        saveWave(file_list[i]);
         o_decoder->wav_id++;
         o_decoder->resetODecoder();
         delete decodable.features->cmvn;
@@ -334,8 +343,7 @@ void BtEnn::mkDir(QString path)
 
     if( !au_EnnDir.exists() )
     {
-        qDebug() << "Creating" << path
-                 << " Directory";
+//        qDebug() << "Creating" << path << " Directory";
         QString command = "mkdir -p ";
         command += path;
         system( command.toStdString().c_str() );

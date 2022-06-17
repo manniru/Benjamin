@@ -9,8 +9,8 @@ BtChapar::BtChapar(BtState st, QObject *parent) : QObject(parent)
     }
     else if( st.state==BT_ENN_MODE )
     {
-//    enn = new BtEnn(KAL_AU_DIR"/train/online/");
-        createEnn(KAL_AU_DIR"/train/");
+//    enn = new BtEnn(KAL_AU_DIR"train/online/");
+        createEnn(KAL_AU_DIR"train/");
     }
     else
     {
