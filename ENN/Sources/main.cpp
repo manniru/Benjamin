@@ -1,13 +1,9 @@
 #include <QGuiApplication>
-#include "enn_network.h"
+#include "enn_chapar.h"
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    EnnChapar chapar;
 
-    QString word = "zero";
-    EnnNetwork chapar(word);
-    chapar.createEnn();
-
-    return app.exec();
+    return 0;
 }

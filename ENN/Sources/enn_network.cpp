@@ -33,21 +33,6 @@ void EnnNetwork::minibatchLog()
 #endif
 }
 
-void EnnNetwork::shuffleTest(std::mt19937 *eng1,
-                            std::mt19937 *eng2)
-{
-    std::vector<int> v1{1,2,3,4,5};
-    std::vector<int> v2{1,2,3,4,5};
-    std::vector<int> v3{11,12,13,14,15};
-    std::vector<int> v4{21,22,23,24,25};
-
-    std::shuffle(v1.begin(), v1.end(), *eng1);
-    std::shuffle(v2.begin(), v2.end(), *eng2);
-
-    std::shuffle(v3.begin(), v3.end(), *eng1);
-    std::shuffle(v4.begin(), v4.end(), *eng2);
-}
-
 void EnnNetwork::epochLog()
 {
     nn_epoch++;
@@ -84,14 +69,6 @@ void EnnNetwork::createEnn()
         << ave_pool(16, 1, 20, 2, 1, 2, 1) << activation::leaky_relu()
         << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() // flatten conv
         << fc(60, 2)                       << activation::softmax();
-
-//    net << conv(40, 40, 5, 3, 10)   << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
-//        << ave_pool(36, 36, 10, 2)  << activation::leaky_relu() // pool 2x1, stride 2x1
-//        << conv(18, 18, 3, 10, 20)  << activation::leaky_relu()
-//        << ave_pool(16, 16, 20, 2)  << activation::leaky_relu()
-//        << conv(8, 8, 8, 8, 20, 60) << activation::leaky_relu() // flatten conv
-//        << fc(60, 2)                << activation::softmax();
-
 #else
     // add layers
     net << conv(32, 32, 5, 5, 1, 5)         << activation::relu() // 5x5 kernel, 3 channel
@@ -123,8 +100,10 @@ void EnnNetwork::createEnn()
                  [&](){epochLog();});
 
     // save
-    net.save(dataset->m_name.toStdString().c_str());
-
+    QString mdl_path = "Models/";
+    mdl_path += dataset->m_name;
+    mdl_path += ".mdl";
+    net.save(mdl_path.toStdString().c_str());
 
     tiny_dnn::timer t;  // start the timer
 
@@ -133,10 +112,9 @@ void EnnNetwork::createEnn()
 
     double elapsed_s = t.elapsed();
     t.stop();
-    qDebug() << "Finished!" << elapsed_s;
+    qDebug() << dataset->m_name << "Finished!"
+             << elapsed_s;
     qDebug() << "Detect:" << res[0] << res[1];
-
-    exit(0);
     // load
     // network<sequential> net2;
     // net2.load("net");

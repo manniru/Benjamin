@@ -25,10 +25,14 @@ OBJECTS_DIR = Build/.obj
 HEADERS += \
     Sources/backend.h \
     Sources/config.h \
-    Sources/enn_chapar.h
+    Sources/enn_chapar.h \
+    Sources/enn_dataset.h \
+    Sources/enn_network.h
 
 SOURCES += \
     Sources/backend.cpp \
     Sources/enn_chapar.cpp \
+    Sources/enn_dataset.cpp \
+    Sources/enn_network.cpp \
     Sources/main.cpp
 

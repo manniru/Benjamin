@@ -13,6 +13,10 @@ EnnDataset::EnnDataset(QString word)
              << "train" << train_images.size();
 }
 
+EnnDataset::~EnnDataset()
+{
+}
+
 void EnnDataset::parseImagesT(QString path)
 {
     QString path_m_name = path + m_name + "/";
@@ -46,7 +50,7 @@ void EnnDataset::parseImagesT(QString path)
 
 void EnnDataset::parseImagesF(QString path)
 {
-    QStringList false_dirs = listDirs(path + "/");
+    QStringList false_dirs = enn_listDirs(path + "/");
     int m_name_dir_index = false_dirs.indexOf(m_name);
     false_dirs.removeAt(m_name_dir_index);
     int m_name_len = false_dirs.size();
@@ -101,6 +105,22 @@ void EnnDataset::shuffleData()
     std::shuffle(test_images.begin(), test_images.end(), eng2);
 }
 
+// use for sanity test on std::shuffle
+void EnnDataset::shuffleTest(std::mt19937 *eng1,
+                            std::mt19937 *eng2)
+{
+    std::vector<int> v1{1,2,3,4,5};
+    std::vector<int> v2{1,2,3,4,5};
+    std::vector<int> v3{11,12,13,14,15};
+    std::vector<int> v4{21,22,23,24,25};
+
+    std::shuffle(v1.begin(), v1.end(), *eng1);
+    std::shuffle(v2.begin(), v2.end(), *eng2);
+
+    std::shuffle(v3.begin(), v3.end(), *eng1);
+    std::shuffle(v4.begin(), v4.end(), *eng2);
+}
+
 QStringList EnnDataset::listImages(QString path, int num)
 {
     QDir p_dir(path);
@@ -113,18 +133,4 @@ QStringList EnnDataset::listImages(QString path, int num)
         file_list = file_list.mid(0, num);
     }
     return file_list;
-}
-
-QStringList EnnDataset::listDirs(QString path)
-{
-    QDir p_dir(path);
-    QStringList fmt;
-    fmt.append("*");
-    QStringList dir_list = p_dir.entryList(fmt, QDir::Dirs | QDir::NoDotAndDotDot);
-
-    return dir_list;
-}
-
-EnnDataset::~EnnDataset()
-{
 }

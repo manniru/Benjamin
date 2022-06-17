@@ -7,6 +7,7 @@
 
 #include <tiny_dnn/tiny_dnn.h>
 #include "config.h"
+#include "backend.h"
 
 using namespace std;
 using namespace tiny_dnn;
@@ -28,9 +29,9 @@ public:
 private:
     void parseImagesT(QString path);
     void parseImagesF(QString path);
+    void shuffleTest(mt19937 *eng1, mt19937 *eng2);
     void shuffleData();
     QStringList listImages(QString path, int num=-1);
-    QStringList listDirs(QString path);
 };
 
-#endif // ENN_PARSER_H
+#endif // ENenn_listDirs_H

@@ -1,4 +1,5 @@
 #include "backend.h"
+#include <QDir>
 
 clock_t bt_last_clock;
 
@@ -80,4 +81,14 @@ QString getLDiffTime()
     ret += "ms";
     bt_last_clock = end;
     return  ret;
+}
+
+QStringList enn_listDirs(QString path)
+{
+    QDir p_dir(path);
+    QStringList fmt;
+    fmt.append("*");
+    QStringList dir_list = p_dir.entryList(fmt, QDir::Dirs | QDir::NoDotAndDotDot);
+
+    return dir_list;
 }
