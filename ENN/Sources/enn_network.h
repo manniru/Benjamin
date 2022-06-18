@@ -6,9 +6,8 @@
 #include <QtDebug>
 
 #include <tiny_dnn/tiny_dnn.h>
-#include <enn_dataset.h>
+#include "enn_dataset.h"
 
-using namespace std;
 using namespace tiny_dnn;
 
 class EnnNetwork
@@ -17,19 +16,24 @@ public:
     EnnNetwork(QString word);
     ~EnnNetwork();
 
-    void createEnn();
+    void train(float l_rate);
 
 private:
+    void save();
+    bool load();
     void epochLog();
+    float calcLoss();
+    void benchmark();
     void minibatchLog();
-    void shuffleTest(mt19937 *eng1, mt19937 *eng2);
 
     network<sequential> net;
     progress_display *disp;
     EnnDataset       *dataset;
+    adagrad optim;
 
     int n_minibatch;
     int n_train_epochs;
+    int is_wrong;
 };
 
 #endif // ENN_NETWORK_H

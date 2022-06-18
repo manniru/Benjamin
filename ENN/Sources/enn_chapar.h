@@ -7,7 +7,7 @@
 class EnnChapar
 {
 public:
-    EnnChapar();
+    EnnChapar(float l_rate);
     ~EnnChapar();
 
     void createEnn(QString word);

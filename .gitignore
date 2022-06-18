@@ -116,3 +116,5 @@ ENN/train-images.idx3-ubyte
 ENN/train-labels.idx1-ubyte
 
 ENN/ENN_simple
+
+ENN/Models/

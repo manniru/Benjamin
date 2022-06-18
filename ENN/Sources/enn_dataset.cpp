@@ -8,9 +8,6 @@ EnnDataset::EnnDataset(QString word)
     parseImagesF(ENN_TRAIN_DIR);
 
     shuffleData();
-
-    qDebug() << "dataset size: test"  << test_images.size()
-             << "train" << train_images.size();
 }
 
 EnnDataset::~EnnDataset()
@@ -38,6 +35,7 @@ void EnnDataset::parseImagesT(QString path)
             train_images.push_back(vec);
             train_labels.push_back(1);
             train_labels_v.push_back(label);
+            train_path.push_back(img_address); // for debug purposes
         }
         else
         {
@@ -78,6 +76,7 @@ void EnnDataset::parseImagesF(QString path)
                 train_images.push_back(vec);
                 train_labels.push_back(0);
                 train_labels_v.push_back(label);
+                train_path.push_back(img_address);
             }
             else if( i%6==0 )
             {

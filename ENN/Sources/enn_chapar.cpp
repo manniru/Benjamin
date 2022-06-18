@@ -1,6 +1,6 @@
 #include "enn_chapar.h"
 
-EnnChapar::EnnChapar()
+EnnChapar::EnnChapar(float l_rate)
 {
     QStringList word_list = enn_listDirs(ENN_TRAIN_DIR);
 
@@ -10,7 +10,7 @@ EnnChapar::EnnChapar()
         qDebug() << "#######" << word_list[i]
                  << "######";
         EnnNetwork chapar(word_list[i]);
-        chapar.createEnn();
+        chapar.train(l_rate);
     }
 }
 

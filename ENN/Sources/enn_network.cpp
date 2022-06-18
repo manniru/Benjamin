@@ -2,109 +2,25 @@
 
 using namespace tiny_dnn::activation;
 using namespace tiny_dnn::layers;
-//#define ENN_MNIST
-
-#ifdef ENN_MNIST
-#define ENN_EPOCH_LOG 1
-#else
-#define ENN_EPOCH_LOG 10
-#endif
 
 timer nn_t;
-int nn_epoch = 0;
+int nn_epoch;
 
 EnnNetwork::EnnNetwork(QString word)
 {
     dataset = new EnnDataset(word);
+    n_minibatch = 16;
+    n_train_epochs = ENN_MAX_EPOCH;
+    is_wrong = 0;
 }
 
 EnnNetwork::~EnnNetwork()
 {
     delete dataset;
-#ifdef ENN_MNIST
-    delete disp;
-#endif
 }
 
-void EnnNetwork::minibatchLog()
+void EnnNetwork::benchmark()
 {
-#ifdef ENN_MNIST
-    *disp += n_minibatch;
-#endif
-}
-
-void EnnNetwork::epochLog()
-{
-    nn_epoch++;
-    if( nn_epoch%ENN_EPOCH_LOG==0 )
-    {
-        qDebug() << (("epoch_"+to_string(nn_epoch)).c_str()) << nn_t.elapsed() << "s elapsed.";
-        result res_test = net.test(dataset->test_images, dataset->test_labels);
-#ifndef ENN_MNIST
-        result res = net.test(dataset->train_images, dataset->train_labels);
-
-//        std::vector<vec_t> vec;
-//        net.net_.label2vec(train_labels, vec);
-
-        qDebug() << res.num_success << "/" << res.num_total << "test"
-                 << res_test.num_success << "/" << res_test.num_total << "loss:"
-                 << net.get_loss<mse>(dataset->train_images, dataset->train_labels);
-//                 << net.get_loss<mse>(train_images, vec);
-#else
-        qDebug() << res_test.num_success << "/" << res_test.num_total << "loss:";
-//                 << net.get_loss<mse>(train_images, train_labels);
-        disp->restart(train_images.size());
-#endif
-        nn_t.restart();
-    }
-}
-
-void EnnNetwork::createEnn()
-{
-#ifndef ENN_MNIST
-    // add layers
-    net << conv(40, 40, 5, 40, 3, 10)      << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
-        << ave_pool(36, 1, 10, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
-        << conv(18, 1, 3, 1, 10, 20)       << activation::leaky_relu()
-        << ave_pool(16, 1, 20, 2, 1, 2, 1) << activation::leaky_relu()
-        << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() // flatten conv
-        << fc(60, 2)                       << activation::softmax();
-#else
-    // add layers
-    net << conv(32, 32, 5, 5, 1, 5)         << activation::relu() // 5x5 kernel, 3 channel
-        << ave_pool(28, 28, 5, 2, 2, 2, 2)  << activation::relu() //pool 2x1, stride 2x1
-        << conv(14, 14, 5, 5, 5, 10)        << activation::relu()
-        << ave_pool(10, 10, 10, 2, 2, 2, 2) << activation::relu()
-        << conv(5, 5, 5, 5, 10, 60)         << activation::relu()
-        << fc(60, 10)                       << activation::sigmoid();
-
-    // load MNIST dataset
-    parse_mnist_labels("train-labels.idx1-ubyte", &train_labels);
-    parse_mnist_images("train-images.idx3-ubyte", &train_images, 0, 255, 2, 2);
-
-    parse_mnist_labels("t10k-labels.idx1-ubyte", &test_labels);
-    parse_mnist_images("t10k-images.idx3-ubyte", &test_images, 0, 255, 2, 2);
-#endif
-
-    // declare optimization algorithm
-    adagrad optimizer;
-    optimizer.alpha *= 0.1; // learning rate = 1E-4
-
-    n_minibatch = 16;
-    n_train_epochs = 100;
-#ifdef ENN_MNIST
-    disp = new progress_display(train_images.size());
-#endif
-    net.fit<mse>(optimizer, dataset->train_images, dataset->train_labels,
-                 n_minibatch, n_train_epochs, [&](){minibatchLog();},
-                 [&](){epochLog();});
-
-    // save
-    QString mdl_path = "Models/";
-    mdl_path += dataset->m_name;
-    mdl_path += ".mdl";
-    net.save(mdl_path.toStdString().c_str());
-
     tiny_dnn::timer t;  // start the timer
 
     // predict
@@ -115,8 +31,156 @@ void EnnNetwork::createEnn()
     qDebug() << dataset->m_name << "Finished!"
              << elapsed_s;
     qDebug() << "Detect:" << res[0] << res[1];
-    // load
-    // network<sequential> net2;
-    // net2.load("net");
 }
 
+void EnnNetwork::save()
+{
+    QDir au_OnlineDir("Models");
+
+    if( !au_OnlineDir.exists() )
+    {
+        qDebug() << "Models";
+        system("mkdir -p Models");
+    }
+
+    QString mdl_path = "Models/";
+    mdl_path += dataset->m_name;
+    mdl_path += ".mdl";
+    net.save(mdl_path.toStdString().c_str());
+}
+
+// return true if need training
+bool EnnNetwork::load()
+{
+    QString model_path = "Models/";
+    model_path += dataset->m_name;
+    model_path += ".mdl";
+    if( QFile::exists(model_path) )
+    {
+        // load model
+        net.load(model_path.toStdString());
+
+        // chack the loss
+        float loss = calcLoss();
+        if( loss<ENN_TARGET_LOSS )
+        {
+            return false;
+        }
+        if( is_wrong )
+        {
+            return false;
+        }
+        qDebug() << "model " << model_path << "loaded";
+    }
+    else // create new
+    {
+        net << conv(40, 40, 5, 40, 3, 10)      << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
+            << ave_pool(36, 1, 10, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
+            << conv(18, 1, 3, 1, 10, 20)       << activation::leaky_relu()
+            << ave_pool(16, 1, 20, 2, 1, 2, 1) << activation::leaky_relu()
+            << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() // flatten conv
+            << fc(60, 2)                       << activation::softmax();
+    }
+    return true;
+}
+
+void EnnNetwork::train(float l_rate)
+{
+    bool need_train = load();
+    if( !need_train )
+    {
+        return;
+    }
+
+    qDebug() << "dataset size: test"  << dataset->test_images.size()
+             << "train" << dataset->train_images.size();
+
+    optim.alpha = l_rate; // learning rate = 1E-4
+    nn_epoch = 0;
+
+    net.train<mse>(optim, dataset->train_images, dataset->train_labels,
+                   n_minibatch, n_train_epochs, [&](){minibatchLog();},
+                   [&](){epochLog();});
+
+    if( is_wrong==0 )
+    {
+        save();
+        benchmark();
+    }
+}
+
+void EnnNetwork::minibatchLog()
+{
+
+}
+
+void EnnNetwork::epochLog()
+{
+    nn_epoch++;
+    if( nn_epoch%ENN_EPOCH_LOG==0 )
+    {
+        qDebug() << "epoch" << nn_epoch << nn_t.elapsed() << "s elapsed.";
+        float loss = calcLoss();
+        result res_test = net.test(dataset->test_images, dataset->test_labels);
+        result res = net.test(dataset->train_images, dataset->train_labels);
+
+        qDebug() << res.num_success << "/" << res.num_total << "test"
+                 << res_test.num_success << "/" << res_test.num_total << "loss:"
+                 << loss << "alpha" << optim.alpha*1000;
+
+        if( loss<ENN_TARGET_LOSS )
+        {
+            net.stop_ongoing_training();
+        }
+
+        double alpha = optim.alpha * 0.95;
+        if( alpha>ENN_MIN_LRATE )
+        {
+            optim.alpha = alpha;
+        }
+        nn_t.restart();
+    }
+}
+
+// return loss
+float EnnNetwork::calcLoss()
+{
+    // calc loss
+    float loss = 0;
+
+    std::vector<tensor_t> label_tensor;
+    net.normalize_tensor(dataset->train_labels, label_tensor);
+    int len = dataset->train_images.size();
+
+    float        wrong_loss = 0;
+    QVector<int> wrong_i;
+    for( int i=0 ; i<len ; i++ )
+    {
+        vec_t predicted = net.predict(dataset->train_images[i]);
+        float s_loss = mse::f(predicted, label_tensor[i][0]);
+
+        if( s_loss>0.95 )
+        {
+            wrong_loss += s_loss;
+            wrong_i.push_back(i);
+        }
+        loss += s_loss;
+    }
+    if( wrong_loss>0 )
+    {
+        float diff = loss - wrong_loss;
+        if( diff<ENN_TARGET_LOSS && wrong_i.length()<5 )
+        {
+            for( int i=0 ; i<wrong_i.length() ; i++ )
+            {
+                qDebug() << ";;;;;;;p_wrong"
+                         << wrong_i[i] << dataset->train_path[wrong_i[i]]
+                         << wrong_loss << ";;;;;;;";
+            }
+            net.stop_ongoing_training();
+            is_wrong = 1;
+        }
+    }
+
+    return loss;
+}
