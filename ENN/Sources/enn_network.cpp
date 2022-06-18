@@ -66,22 +66,35 @@ bool EnnNetwork::load()
         {
             return false;
         }
-        if( is_wrong )
+        if( is_wrong==1 )
         {
-            return false;
+            return false; //model contain non converge sample
+        }
+        else if( is_wrong==2 )
+        {
+            net = network<sequential>(); // reset network
+            createNNet();
+            qDebug() << "Reset from scratch";
+            is_wrong = 0;
+            return true;
         }
         qDebug() << "model " << model_path << "loaded";
     }
     else // create new
     {
-        net << conv(40, 40, 5, 40, 3, 10)      << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
-            << ave_pool(36, 1, 10, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
-            << conv(18, 1, 3, 1, 10, 20)       << activation::leaky_relu()
-            << ave_pool(16, 1, 20, 2, 1, 2, 1) << activation::leaky_relu()
-            << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() // flatten conv
-            << fc(60, 2)                       << activation::softmax();
+        createNNet();
     }
     return true;
+}
+
+void EnnNetwork::createNNet()
+{
+    net << conv(40, 40, 5, 40, 3, 10)      << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
+        << ave_pool(36, 1, 10, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
+        << conv(18, 1, 3, 1, 10, 20)       << activation::leaky_relu()
+        << ave_pool(16, 1, 20, 2, 1, 2, 1) << activation::leaky_relu()
+        << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() // flatten conv
+        << fc(60, 2)                       << activation::softmax();
 }
 
 void EnnNetwork::train(float l_rate)
@@ -98,11 +111,11 @@ void EnnNetwork::train(float l_rate)
     optim.alpha = l_rate; // learning rate = 1E-4
     nn_epoch = 0;
 
-    net.train<mse>(optim, dataset->train_images, dataset->train_labels,
+    net.fit<mse>(optim, dataset->train_images, dataset->train_labels,
                    n_minibatch, n_train_epochs, [&](){minibatchLog();},
                    [&](){epochLog();});
 
-    if( is_wrong==0 )
+    if( is_wrong==2 )
     {
         save();
         benchmark();
@@ -173,13 +186,29 @@ float EnnNetwork::calcLoss()
         {
             for( int i=0 ; i<wrong_i.length() ; i++ )
             {
-                qDebug() << ";;;;;;;p_wrong"
-                         << wrong_i[i] << dataset->train_path[wrong_i[i]]
-                         << wrong_loss << ";;;;;;;";
+                QString path = dataset->train_path[wrong_i[i]];
+                if( path.contains(dataset->m_name) )
+                {
+                    qDebug() << "XxX wrong" << wrong_i[i] << path
+                             << wrong_loss << "XxX";
+                }
+                else
+                {
+                    qDebug() << ">>> have 2 word?" << path
+                             << wrong_loss << "<<<";
+                }
             }
             net.stop_ongoing_training();
             is_wrong = 1;
         }
+    }
+    if( loss>90 )
+    {
+        qDebug() << "========= NO CONVERGANCE"
+                 << dataset->m_name
+                 << " ==========";
+        net.stop_ongoing_training();
+        is_wrong = 2;
     }
 
     return loss;

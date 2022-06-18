@@ -7,8 +7,7 @@ EnnChapar::EnnChapar(float l_rate)
     int len = word_list.size();
     for( int i=0 ; i<len ; i++ )
     {
-        qDebug() << "#######" << word_list[i]
-                 << "######";
+        qDebug() << word_list[i];
         EnnNetwork chapar(word_list[i]);
         chapar.train(l_rate);
     }

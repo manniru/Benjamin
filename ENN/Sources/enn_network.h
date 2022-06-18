@@ -19,12 +19,13 @@ public:
     void train(float l_rate);
 
 private:
-    void save();
-    bool load();
-    void epochLog();
+    void  save();
+    bool  load();
+    void  epochLog();
     float calcLoss();
-    void benchmark();
-    void minibatchLog();
+    void  benchmark();
+    void  createNNet();
+    void  minibatchLog();
 
     network<sequential> net;
     progress_display *disp;
