@@ -16,11 +16,12 @@ public:
     EnnNetwork(QString word);
     ~EnnNetwork();
 
+    bool  load();
+    vec_t test(vec_t *data);
     void train(float l_rate);
 
 private:
     void  save();
-    bool  load();
     void  epochLog();
     float calcLoss();
     void  benchmark();

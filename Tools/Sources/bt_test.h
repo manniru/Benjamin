@@ -26,6 +26,8 @@ private:
     void   startDecode();
     void   openWave(QString filename);
     int    readWav(int count, BtCyclic *out);
+    float  getConf(BtWord word);
+    void   saveWave(int start, int len, QString word);
 
     BtCyclic         *cy_buf;
     QVector<BtWord>   last_r; //last_result
@@ -35,6 +37,7 @@ private:
     KdAModel         *oa_model; //online accoustic model
     QFile             wav_file;
     QStringList       file_list;
+    BtNetwork        *net;
 };
 
 #endif // BT_TEST_H

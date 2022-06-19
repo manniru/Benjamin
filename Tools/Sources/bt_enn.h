@@ -31,7 +31,6 @@ private:
     void saveImage(QString filename, QVector<BtFrameBuf *> data);
     void saveCSV(QString filename, QVector<BtFrameBuf *> data);
     void saveWave(QString filename);
-    void mkDir(QString path);
     bool checkExist(QString path);
     void calcStat(QVector<BtFrameBuf *> data);
     void preProcess();

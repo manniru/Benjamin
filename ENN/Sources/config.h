@@ -10,4 +10,6 @@
 #define ENN_MAX_EPOCH   400
 #define ENN_LEARN_RATE  0.001
 
+#define BT_ENN_SIZE     40
+
 #endif // BT_CONFIG_H

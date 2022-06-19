@@ -201,7 +201,7 @@ QString BtCaptain::getWordFmt(BtHistory word)
 float BtCaptain::getConf(BtWord word)
 {
     int len = 100*(word.end - word.start);
-    float conf = net->getConf(word.stf, len, word.word_id);
+    float conf = net->getConf(word.stf-10, len+20, word.word_id);
     return conf;
 }
 

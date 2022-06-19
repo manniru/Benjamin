@@ -7,7 +7,7 @@
 #include <QDebug>
 
 #include "bt_recorder.h"
-#include "bt_captain.h" //For BtWord
+#include "bt_mbr_base.h" //For BtWord
 
 class BtWavWriter : public QObject
 {

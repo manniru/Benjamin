@@ -39,7 +39,8 @@ void KdOnline::startDecode()
 
     KdDecodable decodable(cy_buf, oa_model,
                           t_model, acoustic_scale);
-    cap->net->cfb = decodable.features->o_features;
+    cap->net->cfb   = decodable.features->o_features;
+    cap->net->wav_w = new BtWavWriter(cy_buf);
     decodable.features->enableENN();
 
     ab_src->startStream();

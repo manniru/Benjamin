@@ -1,5 +1,6 @@
 #include "backend.h"
 #include <QFile>
+#include <QDir>
 
 QFile *log_file = NULL;
 clock_t bt_last_clock;
@@ -121,4 +122,17 @@ void bt_addLog(QString log)
 
     log_file->write(log.toStdString().c_str());
     log_file->write("\n");
+}
+
+void bt_mkDir(QString path)
+{
+    QDir au_Dir(path);
+
+    if( !au_Dir.exists() )
+    {
+//        qDebug() << "Creating" << path << " Directory";
+        QString command = "mkdir -p ";
+        command += path;
+        system( command.toStdString().c_str() );
+    }
 }

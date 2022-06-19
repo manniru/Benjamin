@@ -31,6 +31,7 @@ void EnnNetwork::benchmark()
     qDebug() << dataset->m_name << "Finished!"
              << elapsed_s;
     qDebug() << "Detect:" << res[0] << res[1];
+    qDebug() << "Detect:" << dataset->test_labels[0];
 }
 
 void EnnNetwork::save()
@@ -102,6 +103,7 @@ void EnnNetwork::train(float l_rate)
     bool need_train = load();
     if( !need_train )
     {
+        benchmark();
         return;
     }
 
@@ -118,8 +120,14 @@ void EnnNetwork::train(float l_rate)
     if( is_wrong==0 )
     {
         save();
-        benchmark();
     }
+    benchmark();
+}
+
+vec_t EnnNetwork::test(vec_t *data)
+{
+    vec_t res = net.predict(*data);
+    return res;
 }
 
 void EnnNetwork::minibatchLog()

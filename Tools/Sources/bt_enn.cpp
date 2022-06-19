@@ -22,7 +22,7 @@ BtEnn::BtEnn(QString dir_name, QObject *parent): QObject(parent)
         min_delta[i] = 10000;
     }
 
-    mkDir(KAL_AU_DIR"enn/");
+    bt_mkDir(KAL_AU_DIR"enn/");
 
     QString cmd = "find " KAL_AU_DIR "enn/ -type f";
     wav_w = new BtWavWriter(cy_buf);
@@ -200,7 +200,7 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
     {
         QString path = KAL_AU_DIR"enn/";
         path += last_r[i].word;
-        mkDir(path);
+        bt_mkDir(path);
         path += "/" + cat_dir;
         path += "_" + fname;
         path += "_" + QString::number(i);
@@ -319,7 +319,7 @@ void BtEnn::saveWave(QString filename)
     {
         QString path = KAL_AU_DIR"enn/";
         path += last_r[i].word;
-        mkDir(path);
+        bt_mkDir(path);
         path += "/" + cat_dir;
         path += "_" + fname;
         path += "_" + QString::number(i);
@@ -336,19 +336,6 @@ void BtEnn::saveWave(QString filename)
             sil_len *= BT_REC_RATE;
             cy_buf->rewind(-sil_len); // minus for forwarding :D
         }
-    }
-}
-
-void BtEnn::mkDir(QString path)
-{
-    QDir au_EnnDir(path);
-
-    if( !au_EnnDir.exists() )
-    {
-//        qDebug() << "Creating" << path << " Directory";
-        QString command = "mkdir -p ";
-        command += path;
-        system( command.toStdString().c_str() );
     }
 }
 

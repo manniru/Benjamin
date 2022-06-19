@@ -32,7 +32,7 @@ float BtNetwork::predict(int id)
     qDebug() << word_list[id]
                 << "Detect:" << res[0] << res[1];
 
-    return res[0];
+    return res[1];
 }
 
 float BtNetwork::getConf(int start, int len, int id)

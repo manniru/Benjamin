@@ -4,11 +4,21 @@
 int main(int argc, char *argv[])
 {
     float learning_rate = ENN_LEARN_RATE;
+    int   mode = ENN_LEARN_MODE;
     if( argc>1 )
     {
-        learning_rate = QString(argv[1]).toFloat();
+        QString arg1 = QString(argv[1]);
+
+        if( arg1=="t" )
+        {
+            mode = ENN_TEST_MODE;
+        }
+        else
+        {
+            learning_rate = arg1.toFloat();
+        }
     }
-    EnnChapar chapar(learning_rate);
+    EnnChapar chapar(mode, learning_rate);
 
     return 0;
 }

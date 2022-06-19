@@ -15,6 +15,7 @@ BtTest::BtTest(QString dir_name, QObject *parent): QObject(parent)
         file_list[i] = dir_name + file_list[i];
     }
 
+    net = new BtNetwork;
     init();
 }
 
@@ -50,6 +51,9 @@ void BtTest::startDecode()
 
     KdDecodable decodable(cy_buf, oa_model,
                           t_model, acoustic_scale);
+    net->cfb   = decodable.features->o_features;
+    net->wav_w = new BtWavWriter(cy_buf);
+    decodable.features->enableENN();
 
     o_decoder->InitDecoding(&decodable);
     KdCompactLattice out_fst;
@@ -146,4 +150,28 @@ int BtTest::readWav(int count, BtCyclic *out)
     }
     out->write(&data_buff);
     return i-1;
+}
+
+float BtTest::getConf(BtWord word)
+{
+    int len = 100*(word.end - word.start);
+    float conf = net->getConf(word.stf, len, word.word_id);
+    return conf;
+}
+
+void BtTest::saveWave(int start, int len, QString word)
+{
+    double end = o_decoder->uframe/100.0;
+    double rw_len = end - (start + len); // rewind length
+    double word_len;
+
+    QString fname = KAL_AU_DIR"tt/";
+    bt_mkDir(fname);
+    fname = word + ".wav";
+
+    rw_len *= BT_REC_RATE/1000.0;
+    cy_buf->rewind(rw_len);
+    word_len = len * BT_REC_RATE/1000.0;
+
+    net->wav_w->writeEnn(fname, word_len);
 }

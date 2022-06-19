@@ -27,12 +27,14 @@ HEADERS += \
     Sources/config.h \
     Sources/enn_chapar.h \
     Sources/enn_dataset.h \
-    Sources/enn_network.h
+    Sources/enn_network.h \
+    Sources/enn_test.h
 
 SOURCES += \
     Sources/backend.cpp \
     Sources/enn_chapar.cpp \
     Sources/enn_dataset.cpp \
     Sources/enn_network.cpp \
+    Sources/enn_test.cpp \
     Sources/main.cpp
 
