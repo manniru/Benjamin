@@ -1,7 +1,7 @@
 #ifndef BT_FEINPUT_H
 #define BT_FEINPUT_H
 
-#include "bt_config.h"
+#include "config.h"
 #include "bt_recorder.h"
 #include "bt_cmvn.h"
 #include "kd_a_model.h"

@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QVector>
-#include "bt_config.h"
+#include "config.h"
 #include "bt_cfb.h"
 
 #define BT_CMVN_WINDOW 600

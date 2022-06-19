@@ -1,7 +1,7 @@
 #ifndef KD_DECODABLE_H
 #define KD_DECODABLE_H
 
-#include "bt_config.h"
+#include "config.h"
 
 #include "matrix/matrix-lib.h"
 #include "gmm/am-diag-gmm.h"

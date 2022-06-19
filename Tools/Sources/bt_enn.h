@@ -7,7 +7,6 @@
 #include <QDebug>
 #include <QFile>
 #include <QImage>
-#include <QImageWriter>
 
 #include "bt_captain.h" //For BtWord
 #include "kd_model.h"

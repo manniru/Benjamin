@@ -115,7 +115,7 @@ void EnnNetwork::train(float l_rate)
                    n_minibatch, n_train_epochs, [&](){minibatchLog();},
                    [&](){epochLog();});
 
-    if( is_wrong==2 )
+    if( is_wrong==0 )
     {
         save();
         benchmark();

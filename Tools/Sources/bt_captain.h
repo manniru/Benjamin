@@ -8,7 +8,7 @@
 #include <QTime>
 #include <QTextStream>
 
-#include "bt_config.h"
+#include "config.h"
 #include "kd_mbr.h"
 
 #define BT_TIME_NOW QTime::currentTime().toString("hh:mm:ss")

@@ -1,7 +1,7 @@
 #ifndef BT_WINDOW_H
 #define BT_WINDOW_H
 
-#include "bt_config.h"
+#include "config.h"
 #include <QString>
 
 // round to power of 2

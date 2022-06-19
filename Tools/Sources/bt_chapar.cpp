@@ -1,5 +1,6 @@
 #include "bt_chapar.h"
 #include <QDebug>
+#include <QDir>
 
 BtChapar::BtChapar(BtState st, QObject *parent) : QObject(parent)
 {

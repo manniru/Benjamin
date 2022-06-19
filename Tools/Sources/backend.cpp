@@ -1,4 +1,5 @@
 #include "backend.h"
+#include <QFile>
 
 QFile *log_file = NULL;
 clock_t bt_last_clock;
@@ -83,10 +84,10 @@ QString getLDiffTime()
     return  ret;
 }
 
-QVector<QString> bt_parseLexicon(QString filename)
+QStringList bt_parseLexicon(QString filename)
 {
     QFile words_file(filename);
-    QVector<QString> lexicon;
+    QStringList lexicon;
 
     if( !words_file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {

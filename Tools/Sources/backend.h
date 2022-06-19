@@ -1,7 +1,6 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
-#include <QtDBus>
 #include <QDebug>
 #include <stdio.h>
 #include <unistd.h>
@@ -22,7 +21,7 @@ int getIntCommand(char *command);
 QString getStrCommand(QString command);
 QString getDiffTime(clock_t start);
 QString getLDiffTime();
-QVector<QString> bt_parseLexicon(QString filename);
+QStringList bt_parseLexicon(QString filename);
 void bt_addLog(QString log);
 
 #endif // BACKEND_H

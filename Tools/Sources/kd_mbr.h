@@ -31,7 +31,7 @@ private:
     double editDistance();
 
     int max_state = 0;
-    QVector<QString> lexicon;
+    QStringList lexicon;
 
     std::vector<KdMBRArc> mlat_arc;
     std::vector<std::vector<int> > mlat;

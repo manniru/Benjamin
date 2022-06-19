@@ -1,4 +1,5 @@
 #include "bt_wav_writer.h"
+#include <QDir>
 
 BtWavWriter::BtWavWriter(BtCyclic *buffer, QObject *parent): QObject(parent)
 {

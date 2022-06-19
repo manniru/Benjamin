@@ -2,7 +2,7 @@
 #define KD_LATTICE_H
 
 #include <QDebug>
-#include "bt_config.h"
+#include "config.h"
 #include "kd_lattice_weight.h"
 #include "fst/fstlib.h"
 

@@ -1,20 +1,15 @@
 TEMPLATE = app
 
-QT += dbus
 QT += multimedia
 
 CONFIG += console
 
-linux:INCLUDEPATH += /usr/include/glib-2.0 \
-                     /usr/lib/glib-2.0/include \
-                     ../../Kaldi/src \
+linux:INCLUDEPATH += ../../Kaldi/src \
                      ../../Kaldi/tools/openfst/src/include \
+                     ../PNN \
                      /opt/intel/mkl/include
 
-linux:LIBS += -lgio-2.0 \
-              -lgobject-2.0 \
-              -lglib-2.0 \
-              -pthread \
+linux:LIBS += -pthread \
               -L/opt/intel/mkl/lib/intel64 \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
               -lm -ldl \
@@ -24,9 +19,15 @@ linux:LIBS += -lgio-2.0 \
               -lkaldi-matrix -lkaldi-base -lportaudio -lasound -lrt -ljack -lfst
 
 DEFINES += HAVE_MKL \
-           HAVE_CXXABI_H
+           HAVE_CXXABI_H \
+           CNN_USE_SSE \
+           NDEBUG
 
-QMAKE_CXXFLAGS += -std=c++14 -m64 -msse -msse2 -pthread -g -isystem
+QMAKE_CXXFLAGS += -std=c++14 -m64 -msse3 -pthread -g -m64 -mavx
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3
+
+QMAKE_LFLAGS_RELEASE -= -O1
 
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc
@@ -38,7 +39,6 @@ HEADERS += \
     Sources/bt_cfb.h \
     Sources/bt_chapar.h \
     Sources/bt_cmvn.h \
-    Sources/bt_config.h \
     Sources/bt_cyclic.h \
     Sources/bt_delta.h \
     Sources/bt_enn.h \
@@ -48,12 +48,14 @@ HEADERS += \
     Sources/bt_mbr_base.h \
     Sources/bt_melbank.h \
     Sources/bt_mfcc.h \
+    Sources/bt_network.h \
     Sources/bt_recorder.h \
     Sources/bt_state.h \
     Sources/bt_test.h \
     Sources/bt_token_list.h \
     Sources/bt_wav_writer.h \
     Sources/bt_window.h \
+    Sources/config.h \
     Sources/kd_a_model.h \
     Sources/kd_clat_weight.h \
     Sources/kd_decodable.h \
@@ -89,6 +91,7 @@ SOURCES += \
     Sources/bt_mbr_base.cpp \
     Sources/bt_melbank.cpp \
     Sources/bt_mfcc.cpp \
+    Sources/bt_network.cpp \
     Sources/bt_recorder.cpp \
     Sources/bt_state.cpp \
     Sources/bt_test.cpp \
@@ -114,5 +117,6 @@ SOURCES += \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
     Sources/kd_token.cpp \
-    Sources/main.cpp
+    Sources/main.cpp \
+    Sources/td_network.cpp
 

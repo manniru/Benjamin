@@ -2,7 +2,7 @@
 #define BT_GRAPH_D_H
 
 #include <QVector>
-#include "bt_config.h"
+#include "config.h"
 #include "backend.h"
 
 // This class create hraph file from current state

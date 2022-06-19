@@ -1,4 +1,6 @@
 #include "bt_enn.h"
+#include <QDir>
+#include <qmath.h>
 
 BtEnn::BtEnn(QString dir_name, QObject *parent): QObject(parent)
 {

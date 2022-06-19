@@ -2,7 +2,7 @@
 #define BT_FFT_H
 
 #include <QDebug>
-#include "bt_config.h"
+#include "config.h"
 #include "kd_token.h"
 
 #include <vector>

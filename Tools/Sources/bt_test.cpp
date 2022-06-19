@@ -1,4 +1,5 @@
 #include "bt_test.h"
+#include <QDir>
 
 BtTest::BtTest(QString dir_name, QObject *parent): QObject(parent)
 {

@@ -1,7 +1,7 @@
 #ifndef KD_MODEL_H
 #define KD_MODEL_H
 
-#include "bt_config.h"
+#include "config.h"
 
 #include <QObject>
 #include <QDebug>
@@ -10,7 +10,7 @@
 #include <hmm/transition-model.h>
 #include <util/kaldi-io.h>
 
-#include "bt_config.h"
+#include "config.h"
 #include "backend.h"
 class KdModel
 {

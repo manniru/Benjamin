@@ -2,7 +2,7 @@
 #define KD_ONLINE_LDECODER_H
 
 #include <QVector>
-#include "bt_config.h"
+#include "config.h"
 #include "backend.h"
 
 // This class provide a lattice online gmm decoder
