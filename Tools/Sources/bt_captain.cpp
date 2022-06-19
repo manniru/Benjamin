@@ -1,5 +1,6 @@
 ﻿#include "bt_captain.h"
 #include <QDebug>
+#include <QColor>
 
 BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
 {
@@ -11,6 +12,7 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
     time_shifter->start(BT_HISTORY_UPDATE);
 
     start_treshold = -BT_HISTORY_SIZE/1000.0;
+    net = new BtNetwork;
 }
 
 void BtCaptain::parse(QVector<BtWord> in_words, uint max_frame)
@@ -82,7 +84,7 @@ void BtCaptain::addWord(BtWord word, int id)
         }
         if( word.is_final )
         {
-            current[id].conf = word.conf;
+            current[id].conf = getConf(word);
             current[id].time = word.time;
             current[id].is_final = 1;
         }
@@ -91,7 +93,7 @@ void BtCaptain::addWord(BtWord word, int id)
 
     addXBuf(word);
     buf.words.append(word.word);
-    buf.conf = word.conf;
+    buf.conf = getConf(word);
     buf.time = word.time;
     buf.is_final = word.is_final;
 
@@ -176,22 +178,9 @@ QString BtCaptain::getWordFmt(BtHistory word)
         buf = "%{F#777}";
     }
 
-    if( word.conf<KAL_HARD_TRESHOLD )
-    {
-        buf += "%{u#f00}%{+u}";
-    }
-    else if( word.conf==1.00 )
-    {
-        buf += "%{u#1d1}%{+u}";
-    }
-    else if( word.conf>KAL_CONF_TRESHOLD )
-    {
-        buf += "%{u#16A1CF}%{+u}";
-    }
-    else
-    {
-        buf += "%{u#CF8516}%{+u}";
-    }
+    buf += "%{u";
+    buf += getConfColor(word.conf);
+    buf += "}%{+u}";
 
     int len = word.words.length();
     for( int i=0 ; i<len ; i++ )
@@ -207,6 +196,20 @@ QString BtCaptain::getWordFmt(BtHistory word)
     buf += "%{-u} ";
 
     return buf;
+}
+
+float BtCaptain::getConf(BtWord word)
+{
+    int len = 100*(word.end - word.start);
+    float conf = net->getConf(word.stf, len, word.word_id);
+    return conf;
+}
+
+QString BtCaptain::getConfColor(float conf)
+{
+    QColor color;
+    color = QColor::fromHsv(conf*120, 200, 200);
+    return color.name();
 }
 
 void BtCaptain::flush()

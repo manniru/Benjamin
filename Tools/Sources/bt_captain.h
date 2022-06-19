@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "kd_mbr.h"
+#include "bt_network.h"
 
 #define BT_TIME_NOW QTime::currentTime().toString("hh:mm:ss")
 #define BT_HISTORY_UPDATE 300  // update interval in ms
@@ -33,23 +34,26 @@ public:
     bool isValidUtterance();
     void parse(QVector<BtWord> in_words, uint max_frame);
 
+    BtNetwork *net;
 public slots:
     void flush(); //flush current utterance into history
     void shiftHistory();
 
 private:
-    void exec(QString word);
-    void addXBuf(BtWord word); //add to the lest of exec
-    void addWord(BtWord word, int id);
+    void  exec(QString word);
+    void  addXBuf(BtWord word); //add to the lest of exec
+    float getConf(BtWord word);
+    void  addWord(BtWord word, int id);
     QString getWordFmt(BtHistory word);
-    void writeResult();
-    void syncFrame(uint max_frame);
+    QString getConfColor(float conf);
+    void  writeResult();
+    void  syncFrame(uint max_frame);
 
     QVector<BtHistory>  history;
     QVector<BtHistory>  current;
-    QTimer *time_shifter;
-    float   start_treshold;
-    QString x_buf; //exec buf
+    QTimer    *time_shifter;
+    float      start_treshold;
+    QString    x_buf; //exec buf
 };
 
 #endif // BT_CAPTAIN_H

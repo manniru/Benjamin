@@ -22,6 +22,8 @@ typedef struct BtWord
     double  end;
     double  conf;
     int     is_final;
+    int     word_id;
+    int     stf; //start frame (used in enn)
 }BtWord;
 
 void bt_printResult(QVector<BtWord> result);

@@ -192,6 +192,8 @@ QVector<BtWord> KdMBR::getResult()
         word_buf.time  = (word_buf.start+word_buf.end)/2;
         word_buf.word  = lexicon[best_wid[i]];
         word_buf.is_final = 0;
+        word_buf.word_id = best_wid[i];
+
 
         result.push_back(word_buf);
     }

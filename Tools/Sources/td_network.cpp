@@ -8,7 +8,7 @@ TdNetwork::TdNetwork(QString word)
     m_name = word;
     model_loaded = false;
 
-    QString model_path = "Models/";
+    QString model_path = "../ENN/Models/";
     model_path += m_name;
     model_path += ".mdl";
     if( QFile::exists(model_path) )

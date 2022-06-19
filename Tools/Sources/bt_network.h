@@ -15,11 +15,19 @@ public:
     BtNetwork();
     ~BtNetwork();
 
-    float predict(int id, float *data);
+    float getConf(int start, int len, int id);
+    BtCFB *cfb;
 
 private:
+    float predict(int id);
+    void  calcStat(int start, int len);
+
     QVector<TdNetwork *> nets;
     QStringList word_list;
+    float  data_buf[BT_ENN_SIZE*BT_ENN_SIZE*3];
+
+    double offset_delta = -5;
+    double scale_delta = 19;
 };
 
 #endif // ENN_NETWORK_H

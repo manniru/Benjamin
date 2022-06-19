@@ -3,7 +3,6 @@
 KdOnline::KdOnline(QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
-    cap = new BtCaptain;
 
     ab_src = new BtRecorder(cy_buf);
     wav_w  = new BtWavWriter(cy_buf);
@@ -19,6 +18,7 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     oa_model->Read(ki.Stream(), binary);
 
     o_decoder = new KdOnlineLDecoder(t_model);
+    cap = new BtCaptain;
 }
 
 KdOnline::~KdOnline()
@@ -39,6 +39,8 @@ void KdOnline::startDecode()
 
     KdDecodable decodable(cy_buf, oa_model,
                           t_model, acoustic_scale);
+    cap->net->cfb = decodable.features->o_features;
+    decodable.features->enableENN();
 
     ab_src->startStream();
 
@@ -96,6 +98,8 @@ void KdOnline::processResult(QVector<BtWord> result)
             }
         }
         result[i].time += o_decoder->status.min_frame/100.0;
+        result[i].stf   = 100*result[i].start +
+                          o_decoder->status.min_frame;
         buf += result[i];
     }
     cap->parse(buf, o_decoder->frame_num);
