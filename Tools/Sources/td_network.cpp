@@ -24,7 +24,7 @@ TdNetwork::TdNetwork(QString word)
 
         cereal::BinaryInputArchive bi(ifs);
         load(bi);
-        qDebug() << "model " << model_path << "loaded";
+//        qDebug() << "model " << model_path << "loaded";
         model_loaded = true;
     }
     else

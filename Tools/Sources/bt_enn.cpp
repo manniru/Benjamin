@@ -82,7 +82,7 @@ void BtEnn::startDecode()
         decodable.features->ComputeFeatures();
         o_decoder->Decode();
         last_r = o_decoder->getResult(&out_fst);
-        if( last_r.size()!=3 )
+        if( !sanityCheck(file_list[i]) )
         {
             shit_counter++;
             qDebug() << "shit [" << shit_counter << "]"
@@ -186,6 +186,29 @@ void BtEnn::preProcess()
         {
             last_r[i].end = u_end;
         }
+    }
+}
+
+bool BtEnn::sanityCheck(QString filename)
+{
+    QFileInfo file_info(filename);
+    QString fname = file_info.fileName();
+
+    fname.remove(".wav");
+    int dot_index = fname.indexOf(".");
+    fname = fname.mid(0, dot_index);
+
+    wav_w->readWordList();
+    QString d_name = wav_w->wordToId(last_r); // d_name : detected name
+
+    if( d_name==fname )
+    {
+        return true;
+    }
+    else
+    {
+        qDebug() << "d_name" << d_name << "fname" << fname;
+        return false;
     }
 }
 

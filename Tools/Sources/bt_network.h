@@ -3,6 +3,7 @@
 #include <QString>
 #include <QDir>
 #include <QDebug>
+#include <QImage>
 #include <tiny_dnn/tiny_dnn.h>
 
 #include "backend.h"
@@ -19,6 +20,7 @@ public:
     float getConf(int start, int len, int id);
     BtCFB       *cfb;
     BtWavWriter *wav_w;
+    QImage img_s;
 
 private:
     float predict(int id);

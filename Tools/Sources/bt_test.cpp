@@ -60,23 +60,33 @@ void BtTest::startDecode()
     QVector<BtWord> result;
 
 //    qDebug() << file_list.size();
-    for( int i = 0 ; i<2 ; i++ )
+    for( int i=0 ; i<2 ; i++ )
     {
         openWave(file_list[i]);
         int read_size = chunk_size;
+        int step = 0;
         while( read_size==chunk_size )
         {
             read_size = readWav(chunk_size, cy_buf);
             decodable.features->ComputeFeatures();
             o_decoder->Decode();
             result = o_decoder->getResult(&out_fst);
+            QString dbf;
+            for( int j=0 ; j<result.size() ; j++ )
+            {
+                QString prefix = QString::number(i) + "_" + QString::number(step) + "_" + QString::number(j);
+                float conf = getConf(result[j], prefix);
+                dbf += result[j].word + " " + QString::number(conf) + " | ";
+            }
+            qDebug() << "Conf:" << dbf;
+            step++;
         }
         if( result.size() )
         {
             QString buf;
-            for( int i=0 ; i<result.size() ; i++ )
+            for( int j=0 ; j<result.size() ; j++ )
             {
-                buf += result[i].word;
+                buf += result[j].word;
                 buf += " ";
                 bt_writeBarResult(result);
             }
@@ -152,33 +162,61 @@ int BtTest::readWav(int count, BtCyclic *out)
     return i-1;
 }
 
-float BtTest::getConf(BtWord word)
+float BtTest::getConf(BtWord word, QString prefix)
 {
-    int n_end = 100*(word.end)+10;
-    if( n_end>o_decoder->uframe )
+    int n_end_f = 100*(word.end)+10;
+
+    if( n_end_f>o_decoder->uframe )
     {
-        n_end = o_decoder->uframe;
+        n_end_f = o_decoder->uframe;
     }
-    int n_len = n_end - (word.stf-10);
+    int stf = 100*word.start + o_decoder->status.min_frame;
+    int n_len = n_end_f - (100*word.start-10);
 
-    float conf = net->getConf(word.stf-10, n_len, word.word_id);
-    saveWave(word.stf-10, n_len, word.word);
-    return conf;
-}
-
-void BtTest::saveWave(int start, int len, QString word)
-{
-    double end = o_decoder->uframe/100.0;
-    double rw_len = end - (start + len); // rewind length
-    double word_len;
+    float conf = net->getConf(stf-10, n_len, word.word_id);
 
     QString fname = KAL_AU_DIR"tt/";
     bt_mkDir(fname);
-    fname = word + ".wav";
+    fname += prefix + "_" + word.word;
 
-    rw_len *= BT_REC_RATE/1000.0;
+    saveWave(100*word.start-10, n_len, fname);
+    saveImage(fname);
+    return conf;
+}
+
+void BtTest::saveWave(int start, int len, QString fname)
+{
+    int end = o_decoder->uframe;
+    int rw_len = end - (start + len); // rewind length
+
+    rw_len *= BT_REC_RATE/100.0;
     cy_buf->rewind(rw_len);
-    word_len = len * BT_REC_RATE/1000.0;
 
-    net->wav_w->writeEnn(fname, word_len);
+    int sample_len = len * BT_REC_RATE/100.0;
+    net->wav_w->writeEnn(fname + ".wav", sample_len);
+
+    cy_buf->rewind(-rw_len);
+}
+
+void BtTest::saveImage(QString fname)
+{
+    int i=0;
+    while(true)
+    {
+        QString check_name = fname;
+        if( i>0 )
+        {
+            check_name += "." + QString::number(i);
+        }
+        if( !QFile::exists(check_name) )
+        {
+            fname = check_name;
+            break;
+        }
+        i++;
+    }
+    if( !net->img_s.save(fname + ".png", "PNG") )
+    {
+        qDebug() << "Error: saving image failed.";
+    }
 }

@@ -74,16 +74,16 @@ float BtNetwork::getConf(int start, int len, int id)
         }
     }
 
-    QImage img_s = img->scaled(BT_ENN_SIZE, BT_ENN_SIZE);
+    img_s = img->scaled(BT_ENN_SIZE, BT_ENN_SIZE);
     int height = BT_ENN_SIZE;
     int width  = BT_ENN_SIZE;
     int ch_off = height * width;
 
-    for( int i=0 ; i<width ; i++ )
+    for( int i=0 ; i<height ; i++ )
     {
-        for( int j=0 ; j<height ; j++ )
+        for( int j=0 ; j<width ; j++ )
         {
-            QRgb color = img_s.pixel(i, j);
+            QRgb color = img_s.pixel(j, i);
             data_buf[i*width+j+0*ch_off] = qRed(color);
             data_buf[i*width+j+1*ch_off] = qGreen(color);
             data_buf[i*width+j+2*ch_off] = qBlue(color);

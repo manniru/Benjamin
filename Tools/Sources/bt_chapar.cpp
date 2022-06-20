@@ -34,7 +34,7 @@ void BtChapar::createEnn(QString dir)
     QStringList dir_list = p_dir.entryList(fmt, QDir::Dirs |
                                            QDir::NoDotAndDotDot);
 
-    for( int i=1 ; i<dir_list.size() ; i++ )
+    for( int i=0 ; i<dir_list.size() ; i++ )
     {
         BtEnn enn(dir + dir_list[i] + "/");
         enn.init(dir_list[i]);

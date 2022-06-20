@@ -26,8 +26,10 @@ private:
     void   startDecode();
     void   openWave(QString filename);
     int    readWav(int count, BtCyclic *out);
-    float  getConf(BtWord word);
-    void   saveWave(int start, int len, QString word);
+    float  getConf(BtWord word, QString prefix);
+    void   saveWave(int start, int len, QString fname);
+    void saveImage(QString fname);
+    bool checkExist(QString path);
 
     BtCyclic         *cy_buf;
     QVector<BtWord>   last_r; //last_result

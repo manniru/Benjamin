@@ -18,14 +18,14 @@ public:
 
     void write(QVector<BtWord> result, int len, int dbg_id);
     void writeEnn(QString path, int len);
+    void readWordList();
+    QString wordToId(QVector<BtWord> result);
 
 private:
     void writeWav(int len);
     void writeWavHeader(int len);
     void copyToUnverified(QVector<BtWord> result, QString filename);
     bool isSleep();
-    void readWordList();
-    QString wordToId(QVector<BtWord> result);
 
     BtCyclic         *cy_buf;
     QFile            *file;

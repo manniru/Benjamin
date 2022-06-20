@@ -34,6 +34,7 @@ private:
     bool checkExist(QString path);
     void calcStat(QVector<BtFrameBuf *> data);
     void preProcess();
+    bool sanityCheck(QString filename);
 
     BtCyclic         *cy_buf;
     KdOnlineStatus    status;
