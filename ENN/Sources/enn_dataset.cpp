@@ -17,74 +17,85 @@ EnnDataset::~EnnDataset()
 void EnnDataset::parseImagesT(QString path)
 {
     QString path_m_name = path + m_name + "/";
-    QStringList image_filenames = listImages(path_m_name);
+    QStringList image_filenames = enn_listImages(path_m_name);
     int len = image_filenames.size();
 //    int len = 10;
-    int train_size = len*0.9;
+    train_size = len*0.9;
 
     for( int i=0 ; i<len ; i++ )
     {
         QString img_address = path_m_name + image_filenames[i];
-        image<> rgb_img(img_address.toStdString().c_str(),
-                        tiny_dnn::image_type::rgb);
-        vec_t vec = rgb_img.to_vec();
-        vec_t label = {1,0};
-
-        if( i<train_size )
-        {
-            train_images.push_back(vec);
-            train_labels.push_back(1);
-            train_labels_v.push_back(label);
-            train_path.push_back(img_address); // for debug purposes
-        }
-        else
-        {
-            test_images.push_back(vec);
-            test_labels.push_back(1);
-            test_labels_v.push_back(label);
-        }
+        addImagesT(img_address, i);
     }
 }
 
 void EnnDataset::parseImagesF(QString path)
 {
     QStringList false_dirs = enn_listDirs(path + "/");
-    int m_name_dir_index = false_dirs.indexOf(m_name);
-    false_dirs.removeAt(m_name_dir_index);
-    int m_name_len = false_dirs.size();
+
+    //remove true word dir
+    int t_index = false_dirs.indexOf(m_name);
+    false_dirs.removeAt(t_index);
+
+    int fd_len = false_dirs.size();
 //    int m_name_len = 1;
 
-    for( int i=0 ; i<m_name_len ; i++ )
+    for( int i=0 ; i<fd_len ; i++ )
     {
-        QStringList image_filenames = listImages(path + false_dirs[i],
-                                             ENN_FALSE_COUNT);
+        QStringList image_filenames = enn_listImages(path + false_dirs[i]);
         int len = image_filenames.size();
-//        QStringList image_filenames = listImages(path + false_dirs[i]);
 //        int len = 10;
-        int train_size = len*0.9;
 
         for( int j=0 ; j<len ; j++ )
         {
             QString img_address = path + false_dirs[i] + "/" + image_filenames[j];
-            image<> rgb_img(img_address.toStdString().c_str(),
-                            image_type::rgb);
-            vec_t vec = rgb_img.to_vec();
-            vec_t label = {0,1};
-
-            if( j<train_size )
-            {
-                train_images.push_back(vec);
-                train_labels.push_back(0);
-                train_labels_v.push_back(label);
-                train_path.push_back(img_address);
-            }
-            else if( i%6==0 )
-            {
-                test_images.push_back(vec);
-                test_labels.push_back(0);
-                test_labels_v.push_back(label);
-            }
+            addImagesF(img_address, i, j);
         }
+    }
+}
+
+void EnnDataset::addImagesT(QString path, int i)
+{
+    image<> rgb_img(path.toStdString(), image_type::rgb);
+    vec_t vec = rgb_img.to_vec();
+
+    if( i<train_size )
+    {
+        train_images.push_back(vec);
+        train_labels.push_back(1);
+        train_path.push_back(path); // for debug purposes
+    }
+    else
+    {
+        test_images.push_back(vec);
+        test_labels.push_back(1);
+    }
+}
+
+void EnnDataset::addImagesF(QString path, int i, int j)
+{
+    if( j<ENN_FALSE_COUNT )
+    {
+        train_size = ENN_FALSE_COUNT*0.8;
+        image<> rgb_img(path.toStdString(), image_type::rgb);
+        vec_t vec = rgb_img.to_vec();
+        if( j<train_size )
+        {
+            train_images.push_back(vec);
+            train_labels.push_back(0);
+            train_path.push_back(path); // for debug purposes
+        }
+        else if( i%6==0 )
+        {
+            test_images.push_back(vec);
+            test_labels.push_back(0);
+        }
+    }
+    else if( j<20 )
+    {
+        image<> rgb_img(path.toStdString(), image_type::rgb);
+        vec_t vec = rgb_img.to_vec();
+        false_images.push_back(vec);
     }
 }
 
@@ -118,18 +129,4 @@ void EnnDataset::shuffleTest(std::mt19937 *eng1,
 
     std::shuffle(v3.begin(), v3.end(), *eng1);
     std::shuffle(v4.begin(), v4.end(), *eng2);
-}
-
-QStringList EnnDataset::listImages(QString path, int num)
-{
-    QDir p_dir(path);
-    QStringList fmt;
-    fmt.append("*.png");
-    QStringList file_list = p_dir.entryList(fmt, QDir::Files);
-
-    if( num<file_list.size() && num>0 )
-    {
-        file_list = file_list.mid(0, num);
-    }
-    return file_list;
 }

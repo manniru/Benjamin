@@ -20,17 +20,18 @@ public:
     vec_t test(vec_t *data);
     void train(float l_rate);
 
+    EnnDataset       *dataset;
+
 private:
     void  save();
     void  epochLog();
     float calcLoss();
     void  benchmark();
     void  createNNet();
-    void  minibatchLog();
+    QString getAcc();
 
     network<sequential> net;
     progress_display *disp;
-    EnnDataset       *dataset;
     adagrad optim;
 
     int n_minibatch;

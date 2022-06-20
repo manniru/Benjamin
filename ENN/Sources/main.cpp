@@ -13,6 +13,10 @@ int main(int argc, char *argv[])
         {
             mode = ENN_TEST_MODE;
         }
+        else if( arg1=="tf" )
+        {
+            mode = ENN_TF_MODE;
+        }
         else
         {
             learning_rate = arg1.toFloat();

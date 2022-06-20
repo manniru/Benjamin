@@ -24,14 +24,12 @@ void EnnNetwork::benchmark()
     tiny_dnn::timer t;  // start the timer
 
     // predict
-    vec_t res = net.predict(dataset->test_images[0]);
+    net.predict(dataset->test_images[0]);
 
     double elapsed_s = t.elapsed();
     t.stop();
     qDebug() << dataset->m_name << "Finished!"
              << elapsed_s;
-    qDebug() << "Detect:" << res[0] << res[1];
-    qDebug() << "Detect:" << dataset->test_labels[0];
 }
 
 void EnnNetwork::save()
@@ -79,7 +77,8 @@ bool EnnNetwork::load()
             is_wrong = 0;
             return true;
         }
-        qDebug() << "model " << model_path << "loaded";
+        qDebug() << "model " << model_path << "loaded"
+                 << "loss"   << loss ;
     }
     else // create new
     {
@@ -103,7 +102,6 @@ void EnnNetwork::train(float l_rate)
     bool need_train = load();
     if( !need_train )
     {
-        benchmark();
         return;
     }
 
@@ -114,7 +112,7 @@ void EnnNetwork::train(float l_rate)
     nn_epoch = 0;
 
     net.fit<mse>(optim, dataset->train_images, dataset->train_labels,
-                   n_minibatch, n_train_epochs, [&](){minibatchLog();},
+                   n_minibatch, n_train_epochs, [&](){;},
                    [&](){epochLog();});
 
     if( is_wrong==0 )
@@ -130,11 +128,6 @@ vec_t EnnNetwork::test(vec_t *data)
     return res;
 }
 
-void EnnNetwork::minibatchLog()
-{
-
-}
-
 void EnnNetwork::epochLog()
 {
     nn_epoch++;
@@ -142,11 +135,11 @@ void EnnNetwork::epochLog()
     {
         qDebug() << "epoch" << nn_epoch << nn_t.elapsed() << "s elapsed.";
         float loss = calcLoss();
-        result res_test = net.test(dataset->test_images, dataset->test_labels);
+        QString res_test = getAcc();
         result res = net.test(dataset->train_images, dataset->train_labels);
 
         qDebug() << res.num_success << "/" << res.num_total << "test"
-                 << res_test.num_success << "/" << res_test.num_total << "loss:"
+                 << res_test << "loss:"
                  << loss << "alpha" << optim.alpha*1000;
 
         if( loss<ENN_TARGET_LOSS )
@@ -220,4 +213,46 @@ float EnnNetwork::calcLoss()
     }
 
     return loss;
+}
+
+QString EnnNetwork::getAcc()
+{
+    QString ret = "T[";
+    int tot_t = 0; //total true
+    int det_t = 0; //corrrect detected true
+    int tot_f = 0; //total false
+    int det_f = 0; //corrrect detected false
+
+    int len = dataset->test_images.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        vec_t out = test(&(dataset->test_images[i]));
+        if( dataset->test_labels[i]==1 )
+        {
+            tot_t++;
+            if( out[1]>0.6 )
+            {
+                det_t++;
+            }
+        }
+        else
+        {
+            tot_f++;
+            if( out[0]>0.6 )
+            {
+                det_f++;
+            }
+        }
+    }
+
+    ret += QString::number(det_t) + "/";
+    ret += QString::number(tot_t) + "] F[";
+
+    ret += QString::number(det_f) + "/";
+    ret += QString::number(tot_f) + "] Tot[";
+
+    ret += QString::number(det_t+det_f) + "/";
+    ret += QString::number(len) + "]";
+
+    return ret;
 }

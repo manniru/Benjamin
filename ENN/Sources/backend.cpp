@@ -92,3 +92,13 @@ QStringList enn_listDirs(QString path)
 
     return dir_list;
 }
+
+QStringList enn_listImages(QString path)
+{
+    QDir p_dir(path);
+    QStringList fmt;
+    fmt.append("*.png");
+    QStringList file_list = p_dir.entryList(fmt, QDir::Files);
+
+    return file_list;
+}

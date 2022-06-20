@@ -154,8 +154,15 @@ int BtTest::readWav(int count, BtCyclic *out)
 
 float BtTest::getConf(BtWord word)
 {
-    int len = 100*(word.end - word.start);
-    float conf = net->getConf(word.stf, len, word.word_id);
+    int n_end = 100*(word.end)+10;
+    if( n_end>o_decoder->uframe )
+    {
+        n_end = o_decoder->uframe;
+    }
+    int n_len = n_end - (word.stf-10);
+
+    float conf = net->getConf(word.stf-10, n_len, word.word_id);
+    saveWave(word.stf-10, n_len, word.word);
     return conf;
 }
 

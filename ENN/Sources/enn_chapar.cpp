@@ -7,9 +7,13 @@ EnnChapar::EnnChapar(int mode, float l_rate)
     {
         learnMode(l_rate);
     }
-    else
+    else if( mode==ENN_TEST_MODE )
     {
         testMode();
+    }
+    else if( mode==ENN_TF_MODE )
+    {
+        testFullMode();
     }
 }
 
@@ -43,4 +47,35 @@ void EnnChapar::testMode()
     qDebug() << "Test Mode on Model:" << model_name
              << "Input:" << input_name
              << out[0] << out[1];
+}
+
+void EnnChapar::testFullMode()
+{
+    setbuf(stdout,NULL);
+    QStringList word_list = enn_listDirs(ENN_TRAIN_DIR);
+
+    int len = word_list.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        EnnNetwork net(word_list[i]);
+        net.load();
+
+        int test_len = net.dataset->false_images.size();
+
+        float loss = 0;
+        int  wrong = 0;
+        for( int j=0 ; j<test_len ; j++ )
+        {
+            vec_t out = net.test(&(net.dataset->false_images[j]));
+            loss += out[1];
+
+            if( out[0]<0.6 )
+            {
+                wrong++;
+            }
+        }
+        printf("%5.5s loss:%.2f wrong:[%d/%d]\n",
+               word_list[i].toStdString().c_str(),
+               loss, wrong, test_len);
+    }
 }
