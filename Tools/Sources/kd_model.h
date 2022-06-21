@@ -6,7 +6,6 @@
 #include <QObject>
 #include <QDebug>
 
-#include <gmm/am-diag-gmm.h>
 #include <hmm/transition-model.h>
 #include <util/kaldi-io.h>
 

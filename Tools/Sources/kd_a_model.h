@@ -3,8 +3,8 @@
 
 #include "util/kaldi-io.h"
 #include "base/kaldi-common.h"
-#include "gmm/diag-gmm.h"
 #include "bt_cfb.h"
+#include "kd_gmm.h"
 
 
 class KdAModel
@@ -14,10 +14,10 @@ public:
     ~KdAModel();
 
     float LogLikelihood(int32 pdf_index, BtFrameBuf *buf);
-    void Read(std::istream &in_stream, bool binary);
+    void Read(std::istream &in_stream);
 
 private:
-    std::vector<kaldi::DiagGmm*> densities_;
+    std::vector<KdGmm*> densities;
 };
 
 

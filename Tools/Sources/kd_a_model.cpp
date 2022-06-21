@@ -10,28 +10,36 @@ KdAModel::KdAModel()
 
 KdAModel::~KdAModel()
 {
-    DeletePointers(&densities_);
-}
-
-void KdAModel::Read(std::istream &in_stream, bool binary)
-{
-    int32 num_pdfs, dim;
-
-    ExpectToken(in_stream, binary, "<DIMENSION>");
-    ReadBasicType(in_stream, binary, &dim);
-    ExpectToken(in_stream, binary, "<NUMPDFS>");
-    ReadBasicType(in_stream, binary, &num_pdfs);
-    KALDI_ASSERT(num_pdfs > 0);
-    densities_.reserve(num_pdfs);
-    for( int32 i = 0; i < num_pdfs; i++)
+    int len = densities.size();
+    for( int i=0 ; i<len; i++ )
     {
-        densities_.push_back(new DiagGmm());
-        densities_.back()->Read(in_stream, binary);
-        KALDI_ASSERT(densities_.back()->Dim() == dim);
+        if( densities[i]!= NULL)
+        {
+            delete densities[i];
+            densities[i] = NULL;
+        }
     }
 }
 
-float KdAModel::LogLikelihood(int32 pdf_index, BtFrameBuf *buf)
+void KdAModel::Read(std::istream &in_stream)
+{
+    int32 num_pdfs, dim;
+
+    ExpectToken(in_stream, true, "<DIMENSION>");
+    ReadBasicType(in_stream, true, &dim);
+    ExpectToken(in_stream, true, "<NUMPDFS>");
+    ReadBasicType(in_stream, true, &num_pdfs);
+    KALDI_ASSERT(num_pdfs > 0);
+    densities.reserve(num_pdfs);
+    for( int i=0 ; i<num_pdfs; i++ )
+    {
+        densities.push_back(new KdGmm());
+        densities.back()->Read(in_stream);
+        KALDI_ASSERT(densities.back()->Dim() == dim);
+    }
+}
+
+float KdAModel::LogLikelihood(int pdf_index, BtFrameBuf *buf)
 {
     Vector<float> feat_buf;
     feat_buf.Resize(BT_DELTA_SIZE);
@@ -39,5 +47,5 @@ float KdAModel::LogLikelihood(int32 pdf_index, BtFrameBuf *buf)
     {
         feat_buf(i) = buf->delta[i];
     }
-    return densities_[pdf_index]->LogLikelihood(feat_buf);
+    return densities[pdf_index]->LogLikelihood(feat_buf);
 }

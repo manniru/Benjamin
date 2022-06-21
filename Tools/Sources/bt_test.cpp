@@ -37,7 +37,7 @@ void BtTest::init()
     bool binary;
     kaldi::Input ki(model_filename, &binary);
     t_model->Read(ki.Stream(), binary);
-    oa_model->Read(ki.Stream(), binary);
+    oa_model->Read(ki.Stream());
 
     o_decoder = new KdOnlineLDecoder(t_model);
     o_decoder->status.min_sil = 300;

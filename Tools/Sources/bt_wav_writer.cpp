@@ -112,6 +112,11 @@ bool BtWavWriter::isSleep()
 
 void BtWavWriter::readWordList()
 {
+    if( word_list.size() )
+    {
+        return;
+    }
+
     QFile wl_file(BT_WORDLIST_PATH);
 
     if( !wl_file.open(QIODevice::ReadOnly | QIODevice::Text) )
