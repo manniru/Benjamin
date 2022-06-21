@@ -40,6 +40,7 @@ void BtTest::init()
     oa_model->Read(ki.Stream(), binary);
 
     o_decoder = new KdOnlineLDecoder(t_model);
+    o_decoder->status.min_sil = 300;
 
     startDecode();
 }

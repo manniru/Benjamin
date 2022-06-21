@@ -51,6 +51,7 @@ private:
 
     QVector<BtHistory>  history;
     QVector<BtHistory>  current;
+    QStringList strict_word;
     QTimer    *time_shifter;
     float      start_treshold;
     QString    x_buf; //exec buf

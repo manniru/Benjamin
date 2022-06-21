@@ -107,9 +107,11 @@ void EnnDataset::shuffleData()
     // create two random engines with the same state
     std::mt19937 eng1(seed);
     std::mt19937 eng2 = eng1;
+    std::mt19937 eng3 = eng1;
 
     std::shuffle(train_labels.begin(), train_labels.end(), eng1);
     std::shuffle(train_images.begin(), train_images.end(), eng2);
+    std::shuffle(train_path.begin()  , train_path.end()  , eng3);
 
     std::shuffle(test_labels.begin(), test_labels.end(), eng1);
     std::shuffle(test_images.begin(), test_images.end(), eng2);

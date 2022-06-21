@@ -98,7 +98,7 @@ void BtEnn::startDecode()
                 last_r.clear();
                 continue;
             }
-            exit(1);
+//            exit(1);
         }
         preProcess();
         saveFeature(file_list[i], decodable.features->o_features);
@@ -110,6 +110,7 @@ void BtEnn::startDecode()
         decodable.features->delta->min_frame = o_decoder->status.min_frame;
         last_r.clear();
     }
+    qDebug() << "shit [" << shit_counter << "]";
 }
 
 void BtEnn::openWave(QString filename)

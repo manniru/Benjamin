@@ -19,7 +19,7 @@ public:
 
     std::vector<vec_t>   train_images;
     std::vector<label_t> train_labels;
-    QStringList          train_path; //for debug
+    std::vector<QString> train_path; //for debug
     std::vector<vec_t>   test_images;
     std::vector<label_t> test_labels;
     std::vector<vec_t>   false_images;

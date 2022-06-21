@@ -13,6 +13,8 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
 
     start_treshold = -BT_HISTORY_SIZE/1000.0;
     net = new BtNetwork;
+
+    strict_word << "five";
 }
 
 void BtCaptain::parse(QVector<BtWord> in_words, uint max_frame)
@@ -102,6 +104,11 @@ void BtCaptain::addWord(BtWord word, int id)
 
 void BtCaptain::addXBuf(BtWord word)
 {
+    if( strict_word.contains(word.word) )
+    {
+        qDebug() << "Strict Word" << word.word;
+        word.conf = getConf(word);
+    }
     if( word.conf<KAL_HARD_TRESHOLD )
     {
         return;
@@ -208,7 +215,14 @@ float BtCaptain::getConf(BtWord word)
 QString BtCaptain::getConfColor(float conf)
 {
     QColor color;
-    color = QColor::fromHsv(conf*120, 200, 200);
+    if( conf>0.9 )
+    {
+        color = QColor::fromHsv(200, 200, 200);
+    }
+    else
+    {
+        color = QColor::fromHsv(conf*150, 200, 200);
+    }
     return color.name();
 }
 

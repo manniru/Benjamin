@@ -28,7 +28,10 @@ private:
     float calcLoss();
     void  benchmark();
     void  createNNet();
-    QString getAcc();
+    QString getAcc(std::vector<vec_t> &data,
+                   std::vector<label_t> &label);
+    void handleWrongs(float diff, QVector<int> &wrong_i,
+                      QVector<float> &wrong_loss);
 
     network<sequential> net;
     progress_display *disp;

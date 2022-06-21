@@ -12,6 +12,8 @@ EnnNetwork::EnnNetwork(QString word)
     n_minibatch = 16;
     n_train_epochs = ENN_MAX_EPOCH;
     is_wrong = 0;
+
+    setbuf(stdout,NULL); //to work out printf
 }
 
 EnnNetwork::~EnnNetwork()
@@ -133,13 +135,16 @@ void EnnNetwork::epochLog()
     nn_epoch++;
     if( nn_epoch%ENN_EPOCH_LOG==0 )
     {
-        qDebug() << "epoch" << nn_epoch << nn_t.elapsed() << "s elapsed.";
+        QString t_elapsed = QString::number(nn_t.elapsed());
+        t_elapsed += "s";
         float loss = calcLoss();
-        QString res_test = getAcc();
-        result res = net.test(dataset->train_images, dataset->train_labels);
+        QString acc_test = getAcc(dataset->test_images,
+                                  dataset->test_labels);
+        QString acc_train = getAcc(dataset->train_images,
+                                  dataset->train_labels);
 
-        qDebug() << res.num_success << "/" << res.num_total << "test"
-                 << res_test << "loss:"
+        qDebug() << nn_epoch << t_elapsed
+                 << acc_train << "test" << acc_test << "loss:"
                  << loss << "alpha" << optim.alpha*1000;
 
         if( loss<ENN_TARGET_LOSS )
@@ -166,8 +171,9 @@ float EnnNetwork::calcLoss()
     net.normalize_tensor(dataset->train_labels, label_tensor);
     int len = dataset->train_images.size();
 
-    float        wrong_loss = 0;
-    QVector<int> wrong_i;
+    float          wrong_sum;
+    QVector<int>   wrong_i;
+    QVector<float> wrong_loss;
     for( int i=0 ; i<len ; i++ )
     {
         vec_t predicted = net.predict(dataset->train_images[i]);
@@ -175,35 +181,18 @@ float EnnNetwork::calcLoss()
 
         if( s_loss>0.95 )
         {
-            wrong_loss += s_loss;
+            wrong_sum += s_loss;
             wrong_i.push_back(i);
+            wrong_loss.push_back(s_loss);
         }
         loss += s_loss;
     }
-    if( wrong_loss>0 )
+    if( wrong_sum>0 )
     {
-        float diff = loss - wrong_loss;
-        if( diff<ENN_TARGET_LOSS && wrong_i.length()<5 )
-        {
-            for( int i=0 ; i<wrong_i.length() ; i++ )
-            {
-                QString path = dataset->train_path[wrong_i[i]];
-                if( path.contains(dataset->m_name) )
-                {
-                    qDebug() << "XxX wrong" << wrong_i[i] << path
-                             << wrong_loss << "XxX";
-                }
-                else
-                {
-                    qDebug() << ">>> have 2 word?" << path
-                             << wrong_loss << "<<<";
-                }
-            }
-            net.stop_ongoing_training();
-            is_wrong = 1;
-        }
+        float diff = loss - wrong_sum;
+        handleWrongs(diff, wrong_i, wrong_loss);
     }
-    if( loss>90 )
+    if( loss>200 )
     {
         qDebug() << "========= NO CONVERGANCE"
                  << dataset->m_name
@@ -215,7 +204,8 @@ float EnnNetwork::calcLoss()
     return loss;
 }
 
-QString EnnNetwork::getAcc()
+QString EnnNetwork::getAcc(std::vector<vec_t>   &data,
+                           std::vector<label_t> &label)
 {
     QString ret = "T[";
     int tot_t = 0; //total true
@@ -223,11 +213,11 @@ QString EnnNetwork::getAcc()
     int tot_f = 0; //total false
     int det_f = 0; //corrrect detected false
 
-    int len = dataset->test_images.size();
+    int len = data.size();
     for( int i=0 ; i<len ; i++ )
     {
-        vec_t out = test(&(dataset->test_images[i]));
-        if( dataset->test_labels[i]==1 )
+        vec_t out = test(&(data[i]));
+        if( label[i]==1 )
         {
             tot_t++;
             if( out[1]>0.6 )
@@ -255,4 +245,51 @@ QString EnnNetwork::getAcc()
     ret += QString::number(len) + "]";
 
     return ret;
+}
+
+void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
+                  QVector<float> &wrong_loss)
+{
+    for( int i=0 ; i<wrong_i.length() ; i++ )
+    {
+        QString path = dataset->train_path[wrong_i[i]];
+        int label = dataset->train_labels[wrong_i[i]];
+        if( path.contains(dataset->m_name) )
+        {
+            printf("wr %5.5s diff=%.2f label=%d loss=%.2f"
+                   " i=%4d %s\n",
+                   dataset->m_name.toStdString().c_str(),
+                   diff, label, wrong_loss[i], wrong_i[i],
+                   path.toStdString().c_str());
+        }
+        else
+        {
+            printf("2w %5.5s diff=%.2f label=%d loss=%.2f"
+                   " i=%4d %s\n",
+                   dataset->m_name.toStdString().c_str(),
+                   diff, label, wrong_loss[i], wrong_i[i],
+                   path.toStdString().c_str());
+        }
+
+        if( label==1 )
+        {
+            if( !(path.contains(dataset->m_name)) )
+            {
+                qDebug() << "What The FUCK";
+            }
+        }
+    }
+    if( diff<ENN_TARGET_LOSS && wrong_i.length()<5 )
+    {
+        net.stop_ongoing_training();
+        is_wrong = 1;
+
+        QString acc_test = getAcc(dataset->test_images,
+                                  dataset->test_labels);
+        QString acc_train = getAcc(dataset->train_images,
+                                  dataset->train_labels);
+
+        qDebug() << "train" << acc_train
+                 << "test" << acc_test;
+    }
 }
