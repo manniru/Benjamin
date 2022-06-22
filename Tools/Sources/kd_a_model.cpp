@@ -41,11 +41,5 @@ void KdAModel::Read(std::istream &in_stream)
 
 float KdAModel::LogLikelihood(int pdf_index, BtFrameBuf *buf)
 {
-    Vector<float> feat_buf;
-    feat_buf.Resize(BT_DELTA_SIZE);
-    for( int i=0 ; i<BT_DELTA_SIZE ; i++ )
-    {
-        feat_buf(i) = buf->delta[i];
-    }
-    return densities[pdf_index]->LogLikelihood(feat_buf);
+    return densities[pdf_index]->LogLikelihood(buf->delta, BT_DELTA_SIZE);
 }

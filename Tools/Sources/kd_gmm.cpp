@@ -17,40 +17,23 @@ KdGmm::KdGmm()
     valid_gconsts_ = false;
 }
 
-float KdGmm::LogLikelihood(kaldi::VectorBase<float> &data)
+float KdGmm::LogLikelihood(double *data, int len)
 {
     loglikes = gconsts;
-    if( data.Dim()!=Dim() )
+    if( len!=Dim() )
     {
         qDebug() << "DiagGmm::LogLikelihoods, dimension "
-                 << "mismatch " << data.Dim() << " vs. " << Dim();
-    }
-    Vector<float> data_sq;
-    int len = data.Dim();
-    data_sq.Resize(len);
-    for( int i=0 ; i<len ; i++ )
-    {
-        data_sq(i) = data(i) * data(i);
+                 << "mismatch " << len << " vs. " << Dim();
     }
 
-    // loglikes +=  means * inv(vars) * data.
-    int width  = loglikes.length();
-    int height = data.Dim();
+    int width  = loglikes.size();
+    int height = len;
     for( int i=0 ; i<width ; i++ )
     {
         for( int j=0 ; j<height ; j++ )
         {
-            loglikes[i] += means_invvars_(i,j) * data(j);
-        }
-    }
-    // loglikes += -0.5 * inv(vars) * data_sq.
-    width  = loglikes.length();
-    height = data_sq.Dim();
-    for( int i=0 ; i<width ; i++ )
-    {
-        for( int j=0 ; j<height ; j++ )
-        {
-            loglikes[i] -= 0.5 * inv_vars_(i,j) * data_sq(j);
+            loglikes[i] += means_invvars_(i,j) * data[j];
+            loglikes[i] -= 0.5 * inv_vars_(i,j) * data[j] * data[j];
         }
     }
 
@@ -82,9 +65,9 @@ void KdGmm::Read(std::istream &is)
     }
     weights_ = kd_VectorRead(is);
     ExpectToken(is, true, "<MEANS_INVVARS>");
-    means_invvars_.Read(is, true);
+    means_invvars_ = kd_MatrixRead(is);
     ExpectToken(is, true, "<INV_VARS>");
-    inv_vars_.Read(is, true);
+    inv_vars_ = kd_MatrixRead(is);
     ReadToken(is, true, &token);
     // <DiagGMMEnd> is for compatibility. Will be deleted later
     if (token != "<DiagGMMEnd>" && token != "</DiagGMM>")
@@ -97,13 +80,13 @@ void KdGmm::Read(std::istream &is)
 
 void KdGmm::ComputeGconsts()
 {
-    int num_mix = weights_.length();
+    int num_mix = weights_.size();
     int dim = Dim();
     float offset = -0.5 * M_LOG_2PI * dim;  // constant term in gconst.
     int num_bad = 0;
 
     // Resize if Gaussians have been removed during Update()
-    if( num_mix!=gconsts.length() )
+    if( num_mix!=gconsts.size() )
     {
         gconsts.resize(num_mix);
     }
@@ -140,7 +123,7 @@ void KdGmm::ComputeGconsts()
 
 float KdGmm::calcLogSum()
 {
-    int len = loglikes.length();
+    int len = loglikes.size();
     float max_elem = 0;
 
     ////////////////find max
@@ -169,44 +152,4 @@ float KdGmm::calcLogSum()
         }
     }
     return max_elem + logf(sum_relto_max_elem);
-}
-
-// assume float
-QVector<float> kd_VectorRead(std::istream &is)
-{
-    std::ostringstream specific_error;
-    QVector<float> buf;
-
-    char *my_token =  "FV";
-    std::string token;
-    ReadToken(is, true, &token);
-    if( token!=my_token )
-    {
-        if( token.length()>20 )
-        {
-            token = token.substr(0, 17) + "...";
-        }
-        specific_error << ": Expected token " << my_token << ", got " << token;
-    }
-    int32 size;
-    ReadBasicType(is, true, &size);  // throws on error.
-    if( (MatrixIndexT)size!=buf.length() )
-    {
-        buf.resize(size);
-    }
-    if( size>0 )
-    {
-        for( int i=0 ; i<size ; i++ )
-        {
-            float f;
-            is.read(reinterpret_cast<char*>(&f), sizeof(float));
-            buf[i] = f;
-        }
-    }
-    if( is.fail() )
-    {
-        specific_error << "Error reading vector data (binary mode); truncated "
-                          "stream? (size = " << size << ")";
-    }
-    return buf;
 }

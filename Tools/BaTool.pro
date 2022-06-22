@@ -22,7 +22,7 @@ DEFINES += HAVE_MKL \
            CNN_USE_SSE \
            NDEBUG
 
-QMAKE_CXXFLAGS += -std=c++14 -m64 -msse3 -pthread -g -m64 -mavx
+QMAKE_CXXFLAGS += -std=c++14 -m64 -msse3 -pthread -mavx
 QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3
 

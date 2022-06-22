@@ -4,9 +4,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/kaldi-common.h"
-#include "matrix/matrix-lib.h"
 #include "bt_cfb.h"
+#include "kd_io.h"
+
+// QVector is slow during debug thus
+// std vector is used
 
 class KdGmm
 {
@@ -16,7 +18,7 @@ public:
     /// Returns the dimensionality of the Gaussian mean vectors
     int Dim() const { return means_invvars_.NumCols(); }
 
-    float LogLikelihood(kaldi::VectorBase<float> &data);
+    float LogLikelihood(double *data, int len);
 
     /// Sets the gconsts.  Returns the number that are "invalid" e.g. because of
     /// zero weights or variances.
@@ -28,14 +30,12 @@ private:
     float calcLogSum();
 
     /// Equals log(weight) - 0.5 * (log det(var) + mean*mean*inv(var))
-    QVector<float> gconsts;
+    std::vector<float> gconsts;
     bool valid_gconsts_;   ///< Recompute gconsts_ if false
-    QVector<float> weights_;        ///< weights (not log).
+    std::vector<float> weights_;        ///< weights (not log).
     kaldi::Matrix<float> inv_vars_;       ///< Inverted (diagonal) variances
     kaldi::Matrix<float> means_invvars_;  ///< Means times inverted variance
-    QVector<float> loglikes;
+    std::vector<float> loglikes;
 };
-
-QVector<float> kd_VectorRead(std::istream &is);
 
 #endif // KD_GMM_H
