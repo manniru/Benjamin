@@ -29,13 +29,11 @@ void KdAModel::Read(std::istream &in_stream)
     ReadBasicType(in_stream, true, &dim);
     ExpectToken(in_stream, true, "<NUMPDFS>");
     ReadBasicType(in_stream, true, &num_pdfs);
-    KALDI_ASSERT(num_pdfs > 0);
-    densities.reserve(num_pdfs);
+    densities.resize(num_pdfs);
     for( int i=0 ; i<num_pdfs; i++ )
     {
-        densities.push_back(new KdGmm());
-        densities.back()->Read(in_stream);
-        KALDI_ASSERT(densities.back()->Dim() == dim);
+        densities[i] = new KdGmm();
+        densities[i]->Read(in_stream);
     }
 }
 

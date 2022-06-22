@@ -20,11 +20,6 @@ KdGmm::KdGmm()
 float KdGmm::LogLikelihood(double *data, int len)
 {
     loglikes = gconsts;
-    if( len!=Dim() )
-    {
-        qDebug() << "DiagGmm::LogLikelihoods, dimension "
-                 << "mismatch " << len << " vs. " << Dim();
-    }
 
     int width  = loglikes.size();
     int height = len;
@@ -32,8 +27,8 @@ float KdGmm::LogLikelihood(double *data, int len)
     {
         for( int j=0 ; j<height ; j++ )
         {
-            loglikes[i] += means_invvars_(i,j) * data[j];
-            loglikes[i] -= 0.5 * inv_vars_(i,j) * data[j] * data[j];
+            loglikes[i] += means_invvars_.d[i][j] * data[j];
+            loglikes[i] -= 0.5 * inv_vars.d[i][j] * data[j] * data[j];
         }
     }
 
@@ -45,12 +40,12 @@ void KdGmm::Read(std::istream &is)
     std::string token;
     ReadToken(is, true, &token);
     // <DiagGMMBegin> is for compatibility. Will be deleted later
-    if (token != "<DiagGMMBegin>" && token != "<DiagGMM>")
+    if( token!="<DiagGMMBegin>" && token!="<DiagGMM>" )
     {
         qDebug() << "Expected <DiagGMM>, got " << token.c_str();
     }
     ReadToken(is, true, &token);
-    if (token == "<GCONSTS>")
+    if( token=="<GCONSTS>" )
     {  // The gconsts are optional.
         gconsts = kd_VectorRead(is);
         ExpectToken(is, true, "<WEIGHTS>");
@@ -67,21 +62,27 @@ void KdGmm::Read(std::istream &is)
     ExpectToken(is, true, "<MEANS_INVVARS>");
     means_invvars_ = kd_MatrixRead(is);
     ExpectToken(is, true, "<INV_VARS>");
-    inv_vars_ = kd_MatrixRead(is);
+    inv_vars = kd_MatrixRead(is);
     ReadToken(is, true, &token);
     // <DiagGMMEnd> is for compatibility. Will be deleted later
-    if (token != "<DiagGMMEnd>" && token != "</DiagGMM>")
+    if( token!="<DiagGMMEnd>" && token!="</DiagGMM>" )
     {
         KALDI_ERR << "Expected </DiagGMM>, got " << token;
     }
 
     ComputeGconsts();  // safer option than trusting the read gconsts
+    if( BT_DELTA_SIZE!=means_invvars_.cols )
+    {
+        qDebug() << "DiagGmm::LogLikelihoods, dimension "
+                 << "mismatch " << BT_DELTA_SIZE
+                 << " vs. " << means_invvars_.cols;
+    }
 }
 
 void KdGmm::ComputeGconsts()
 {
     int num_mix = weights_.size();
-    int dim = Dim();
+    int dim = BT_DELTA_SIZE;
     float offset = -0.5 * M_LOG_2PI * dim;  // constant term in gconst.
     int num_bad = 0;
 
@@ -96,12 +97,12 @@ void KdGmm::ComputeGconsts()
         float gc = logf(weights_[mix]) + offset;  // May be -inf if weights == 0
         for (int d = 0; d < dim; d++)
         {
-            gc += 0.5 * Log(inv_vars_(mix, d)) - 0.5 * means_invvars_(mix, d)
-                    * means_invvars_(mix, d) / inv_vars_(mix, d);
+            gc += 0.5 * Log(inv_vars.d[mix][d]) - 0.5 * means_invvars_.d[mix][d]
+                    * means_invvars_.d[mix][d] / inv_vars.d[mix][d];
         }
         // Change sign for logdet because var is inverted. Also, note that
-        // mean_invvars(mix, d)*mean_invvars(mix, d)/inv_vars(mix, d) is the
-        // mean-squared times inverse variance, since mean_invvars(mix, d) contains
+        // mean_invvars.d[mix][d]*mean_invvars.d[mix][d]/inv_vars.d[mix][d] is the
+        // mean-squared times inverse variance, since mean_invvars.d[mix][d] contains
         // the mean times inverse variance.
         // So gc is the likelihood at zero feature value.
 
