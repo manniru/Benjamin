@@ -36,4 +36,6 @@ private:
     QVector<float> loglikes;
 };
 
+QVector<float> kd_VectorRead(std::istream &is);
+
 #endif // KD_GMM_H

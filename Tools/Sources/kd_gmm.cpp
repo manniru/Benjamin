@@ -59,7 +59,6 @@ float KdGmm::LogLikelihood(kaldi::VectorBase<float> &data)
 
 void KdGmm::Read(std::istream &is)
 {
-    //  ExpectToken(is, binary, "<DiagGMMBegin>");
     std::string token;
     ReadToken(is, true, &token);
     // <DiagGMMBegin> is for compatibility. Will be deleted later
@@ -70,7 +69,7 @@ void KdGmm::Read(std::istream &is)
     ReadToken(is, true, &token);
     if (token == "<GCONSTS>")
     {  // The gconsts are optional.
-        //        gconsts.Read(is, true);
+        gconsts = kd_VectorRead(is);
         ExpectToken(is, true, "<WEIGHTS>");
     }
     else
@@ -81,12 +80,11 @@ void KdGmm::Read(std::istream &is)
                      << token.c_str();
         }
     }
-    //    weights_.Read(is, true);
+    weights_ = kd_VectorRead(is);
     ExpectToken(is, true, "<MEANS_INVVARS>");
     means_invvars_.Read(is, true);
     ExpectToken(is, true, "<INV_VARS>");
     inv_vars_.Read(is, true);
-    //  ExpectToken(is, true, "<DiagGMMEnd>");
     ReadToken(is, true, &token);
     // <DiagGMMEnd> is for compatibility. Will be deleted later
     if (token != "<DiagGMMEnd>" && token != "</DiagGMM>")
@@ -142,12 +140,27 @@ void KdGmm::ComputeGconsts()
 
 float KdGmm::calcLogSum()
 {
-    float max_elem = 0/*loglikes.Max()*/;
+    int len = loglikes.length();
+    float max_elem = 0;
+
+    ////////////////find max
+    if( len )
+    {
+        max_elem = loglikes[0];
+    }
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( max_elem<loglikes[i] )
+        {
+            max_elem = loglikes[i];
+        }
+    }
+    /////////////////////end
+
     float cutoff = max_elem + logf(KD_FLT_EPSILON);
 
     double sum_relto_max_elem = 0.0;
 
-    int len = loglikes.length();
     for( int i=0; i<len ; i++ )
     {
         if( loglikes[i]>=cutoff )
@@ -158,44 +171,42 @@ float KdGmm::calcLogSum()
     return max_elem + logf(sum_relto_max_elem);
 }
 
-void kd_VectorRead(std::istream &is)
+// assume float
+QVector<float> kd_VectorRead(std::istream &is)
 {
     std::ostringstream specific_error;
-    Vector<float> buf;
+    QVector<float> buf;
 
-    int peekval = Peek(is, true);
     char *my_token =  "FV";
-    char other_token_start = 'D';
-    if( peekval==other_token_start )
-    {  // need to instantiate the other type to read it.
-        Vector<double> other(buf.Dim());
-        other.Read(is, true);  // add is false at this point.
-        if( buf.Dim()!=other.Dim() )
-            buf.Resize(other.Dim());
-        buf.CopyFromVec(other);
-        return;
-    }
     std::string token;
     ReadToken(is, true, &token);
-    if (token != my_token)
+    if( token!=my_token )
     {
-        if (token.length() > 20)
+        if( token.length()>20 )
+        {
             token = token.substr(0, 17) + "...";
+        }
         specific_error << ": Expected token " << my_token << ", got " << token;
     }
     int32 size;
     ReadBasicType(is, true, &size);  // throws on error.
-    if ((MatrixIndexT)size != buf.Dim())
+    if( (MatrixIndexT)size!=buf.length() )
     {
-        buf.Resize(size);
+        buf.resize(size);
     }
-    if (size > 0)
+    if( size>0 )
     {
-//        is.read(reinterpret_cast<char*>(buf.data_), sizeof(float)*size);
+        for( int i=0 ; i<size ; i++ )
+        {
+            float f;
+            is.read(reinterpret_cast<char*>(&f), sizeof(float));
+            buf[i] = f;
+        }
     }
-    if (is.fail())
+    if( is.fail() )
     {
         specific_error << "Error reading vector data (binary mode); truncated "
                           "stream? (size = " << size << ")";
     }
+    return buf;
 }
