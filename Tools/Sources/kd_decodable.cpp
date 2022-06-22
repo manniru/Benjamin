@@ -2,7 +2,7 @@
 #include <QDebug>
 
 KdDecodable::KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
-                         kaldi::TransitionModel *t_mdl, float scale)
+                         KdTransitionModel *t_mdl, float scale)
 {
     ac_scale_ = scale;
     cur_frame_ = -1;
@@ -35,7 +35,7 @@ float KdDecodable::LogLikelihood(uint frame, int index)
         CacheFeature(frame);
     }
 
-    int pdf_id = trans_model->TransitionIdToPdf(index);
+    int pdf_id = trans_model->id2pdf[index];
 
     if( cache_[pdf_id].first==frame)
     {

@@ -8,6 +8,7 @@
 #include "kd_model.h"
 #include "kd_a_model.h"
 #include "bt_feinput.h"
+#include "kd_t_model.h"
 
 #define MAX_FRAME_CNT 400
 typedef struct KdPDF
@@ -27,7 +28,7 @@ class KdDecodable
 {
 public:
     KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
-                kaldi::TransitionModel *t_mdl, float scale);
+                KdTransitionModel *t_mdl, float scale);
     ~KdDecodable();
 
     /// Returns the scaled log likelihood
@@ -43,7 +44,7 @@ private:
 
     KdAModel *ac_model;
     float ac_scale_;
-    kaldi::TransitionModel *trans_model;
+    KdTransitionModel *trans_model;
     int feat_dim;  // dimensionality of the input features
     BtFrameBuf *feat_buf;
     int cur_frame_;

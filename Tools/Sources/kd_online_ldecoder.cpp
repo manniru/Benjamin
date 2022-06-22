@@ -3,7 +3,7 @@
 
 QString dbg_times;
 
-KdOnlineLDecoder::KdOnlineLDecoder(kaldi::TransitionModel *trans_model)
+KdOnlineLDecoder::KdOnlineLDecoder(KdTransitionModel *trans_model)
 {
     fst_graph = kd_readDecodeGraph(BT_FST_PATH);
 

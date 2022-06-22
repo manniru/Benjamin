@@ -32,7 +32,7 @@ void BtTest::init()
     std::string model_filename = BT_OAMDL_PATH;
 
     oa_model = new KdAModel;
-    t_model = new kaldi::TransitionModel;
+    t_model = new KdTransitionModel;
 
     bool binary;
     kaldi::Input ki(model_filename, &binary);

@@ -42,7 +42,7 @@ private:
 
     KdOnlineLDecoder *o_decoder;
 
-    kaldi::TransitionModel *t_model;
+    KdTransitionModel *t_model;
     KdAModel               *oa_model; //online accoustic model
 };
 

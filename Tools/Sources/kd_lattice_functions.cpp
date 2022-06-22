@@ -42,7 +42,7 @@ void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times)
 }
 
 // DeterminizeLatticePhonePrunedWrapper
-bool kd_detLatPhonePrunedW(kaldi::TransitionModel *trans_model,
+bool kd_detLatPhonePrunedW(KdTransitionModel *trans_model,
                            KdLattice *ifst, double beam,
                            KdCompactLattice *ofst,
                            KdPrunedOpt opts)
@@ -65,7 +65,7 @@ bool kd_detLatPhonePrunedW(kaldi::TransitionModel *trans_model,
 }
 
 // DeterminizeLatticePhonePruned
-bool kd_detLatPhonePruned(kaldi::TransitionModel *trans_model,
+bool kd_detLatPhonePruned(KdTransitionModel *trans_model,
                           KdLattice *ifst, double beam,
                           KdCompactLattice *ofst, KdPrunedOpt opts)
 {
@@ -85,7 +85,7 @@ bool kd_detLatPhonePruned(kaldi::TransitionModel *trans_model,
 }
 
 //DeterminizeLatticePhonePrunedFirstPass
-bool kd_DetLatFirstPass(kaldi::TransitionModel *trans_model,
+bool kd_DetLatFirstPass(KdTransitionModel *trans_model,
                         double beam, KdLattice *fst, KdDetOpt *opts)
 {
     // First, insert the phones.
@@ -105,7 +105,7 @@ bool kd_DetLatFirstPass(kaldi::TransitionModel *trans_model,
 
 // DeterminizeLatticeInsertPhones
 KdLatticeArc::Label kd_DetLatInsertPhones(
-        kaldi::TransitionModel *trans_model, KdLattice *fst)
+        KdTransitionModel *trans_model, KdLattice *fst)
 {
     // Define some types.
     typedef typename KdLatticeArc::StateId StateId;

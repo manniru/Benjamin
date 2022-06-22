@@ -10,6 +10,7 @@
 #include "kd_lattice_det.h"
 #include "kd_token.h"
 #include "kd_lattice_prune.h"
+#include "kd_t_model.h"
 
 struct KdPrunedOpt
 {
@@ -28,10 +29,10 @@ struct KdPrunedOpt
 
 void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times);
 bool kd_PruneLattice(float beam, KdLattice *lat);
-bool kd_detLatPhonePrunedW(kaldi::TransitionModel *trans_model,
+bool kd_detLatPhonePrunedW(KdTransitionModel *trans_model,
                            KdLattice *ifst, double beam,
                            KdCompactLattice *ofst, KdPrunedOpt opts);
-bool kd_detLatPhonePruned(kaldi::TransitionModel *trans_model,
+bool kd_detLatPhonePruned(KdTransitionModel *trans_model,
                           KdLattice *ifst, double beam,
                           KdCompactLattice *ofst, KdPrunedOpt opts);
 /** first pass determinization with phone symbols inserted
@@ -45,14 +46,14 @@ bool kd_detLatPhonePruned(kaldi::TransitionModel *trans_model,
     be useful for some other applications such as fMLLR estimation, confidence
     estimation, discriminative training, etc.
 */
-bool kd_DetLatFirstPass(kaldi::TransitionModel *trans_model,
+bool kd_DetLatFirstPass(KdTransitionModel *trans_model,
                         double beam, KdLattice *fst, KdDetOpt *opts);
 bool kd_detLatPruned(KdLattice &ifst, double beam,
                      KdLattice *ofst, KdDetOpt opts);
 bool kd_detLatPruned(KdLattice &ifst, double beam,
                      KdCompactLattice *ofst, KdDetOpt opts);
 
-KdLatticeArc::Label kd_DetLatInsertPhones(kaldi::TransitionModel *trans_model,
+KdLatticeArc::Label kd_DetLatInsertPhones(KdTransitionModel *trans_model,
                                           KdLattice *fst);
 
 void kd_DetLatDeletePhones( KdLatticeArc::Label first_phone_label,

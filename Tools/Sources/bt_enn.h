@@ -39,7 +39,7 @@ private:
     BtCyclic         *cy_buf;
     KdOnlineStatus    status;
     KdOnlineLDecoder *o_decoder;
-    kaldi::TransitionModel *t_model;
+    KdTransitionModel *t_model;
     KdAModel         *oa_model; //online accoustic model
     BtWavWriter      *wav_w;
     QVector<BtWord>   last_r; //last_result

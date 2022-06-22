@@ -75,6 +75,7 @@ HEADERS += \
     Sources/kd_model.h \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
+    Sources/kd_t_model.h \
     Sources/kd_token.h
 
 SOURCES += \
@@ -119,6 +120,7 @@ SOURCES += \
     Sources/kd_model.cpp \
     Sources/kd_online_ldecoder.cpp \
     Sources/kd_online.cpp \
+    Sources/kd_t_model.cpp \
     Sources/kd_token.cpp \
     Sources/main.cpp \
     Sources/td_network.cpp

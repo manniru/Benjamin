@@ -41,7 +41,7 @@ struct KdOnlineStatus
 class KdOnlineLDecoder : public KdDecoder
 {
 public:
-    KdOnlineLDecoder(kaldi::TransitionModel *trans_model);
+    KdOnlineLDecoder(KdTransitionModel *trans_model);
 
     void Decode();
 
@@ -72,7 +72,7 @@ private:
     BtGraphD *graph;
 
     KdOnlineLDecoderOpts    opts;
-    kaldi::TransitionModel *t_model; // needed for trans-id -> phone conversion
+    KdTransitionModel *t_model; // needed for trans-id -> phone conversion
     float effective_beam_; // the currently used beam
     clock_t start_t;
 };

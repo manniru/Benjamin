@@ -52,7 +52,7 @@ void KdGmm::Read(std::istream &is)
     }
     else
     {
-        if (token != "<WEIGHTS>")
+        if( token!="<WEIGHTS>" )
         {
             qDebug() << "DiagGmm::Read, expected <WEIGHTS> or <GCONSTS>, got "
                      << token.c_str();
@@ -67,7 +67,7 @@ void KdGmm::Read(std::istream &is)
     // <DiagGMMEnd> is for compatibility. Will be deleted later
     if( token!="<DiagGMMEnd>" && token!="</DiagGMM>" )
     {
-        KALDI_ERR << "Expected </DiagGMM>, got " << token;
+        qDebug() << "Expected </DiagGMM>, got " << token.c_str();
     }
 
     ComputeGconsts();  // safer option than trusting the read gconsts
