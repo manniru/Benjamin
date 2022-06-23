@@ -1,16 +1,10 @@
 #ifndef KD_T_MODEL_H
 #define KD_T_MODEL_H
 
-#include "base/kaldi-common.h"
-#include "util/const-integer-set.h"
-#include "fst/fst-decl.h" // forward declarations.
-#include "hmm/hmm-topology.h"
-#include "itf/options-itf.h"
-#include "itf/context-dep-itf.h"
-#include "matrix/kaldi-vector.h"
 #include "bt_cfb.h"
 #include "kd_gmm.h"
-
+#include "kd_io.h"
+#include "kd_hmm.h"
 
 struct KdTuple
 {
@@ -40,15 +34,13 @@ class KdTransitionModel
 {
 
 public:
-    KdTransitionModel(): num_pdfs(0) { }
+    KdTransitionModel();
 
-    void Read(std::istream &is, bool binary);
+    void Read(std::istream &is);
 
-    int TransitionIdToPhone(int trans_id) const;
-    int TransitionIdToHmmState(int trans_id) const;
-
-    // (which is bound to be nonemitting).
-    bool IsSelfLoop(int trans_id) const;  // return true if this trans_id corresponds to a self-loop.
+    int TransitionIdToPhone(int trans_id);
+    int TransitionIdToHmmState(int trans_id);
+    bool IsSelfLoop(int trans_id);  // return true if this trans_id corresponds to a self-loop.
 
     /// Returns the total number of transition-ids (note, these are one-based).
     int NumTransitionIds();
@@ -57,11 +49,8 @@ public:
 
 private:
     void ComputeDerived();  // called from constructor and Read function: computes state2id_ and id2state_.
-    void ComputeDerivedOfProbs();  // computes quantities derived from log-probs (currently just
-    // non_self_loop_log_probs_; called whenever log-probs change.
-    void InitializeProbs();  // called from constructor.
 
-    kaldi::HmmTopology topo_;
+    KdHmmTopology topo_;
 
     /// Tuples indexed by transition state minus one;
     /// the tuples are in sorted order which allows us to do the reverse mapping from
@@ -75,10 +64,10 @@ private:
 
     /// For each transition-id, the corresponding transition
     /// state (indexed by transition-id).
-    std::vector<int> id2state_;
+    std::vector<int> id2state;
 
     /// For each transition-id, the corresponding log-prob.  Indexed by transition-id.
-    kaldi::Vector<float> log_probs_;
+    std::vector<float> log_probs_;
 };
 
 #endif // KD_T_MODEL_H

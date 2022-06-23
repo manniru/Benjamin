@@ -14,7 +14,7 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
 
     bool binary;
     kaldi::Input ki(model_filename, &binary);
-    t_model->Read(ki.Stream(), binary);
+    t_model->Read(ki.Stream());
     oa_model->Read(ki.Stream());
 
     o_decoder = new KdOnlineLDecoder(t_model);

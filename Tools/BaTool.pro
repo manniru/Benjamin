@@ -14,7 +14,7 @@ linux:LIBS += -pthread \
               -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
               -lm -ldl \
               -LKaldi/Libs \
-              -lkaldi-hmm -lkaldi-tree -lkaldi-util \
+              -lkaldi-tree -lkaldi-util \
               -lkaldi-matrix -lkaldi-base -lportaudio -lasound -lrt -ljack -lfst
 
 DEFINES += HAVE_MKL \
@@ -62,6 +62,7 @@ HEADERS += \
     Sources/kd_f_token.h \
     Sources/kd_fst_util.h \
     Sources/kd_gmm.h \
+    Sources/kd_hmm.h \
     Sources/kd_io.h \
     Sources/kd_lattice.h \
     Sources/kd_lattice_compact.h \
@@ -107,6 +108,7 @@ SOURCES += \
     Sources/kd_f_token.cpp \
     Sources/kd_fst_util.cpp \
     Sources/kd_gmm.cpp \
+    Sources/kd_hmm.cpp \
     Sources/kd_io.cpp \
     Sources/kd_lattice.cpp \
     Sources/kd_lattice_compact.cpp \
