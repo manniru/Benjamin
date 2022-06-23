@@ -10,7 +10,7 @@ KdDecodable::KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
     ac_model = a_mdl;
     trans_model = t_mdl;
 
-    int num_pdfs = trans_model->NumPdfs();
+    int num_pdfs = trans_model->num_pdfs;
     cache_.resize(num_pdfs, std::pair<int,float>(-1, 0.0f));
 
     features = new BtFeInput(buf);

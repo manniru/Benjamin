@@ -14,10 +14,10 @@
 struct KdDecoderConfig
 {
     float beam = 16;
-    int32 max_active = 900;
-    int32 min_active = 200;
+    int max_active = 900;
+    int min_active = 200;
     float beam_delta = 0.5;
-//    int32 prune_interval = 25;
+//    int prune_interval = 25;
 //    float prune_scale = 0.1; // not a very important parameter.
 
     KdPrunedOpt det_opts;

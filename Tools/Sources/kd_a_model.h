@@ -13,7 +13,7 @@ public:
     KdAModel();
     ~KdAModel();
 
-    float LogLikelihood(int32 pdf_index, BtFrameBuf *buf);
+    float LogLikelihood(int pdf_index, BtFrameBuf *buf);
     void Read(std::istream &in_stream);
 
 private:

@@ -245,7 +245,7 @@ void KdLatDet::RebuildRepository()
 
 bool KdLatDet::CheckMemoryUsage()
 {
-    int32 repo_size = repository_.MemSize(),
+    int repo_size = repository_.MemSize(),
             arcs_size = num_arcs_ * sizeof(TempArc),
             elems_size = num_elems_ * sizeof(Element),
             total_size = repo_size + arcs_size + elems_size;
@@ -253,13 +253,13 @@ bool KdLatDet::CheckMemoryUsage()
         // This is usually due to the repository getting large, so we
         // clean this out.
         RebuildRepository();
-        int32 new_repo_size = repository_.MemSize(),
+        int new_repo_size = repository_.MemSize(),
                 new_total_size = new_repo_size + arcs_size + elems_size;
 
         KALDI_VLOG(2) << "Rebuilt repository in determinize-lattice: repository shrank from "
                       << repo_size << " to " << new_repo_size << " bytes (approximately)";
 
-        if( new_total_size > static_cast<int32>(opts_.max_mem * 0.8)) {
+        if( new_total_size > static_cast<int>(opts_.max_mem * 0.8)) {
             // Rebuilding didn't help enough-- we need a margin to stop
             // having to rebuild too often.  We'll just return to the user at
             // this point, with a partial lattice that's pruned tighter than

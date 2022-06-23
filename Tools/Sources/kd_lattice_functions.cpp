@@ -175,11 +175,11 @@ bool kd_detLatPruned(KdLattice &ifst, double beam,
         return true;
     }
     KALDI_ASSERT(opts.retry_cutoff >= 0.0 && opts.retry_cutoff < 1.0);
-    int32 max_num_iters = 10;  // avoid the potential for infinite loops if
+    int max_num_iters = 10;  // avoid the potential for infinite loops if
     // retrying.
     KdLattice temp_fst;
 
-    for( int32 iter = 0; iter < max_num_iters; iter++)
+    for( int iter = 0; iter < max_num_iters; iter++)
     {
         KdLatDet det(iter==0 ? ifst : temp_fst, beam, opts);
         double effective_beam;

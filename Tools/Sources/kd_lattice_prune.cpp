@@ -71,7 +71,7 @@ QString KdPrune::prune(KdLattice *lat)
 
 double KdPrune::getCutOff(KdLattice *lat)
 {
-    int32 start = lat->Start();
+    int start = lat->Start();
     forward_cost.resize(num_states);
     for( int i=0 ; i<num_states ; i++ )
     {

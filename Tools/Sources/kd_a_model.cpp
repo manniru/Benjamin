@@ -23,7 +23,7 @@ KdAModel::~KdAModel()
 
 void KdAModel::Read(std::istream &in_stream)
 {
-    int32 num_pdfs, dim;
+    int num_pdfs, dim;
 
     ExpectToken(in_stream, true, "<DIMENSION>");
     ReadBasicType(in_stream, true, &dim);

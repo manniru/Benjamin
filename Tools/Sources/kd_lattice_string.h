@@ -10,7 +10,7 @@
 // used in determinization algorithm.  It is constructed in such a way that
 // finding the string-id of the successor of (string, next-label) has constant time.
 
-// Note: class IntType, typically int32, is the type of the element in the
+// Note: class IntType, typically int, is the type of the element in the
 // string (typically a template argument of the CompactLatticeWeightTpl).
 
 // KdLatString
@@ -184,7 +184,7 @@ public:
     }
 
     ~KdLatString() { Destroy(); }
-    int32 MemSize() const {
+    int MemSize() const {
         return set_.size() * sizeof(Entry) * 2; // this is a lower bound
         // on the size this structure might take.
     }
