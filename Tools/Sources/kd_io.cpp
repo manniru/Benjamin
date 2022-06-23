@@ -35,9 +35,9 @@ std::vector<float> kd_VectorRead(std::istream &is)
 }
 
 // Not support compressed or double matrix
-KdMat kd_MatrixRead(std::istream &is)
+KdMatrix kd_MatrixRead(std::istream &is)
 {
-    KdMat buf;
+    KdMatrix buf;
     // now assume add == false.
     std::string token;
     ReadToken(is, true, &token);
@@ -54,7 +54,7 @@ KdMat kd_MatrixRead(std::istream &is)
         buf.d[i] = (float *)malloc(sizeof(float)*buf.cols);
         is.read((char*)(buf.d[i]), sizeof(float)*buf.cols);
     }
-    if (is.fail())
+    if( is.fail())
     {
         qDebug() << "is.fail()";
     }

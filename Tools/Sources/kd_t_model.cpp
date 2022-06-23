@@ -19,7 +19,7 @@ void KdTransitionModel::ComputeDerived()
     for (int tstate = 1; tstate<=(t_states.size()+1) ; tstate++ )
     {
         state2id_[tstate] = cur_transition_id;
-        if (static_cast<size_t>(tstate) <= t_states.size())
+        if( static_cast<size_t>(tstate) <= t_states.size())
         {
             int phone = t_states[tstate-1].phone,
                     hmm_state = t_states[tstate-1].hmm_state,
@@ -38,7 +38,7 @@ void KdTransitionModel::ComputeDerived()
     for (int tstate = 1; tstate <= static_cast<int>(t_states.size()); tstate++) {
         for (int tid = state2id_[tstate]; tid < state2id_[tstate+1]; tid++) {
             id2state[tid] = tstate;
-            if (IsSelfLoop(tid))
+            if( IsSelfLoop(tid))
                 id2pdf[tid] = t_states[tstate-1].self_loop_pdf;
             else
                 id2pdf[tid] = t_states[tstate-1].forward_pdf;
@@ -69,9 +69,9 @@ void KdTransitionModel::Read(std::istream &is)
         ReadBasicType(is, true, &(t_states[i].phone));
         ReadBasicType(is, true, &(t_states[i].hmm_state));
         ReadBasicType(is, true, &(t_states[i].forward_pdf));
-        if (token == "<Tuples>")
+        if( token == "<Tuples>")
             ReadBasicType(is, true, &(t_states[i].self_loop_pdf));
-        else if (token == "<Triples>")
+        else if( token == "<Triples>")
             t_states[i].self_loop_pdf = t_states[i].forward_pdf;
     }
     ReadToken(is, true, &token);

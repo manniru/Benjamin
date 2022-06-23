@@ -72,6 +72,7 @@ HEADERS += \
     Sources/kd_lattice_string.h \
     Sources/kd_lattice_weight.h \
     Sources/kd_levenshtein.h \
+    Sources/kd_matrix.h \
     Sources/kd_mbr.h \
     Sources/kd_model.h \
     Sources/kd_online_ldecoder.h \
@@ -118,6 +119,7 @@ SOURCES += \
     Sources/kd_lattice_string.cpp \
     Sources/kd_lattice_weight.cpp \
     Sources/kd_levenshtein.cpp \
+    Sources/kd_matrix.cpp \
     Sources/kd_mbr.cpp \
     Sources/kd_model.cpp \
     Sources/kd_online_ldecoder.cpp \

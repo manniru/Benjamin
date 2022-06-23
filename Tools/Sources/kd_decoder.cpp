@@ -106,7 +106,7 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
                          cf_costs.begin() + config.max_active,
                          cf_costs.end());
         max_active_cutoff = cf_costs[config.max_active];
-        if ( max_active_cutoff<beam_cutoff)
+        if(  max_active_cutoff<beam_cutoff)
         {
             // max_active is tighter than beam.
             adaptive_beam  = max_active_cutoff - best_cost;

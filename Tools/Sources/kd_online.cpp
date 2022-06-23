@@ -114,7 +114,7 @@ void KdOnline::writeWav(int len)
     }
     qDebug() << "data len" << o_decoder->uframe;
 
-    if ( o_decoder->wav_id<BT_WAV_MAX )
+    if(  o_decoder->wav_id<BT_WAV_MAX )
     {
         o_decoder->wav_id++;
     }

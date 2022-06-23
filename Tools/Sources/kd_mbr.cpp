@@ -276,7 +276,6 @@ void KdMBR::createMBRLat(KdCompactLattice *clat)
     }
 }
 
-
 double KdMBR::editDistance()
 {
     int state_count = mlat.size() - 1; // = Number of words

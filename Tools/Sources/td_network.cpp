@@ -16,7 +16,7 @@ TdNetwork::TdNetwork(QString word)
         // load model
         std::ifstream ifs(model_path.toStdString().c_str(),
                           std::ios::binary | std::ios::in);
-        if (ifs.fail() || ifs.bad())
+        if( ifs.fail() || ifs.bad())
         {
             qDebug() << "model " << model_path << "failed to open";
             return;

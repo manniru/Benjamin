@@ -24,8 +24,8 @@ private:
 
     /// Equals log(weight) - 0.5 * (log det(var) + mean*mean*inv(var))
     bool valid_gconsts_;   ///< Recompute gconsts_ if false
-    KdMat inv_vars;       ///< Inverted (diagonal) variances
-    KdMat means_invvars_;  ///< Means times inverted variance
+    KdMatrix inv_vars;       ///< Inverted (diagonal) variances
+    KdMatrix means_invvars_;  ///< Means times inverted variance
     std::vector<float> gconsts;
     std::vector<float> weights_;        ///< weights (not log).
     std::vector<float> loglikes;

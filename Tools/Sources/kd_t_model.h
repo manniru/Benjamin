@@ -16,12 +16,12 @@ struct KdTuple
     KdTuple(int phone, int hmm_state, int forward_pdf, int self_loop_pdf):
         phone(phone), hmm_state(hmm_state), forward_pdf(forward_pdf), self_loop_pdf(self_loop_pdf) { }
     bool operator < (const KdTuple &other) const {
-        if (phone < other.phone) return true;
-        else if (phone > other.phone) return false;
-        else if (hmm_state < other.hmm_state) return true;
-        else if (hmm_state > other.hmm_state) return false;
-        else if (forward_pdf < other.forward_pdf) return true;
-        else if (forward_pdf > other.forward_pdf) return false;
+        if( phone < other.phone) return true;
+        else if( phone > other.phone) return false;
+        else if( hmm_state < other.hmm_state) return true;
+        else if( hmm_state > other.hmm_state) return false;
+        else if( forward_pdf < other.forward_pdf) return true;
+        else if( forward_pdf > other.forward_pdf) return false;
         else return (self_loop_pdf < other.self_loop_pdf);
     }
     bool operator == (const KdTuple &other) const {

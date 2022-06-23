@@ -112,7 +112,7 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
     for( KdStateId s = 0; s < num_states; s++)
     {
         KdCLatWeight final_weight = ifst.Final(s);
-        if (final_weight!=KdCLatWeight::Zero())
+        if( final_weight!=KdCLatWeight::Zero())
         {
             KdStateId cur_state = s;
             size_t string_length = final_weight.string.size();
@@ -122,7 +122,7 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
                 KdLatticeArc arc(ilabel, final_weight.string[n],
                                  (n==0 ? final_weight.weight : KdLatticeWeight::One()),
                                  next_state);
-                if (invert) std::swap(arc.ilabel, arc.olabel);
+                if( invert) std::swap(arc.ilabel, arc.olabel);
                 ofst->AddArc(cur_state, arc);
                 cur_state = next_state;
             }
@@ -178,7 +178,7 @@ void kd_RemoveAlignmentsFromCompactLattice(KdCompactLattice *fst)
             aiter.SetValue(arc);
         }
         KdCLatWeight final_weight = fst->Final(s);
-        if (final_weight!=KdCLatWeight::Zero())
+        if( final_weight!=KdCLatWeight::Zero())
         {
             fst->SetFinal(s, KdCLatWeight(final_weight.weight, std::vector<int>()));
         }
@@ -195,18 +195,18 @@ KdStateId kd_CreateSuperFinal(KdCompactLattice *fst)
     std::vector<KdStateId> final_states;
     for( KdStateId s = 0; s < num_states; s++)
     {
-        if (fst->Final(s)!=KdCLatWeight::Zero())
+        if( fst->Final(s)!=KdCLatWeight::Zero())
         {
             num_final++;
             final_states.push_back(s);
         }
     }
-    if (final_states.size()==1)
+    if( final_states.size()==1)
     {
-        if (fst->Final(final_states[0])==KdCLatWeight::One())
+        if( fst->Final(final_states[0])==KdCLatWeight::One())
         {
             fst::ArcIterator<KdCompactLattice> iter(*fst, final_states[0]);
-            if (iter.Done())
+            if( iter.Done())
             {
                 // We already have a final state w/ no transitions out and unit weight.
                 // So we're done.

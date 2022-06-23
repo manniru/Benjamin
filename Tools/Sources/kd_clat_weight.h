@@ -85,7 +85,7 @@ inline KdCLatWeight Times(const KdCLatWeight &w1,
                           const KdCLatWeight &w2)
 {
     KdLatticeWeight w = Times(w1.weight, w2.weight);
-    if (w==KdLatticeWeight::Zero())
+    if( w==KdLatticeWeight::Zero())
     {
         return KdCLatWeight::Zero();
         // special case to ensure zero is unique
@@ -105,9 +105,9 @@ inline KdCLatWeight Divide(const KdCLatWeight &w1,
                            const KdCLatWeight &w2,
                            fst::DivideType div = fst::DIVIDE_ANY)
 {
-    if (w1.weight==KdLatticeWeight::Zero())
+    if( w1.weight==KdLatticeWeight::Zero())
     {
-        if (w2.weight!=KdLatticeWeight::Zero())
+        if( w2.weight!=KdLatticeWeight::Zero())
         {
             return KdCLatWeight::Zero();
         }
@@ -117,7 +117,7 @@ inline KdCLatWeight Divide(const KdCLatWeight &w1,
             exit(5);
         }
     }
-    else if (w2.weight==KdLatticeWeight::Zero())
+    else if( w2.weight==KdLatticeWeight::Zero())
     {
         qDebug() << "Error: division by zero";
         exit(5);
@@ -125,16 +125,16 @@ inline KdCLatWeight Divide(const KdCLatWeight &w1,
     KdLatticeWeight w = Divide(w1.weight, w2.weight);
 
     const std::vector<int> v1 = w1.string, v2 = w2.string;
-    if (v2.size() > v1.size())
+    if( v2.size() > v1.size())
     {
         qDebug() << "Cannot divide, length mismatch";
         exit(5);
     }
     typename std::vector<int>::const_iterator v1b = v1.begin(),
             v1e = v1.end(), v2b = v2.begin(), v2e = v2.end();
-    if (div==fst::DIVIDE_LEFT)
+    if( div==fst::DIVIDE_LEFT)
     {
-        if (!std::equal(v2b, v2e, v1b))
+        if( !std::equal(v2b, v2e, v1b))
         { // v2 must be identical to first part of v1.
             qDebug() << "Cannot divide, data mismatch";
             exit(5);
@@ -142,9 +142,9 @@ inline KdCLatWeight Divide(const KdCLatWeight &w1,
         return KdCLatWeight(
                     w, std::vector<int>(v1b+(v2e-v2b), v1e)); // return last part of v1.
     }
-    else if (div==fst::DIVIDE_RIGHT)
+    else if( div==fst::DIVIDE_RIGHT)
     {
-        if (!std::equal(v2b, v2e, v1e-(v2e-v2b)))
+        if( !std::equal(v2b, v2e, v1e-(v2e-v2b)))
         { // v2 must be identical to last part of v1.
             qDebug() << "Cannot divide, data mismatch";
             exit(5);

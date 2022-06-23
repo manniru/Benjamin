@@ -12,7 +12,7 @@ void KdHmmTopology::Read(std::istream &is)
     int32 sz;
     ReadBasicType(is, true, &sz);
     bool is_hmm = true;
-    if (sz == -1) {
+    if( sz == -1) {
         is_hmm = false;
         ReadBasicType(is, true, &sz);
     }
@@ -23,7 +23,7 @@ void KdHmmTopology::Read(std::istream &is)
         entries[i].resize(thist_sz);
         for (int32 j = 0 ; j < thist_sz; j++) {
             ReadBasicType(is, true, &(entries[i][j].forward_pdf_class));
-            if (is_hmm)
+            if( is_hmm)
                 entries[i][j].self_loop_pdf_class = entries[i][j].forward_pdf_class;
             else
                 ReadBasicType(is, true, &(entries[i][j].self_loop_pdf_class));

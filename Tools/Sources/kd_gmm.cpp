@@ -95,10 +95,10 @@ void KdGmm::ComputeGconsts()
     for( int mix=0 ; mix<num_mix ; mix++ )
     {
         float gc = logf(weights_[mix]) + offset;  // May be -inf if weights == 0
-        for (int d = 0; d < dim; d++)
+        for( int i=0 ; i<dim ; i++ )
         {
-            gc += 0.5 * Log(inv_vars.d[mix][d]) - 0.5 * means_invvars_.d[mix][d]
-                    * means_invvars_.d[mix][d] / inv_vars.d[mix][d];
+            gc += 0.5 * Log(inv_vars.d[mix][i]) - 0.5 * means_invvars_.d[mix][i]
+                    * means_invvars_.d[mix][i] / inv_vars.d[mix][i];
         }
         // Change sign for logdet because var is inverted. Also, note that
         // mean_invvars.d[mix][d]*mean_invvars.d[mix][d]/inv_vars.d[mix][d] is the
@@ -106,12 +106,12 @@ void KdGmm::ComputeGconsts()
         // the mean times inverse variance.
         // So gc is the likelihood at zero feature value.
 
-        if (std::isinf(gc))
+        if( std::isinf(gc) )
         {
             num_bad++;
             // If positive infinity, make it negative infinity.
             // Want to make sure the answer becomes -inf in the end, not NaN.
-            if (gc > 0)
+            if( gc > 0)
             {
                 gc = -gc;
             }
