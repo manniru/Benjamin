@@ -1,7 +1,7 @@
 #ifndef KD_LATTICE_COMPACT_H
 #define KD_LATTICE_COMPACT_H
 
-#include<QVector>
+#include <QVector>
 #include "kd_lattice.h"
 #include "kd_clat_weight.h"
 #include "kd_fst_util.h"

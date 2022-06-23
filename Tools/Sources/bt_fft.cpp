@@ -1,7 +1,7 @@
-﻿#include "bt_fft.h"
+#include "bt_fft.h"
 #include <QDebug>
 
-#include "util/common-utils.h"
+#define KD_M_2PI 6.283185307179586476925286766559005
 
 KdFFT::KdFFT(int N): KdSrcFFT(N/2)
 {
@@ -19,8 +19,8 @@ void KdFFT::Compute(float *data)
     float rootN_re, rootN_im;  // exp(-2pi/N)
     int forward_sign = -1;
 
-    rootN_re = std::cos(M_2PI/N *forward_sign);
-    rootN_im = std::sin(M_2PI/N *forward_sign);
+    rootN_re = std::cos(KD_M_2PI/N *forward_sign);
+    rootN_im = std::sin(KD_M_2PI/N *forward_sign);
 
     float kN_re = -forward_sign;
     float kN_im = 0.0;  // exp(-2pik/N)
@@ -29,7 +29,7 @@ void KdFFT::Compute(float *data)
     {
         // complex mul (kN = rootN*kN)
         kN_re = (kN_re * rootN_re) - (kN_im * rootN_im);
-        kN_im = kN_re * rootN_im + kN_im * rootN_re;
+        kN_im = (kN_re * rootN_im) + (kN_im * rootN_re);
 
         float Ck_re, Ck_im, Dk_re, Dk_im;
         // C_k = 1/2 (B_k + B_{N/2 - k}^*) :
@@ -43,10 +43,11 @@ void KdFFT::Compute(float *data)
         data[2*k] = Ck_re;  // A_k <-- C_k
         data[2*k+1] = Ck_im;
         // now A_k += D_k 1^(k/N)
-        kaldi::ComplexAddProduct(Dk_re, Dk_im, kN_re, kN_im, &(data[2*k]), &(data[2*k+1]));
+        data[2*k]   += Dk_re*kN_re - Dk_im*kN_im;//mul
+        data[2*k+1] += Dk_re*kN_im + Dk_im*kN_re;//mul
 
         int kdash = N2 - k;
-        if( kdash!=k)
+        if( kdash!=k )
         {
             // Next we handle the index k' = N/2 - k.
             data[2*kdash] = Ck_re;  // A_k' <-- C_k'
@@ -54,7 +55,8 @@ void KdFFT::Compute(float *data)
             // now A_k' += D_k' 1^(k'/N)
             // We use 1^(k'/N) = 1^((N/2 - k) / N) = 1^(1/2) 1^(-k/N) = -1 * (1^(k/N))^*
             // so it's the same as 1^(k/N) but with the float part negated.
-            kaldi::ComplexAddProduct(Dk_re, -Dk_im, -kN_re, kN_im, &(data[2*kdash]), &(data[2*kdash+1]));
+            data[2*kdash]   += -Dk_re*kN_re + Dk_im*kN_im;//mul
+            data[2*kdash+1] +=  Dk_re*kN_im + Dk_im*kN_re;//mul
         }
     }
     // k = 0.
@@ -127,11 +129,12 @@ void KdSrcFFT::ComputeTables()
             /* Compute tables */
             for( n = 1; n < m4; n++)
             {
-                if( n==m8) continue;
-                ang = n * M_2PI / m;
+                if( n==m8 )
+                    continue;
+                ang = n * KD_M_2PI / m;
                 c = std::cos(ang); s = std::sin(ang);
                 *cn++ = c; *spcn++ = - (s + c); *smcn++ = s - c;
-                ang = 3 * n * M_2PI / m;
+                ang = 3 * n * KD_M_2PI / m;
                 c = std::cos(ang); s = std::sin(ang);
                 *c3n++ = c; *spc3n++ = - (s + c); *smc3n++ = s - c;
             }
@@ -169,7 +172,7 @@ void KdSrcFFT::Compute(float *xr, float *xi, bool forward)
 void KdSrcFFT::Compute(float *x, bool forward,
                        std::vector<float> *temp_buffer)
 {
-    KALDI_ASSERT(temp_buffer!=NULL);
+//    KALDI_ASSERT(temp_buffer!=NULL);
     if( temp_buffer->size()!=N_)
         temp_buffer->resize(N_);
     float *temp_ptr = &((*temp_buffer)[0]);

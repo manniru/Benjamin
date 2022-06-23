@@ -1,5 +1,4 @@
 #include "kd_lattice_compact.h"
-#include "base/kaldi-error.h"
 
 #define MAX_SIL_COUNT 20
 
@@ -78,7 +77,7 @@ void kd_compactLatticeStateTimes(KdCompactLattice &lat,
     {
         qDebug() << "Input lattice must be topologically sorted.";
     }
-    KALDI_ASSERT( lat.Start()==0 );
+//    KALDI_ASSERT( lat.Start()==0 );
     int num_states = lat.NumStates();
     times->clear();
     times->resize(num_states, -1);

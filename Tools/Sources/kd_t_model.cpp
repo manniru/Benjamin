@@ -1,5 +1,4 @@
 #include "kd_t_model.h"
-#include "tree/context-dep.h"
 #include <QDebug>
 
 KdTransitionModel::KdTransitionModel()
@@ -76,7 +75,7 @@ void KdTransitionModel::Read(std::istream &is)
             t_states[i].self_loop_pdf = t_states[i].forward_pdf;
     }
     kd_ReadToken(is, &token);
-    KALDI_ASSERT(token == "</Triples>" || token == "</Tuples>");
+//    KALDI_ASSERT(token == "</Triples>" || token == "</Tuples>");
     ComputeDerived();
     kd_ExpectToken(is, "<LogProbs>");
     log_probs_ = kd_VectorRead(is);
@@ -86,7 +85,7 @@ void KdTransitionModel::Read(std::istream &is)
 
 int KdTransitionModel::TransitionIdToPhone(int trans_id)
 {
-    KALDI_ASSERT(trans_id != 0 && static_cast<size_t>(trans_id) < id2state.size());
+//    KALDI_ASSERT(trans_id != 0 && static_cast<size_t>(trans_id) < id2state.size());
     int trans_state = id2state[trans_id];
     return t_states[trans_state-1].phone;
 }

@@ -1,5 +1,6 @@
 #include "bt_recorder.h"
 #include <fcntl.h>
+#include <unistd.h>
 
 BtRecorder::BtRecorder(BtCyclic *buffer, QObject *parent): QObject(parent)
 {

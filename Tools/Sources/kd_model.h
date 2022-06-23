@@ -6,9 +6,6 @@
 #include <QObject>
 #include <QDebug>
 
-#include <hmm/transition-model.h>
-#include <util/kaldi-io.h>
-
 #include "config.h"
 #include "backend.h"
 class KdModel

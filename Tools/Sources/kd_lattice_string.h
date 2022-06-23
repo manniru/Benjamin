@@ -1,7 +1,7 @@
 #ifndef KD_LATTICE_STRING_H
 #define KD_LATTICE_STRING_H
 
-#include<QVector>
+#include <QVector>
 #include "kd_lattice.h"
 #include "kd_clat_weight.h"
 

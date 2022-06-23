@@ -1,8 +1,8 @@
 #include "kd_lattice_det.h"
+#include <QDebug>
 
 void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
 {
-    KALDI_ASSERT(determinized_);
     StateId nStates = static_cast<StateId>(output_states_.size());
     if( destroy )
     {
@@ -17,7 +17,6 @@ void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
     for( StateId s=0 ; s<nStates ; s++ )
     {
         KdStateId news = ofst->AddState();
-        KALDI_ASSERT(news==s);
     }
     ofst->SetStart(0);
     // now process transitions.
@@ -73,9 +72,9 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
     if( destroy)
         FreeMostMemory();
     // Add basic states-- but we will add extra ones to account for strings on output.
-    for( KdStateId s = 0; s< nStates;s++ ){
+    for( KdStateId s = 0; s< nStates;s++ )
+    {
         KdStateId news = ofst->AddState();
-        KALDI_ASSERT(news==s);
     }
     ofst->SetStart(0);
     for( KdStateId this_state_id = 0; this_state_id < nStates; this_state_id++ )
@@ -243,7 +242,7 @@ void KdLatDet::RebuildRepository()
     needed_strings.erase(std::unique(needed_strings.begin(),
                                      needed_strings.end()),
                          needed_strings.end()); // uniq the strings.
-    KALDI_LOG << "Rebuilding repository.";
+//    KALDI_LOG << "Rebuilding repository.";
 
     repository_.Rebuild(needed_strings);
 }
@@ -261,8 +260,8 @@ bool KdLatDet::CheckMemoryUsage()
         int new_repo_size = repository_.MemSize(),
                 new_total_size = new_repo_size + arcs_size + elems_size;
 
-        KALDI_VLOG(2) << "Rebuilt repository in determinize-lattice: repository shrank from "
-                      << repo_size << " to " << new_repo_size << " bytes (approximately)";
+//        KALDI_VLOG(2) << "Rebuilt repository in determinize-lattice: repository shrank from "
+//                      << repo_size << " to " << new_repo_size << " bytes (approximately)";
 
         if( new_total_size > static_cast<int>(opts_.max_mem * 0.8)) {
             // Rebuilding didn't help enough-- we need a margin to stop
@@ -277,7 +276,7 @@ bool KdLatDet::CheckMemoryUsage()
                 double total_weight = backward_costs_[ifst_->Start()]; // best weight of FST.
                 effective_beam = task->priority_cost - total_weight;
             }
-            KALDI_WARN << "Did not reach requested beam in determinize-lattice: "
+            qDebug() << "Did not reach requested beam in determinize-lattice: "
                        << "size exceeds maximum " << opts_.max_mem
                        << " bytes; (repo,arcs,elems) = (" << repo_size << ","
                        << arcs_size << "," << elems_size
@@ -292,7 +291,7 @@ bool KdLatDet::CheckMemoryUsage()
 
 bool KdLatDet::Determinize(double *effective_beam)
 {
-    KALDI_ASSERT(!determinized_);
+//    KALDI_ASSERT(!determinized_);
     // This determinizes the input fst but leaves it in the "special format"
     // in "output_arcs_".  Must be called after Initialize().  To get the
     // output, call one of the Output routines.
@@ -314,11 +313,11 @@ bool KdLatDet::Determinize(double *effective_beam)
                 (num_states % 10==0 && !CheckMemoryUsage())) { // note: at some point
             // it was num_states % 100, not num_states % 10, but I encountered an example
             // where memory was exhausted before we reached state #100.
-            KALDI_VLOG(1) << "Lattice determinization terminated but not "
-                          << " because of lattice-beam.  (#states, #arcs) is ( "
-                          << output_states_.size() << ", " << num_arcs_
-                          << " ), versus limits ( " << opts_.max_states << ", "
-                          << opts_.max_arcs << " ) (else, may be memory limit).";
+//            KALDI_VLOG(1) << "Lattice determinization terminated but not "
+//                          << " because of lattice-beam.  (#states, #arcs) is ( "
+//                          << output_states_.size() << ", " << num_arcs_
+//                          << " ), versus limits ( " << opts_.max_states << ", "
+//                          << opts_.max_arcs << " ) (else, may be memory limit).";
             break;
             // we terminate the determinization here-- whatever we already expanded is
             // what we'll return...  because we expanded stuff in order of total
@@ -343,7 +342,7 @@ bool KdLatDet::Determinize(double *effective_beam)
 
 void KdLatDet::ConvertToMinimal(std::vector<Element> *subset)
 {
-    KALDI_ASSERT(!subset->empty());
+//    KALDI_ASSERT(!subset->empty());
     typename std::vector<Element>::iterator cur_in = subset->begin(),
             cur_out = subset->begin(), end = subset->end();
     while (cur_in!=end) {
@@ -367,9 +366,9 @@ KdStateId KdLatDet::MinimalToStateId(const std::vector<Element> &subset,
         // Below is just a check that the algorithm is working...
         if( forward_cost < state.forward_cost - 0.1) {
             // for large weights, this check could fail due to roundoff.
-            KALDI_WARN << "New cost is less (check the difference is small) "
-                       << forward_cost << ", "
-                       << state.forward_cost;
+            qDebug() << "New cost is less (check the difference is small) "
+                     << forward_cost << ", "
+                     << state.forward_cost;
         }
         return state_id;
     }
@@ -398,8 +397,10 @@ KdStateId KdLatDet::InitialToStateId(const std::vector<Element> &subset_in,
         Element elem = iter->second;
         *remaining_weight = elem.weight;
         *common_prefix = elem.string;
-        if(  elem.weight.isZero() )
-            KALDI_WARN << "Zero weight!";
+        if( elem.weight.isZero() )
+        {
+            qDebug() << "Zero weight!";
+        }
         return elem.state;
     }
     // else no matching subset-- have to work it out.
@@ -461,7 +462,7 @@ int KdLatDet::CompareDet(const KdLatticeWeight &a_w, StringId a_str,
         else if( a_vec[i] > b_vec[i])
             return 1;
     }
-    KALDI_ASSERT(0); // because we checked if a_str==b_str above, shouldn't reach here
+    exit(2); // because we checked if a_str==b_str above, shouldn't reach here
     return 0;
 }
 
@@ -613,7 +614,7 @@ void KdLatDet::NormalizeSubset(std::vector<Element> *elems,
 {
     if(elems->empty()) { // just set common_str, tot_weight
         // to defaults and return...
-        KALDI_WARN << "empty subset";
+        qDebug() << "empty subset";
         *common_str = repository_.EmptyString();
         *tot_weight = KdLatticeWeight::Zero();
         return;
@@ -627,7 +628,7 @@ void KdLatDet::NormalizeSubset(std::vector<Element> *elems,
         weight = Plus(weight, (*elems)[i].weight);
         repository_.ReduceToCommonPrefix((*elems)[i].string, &common_prefix);
     }
-    KALDI_ASSERT(weight!=KdLatticeWeight::Zero()); // we made sure to ignore arcs with zero
+//    KALDI_ASSERT(weight!=KdLatticeWeight::Zero()); // we made sure to ignore arcs with zero
     // weights on them, so we shouldn't have zero here.
     size_t prefix_len = common_prefix.size();
     for(size_t i = 0; i < size; i++)
@@ -649,7 +650,7 @@ void KdLatDet::MakeSubsetUnique(std::vector<Element> *subset)
 
     // This KALDI_ASSERT is designed to fail (usually) if the subset is not sorted on
     // state.
-    KALDI_ASSERT(subset->size() < 2 || (*subset)[0].state <= (*subset)[1].state);
+//    KALDI_ASSERT(subset->size() < 2 || (*subset)[0].state <= (*subset)[1].state);
 
     IterType cur_in = subset->begin(), cur_out = cur_in, end = subset->end();
     size_t num_out = 0;
@@ -782,8 +783,9 @@ void KdLatDet::ProcessTransitions(KdStateId output_state_id)
             { // this is a check.
                 double best_cost = backward_costs_[ifst_->Start()],
                         tolerance = 0.01 + 1.0e-04 * std::abs(best_cost);
-                if( task->priority_cost < best_cost - tolerance) {
-                    KALDI_WARN << "Cost below best cost was encountered:"
+                if( task->priority_cost < best_cost - tolerance)
+                {
+                    qDebug() << "Cost below best cost was encountered:"
                                << task->priority_cost << " < " << best_cost;
                 }
             }
@@ -798,7 +800,7 @@ bool KdLatDet::IsIsymbolOrFinal(InputStateId state)
 { // returns true if this state
     // of the input FST either is final or has an osymbol on an arc out of it.
     // Uses the vector isymbol_or_final_ as a cache for this info.
-    KALDI_ASSERT(state >= 0);
+//    KALDI_ASSERT(state >= 0);
     if( isymbol_or_final_.size() <= state)
         isymbol_or_final_.resize(state+1, static_cast<char>(OSF_UNKNOWN));
     if( isymbol_or_final_[state]==static_cast<char>(OSF_NO))
@@ -825,7 +827,7 @@ bool KdLatDet::IsIsymbolOrFinal(InputStateId state)
 void KdLatDet::ComputeBackwardWeight()
 {
     // Sets up the backward_costs_ array, and the cutoff_ variable.
-    KALDI_ASSERT(beam_ > 0);
+//    KALDI_ASSERT(beam_ > 0);
 
     // Only handle the toplogically sorted case.
     backward_costs_.resize(ifst_->NumStates());
@@ -846,8 +848,10 @@ void KdLatDet::ComputeBackwardWeight()
     // an empty FST.
 
     double best_cost = backward_costs_[ifst_->Start()];
-    if( best_cost==KD_INFINITY_DB)
-        KALDI_WARN << "Total weight of input lattice is zero.";
+    if( best_cost==KD_INFINITY_DB )
+    {
+        qDebug() << "Total weight of input lattice is zero.";
+    }
     cutoff_ = best_cost + beam_;
 }
 
@@ -858,7 +862,7 @@ void KdLatDet::InitializeDeterminization()
     // applicable to even cyclic FSTs), but it helps us more efficiently
     // compute the backward_costs_ array.  There may be some other reason we
     // require this, that escapes me at the moment.
-    KALDI_ASSERT(ifst_->Properties(fst::kTopSorted, true)!=0);
+//    KALDI_ASSERT(ifst_->Properties(fst::kTopSorted, true)!=0);
     ComputeBackwardWeight();
 #if !(__GNUC__==4 && __GNUC_MINOR__==0)
     if(ifst_->Properties(fst::kExpanded, false)!=0)
@@ -894,7 +898,7 @@ void KdLatDet::InitializeDeterminization()
         // i.e. the minimal cost from the start of the determinized FST to this
         // state [One() because it's the start state].
         OutputState *initial_state = new OutputState(subset, 0);
-        KALDI_ASSERT(output_states_.empty());
+//        KALDI_ASSERT(output_states_.empty());
         output_states_.push_back(initial_state);
         num_elems_ += subset.size();
         KdStateId initial_state_id = 0;

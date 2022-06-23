@@ -1,6 +1,5 @@
 ﻿#include "kd_lattice.h"
 #include "kd_lattice_compact.h"
-#include "util/kaldi-io.h"
 #include <QDebug>
 
 void kd_fstSSPathBacktrace(KdLattice *ifst, KdLattice *ofst,

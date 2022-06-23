@@ -1,12 +1,9 @@
 #ifndef KD_LATTICE_FUNCTIONS_H
 #define KD_LATTICE_FUNCTIONS_H
 
-
 #include <vector>
 #include <map>
 
-#include <base/kaldi-common.h>
-#include <hmm/transition-model.h>
 #include "kd_lattice_det.h"
 #include "kd_token.h"
 #include "kd_lattice_prune.h"

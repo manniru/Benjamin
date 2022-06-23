@@ -4,18 +4,11 @@ QT += multimedia
 
 CONFIG += console
 
-linux:INCLUDEPATH += ../../Kaldi/src \
-                     ../../Kaldi/tools/openfst/src/include \
-                     ../PNN \
-                     /opt/intel/mkl/include
+linux:INCLUDEPATH += ../../Kaldi/tools/openfst/src/include \
+                     ../PNN
 
-linux:LIBS += -pthread \
-              -L/opt/intel/mkl/lib/intel64 \
-              -lmkl_intel_lp64 -lmkl_sequential -lmkl_core \
-              -lm -ldl \
-              -LKaldi/Libs \
-              -lkaldi-tree -lkaldi-util \
-              -lkaldi-matrix -lkaldi-base -lportaudio -lasound -lrt -ljack -lfst
+linux:LIBS += -pthread -lm -ldl \
+              -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
 
 DEFINES += HAVE_MKL \
            HAVE_CXXABI_H \

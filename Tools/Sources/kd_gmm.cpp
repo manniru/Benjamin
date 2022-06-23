@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <QDebug>
+#include <cmath>
+#define KD_LOG_2PI 1.8378770664093454835606594728112
 
 #include "kd_gmm.h"
 
@@ -81,7 +83,7 @@ void KdGmm::ComputeGconsts()
 {
     int num_mix = weights_.size();
     int dim = BT_DELTA_SIZE;
-    float offset = -0.5 * M_LOG_2PI * dim;  // constant term in gconst.
+    float offset = -0.5 * KD_LOG_2PI * dim;  // constant term in gconst.
     int num_bad = 0;
 
     // Resize if Gaussians have been removed during Update()

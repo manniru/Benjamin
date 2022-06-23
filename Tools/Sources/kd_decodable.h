@@ -3,8 +3,6 @@
 
 #include "config.h"
 
-#include "matrix/matrix-lib.h"
-#include "hmm/transition-model.h"
 #include "kd_model.h"
 #include "kd_a_model.h"
 #include "bt_feinput.h"

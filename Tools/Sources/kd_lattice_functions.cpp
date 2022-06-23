@@ -7,7 +7,7 @@ void kd_latticeGetTimes(KdLattice *lat, std::vector<int> *times)
         qDebug() << "Input lattice must be topologically sorted.";
     }
 
-    KALDI_ASSERT(lat->Start()==0);
+//    KALDI_ASSERT(lat->Start()==0);
     int num_states = lat->NumStates();
 
     times->clear();
@@ -136,7 +136,7 @@ KdLatticeArc::Label kd_DetLatInsertPhones(
                         static_cast<Label>(trans_model->TransitionIdToPhone(arc.olabel));
 
                 // Skips <eps>.
-                KALDI_ASSERT(phone!=0);
+//                KALDI_ASSERT(phone!=0);
 
                 if( arc.ilabel==0) {
                     // If there is no word on the arc, insert the phone directly.
@@ -174,7 +174,7 @@ bool kd_detLatPruned(KdLattice &ifst, double beam,
         ofst->DeleteStates();
         return true;
     }
-    KALDI_ASSERT(opts.retry_cutoff >= 0.0 && opts.retry_cutoff < 1.0);
+//    KALDI_ASSERT(opts.retry_cutoff >= 0.0 && opts.retry_cutoff < 1.0);
     int max_num_iters = 10;  // avoid the potential for infinite loops if
     // retrying.
     KdLattice temp_fst;
@@ -207,8 +207,8 @@ bool kd_detLatPruned(KdLattice &ifst, double beam,
                 temp_fst = ifst;
             KdPrune kp(beam);
             kp.prune(&temp_fst);
-            KALDI_LOG << "Pruned state-level lattice with beam " << beam
-                      << " and retrying determinization with that beam.";
+            qDebug() << "Pruned state-level lattice with beam " << beam
+                     << " and retrying determinization with that beam.";
         }
     }
     return false; // Suppress compiler warning; this code is unreachable.
@@ -224,7 +224,7 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
         ofst->DeleteStates();
         return true;
     }
-    KALDI_ASSERT(opts.retry_cutoff >= 0.0 && opts.retry_cutoff < 1.0);
+//    KALDI_ASSERT(opts.retry_cutoff >= 0.0 && opts.retry_cutoff < 1.0);
     int max_num_iters = 10;  // avoid the potential for infinite loops if
     // retrying.
     KdLattice temp_fst;
@@ -266,8 +266,8 @@ bool kd_detLatPruned( KdLattice &ifst, double beam,
             }
             KdPrune kp(beam);
             kp.prune(&temp_fst);
-            KALDI_LOG << "Pruned state-level lattice with beam " << beam
-                      << " and retrying determinization with that beam.";
+            qDebug() << "Pruned state-level lattice with beam " << beam
+                     << " and retrying determinization with that beam.";
         }
     }
     return false; // Suppress compiler warning; this code is unreachable.

@@ -1,8 +1,6 @@
 #ifndef KD_MATRIX_H
 #define KD_MATRIX_H
 
-#include "base/kaldi-common.h"
-
 class KdMatrix
 {
 public:

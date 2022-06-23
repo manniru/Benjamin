@@ -1,5 +1,6 @@
 #include "kd_io.h"
 #include <QDebug>
+#include <sstream>
 
 // assume float
 std::vector<float> kd_VectorRead(std::istream &is)
@@ -63,8 +64,8 @@ void kd_ReadIntegerVector(std::istream &is, std::vector<int> *v)
 {
     is.peek();
     is.get();
-    int32 vecsz;
-    is.read(reinterpret_cast<char *>(&vecsz), sizeof(vecsz));
+    int vecsz;
+    is.read((char *)(&vecsz), sizeof(vecsz));
     if (is.fail() || vecsz < 0)
     {
         qDebug() << "ReadIntegerVector: read failure at file position "
@@ -74,7 +75,7 @@ void kd_ReadIntegerVector(std::istream &is, std::vector<int> *v)
     v->resize(vecsz);
     if( vecsz>0 )
     {
-        is.read(reinterpret_cast<char *>(&((*v)[0])), sizeof(int)*vecsz);
+        is.read((char *)(&((*v)[0])), sizeof(int)*vecsz);
     }
     if( !is.fail() )
     {

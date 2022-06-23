@@ -7,7 +7,6 @@
 #include <QVector>
 
 #include "config.h"
-#include "matrix/kaldi-vector.h"
 
 class BtCyclic : public QObject
 {

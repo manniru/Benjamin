@@ -1,9 +1,8 @@
 #ifndef KD_IO_H
 #define KD_IO_H
 
-#include "base/kaldi-common.h"
-#include "matrix/matrix-lib.h"
 #include "kd_matrix.h"
+#include <fstream>
 #include <QDebug>
 
 std::vector<float> kd_VectorRead(std::istream &is);

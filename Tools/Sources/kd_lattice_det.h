@@ -1,12 +1,11 @@
 #ifndef KD_LATTICE_DET_H
 #define KD_LATTICE_DET_H
 
-#include<QVector>
+#include <QVector>
 #include "kd_token.h"
 #include "kd_lattice.h"
 #include "kd_lattice_compact.h"
 #include "kd_lattice_string.h"
-#include "base/kaldi-error.h"
 
 // A representable float near .001.
 #define KD_KDELTA fst::kDelta
@@ -141,7 +140,6 @@ private:
     public:
         bool operator ()(const std::vector<Element> * s1, const std::vector<Element> * s2) const {
             size_t sz = s1->size();
-            KALDI_ASSERT(sz>=0);
             if( sz!=s2->size()) return false;
             typename std::vector<Element>::const_iterator iter1 = s1->begin(),
                     iter1_end = s1->end(), iter2=s2->begin();
@@ -170,7 +168,6 @@ private:
     public:
         bool operator ()(const std::vector<Element> * s1, const std::vector<Element> * s2) const {
             size_t sz = s1->size();
-            KALDI_ASSERT(sz>=0);
             if( sz!=s2->size()) return false;
             typename std::vector<Element>::const_iterator iter1 = s1->begin(),
                     iter1_end = s1->end(), iter2=s2->begin();

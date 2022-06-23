@@ -1,8 +1,6 @@
 #ifndef KD_HHM_H
 #define KD_HHM_H
 
-#include "base/kaldi-common.h"
-#include "util/const-integer-set.h"
 #include "kd_io.h"
 
 #define KD_NOPDF_ID -1
@@ -20,13 +18,15 @@ public:
         /// second is the default transition probability (before training).
         std::vector<std::pair<int, float> > transitions;
 
-        explicit HmmState(int pdf_class) {
+        explicit HmmState(int pdf_class)
+        {
             this->forward_pdf_class = pdf_class;
             this->self_loop_pdf_class = pdf_class;
         }
-        explicit HmmState(int forward_pdf_class, int self_loop_pdf_class) {
-            KALDI_ASSERT((forward_pdf_class != kNoPdf && self_loop_pdf_class != kNoPdf) ||
-                         (forward_pdf_class == kNoPdf && self_loop_pdf_class == kNoPdf));
+        explicit HmmState(int forward_pdf_class, int self_loop_pdf_class)
+        {
+//            KALDI_ASSERT((forward_pdf_class != kNoPdf && self_loop_pdf_class !=KD_NOPDF_ID ) ||
+//                         (forward_pdf_class == kNoPdf && self_loop_pdf_class ==KD_NOPDF_ID ));
             this->forward_pdf_class = forward_pdf_class;
             this->self_loop_pdf_class = self_loop_pdf_class;
         }
