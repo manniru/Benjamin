@@ -88,14 +88,15 @@ void KdMBR::computeGamma()
 //        qDebug() << "st" << state_count << word_len;
     }
     QVector<double> beta_dash_arc(word_len+1, 0);
-    kaldi::Matrix<double> beta_dash(state_count+1, word_len+1); // index (1...N, 0...Q)
+    KdMatrix beta_dash;
+    beta_dash.resize(state_count+1, word_len+1);
     std::vector<char> arc_type(word_len+1); // integer in {1,2,3}; index 1...Q
     std::vector<map<int, double> > gamma_map(word_len+1); // temp. form of gamma.
 
     L_ = editDistance();
 //    KALDI_VLOG(2) << "L = " << L_;
     // omit line 10: zero when initialized.
-    beta_dash(state_count, word_len) = 1.0; // Line 11.
+    beta_dash.d[state_count][word_len] = 1.0; // Line 11.
     for( int state=state_count ; state>=2 ; state-- ) // all states
     {
         for( int i=0 ; i<mlat[state].size() ; i++ ) // all arcs
@@ -103,7 +104,7 @@ void KdMBR::computeGamma()
             const KdMBRArc &arc = mlat_arc[mlat[state][i]];
             int s_a = arc.start_node;
             float p_a = arc.loglike;
-            alpha_dash_arc[0] = alpha_dash(arc.start_node, 0) + kd_l_distance(arc.word, 0, true); // line 14.
+            alpha_dash_arc[0] = alpha_dash.d[arc.start_node][0] + kd_l_distance(arc.word, 0, true); // line 14.
 
             for( int i=0 ; i<=word_len ; i++ )
             {
@@ -113,8 +114,8 @@ void KdMBR::computeGamma()
             for( int q=1; q<=word_len ; q++ )
             {
                 int w_id = best_wid[q-1];;
-                double a1 = alpha_dash(arc.start_node, q-1) + kd_l_distance(arc.word, w_id);
-                double a2 = alpha_dash(arc.start_node, q) + kd_l_distance(arc.word, 0, true);
+                double a1 = alpha_dash.d[arc.start_node][q-1] + kd_l_distance(arc.word, w_id);
+                double a2 = alpha_dash.d[arc.start_node][q] + kd_l_distance(arc.word, 0, true);
                 double a3 = alpha_dash_arc[q-1] + kd_l_distance(0, w_id);
 
                 double min = std::min(a1, std::min(a2, a3));
@@ -135,16 +136,16 @@ void KdMBR::computeGamma()
 
             for( int q = word_len; q >= 1; q--)
             {
-                beta_dash_arc[q] += std::exp(alpha[s_a] + p_a - alpha[state]) * beta_dash(state, q);
+                beta_dash_arc[q] += std::exp(alpha[s_a] + p_a - alpha[state]) * beta_dash.d[state][q];
                 if( arc_type[q]==1 )
                 {
-                    beta_dash(s_a, q-1) += beta_dash_arc[q];
+                    beta_dash.d[s_a][q-1] += beta_dash_arc[q];
                     // next: gamma(q, w(a)) += beta_dash_arc[q)
                     addToGamma(arc.word, beta_dash_arc[q], &(gamma_map[q]));
                 }
                 else if( arc_type[q]==2 )
                 {
-                    beta_dash(s_a, q) += beta_dash_arc[q];
+                    beta_dash.d[s_a][q] += beta_dash_arc[q];
                 }
                 else // 3
                 {
@@ -152,8 +153,8 @@ void KdMBR::computeGamma()
                     addToGamma(0, beta_dash_arc[q], &(gamma_map[q]));
                 }
             }
-            beta_dash_arc[0]  += std::exp(alpha[s_a] + p_a - alpha[state]) * beta_dash(state, 0);
-            beta_dash(s_a, 0) += beta_dash_arc[0];
+            beta_dash_arc[0]  += std::exp(alpha[s_a] + p_a - alpha[state]) * beta_dash.d[state][0];
+            beta_dash.d[s_a][0] += beta_dash_arc[0];
         }
     }
 
@@ -163,7 +164,7 @@ void KdMBR::computeGamma()
     }
     for( int q=word_len ; q>=1 ; q-- )
     {
-        beta_dash_arc[q] += beta_dash(1, q);
+        beta_dash_arc[q] += beta_dash.d[1][q];
         beta_dash_arc[q-1] += beta_dash_arc[q];
         addToGamma(0, beta_dash_arc[q], &(gamma_map[q]));
     }
@@ -283,13 +284,13 @@ double KdMBR::editDistance()
 
     alpha.resize(state_count+1); // index (1...N)
     alpha_dash_arc.resize(word_len+1); // index 0...Q
-    alpha_dash.Resize(state_count+1, word_len+1); // index (1...N, 0...Q)
+    alpha_dash.resize(state_count+1, word_len+1); // index (1...N, 0...Q)
 
     alpha[1] = 0.0; // = log(1)
-    alpha_dash(1, 0) = 0.0; // Line 5.
+    alpha_dash.d[1][0] = 0.0; // Line 5.
     for( int q=0 ; q<word_len ; q++ )
     {
-        alpha_dash(1, q+1) = alpha_dash(1, q) + kd_l_distance(0, best_wid[q]);
+        alpha_dash.d[1][q+1] = alpha_dash.d[1][q] + kd_l_distance(0, best_wid[q]);
     }
     for( int n=2 ; n<=state_count ; n++ )
     {
@@ -298,7 +299,7 @@ double KdMBR::editDistance()
         {
             KdMBRArc arc = mlat_arc[mlat[n][i]];
 //            float prob = std::exp(arc.loglike) + std;
-            alpha_n = kaldi::LogAdd(alpha_n, alpha[arc.start_node] + arc.loglike);
+            alpha_n = kd_LogAdd(alpha_n, alpha[arc.start_node] + arc.loglike);
         }
         alpha[n] = alpha_n;
 
@@ -308,19 +309,46 @@ double KdMBR::editDistance()
             int s_a = arc.start_node;
 
             // for q = 0
-            alpha_dash_arc[0] = alpha_dash(s_a, 0) + kd_l_distance(arc.word, 0, true);
-            alpha_dash(n, 0) += std::exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[0];
+            alpha_dash_arc[0] = alpha_dash.d[s_a][0] + kd_l_distance(arc.word, 0, true);
+            alpha_dash.d[n][0] += std::exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[0];
 
             for( int q=1 ; q<=word_len ; q++ )
             {
                 int word_id = best_wid[q-1];
-                double a1 = alpha_dash(s_a, q-1) + kd_l_distance(arc.word, word_id);
-                double a2 = alpha_dash(s_a, q)   + kd_l_distance(arc.word, 0, true);
+                double a1 = alpha_dash.d[s_a][q-1] + kd_l_distance(arc.word, word_id);
+                double a2 = alpha_dash.d[s_a][q]   + kd_l_distance(arc.word, 0, true);
                 double a3 = alpha_dash_arc[q-1]  + kd_l_distance(0, word_id);
                 alpha_dash_arc[q] = std::min(a1, std::min(a2, a3));
-                alpha_dash(n, q) += std::exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[q];
+                alpha_dash.d[n][q] += std::exp(alpha[s_a] + arc.loglike - alpha[n]) * alpha_dash_arc[q];
             }
         }
     }
-    return alpha_dash(state_count, word_len); // line 23.
+    return alpha_dash.d[state_count][word_len]; // line 23.
+}
+
+double kd_LogAdd(double x, double y)
+{
+    double diff;
+
+    if (x < y)
+    {
+        diff = x - y;
+        x = y;
+    }
+    else
+    {
+        diff = y - x;
+    }
+    // diff is negative.  x is now the larger one.
+
+    if( diff>KD_DIFF_DOUBLE )
+    {
+        double res;
+        res = x + log1p(exp(diff));
+        return res;
+    }
+    else
+    {
+        return x;  // return the larger one.
+    }
 }

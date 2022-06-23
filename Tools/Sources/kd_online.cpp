@@ -12,10 +12,13 @@ KdOnline::KdOnline(QObject *parent): QObject(parent)
     oa_model = new KdAModel;
     t_model = new KdTransitionModel;
 
-    bool binary;
-    kaldi::Input ki(model_filename, &binary);
-    t_model->Read(ki.Stream());
-    oa_model->Read(ki.Stream());
+    std::ifstream ki;
+    ki.open(model_filename.c_str(),
+             std::ios_base::in | std::ios_base::binary);
+    ki.get();
+    ki.get();
+    t_model->Read(ki);
+    oa_model->Read(ki);
 
     o_decoder = new KdOnlineLDecoder(t_model);
     cap = new BtCaptain;

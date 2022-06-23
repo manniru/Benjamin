@@ -18,13 +18,18 @@ void KdFFT::Compute(float *data)
 
     float rootN_re, rootN_im;  // exp(-2pi/N)
     int forward_sign = -1;
-    kaldi::ComplexImExp(static_cast<float>(M_2PI/N *forward_sign), &rootN_re, &rootN_im);
+
+    rootN_re = std::cos(M_2PI/N *forward_sign);
+    rootN_im = std::sin(M_2PI/N *forward_sign);
+
     float kN_re = -forward_sign;
     float kN_im = 0.0;  // exp(-2pik/N)
 
-    for( int k = 1; 2*k <= N2; k++)
+    for( int k = 1; 2*k <= N2; k++ )
     {
-        kaldi::ComplexMul(rootN_re, rootN_im, &kN_re, &kN_im);
+        // complex mul (kN = rootN*kN)
+        kN_re = (kN_re * rootN_re) - (kN_im * rootN_im);
+        kN_im = kN_re * rootN_im + kN_im * rootN_re;
 
         float Ck_re, Ck_im, Dk_re, Dk_im;
         // C_k = 1/2 (B_k + B_{N/2 - k}^*) :

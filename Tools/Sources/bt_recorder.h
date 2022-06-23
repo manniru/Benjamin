@@ -28,10 +28,10 @@ public slots:
 private:
     PaStream *pa_stream;
     bool pa_started_; // becomes "true" after "pa_stream_" is started
-    uint32 report_interval_; // interval (in Read() calls) to report PA rb overflows
-    uint32 nread_calls_; // number of Read() calls so far
-    uint32 noverflows_; // number of the ringbuf overflows since the last report
-    uint32 samples_lost_; // samples lost, due to PA ring buffer overflow
+    uint report_interval_; // interval (in Read() calls) to report PA rb overflows
+    uint nread_calls_; // number of Read() calls so far
+    uint noverflows_; // number of the ringbuf overflows since the last report
+    uint samples_lost_; // samples lost, due to PA ring buffer overflow
     int    read_pf; //fake pointer for only OnlineDecodable(multicore)
 };
 

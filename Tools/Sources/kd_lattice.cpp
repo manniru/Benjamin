@@ -163,15 +163,17 @@ void kd_writeLat(KdLattice *ifst)
 fst::Fst<fst::StdArc> *kd_readDecodeGraph(char *filename)
 {
     // read decoding network FST
-    kaldi::Input ki(filename); // use ki.Stream() instead of is.
-    if( !ki.Stream().good() )
+    std::ifstream ki;
+    ki.open(filename,
+             std::ios_base::in | std::ios_base::binary);
+    if( !ki.good() )
     {
         qDebug() << "Could not open decoding-graph FST "
                  << filename;
     }
 
     fst::FstHeader hdr;
-    if( !hdr.Read(ki.Stream(), "<unknown>") )
+    if( !hdr.Read(ki, "<unknown>") )
     {
         qDebug() << "Reading FST: error reading FST header.";
     }
@@ -185,11 +187,11 @@ fst::Fst<fst::StdArc> *kd_readDecodeGraph(char *filename)
 
     if( hdr.FstType()=="vector" )
     {
-        decode_fst = fst::VectorFst<fst::StdArc>::Read(ki.Stream(), ropts);
+        decode_fst = fst::VectorFst<fst::StdArc>::Read(ki, ropts);
     }
     else if( hdr.FstType()=="const" )
     {
-        decode_fst = fst::ConstFst<fst::StdArc>::Read(ki.Stream(), ropts);
+        decode_fst = fst::ConstFst<fst::StdArc>::Read(ki, ropts);
     }
     else
     {

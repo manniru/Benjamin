@@ -2,8 +2,6 @@
 #include "tree/context-dep.h"
 #include <QDebug>
 
-using namespace kaldi;
-
 KdTransitionModel::KdTransitionModel()
 {
     num_pdfs = 0;
@@ -16,7 +14,7 @@ void KdTransitionModel::ComputeDerived()
 
     int cur_transition_id = 1;
     num_pdfs = 0;
-    for (int tstate = 1; tstate<=(t_states.size()+1) ; tstate++ )
+    for( int tstate = 1; tstate<=(t_states.size()+1) ; tstate++ )
     {
         state2id_[tstate] = cur_transition_id;
         if( static_cast<size_t>(tstate) <= t_states.size())
@@ -35,8 +33,10 @@ void KdTransitionModel::ComputeDerived()
 
     id2state.resize(cur_transition_id);   // cur_transition_id is #transition-ids+1.
     id2pdf.resize(cur_transition_id);
-    for (int tstate = 1; tstate <= static_cast<int>(t_states.size()); tstate++) {
-        for (int tid = state2id_[tstate]; tid < state2id_[tstate+1]; tid++) {
+    for( int tstate = 1; tstate <= static_cast<int>(t_states.size()); tstate++ )
+    {
+        for( int tid = state2id_[tstate]; tid < state2id_[tstate+1]; tid++ )
+        {
             id2state[tid] = tstate;
             if( IsSelfLoop(tid))
                 id2pdf[tid] = t_states[tstate-1].self_loop_pdf;
@@ -58,29 +58,30 @@ void KdTransitionModel::ComputeDerived()
 
 void KdTransitionModel::Read(std::istream &is)
 {
-    ExpectToken(is, true, "<TransitionModel>");
+    kd_ExpectToken(is, "<TransitionModel>");
     topo_.Read(is);
     std::string token;
-    ReadToken(is, true, &token);
+    kd_ReadToken(is, &token);
     int size;
-    ReadBasicType(is, true, &size);
+    kd_ReadBasicType(is, &size);
     t_states.resize(size);
-    for (int i = 0; i < size; i++) {
-        ReadBasicType(is, true, &(t_states[i].phone));
-        ReadBasicType(is, true, &(t_states[i].hmm_state));
-        ReadBasicType(is, true, &(t_states[i].forward_pdf));
+    for( int i = 0; i < size; i++)
+    {
+        kd_ReadBasicType(is, &(t_states[i].phone));
+        kd_ReadBasicType(is, &(t_states[i].hmm_state));
+        kd_ReadBasicType(is, &(t_states[i].forward_pdf));
         if( token == "<Tuples>")
-            ReadBasicType(is, true, &(t_states[i].self_loop_pdf));
+            kd_ReadBasicType(is, &(t_states[i].self_loop_pdf));
         else if( token == "<Triples>")
             t_states[i].self_loop_pdf = t_states[i].forward_pdf;
     }
-    ReadToken(is, true, &token);
+    kd_ReadToken(is, &token);
     KALDI_ASSERT(token == "</Triples>" || token == "</Tuples>");
     ComputeDerived();
-    ExpectToken(is, true, "<LogProbs>");
+    kd_ExpectToken(is, "<LogProbs>");
     log_probs_ = kd_VectorRead(is);
-    ExpectToken(is, true, "</LogProbs>");
-    ExpectToken(is, true, "</TransitionModel>");
+    kd_ExpectToken(is, "</LogProbs>");
+    kd_ExpectToken(is, "</TransitionModel>");
 }
 
 int KdTransitionModel::TransitionIdToPhone(int trans_id)

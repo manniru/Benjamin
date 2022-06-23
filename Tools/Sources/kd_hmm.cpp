@@ -1,45 +1,45 @@
 #include "kd_hmm.h"
 #include <QDebug>
 
-using namespace kaldi;
-
-
 void KdHmmTopology::Read(std::istream &is)
 {
-    ExpectToken(is, true, "<Topology>");
-    ReadIntegerVector(is, true, &phones_);
-    ReadIntegerVector(is, true, &phone2idx_);
-    int32 sz;
-    ReadBasicType(is, true, &sz);
+    kd_ExpectToken(is, "<Topology>");
+    kd_ReadIntegerVector(is, &phones_);
+    kd_ReadIntegerVector(is, &phone2idx_);
+    int sz;
+    kd_ReadBasicType(is, &sz);
     bool is_hmm = true;
     if( sz == -1) {
         is_hmm = false;
-        ReadBasicType(is, true, &sz);
+        kd_ReadBasicType(is, &sz);
     }
     entries.resize(sz);
-    for (int32 i = 0; i < sz; i++) {
-        int32 thist_sz;
-        ReadBasicType(is, true, &thist_sz);
+    for( int i = 0; i < sz; i++ )
+    {
+        int thist_sz;
+        kd_ReadBasicType(is, &thist_sz);
         entries[i].resize(thist_sz);
-        for (int32 j = 0 ; j < thist_sz; j++) {
-            ReadBasicType(is, true, &(entries[i][j].forward_pdf_class));
+        for( int j = 0 ; j < thist_sz; j++ )
+        {
+            kd_ReadBasicType(is, &(entries[i][j].forward_pdf_class));
             if( is_hmm)
                 entries[i][j].self_loop_pdf_class = entries[i][j].forward_pdf_class;
             else
-                ReadBasicType(is, true, &(entries[i][j].self_loop_pdf_class));
-            int32 thiss_sz;
-            ReadBasicType(is, true, &thiss_sz);
+                kd_ReadBasicType(is, &(entries[i][j].self_loop_pdf_class));
+            int thiss_sz;
+            kd_ReadBasicType(is, &thiss_sz);
             entries[i][j].transitions.resize(thiss_sz);
-            for (int32 k = 0; k < thiss_sz; k++) {
-                ReadBasicType(is, true, &(entries[i][j].transitions[k].first));
-                ReadBasicType(is, true, &(entries[i][j].transitions[k].second));
+            for( int k = 0; k < thiss_sz; k++ )
+            {
+                kd_ReadBasicType(is, &(entries[i][j].transitions[k].first));
+                kd_ReadBasicType(is, &(entries[i][j].transitions[k].second));
             }
         }
     }
-    ExpectToken(is, true, "</Topology>");
+    kd_ExpectToken(is, "</Topology>");
 }
 
-KdHmmTopology::TopologyEntry& KdHmmTopology::TopologyForPhone(int32 phone)
+KdHmmTopology::TopologyEntry& KdHmmTopology::TopologyForPhone(int phone)
 {
     return entries[phone2idx_[phone]];
 }

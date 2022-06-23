@@ -45,10 +45,10 @@ void BtEnn::init(QString dir)
     oa_model = new KdAModel;
     t_model = new KdTransitionModel;
 
-    bool binary;
-    kaldi::Input ki(model_filename, &binary);
-    t_model->Read(ki.Stream());
-    oa_model->Read(ki.Stream());
+    std::ifstream ki;
+    kd_openFile(model_filename, &ki);
+    t_model->Read(ki);
+    oa_model->Read(ki);
 
     o_decoder = new KdOnlineLDecoder(t_model);
     o_decoder->status.min_sil = 300;
@@ -140,7 +140,7 @@ void BtEnn::openWave(QString filename)
     wav_file.read(buff,2);//Channel Count(int=2)
     uint16_t channel_count = *((uint16_t *)buff);
     wav_file.read(buff,4);//Sample Rate(int=16K)
-    uint32_t sample_rate = *((uint32_t *)buff);
+    uint16_t sample_rate = *((uint16_t *)buff);
 
     wav_file.read(buff,4);//Byte per sec(int, 64K=16*4)
     wav_file.read(buff,2);//Byte Per Block(int, 4(2*2))
@@ -148,7 +148,7 @@ void BtEnn::openWave(QString filename)
 
     wav_file.read(buff,4);//subchunk2 id(str="data")
     wav_file.read(buff,4);//subchunk2 size(int=sample count)
-    uint16_t data_size = *((uint32_t *)buff);
+    uint16_t data_size = *((uint16_t *)buff);
 //    qDebug() << "sample_rate:"  << sample_rate
 //             << "channel:" << channel_count
 //             << "chunk_size:" << data_size;

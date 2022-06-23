@@ -116,7 +116,8 @@ void kd_ConvertLattice(KdCompactLattice &ifst, KdLattice *ofst, bool invert)
         {
             KdStateId cur_state = s;
             size_t string_length = final_weight.string.size();
-            for( size_t n = 0; n < string_length; n++) {
+            for( size_t n = 0; n < string_length; n++ )
+            {
                 KdStateId next_state = ofst->AddState();
                 int ilabel = 0;
                 KdLatticeArc arc(ilabel, final_weight.string[n],

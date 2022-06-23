@@ -41,7 +41,7 @@ float BtNetwork::getConf(int start, int len, int id)
     {
         return 0;
     }
-    qDebug() << "ww" << word_list[id] << nets[id]->m_name;
+//    qDebug() << "ww" << word_list[id] << nets[id]->m_name;
 
     calcStat(start, len);
 

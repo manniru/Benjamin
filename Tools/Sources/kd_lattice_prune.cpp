@@ -2,7 +2,6 @@
 
 KdPrune::KdPrune(float beam)
 {
-//    KALDI_ASSERT(beam > 0.0);
     lattice_beam = beam;
 }
 
@@ -10,7 +9,7 @@ QString KdPrune::prune(KdLattice *lat)
 {
     if( !lat->Properties(fst::kTopSorted, true) )
     {
-        qDebug() << "prune need TopSort";
+//        qDebug() << "prune need TopSort";
         if( !fst::TopSort(lat) )
         {
             qDebug() << "Topological sorting of lattice failed.";

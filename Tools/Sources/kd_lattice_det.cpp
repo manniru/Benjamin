@@ -1,7 +1,5 @@
 #include "kd_lattice_det.h"
 
-using namespace kaldi;
-
 void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
 {
     KALDI_ASSERT(determinized_);
@@ -23,7 +21,8 @@ void KdLatDet::Output(KdCompactLattice *ofst, bool destroy)
     }
     ofst->SetStart(0);
     // now process transitions.
-    for( StateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
+    for( StateId this_state_id = 0; this_state_id < nStates; this_state_id++ )
+    {
         OutputState &this_state = *(output_states_[this_state_id]);
         std::vector<TempArc> &this_vec(this_state.arcs);
         typename std::vector<TempArc>::const_iterator iter = this_vec.begin(), end = this_vec.end();
@@ -74,17 +73,19 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
     if( destroy)
         FreeMostMemory();
     // Add basic states-- but we will add extra ones to account for strings on output.
-    for( KdStateId s = 0; s< nStates;s++) {
+    for( KdStateId s = 0; s< nStates;s++ ){
         KdStateId news = ofst->AddState();
         KALDI_ASSERT(news==s);
     }
     ofst->SetStart(0);
-    for( KdStateId this_state_id = 0; this_state_id < nStates; this_state_id++) {
+    for( KdStateId this_state_id = 0; this_state_id < nStates; this_state_id++ )
+    {
         OutputState &this_state = *(output_states_[this_state_id]);
         std::vector<TempArc> &this_vec(this_state.arcs);
 
         typename std::vector<TempArc>::const_iterator iter = this_vec.begin(), end = this_vec.end();
-        for( ; iter!=end; ++iter) {
+        for( ; iter!=end; ++iter)
+        {
             const TempArc &temp_arc(*iter);
             std::vector<Label> seq;
             repository_.ConvertToVector(temp_arc.string, &seq);
@@ -93,7 +94,8 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
                 // Make a sequence of states going to a final state, with the strings
                 // as labels.  Put the weight on the first arc.
                 KdStateId cur_state = this_state_id;
-                for( size_t i = 0; i < seq.size(); i++) {
+                for( size_t i = 0; i < seq.size(); i++ )
+                {
                     KdStateId next_state = ofst->AddState();
                     KdLatticeArc arc;
                     arc.nextstate = next_state;
@@ -108,7 +110,8 @@ void KdLatDet::Output(KdLattice *ofst, bool destroy)
                 KdStateId cur_state = this_state_id;
                 // Have to be careful with this integer comparison (i+1 < seq.size()) because unsigned.
                 // i < seq.size()-1 could fail for zero-length sequences.
-                for( size_t i = 0; i+1 < seq.size();i++) {
+                for( size_t i = 0; i+1 < seq.size();i++ )
+                {
                     // for all but the last element of seq, create new state.
                     KdStateId next_state = ofst->AddState();
                     KdLatticeArc arc;
@@ -163,7 +166,8 @@ void KdLatDet::FreeMostMemory()
     }
     { MinimalSubsetHash tmp; tmp.swap(minimal_hash_); }
 
-    for( size_t i = 0; i < output_states_.size(); i++) {
+    for( size_t i = 0; i < output_states_.size(); i++ )
+    {
         std::vector<Element> empty_subset;
         empty_subset.swap(output_states_[i]->minimal_subset);
     }
@@ -206,7 +210,8 @@ void KdLatDet::RebuildRepository()
     // strings we need the repository to "remember", then tell it
     // to clean the repository.
     std::vector<StringId> needed_strings;
-    for( size_t i = 0; i < output_states_.size(); i++) {
+    for( size_t i = 0; i < output_states_.size(); i++ )
+    {
         AddStrings(output_states_[i]->minimal_subset, &needed_strings);
         for( size_t j = 0; j < output_states_[i]->arcs.size(); j++)
             needed_strings.push_back(output_states_[i]->arcs[j].string);
@@ -445,11 +450,16 @@ int KdLatDet::CompareDet(const KdLatticeWeight &a_w, StringId a_str,
     int a_len = a_vec.size(), b_len = b_vec.size();
     // use opposite order on the string lengths (c.f. Compare in
     // lattice-weight.h)
-    if( a_len > b_len) return -1;
-    else if( a_len < b_len) return 1;
-    for(int i = 0; i < a_len; i++) {
-        if( a_vec[i] < b_vec[i]) return -1;
-        else if( a_vec[i] > b_vec[i]) return 1;
+    if( a_len > b_len)
+        return -1;
+    else if( a_len < b_len)
+        return 1;
+    for(int i = 0; i < a_len; i++ )
+    {
+        if( a_vec[i] < b_vec[i])
+            return -1;
+        else if( a_vec[i] > b_vec[i])
+            return 1;
     }
     KALDI_ASSERT(0); // because we checked if a_str==b_str above, shouldn't reach here
     return 0;

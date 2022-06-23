@@ -1,8 +1,6 @@
 #include "kd_a_model.h"
 #include <QDebug>
 
-using namespace kaldi;
-
 KdAModel::KdAModel()
 {
     ;
@@ -25,10 +23,10 @@ void KdAModel::Read(std::istream &in_stream)
 {
     int num_pdfs, dim;
 
-    ExpectToken(in_stream, true, "<DIMENSION>");
-    ReadBasicType(in_stream, true, &dim);
-    ExpectToken(in_stream, true, "<NUMPDFS>");
-    ReadBasicType(in_stream, true, &num_pdfs);
+    kd_ExpectToken(in_stream, "<DIMENSION>");
+    kd_ReadBasicType(in_stream, &dim);
+    kd_ExpectToken(in_stream, "<NUMPDFS>");
+    kd_ReadBasicType(in_stream, &num_pdfs);
     densities.resize(num_pdfs);
     for( int i=0 ; i<num_pdfs; i++ )
     {

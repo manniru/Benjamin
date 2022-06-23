@@ -6,7 +6,7 @@
 #include <QString>
 #include "kd_levenshtein.h"
 #include "backend.h"
-#include "matrix/kaldi-matrix.h"
+#include "kd_matrix.h"
 
 class KdMBR
 {
@@ -46,7 +46,10 @@ private:
 
     QVector<double> alpha;
     QVector<double> alpha_dash_arc;
-    kaldi::Matrix<double> alpha_dash;
+    KdMatrix alpha_dash;
 };
+#define KD_DBL_EPSILON 2.2204460492503131e-16
+#define KD_DIFF_DOUBLE log(KD_DBL_EPSILON)
+double kd_LogAdd(double x, double y);
 
 #endif // KD_MBR_H

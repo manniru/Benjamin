@@ -9,8 +9,6 @@
 
 #define KD_FLT_EPSILON 1.19209290e-7f
 
-using namespace kaldi;
-
 // Gets likelihood of data given this.
 KdGmm::KdGmm()
 {
@@ -38,17 +36,17 @@ float KdGmm::LogLikelihood(double *data, int len)
 void KdGmm::Read(std::istream &is)
 {
     std::string token;
-    ReadToken(is, true, &token);
+    kd_ReadToken(is, &token);
     // <DiagGMMBegin> is for compatibility. Will be deleted later
     if( token!="<DiagGMMBegin>" && token!="<DiagGMM>" )
     {
         qDebug() << "Expected <DiagGMM>, got " << token.c_str();
     }
-    ReadToken(is, true, &token);
+    kd_ReadToken(is, &token);
     if( token=="<GCONSTS>" )
     {  // The gconsts are optional.
         gconsts = kd_VectorRead(is);
-        ExpectToken(is, true, "<WEIGHTS>");
+        kd_ExpectToken(is, "<WEIGHTS>");
     }
     else
     {
@@ -59,11 +57,11 @@ void KdGmm::Read(std::istream &is)
         }
     }
     weights_ = kd_VectorRead(is);
-    ExpectToken(is, true, "<MEANS_INVVARS>");
+    kd_ExpectToken(is, "<MEANS_INVVARS>");
     means_invvars_ = kd_MatrixRead(is);
-    ExpectToken(is, true, "<INV_VARS>");
+    kd_ExpectToken(is, "<INV_VARS>");
     inv_vars = kd_MatrixRead(is);
-    ReadToken(is, true, &token);
+    kd_ReadToken(is, &token);
     // <DiagGMMEnd> is for compatibility. Will be deleted later
     if( token!="<DiagGMMEnd>" && token!="</DiagGMM>" )
     {
@@ -97,7 +95,7 @@ void KdGmm::ComputeGconsts()
         float gc = logf(weights_[mix]) + offset;  // May be -inf if weights == 0
         for( int i=0 ; i<dim ; i++ )
         {
-            gc += 0.5 * Log(inv_vars.d[mix][i]) - 0.5 * means_invvars_.d[mix][i]
+            gc += 0.5 * log(inv_vars.d[mix][i]) - 0.5 * means_invvars_.d[mix][i]
                     * means_invvars_.d[mix][i] / inv_vars.d[mix][i];
         }
         // Change sign for logdet because var is inverted. Also, note that

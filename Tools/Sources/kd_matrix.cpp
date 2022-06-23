@@ -33,7 +33,7 @@ void KdMatrix::resize(int row, int column)
     free();
 
     d = (float **)malloc(sizeof(float *)*row);
-    for ( int i=0 ; i<row ; i++ )
+    for(  int i=0 ; i<row ; i++ )
     {
         d[i] = (float *)malloc(sizeof(float)*column);
     }
