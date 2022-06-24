@@ -176,7 +176,7 @@ void KdSrcFFT::Compute(float *x, bool forward,
     if( temp_buffer->size()!=N_)
         temp_buffer->resize(N_);
     float *temp_ptr = &((*temp_buffer)[0]);
-    for( int i = 0; i < N_; i++)
+    for( int i = 0; i<N_ ; i++ )
     {
         x[i] = x[i * 2];  // put the float part in the first half of x.
         temp_ptr[i] = x[i * 2 + 1];  // put the imaginary part in temp_buffer.

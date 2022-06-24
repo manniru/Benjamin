@@ -4,8 +4,7 @@ QT += multimedia
 
 CONFIG += console
 
-linux:INCLUDEPATH += ../../Kaldi/tools/openfst/src/include \
-                     ../PNN
+linux:INCLUDEPATH += ../PNN
 
 linux:LIBS += -pthread -lm -ldl \
               -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
