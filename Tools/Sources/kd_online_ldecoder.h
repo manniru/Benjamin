@@ -61,6 +61,7 @@ public:
 private:
     void checkReset();
     void addFinalFrame(KdLattice *ofst);
+    void printLog();
     bool GetiSymbol(KdLattice *fst, std::vector<int> *isymbols_out);
     KdToken* getBestTok();
 

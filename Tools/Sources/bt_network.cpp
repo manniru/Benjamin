@@ -29,8 +29,8 @@ float BtNetwork::predict(int id)
 {
     int data_len = BT_ENN_SIZE*BT_ENN_SIZE*3;
     vec_t res = nets[id]->predict(data_buf, data_len);
-    qDebug() << word_list[id]
-                << "Detect:" << res[0] << res[1];
+//    qDebug() << word_list[id]
+//                << "Detect:" << res[0] << res[1];
 
     return res[1];
 }

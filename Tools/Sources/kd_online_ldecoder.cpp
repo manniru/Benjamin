@@ -112,6 +112,42 @@ void KdOnlineLDecoder::addFinalFrame(KdLattice *ofst)
     }
 }
 
+void KdOnlineLDecoder::printLog()
+{
+    int word_count = result.size();
+    QString buf;
+    for( int i=0 ; i<word_count ; i++ )
+    {
+        if( i==0 )
+        {
+            if( result[i].end<0.15 )
+            {
+                qDebug() << "$$$$$$$ skipped " << result[i].end
+                         <<  result[i].word;
+                continue;
+            }
+        }
+
+        int f_end = result[i].end*100;
+        buf += result[i].word;
+        buf += "(";
+        buf += QString::number(f_end);
+        buf += ",";
+        buf += QString::number(result[i].conf);
+        buf += ")";
+        buf += " ";
+    }
+
+    if( word_count )
+    {
+        char msg[300];
+        sprintf(msg, "<%d> le:%.0lf uf:%d", wav_id+1,
+                floor(result.last().end*100), uframe);
+        qDebug() << msg << buf << result.size();
+    }
+
+}
+
 void KdOnlineLDecoder::MakeLattice(KdCompactLattice *ofst)
 {
     KdLattice raw_fst;
@@ -154,15 +190,12 @@ QVector<BtWord> KdOnlineLDecoder::getResult(KdCompactLattice *out_fst)
 void KdOnlineLDecoder::CalcFinal()
 {
     int word_count = result.size();
-    QString buf;
     for( int i=0 ; i<word_count ; i++ )
     {
         if( i==0 )
         {
             if( result[i].end<0.15 )
             {
-                qDebug() << "$$$$$$$ skipped " << result[i].end
-                         <<  result[i].word;
                 continue;
             }
         }
@@ -172,26 +205,9 @@ void KdOnlineLDecoder::CalcFinal()
         {
             result[i].is_final = 1;
         }
-        buf += result[i].word;
-        buf += "(";
-        buf += QString::number(f_end);
-        buf += ",";
-        buf += QString::number(result[i].conf);
-        buf += ")";
-        buf += " ";
     }
 
-    if( word_count )
-    {
-        QString msg = "<";
-        msg += QString::number(wav_id+1);
-        msg += "> ";
-        msg += QString::number(result.last().end);
-        msg += " ";
-        msg += QString::number(uframe);
-        msg += " " + buf;
-        qDebug() << msg << result.size();
-    }
+    printLog();
 }
 
 // Returns "true" if the current hypothesis ends with long silence

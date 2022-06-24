@@ -37,6 +37,8 @@ void BtTest::init()
     std::ifstream ki;
     ki.open(model_filename.c_str(),
              std::ios_base::in | std::ios_base::binary);
+    ki.get();
+    ki.get();
     t_model->Read(ki);
     oa_model->Read(ki);
 
@@ -80,7 +82,7 @@ void BtTest::startDecode()
                 float conf = getConf(result[j], prefix);
                 dbf += result[j].word + " " + QString::number(conf) + " | ";
             }
-            qDebug() << "Conf:" << dbf;
+//            qDebug() << "Conf:" << dbf;
             step++;
         }
         if( result.size() )
