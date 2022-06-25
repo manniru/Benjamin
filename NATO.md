@@ -41,8 +41,8 @@ Go to `NATO` directory and
 ./record.sh <category> <number>
 ```
 
-`category`: any name so you can distinguish your environment or microphone later
-`number`: number of samples you want to record
+* `category`: any name so you can distinguish your environment or microphone later
+* `number`: number of samples you want to record
 
 4. Create Lexicon (must run if the word_list changed)
 

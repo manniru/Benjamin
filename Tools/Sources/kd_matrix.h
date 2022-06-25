@@ -9,6 +9,7 @@ public:
 
     void free();
     void resize(int row, int column);
+    void setZero();
 
     int    cols;
     int    rows;

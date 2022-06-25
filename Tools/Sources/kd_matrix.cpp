@@ -41,3 +41,14 @@ void KdMatrix::resize(int row, int column)
     cols = column;
 }
 
+void KdMatrix::setZero()
+{
+    for(  int i=0 ; i<rows ; i++ )
+    {
+        for( int j=0 ; j<cols ; j++ )
+        {
+            d[i][j] = 0;
+        }
+    }
+}
+

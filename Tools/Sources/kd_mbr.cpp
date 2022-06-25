@@ -90,6 +90,7 @@ void KdMBR::computeGamma()
     QVector<double> beta_dash_arc(word_len+1, 0);
     KdMatrix beta_dash;
     beta_dash.resize(state_count+1, word_len+1);
+    beta_dash.setZero();
     std::vector<char> arc_type(word_len+1); // integer in {1,2,3}; index 1...Q
     std::vector<map<int, double> > gamma_map(word_len+1); // temp. form of gamma.
 
@@ -285,6 +286,7 @@ double KdMBR::editDistance()
     alpha.resize(state_count+1); // index (1...N)
     alpha_dash_arc.resize(word_len+1); // index 0...Q
     alpha_dash.resize(state_count+1, word_len+1); // index (1...N, 0...Q)
+    alpha_dash.setZero();
 
     alpha[1] = 0.0; // = log(1)
     alpha_dash.d[1][0] = 0.0; // Line 5.
