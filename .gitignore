@@ -119,6 +119,12 @@ ENN/ENN_simple
 
 ENN/Models/
 
-Chess/
-
 Tools/BaTool_Fast
+
+Chess/Build/.moc/
+
+Chess/Build/.obj/
+
+Chess/Build/.rcc/
+
+Chess/Chess

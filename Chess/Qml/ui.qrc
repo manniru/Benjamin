@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ChCell.qml</file>
+        <file>main.qml</file>
+        <file>notification.qml</file>
+    </qresource>
+</RCC>
