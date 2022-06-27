@@ -9,53 +9,30 @@ Window
 {
     id: window_main
     property string  m_text: "mamad joon"
-    property int     count_x: 15
-    property int     count_y: 15
+    property int     count_x: 36
+    property int     count_y: 26
     property real    o_state: 1
-    property color   ch_cell_color: "#af000000"
+    property color   ch_cell_color: "#90000000"
     property color   ch_active_color: "#7f5f6f00"
     property string  ch_buffer: ""
-
 
     signal eKeyPressed(int key)
 
     title: "Chess"
     width: 800
     height: 600
-    visible: true
+    visible: false
     color: "transparent"
-    opacity: 1.0
+    opacity: 0.8
 
     Item
     {
         focus: true
         Keys.onPressed:
         {
-            if( ch_buffer.length===0 )
+            if ( event.key!==Qt.Key_Escape )
             {
-                ch_buffer += String.fromCharCode(event.key);
-                state0Highlight();
-            }
-            else if( ch_buffer.length===1 )
-            {
-                if ( event.key===Qt.Key_Backspace )
-                {
-                    ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
-                    resetHighlight();
-                }
-                else
-                {
-                    ch_buffer += String.fromCharCode(event.key);
-                    state1Highlight(event.key);
-                }
-            }
-            else if( ch_buffer.length===2 )
-            {
-                if ( event.key===Qt.Key_Backspace )
-                {
-                    ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
-                    state0Highlight();
-                }
+                keyHandler(event.key);
             }
             eKeyPressed(event.key);
         }
@@ -68,7 +45,6 @@ Window
 
         anchors.fill: parent
     }
-
 
     Component.onCompleted:
     {
@@ -103,10 +79,39 @@ Window
     OpTimer
     {
         interval: 50
-        repeat: true
-//        running: true
+        repeat:   true
+        running:  true
     }
 
+    function keyHandler(key_event)
+    {
+        if( ch_buffer.length===0 )
+        {
+            ch_buffer += String.fromCharCode(key_event);
+            state0Highlight();
+        }
+        else if( ch_buffer.length===1 )
+        {
+            if ( key_event===Qt.Key_Backspace )
+            {
+                ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
+                resetHighlight();
+            }
+            else
+            {
+                ch_buffer += String.fromCharCode(key_event);
+                state1Highlight(key_event);
+            }
+        }
+        else if( ch_buffer.length===2 )
+        {
+            if ( key_event===Qt.Key_Backspace )
+            {
+                ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
+                state0Highlight();
+            }
+        }
+    }
 
     function highlightRow(row)
     {
@@ -131,7 +136,6 @@ Window
             }
         }
     }
-
 
     function state0Highlight()
     {

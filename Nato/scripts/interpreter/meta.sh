@@ -44,17 +44,13 @@ elif [[ "$WORD" == "close" ]]; then
     
     OUTPUT="10"
     
-elif [[ "$WORD" == "switch" ]]; then
+elif [[ "$WORD" == "mouse" ]]; then
     
     OUTPUT="11"
     
-elif [[ "$WORD" == "mouse" ]]; then
-    
-    OUTPUT="12"
-    
 elif [[ "$WORD" == "touch" ]]; then
     
-    OUTPUT="13"
+    OUTPUT="12"
     
 fi
 

@@ -52,6 +52,11 @@ void Channel::reset()
 
 void Channel::keyPressed(int key)
 {
+    if( key==CH_ESCAPE_CODE )
+    {
+        reset();
+    }
+
     if( key==CH_BACKSPACE_CODE )
     {
         if( key_buf.length()>0 )

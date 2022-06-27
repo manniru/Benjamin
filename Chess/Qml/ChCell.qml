@@ -7,7 +7,7 @@ import QtQuick.Layouts 1.1
 Rectangle
 {
     property string cell_name: "lolo"
-    property color  cell_color: "#7f000000"
+    property color  cell_color: "#cf000000"
     property int    cell_size: 18
 
     color: "transparent"
@@ -31,7 +31,7 @@ Rectangle
             font.pixelSize: cell_size
             color: if( cell_color=="#7f000000")
                    {
-                       "#aaa"
+                       "#ccc"
                    }
                    else
                    {

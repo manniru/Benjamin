@@ -13,6 +13,10 @@ elif [[ "$WORD" == "colon" ]]; then
     
     OUTPUT="102"
     
+elif [[ "$WORD" == "switch" ]]; then
+    
+    OUTPUT="103"
+    
 fi
 
 if [[ "$OUTPUT" ]]; then
