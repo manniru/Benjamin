@@ -14,7 +14,7 @@ QML_IMPORT_PATH =
 
 DISTFILES += \
     Qml/ChCell.qml \
-    Qml/notification.qml \
+    Qml/OpTimer.qml \
     Qml/main.qml
 
 INCLUDEPATH +=  \

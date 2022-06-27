@@ -9,8 +9,8 @@
 #include "config.h"
 
 #define CH_BACKSPACE_CODE 16777219
-#define CH_KEY_MIN        64
-#define CH_KEY_MAX        91
+#define CH_KEY_MIN        ('0'-1)
+#define CH_KEY_MAX        ('Z'+1)
 
 class Channel : public QObject
 {
@@ -32,6 +32,8 @@ private:
 
     QString   key_buf; //requested word
     QObject  *root;
+    int       count_x; //read from qml
+    int       count_y; //read from qml
 };
 
 

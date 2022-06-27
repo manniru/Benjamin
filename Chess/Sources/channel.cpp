@@ -5,6 +5,9 @@ Channel::Channel(QObject *ui,QObject *parent) : QObject(parent)
 {
     ConnectDBus();
     root = ui;
+
+    count_x = QQmlProperty::read(root, "count_x").toInt();
+    count_y = QQmlProperty::read(root, "count_y").toInt();
 }
 
 Channel::~Channel()
@@ -16,7 +19,7 @@ void Channel::ConnectDBus()
 {
     QDBusConnection session = QDBusConnection::sessionBus();
 
-    if (!session.isConnected())
+    if( !session.isConnected() )
     {
         qFatal("Cannot connect to the D-Bus session bus.");
         return;
@@ -24,10 +27,8 @@ void Channel::ConnectDBus()
 
     session.connect("", "/", COM_NAME, "show", this, SLOT(showUI(const QString &)));
 
-    if(!session.registerService(COM_NAME)) {
-        qFatal("Another session is on DBus.");
-        // This cannot be automatic because killing assistant also kill
-        // this instant too
+    if( !session.registerService(COM_NAME) )
+    {
         return;
     }
 }
@@ -35,7 +36,9 @@ void Channel::ConnectDBus()
 void Channel::showUI(const QString &text)
 {
 //    reset();
+    system("Scripts/disable_picom_dim.sh");
     QQmlProperty::write(root, "visible", 1);
+    QQmlProperty::write(root, "y", 500);
 }
 
 void Channel::reset()
@@ -44,6 +47,7 @@ void Channel::reset()
     QQmlProperty::write(root, "ch_buffer", "");
     QMetaObject::invokeMethod(root, "resetHighlight");
     key_buf = "";
+    system("Scripts/enable_picom_dim.sh");
 }
 
 void Channel::keyPressed(int key)
@@ -71,19 +75,37 @@ void Channel::keyPressed(int key)
 
 void Channel::strToPos(QString input, int *x, int *y)
 {
-    *x = (int)(input.toStdString()[1]) - 'A';
+    char ch_x = input.toStdString()[1];
+
+    if( '0'<=ch_x && ch_x<='9' )
+    {
+        *x = (int)ch_x - '0';
+    }
+    else
+    {
+        *x = (int)ch_x - 'A' + 10;
+    }
+
     *y = (int)(input.toStdString()[0]) - 'A';
 }
 
 void Channel::setPos(int x, int y)
 {
-    double width = 74.1;
-    double height = 41.85;
+    // window width, height, x and y
+    int w_width  = QQmlProperty::read(root, "width").toInt();
+    int w_height = QQmlProperty::read(root, "height").toInt();
+    int w_x      = QQmlProperty::read(root, "x").toInt();
+    int w_y      = QQmlProperty::read(root, "y").toInt();
+    qDebug() << w_height << w_x << w_y;
+    double width  = w_width /(count_x-0.1);
+    double height = w_height/(count_y-0.1);
+
+    x = w_x + qRound(x*width  + width /2);
+    y = w_y + qRound(y*height + height/2);
     QString cmd = "xdotool mousemove ";
-    cmd += QString::number(qRound(x*width + width/2));
+    cmd += QString::number(x);
     cmd += " ";
-    cmd += QString::number(qRound(y*height+height/2));
+    cmd += QString::number(y);
 
     system(cmd.toStdString().c_str());
-
 }
