@@ -1,11 +1,18 @@
 #!/bin/bash
 #record train audio file
+# Record All Word Randomely
+# ./record.sh <Category> <Num>
+# Record For a Specific Word
+# ./record.sh <category> <Num> <Word>
 
 REC_TIME=5 #second
 AUDIO_DIR="audio"
 DATA_DIR="data"
 SPEAKER="$1"
 REC_NUM="$2"
+WORD_SS="$3" #can be pass to specify train on single word
+WORD_ID=$(grep -n "$WORD_SS" word_list | awk -F: '{print $1}')
+WORD_ID=$(($WORD_ID-1))
 
 source path.sh
 
@@ -31,5 +38,5 @@ if [[ ! -d audio/train/$SPEAKER ]]; then
 
 fi
 
-python3 $ST/recorder.py "$AUDIO_DIR" $SPEAKER $REC_NUM $LEXICON_COUNT
+python3 $ST/recorder.py "$AUDIO_DIR" $SPEAKER $REC_NUM $LEXICON_COUNT $WORD_ID
 python3 $ST/check_audio.py

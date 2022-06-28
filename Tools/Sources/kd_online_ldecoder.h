@@ -16,7 +16,7 @@
 #include "kd_mbr.h"
 #include "bt_graph_d.h"
 
-#define BT_MIN_SIL 14 //150ms ((x+1)*100)
+#define BT_MIN_SIL 20 //150ms ((x+1)*100)
 
 struct KdOnlineLDecoderOpts: public KdDecoderConfig
 {

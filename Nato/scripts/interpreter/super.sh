@@ -17,6 +17,10 @@ elif [[ "$WORD" == "switch" ]]; then
     
     OUTPUT="103"
     
+elif [[ "$WORD" == "kick" ]]; then
+    
+    OUTPUT="104"
+    
 fi
 
 if [[ "$OUTPUT" ]]; then

@@ -8,11 +8,11 @@ import QtQml 2.3
 Window
 {
     id: window_main
-    property string  m_text: "mamad joon"
-    property int     count_x: 36
-    property int     count_y: 26
+    property int     count_x : 36
+    property int     count_y : 26
+    property bool    ch_timer: true
     property real    o_state: 1
-    property color   ch_cell_color: "#90000000"
+    property color   ch_cell_color: "#cf000000" // "#cf000000"
     property color   ch_active_color: "#7f5f6f00"
     property string  ch_buffer: ""
 
@@ -21,16 +21,18 @@ Window
     title: "Chess"
     width: 800
     height: 600
-    visible: false
+//    visible: false
+    visible: true
     color: "transparent"
     opacity: 0.8
+    flags: Qt.WA_X11NetWmWindowTypeDock
 
     Item
     {
         focus: true
         Keys.onPressed:
         {
-            if ( event.key!==Qt.Key_Escape )
+            if( event.key!==Qt.Key_Escape )
             {
                 keyHandler(event.key);
             }
@@ -80,36 +82,42 @@ Window
     {
         interval: 50
         repeat:   true
-        running:  true
+        running:  ch_timer
     }
 
     function keyHandler(key_event)
     {
-        if( ch_buffer.length===0 )
+        if( key_event===Qt.Key_F1 )
+        {
+            ch_cell_color = "#cf002422"
+        }
+        else if ( key_event===Qt.Key_Backspace )
+        {
+            if( ch_buffer.length )
+            {
+                ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
+            }
+        }
+        else
         {
             ch_buffer += String.fromCharCode(key_event);
-            state0Highlight();
+        }
+        updateState();
+    }
+
+    function updateState()
+    {
+        if( ch_buffer.length===0 )
+        {
+            resetHighlight();
         }
         else if( ch_buffer.length===1 )
         {
-            if ( key_event===Qt.Key_Backspace )
-            {
-                ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
-                resetHighlight();
-            }
-            else
-            {
-                ch_buffer += String.fromCharCode(key_event);
-                state1Highlight(key_event);
-            }
+            state0Highlight();
         }
         else if( ch_buffer.length===2 )
         {
-            if ( key_event===Qt.Key_Backspace )
-            {
-                ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
-                state0Highlight();
-            }
+            state1Highlight();
         }
     }
 
@@ -148,7 +156,7 @@ Window
         }
     }
 
-    function state1Highlight(ev_key)
+    function state1Highlight()
     {
         resetHighlight();
 

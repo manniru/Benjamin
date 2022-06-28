@@ -15,6 +15,7 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
     net = new BtNetwork;
 
     strict_word << "five";
+    strict_word << "four";
 }
 
 void BtCaptain::parse(QVector<BtWord> in_words, uint max_frame)
@@ -108,6 +109,10 @@ void BtCaptain::addXBuf(BtWord word)
     {
 //        qDebug() << "Strict Word" << word.word;
         word.conf = getConf(word);
+        if( word.conf>0.1 )
+        {
+            word.conf = 1.0;
+        }
     }
     if( word.conf<KAL_HARD_TRESHOLD )
     {
