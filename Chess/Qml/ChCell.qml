@@ -6,9 +6,9 @@ import QtQuick.Layouts 1.1
 
 Rectangle
 {
-    property string cell_name: "lolo"
-    property color  cell_color: "#cf000000"
-    property int    cell_size: 18
+    property int    cell_size : 18
+    property color  cell_color: ch_cell_color
+    property string cell_name : "lolo"
 
     color: "transparent"
 
@@ -17,11 +17,11 @@ Rectangle
 
     Rectangle
     {
-        color: cell_color
         width: 40
         height: 40
-        radius: 15
 
+        radius: 15
+        color : cell_color
         opacity: 1
 
         anchors.centerIn: parent

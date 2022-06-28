@@ -7,7 +7,7 @@ import QtQml 2.3
 
 Timer
 {
-    property real op_min   : 0.4
+    property real op_min   : 0.0
     property real op_max   : 0.8
     property real o_speed  : 0.2
     property int  delay    : 10
