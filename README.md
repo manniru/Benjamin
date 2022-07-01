@@ -33,6 +33,7 @@ This project wouldn't be possible without the help of:
 - OpenFST
 - HTKBook
 - Kaldi
+- [rxi-ini](https://github.com/rxi/ini)
 
 ----------------------
 * To control the PC this project connect with [Rebound](https://github.com/bijanbina/RAIIS/tree/master/Rebound) and uses Linux uInput module.

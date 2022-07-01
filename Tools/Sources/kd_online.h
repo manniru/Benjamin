@@ -12,12 +12,13 @@
 #include "kd_decodable.h"
 #include "kd_online_ldecoder.h"
 #include "bt_wav_writer.h"
+#include "bt_state.h"
 
 class KdOnline : public QObject
 {
     Q_OBJECT
 public:
-    explicit KdOnline(QObject *parent = nullptr);
+    explicit KdOnline(BtState *state, QObject *parent = nullptr);
     ~KdOnline();
 
     void startDecode();
@@ -43,7 +44,8 @@ private:
     KdOnlineLDecoder *o_decoder;
 
     KdTransitionModel *t_model;
-    KdAModel               *oa_model; //online accoustic model
+    KdAModel          *oa_model; //online accoustic model
+    BtState           *st;
 };
 
 #endif // KD_ONLINE_H

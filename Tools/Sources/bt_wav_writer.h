@@ -1,19 +1,17 @@
 #ifndef BT_WAV_WRITER_H
 #define BT_WAV_WRITER_H
 
-#include <QObject>
-#include <thread>         // std::thread
 #include <QTimer>
 #include <QDebug>
 
 #include "bt_recorder.h"
 #include "bt_mbr_base.h" //For BtWord
+#include "bt_state.h"
 
-class BtWavWriter : public QObject
+class BtWavWriter
 {
-    Q_OBJECT
 public:
-    explicit BtWavWriter(BtCyclic *buffer, QObject *parent = nullptr);
+    BtWavWriter(BtCyclic *buffer, BtState *state);
     ~BtWavWriter();
 
     void write(QVector<BtWord> result, int len, int dbg_id);
@@ -27,9 +25,11 @@ private:
     void copyToUnverified(QVector<BtWord> result, QString filename);
     bool isSleep();
 
-    BtCyclic         *cy_buf;
-    QFile            *file;
-    QStringList       word_list;
+    BtCyclic    *cy_buf;
+    QFile       *file;
+    BtState     *st;
+    QStringList  word_list;
+    QStringList  exemption_list;
 };
 
 #endif // BT_WAV_WRITER_H

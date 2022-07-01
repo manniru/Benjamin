@@ -1,16 +1,15 @@
 #include "kd_decoder.h"
 #include <QDebug>
 
-KdDecoder::KdDecoder()
+KdDecoder::KdDecoder(BtState *state)
 {
     max_state = 0;
-    warned_ = false;
-    decoding_finalized_ = false;
 
     for( int i=0 ; i<MAX_STATE_COUNT ; i++ )
     {
         cf_tokens[i] = NULL;
     }
+    st = state;
 }
 
 KdDecoder::~KdDecoder()
@@ -100,12 +99,12 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
     float max_active_cutoff;
 
     int tok_count = cf_costs.size();
-    if( tok_count>config.max_active)
+    if( tok_count>st->max_active)
     {
         std::nth_element(cf_costs.begin(),
-                         cf_costs.begin() + config.max_active,
+                         cf_costs.begin() + st->max_active,
                          cf_costs.end());
-        max_active_cutoff = cf_costs[config.max_active];
+        max_active_cutoff = cf_costs[st->max_active];
         if(  max_active_cutoff<beam_cutoff)
         {
             // max_active is tighter than beam.
@@ -114,13 +113,13 @@ float KdDecoder::GetCutoff(KdToken **best_tok)
             return max_active_cutoff;
         }
     }
-    if( tok_count>config.min_active )
+    if( tok_count>st->min_active )
     {
         //sub sort to nth element
         std::nth_element(cf_costs.begin(),
-                         cf_costs.begin() + config.min_active,
+                         cf_costs.begin() + st->min_active,
                          cf_costs.end());
-        float min_active_cutoff = cf_costs[config.min_active];
+        float min_active_cutoff = cf_costs[st->min_active];
 
         if( min_active_cutoff>beam_cutoff )
         { // min_active is looser than beam.

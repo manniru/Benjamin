@@ -132,3 +132,5 @@ Chess/Chess
 Chess/Makefile
 
 Chess/chess_en
+
+Tools/BaTool.conf

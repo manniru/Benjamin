@@ -30,7 +30,7 @@ class BtCaptain : public QObject
 {
     Q_OBJECT
 public:
-    explicit BtCaptain(QObject *parent = nullptr);
+    explicit BtCaptain(BtState *state, QObject *parent = nullptr);
     bool isValidUtterance();
     void parse(QVector<BtWord> in_words, uint max_frame);
 
@@ -55,6 +55,7 @@ private:
     QTimer    *time_shifter;
     float      start_treshold;
     QString    x_buf; //exec buf
+    BtState   *st;
 };
 
 #endif // BT_CAPTAIN_H

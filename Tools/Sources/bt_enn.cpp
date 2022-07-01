@@ -2,9 +2,11 @@
 #include <QDir>
 #include <qmath.h>
 
-BtEnn::BtEnn(QString dir_name, QObject *parent): QObject(parent)
+BtEnn::BtEnn(QString dir_name, BtState *state,
+             QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
+    st     = state;
 
     QDir p_dir(dir_name);
     QStringList fmt;
@@ -25,7 +27,7 @@ BtEnn::BtEnn(QString dir_name, QObject *parent): QObject(parent)
     bt_mkDir(KAL_AU_DIR"enn/");
 
     QString cmd = "find " KAL_AU_DIR "enn/ -type f";
-    wav_w = new BtWavWriter(cy_buf);
+    wav_w = new BtWavWriter(cy_buf, st);
     exist_list = getStrCommand(cmd).split("\n");
 }
 
@@ -40,7 +42,7 @@ BtEnn::~BtEnn()
 void BtEnn::init(QString dir)
 {
     cat_dir = dir;
-    std::string model_filename = BT_OAMDL_PATH;
+    std::string model_filename = st->mdl_path;
 
     oa_model = new KdAModel;
     t_model = new KdTransitionModel;
@@ -50,8 +52,8 @@ void BtEnn::init(QString dir)
     t_model->Read(ki);
     oa_model->Read(ki);
 
-    o_decoder = new KdOnlineLDecoder(t_model);
-    o_decoder->status.min_sil = 300;
+    o_decoder = new KdOnlineLDecoder(t_model, st);
+    st->min_sil = 300;
 
     startDecode();
 }

@@ -6,6 +6,7 @@
 #include "bt_token_list.h"
 #include "kd_lattice_functions.h"
 #include "kd_decodable.h"
+#include "bt_state.h"
 
 // what is determinization?
 
@@ -14,8 +15,6 @@
 struct KdDecoderConfig
 {
     float beam = 16;
-    int max_active = 900;
-    int min_active = 200;
     float beam_delta = 0.5;
 //    int prune_interval = 25;
 //    float prune_scale = 0.1; // not a very important parameter.
@@ -27,7 +26,7 @@ struct KdDecoderConfig
 class KdDecoder
 {
 public:
-    KdDecoder();
+    KdDecoder(BtState *state);
     ~KdDecoder();
 
     void ResetDecoder();
@@ -58,18 +57,14 @@ protected:
     QVector<KdTokenList> frame_toks; // tokens indexed by frame
 
     // fst_ is a pointer to the FST we are decoding from.
-    KdFST *fst_graph;
+    KdFST   *fst_graph;
+    BtState *st;
 
     KdDecoderConfig config;
     QVector<float> best_costs; //offset that keep costs close to
     // zero, to reduce roundoff errors.
     int max_state; // current total #toks allocated...
-    bool warned_;
 
-    bool decoding_finalized_; // true if someone called FinalizeDecoding().
-
-    float final_relative_cost_;
-    float final_best_cost_;
     float adaptive_beam; //updates in getcutoff
 
     void ResetCFToks();

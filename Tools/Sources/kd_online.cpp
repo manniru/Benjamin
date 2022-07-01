@@ -1,27 +1,26 @@
 #include "kd_online.h"
 
-KdOnline::KdOnline(QObject *parent): QObject(parent)
+KdOnline::KdOnline(BtState *state, QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
 
     ab_src = new BtRecorder(cy_buf);
-    wav_w  = new BtWavWriter(cy_buf);
-
-    std::string model_filename = BT_OAMDL_PATH;
+    wav_w  = new BtWavWriter(cy_buf, state);
 
     oa_model = new KdAModel;
     t_model = new KdTransitionModel;
 
     std::ifstream ki;
-    ki.open(model_filename.c_str(),
-             std::ios_base::in | std::ios_base::binary);
+    ki.open(state->mdl_path, std::ios_base::in |
+                             std::ios_base::binary);
     ki.get();
     ki.get();
     t_model->Read(ki);
     oa_model->Read(ki);
 
-    o_decoder = new KdOnlineLDecoder(t_model);
-    cap = new BtCaptain;
+    o_decoder = new KdOnlineLDecoder(t_model, state);
+    cap = new BtCaptain(state);
+    st  = state;
 }
 
 KdOnline::~KdOnline()
@@ -43,7 +42,7 @@ void KdOnline::startDecode()
     KdDecodable decodable(cy_buf, oa_model,
                           t_model, acoustic_scale);
     cap->net->cfb   = decodable.features->o_features;
-    cap->net->wav_w = new BtWavWriter(cy_buf);
+    cap->net->wav_w = new BtWavWriter(cy_buf, st);
     decodable.features->enableENN();
 
     ab_src->startStream();

@@ -2,7 +2,8 @@
 #include <QDebug>
 #include <QColor>
 
-BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
+BtCaptain::BtCaptain(BtState *state,
+                     QObject *parent) : QObject(parent)
 {
     setbuf(stdout,NULL); //to work out printf
 
@@ -13,6 +14,7 @@ BtCaptain::BtCaptain(QObject *parent) : QObject(parent)
 
     start_treshold = -BT_HISTORY_SIZE/1000.0;
     net = new BtNetwork;
+    st  = state;
 
     strict_word << "five";
     strict_word << "four";
@@ -114,7 +116,7 @@ void BtCaptain::addXBuf(BtWord word)
             word.conf = 1.0;
         }
     }
-    if( word.conf<KAL_HARD_TRESHOLD )
+    if( word.conf<st->hard_threshold )
     {
         return;
     }

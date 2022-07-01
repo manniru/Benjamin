@@ -13,12 +13,14 @@
 #include "kd_model.h"
 #include "kd_decodable.h"
 #include "kd_online_ldecoder.h"
+#include "bt_state.h"
 
 class BtTest: public QObject
 {
     Q_OBJECT
 public:
-    explicit BtTest(QString dir_name, QObject *parent = nullptr);
+    explicit BtTest(QString dir_name, BtState *state,
+                    QObject *parent = nullptr);
     ~BtTest();
 
 private:
@@ -40,6 +42,7 @@ private:
     QFile             wav_file;
     QStringList       file_list;
     BtNetwork        *net;
+    BtState          *st;
 };
 
 #endif // BT_TEST_H

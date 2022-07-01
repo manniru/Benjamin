@@ -3,14 +3,13 @@
 
 QString dbg_times;
 
-KdOnlineLDecoder::KdOnlineLDecoder(KdTransitionModel *trans_model)
+KdOnlineLDecoder::KdOnlineLDecoder(KdTransitionModel *trans_model,
+                                   BtState *state): KdDecoder(state)
 {
     fst_graph = kd_readDecodeGraph(BT_FST_PATH);
 
     qDebug() << "Graph States Count" << kd_NumOfStates(fst_graph);
     mbr = new KdMBR;
-
-    opts.max_active = 300;
 
     config = opts;
     t_model = trans_model;
@@ -201,7 +200,7 @@ void KdOnlineLDecoder::CalcFinal()
         }
 
         int f_end = result[i].end*100;
-        if( (uframe-f_end)>status.min_sil )
+        if( (uframe-f_end)>st->min_sil )
         {
             result[i].is_final = 1;
         }
@@ -220,7 +219,7 @@ void KdOnlineLDecoder::HaveSilence()
     {
         float end_time = result.last().end;
         int diff = uframe - end_time*100;
-        if( diff>status.min_sil )
+        if( diff>st->min_sil )
         {
             qDebug() << "DETECT MIN SIL: "
                      << end_time*100;

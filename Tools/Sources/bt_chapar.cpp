@@ -2,21 +2,21 @@
 #include <QDebug>
 #include <QDir>
 
-BtChapar::BtChapar(BtState st, QObject *parent) : QObject(parent)
+BtChapar::BtChapar(BtState *st, QObject *parent) : QObject(parent)
 {
-    if( st.state==BT_TEST_MODE )
+    if( st->state==BT_TEST_MODE )
     {
-        test = new BtTest(KAL_WAV_DIR);
+        test = new BtTest(KAL_WAV_DIR, st);
     }
-    else if( st.state==BT_ENN_MODE )
+    else if( st->state==BT_ENN_MODE )
     {
 //    enn = new BtEnn(KAL_AU_DIR"train/online/");
-        createEnn(KAL_AU_DIR"train/");
+        createEnn(KAL_AU_DIR"train/", st);
     }
     else
     {
         kaldi_thread = new QThread;
-        KdOnline  *kaldi = new KdOnline;
+        KdOnline  *kaldi = new KdOnline(st);
         kaldi->moveToThread(kaldi_thread);
         kaldi_thread->start();
 
@@ -25,7 +25,7 @@ BtChapar::BtChapar(BtState st, QObject *parent) : QObject(parent)
     }
 }
 
-void BtChapar::createEnn(QString dir)
+void BtChapar::createEnn(QString dir, BtState *st)
 {
     QDir p_dir(dir);
     QStringList fmt;
@@ -36,7 +36,7 @@ void BtChapar::createEnn(QString dir)
 
     for( int i=0 ; i<dir_list.size() ; i++ )
     {
-        BtEnn enn(dir + dir_list[i] + "/");
+        BtEnn enn(dir + dir_list[i] + "/", st);
         enn.init(dir_list[i]);
     }
     exit(0);

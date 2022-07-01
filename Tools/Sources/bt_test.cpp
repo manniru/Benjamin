@@ -1,7 +1,8 @@
 #include "bt_test.h"
 #include <QDir>
 
-BtTest::BtTest(QString dir_name, QObject *parent): QObject(parent)
+BtTest::BtTest(QString dir_name, BtState *state,
+               QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
 
@@ -17,6 +18,7 @@ BtTest::BtTest(QString dir_name, QObject *parent): QObject(parent)
 
     net = new BtNetwork;
     init();
+    st  = state;
 }
 
 BtTest::~BtTest()
@@ -29,21 +31,19 @@ BtTest::~BtTest()
 
 void BtTest::init()
 {
-    std::string model_filename = BT_OAMDL_PATH;
-
     oa_model = new KdAModel;
     t_model = new KdTransitionModel;
 
     std::ifstream ki;
-    ki.open(model_filename.c_str(),
-             std::ios_base::in | std::ios_base::binary);
+    ki.open(st->mdl_path, std::ios_base::in |
+                             std::ios_base::binary);
     ki.get();
     ki.get();
     t_model->Read(ki);
     oa_model->Read(ki);
 
-    o_decoder = new KdOnlineLDecoder(t_model);
-    o_decoder->status.min_sil = 300;
+    o_decoder = new KdOnlineLDecoder(t_model, st);
+    st->min_sil = 300;
 
     startDecode();
 }
@@ -56,7 +56,7 @@ void BtTest::startDecode()
     KdDecodable decodable(cy_buf, oa_model,
                           t_model, acoustic_scale);
     net->cfb   = decodable.features->o_features;
-    net->wav_w = new BtWavWriter(cy_buf);
+    net->wav_w = new BtWavWriter(cy_buf, st);
     decodable.features->enableENN();
 
     o_decoder->InitDecoding(&decodable);

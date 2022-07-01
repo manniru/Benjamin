@@ -4,7 +4,7 @@ QT += multimedia
 
 CONFIG += console
 
-linux:INCLUDEPATH += ../PNN
+INCLUDEPATH += ../PNN
 
 linux:LIBS += -pthread -lm -ldl \
               -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
@@ -23,6 +23,8 @@ QMAKE_LFLAGS_RELEASE -= -O1
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc
 OBJECTS_DIR = Build/.obj
+
+OTHER_FILES = BaTool.conf
 
 HEADERS += \
     Sources/backend.h \

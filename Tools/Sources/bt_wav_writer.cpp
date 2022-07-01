@@ -1,9 +1,10 @@
 #include "bt_wav_writer.h"
 #include <QDir>
 
-BtWavWriter::BtWavWriter(BtCyclic *buffer, QObject *parent): QObject(parent)
+BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
 {
     cy_buf = buffer;
+    st     = state;
     QDir au_OnlineDir(KAL_AU_DIR"online");
 
     if( !au_OnlineDir.exists() )
@@ -33,6 +34,7 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, QObject *parent): QObject(parent)
     file = new QFile;
 
     readWordList();
+    exemption_list << "kick";
 }
 
 BtWavWriter::~BtWavWriter()
@@ -180,9 +182,13 @@ void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
            QFile::exists(vf_name) )
     {
         ps++;
-        if( ps>BT_TRA_MAX )
+        if( ps>st->train_max )
         {
-            return; // skip if exist
+            QString word0 = result[0].word;
+            if( !exemption_list.contains(word0) )
+            {
+                return; // skip if exist
+            }
         }
         uf_name  = u_base_name + ".";
         uf_name += QString::number(ps);

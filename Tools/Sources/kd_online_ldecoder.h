@@ -15,6 +15,7 @@
 #include "kd_lattice_functions.h"
 #include "kd_mbr.h"
 #include "bt_graph_d.h"
+#include "bt_state.h"
 
 struct KdOnlineLDecoderOpts: public KdDecoderConfig
 {
@@ -27,7 +28,6 @@ struct KdOnlineLDecoderOpts: public KdDecoderConfig
 
 struct KdOnlineStatus
 {
-    int min_sil = BT_MIN_SIL;
     int state = KD_STATE_NORMAL;
     uint max_frame = 0;
     uint min_frame = 0;
@@ -36,7 +36,7 @@ struct KdOnlineStatus
 class KdOnlineLDecoder : public KdDecoder
 {
 public:
-    KdOnlineLDecoder(KdTransitionModel *trans_model);
+    KdOnlineLDecoder(KdTransitionModel *trans_model, BtState *state);
 
     void Decode();
 
@@ -64,7 +64,7 @@ private:
     KdToken* getBestTok();
 
     QVector<BtWord> result;
-    KdMBR *mbr;
+    KdMBR    *mbr;
     BtGraphD *graph;
 
     KdOnlineLDecoderOpts    opts;

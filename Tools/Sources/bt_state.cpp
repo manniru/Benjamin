@@ -15,6 +15,7 @@ BtState::BtState()
     else
     {
         qDebug() << "No config file, Load default values";
+        system("cp Resources/BaTool.conf BaTool.conf");
         load_default();
     }
 }
@@ -22,8 +23,28 @@ BtState::BtState()
 void BtState::load_config()
 {
     TaINI *config = ini_load("BaTool.conf");
-    char *name = ini_get(config, "Model", "fst");
-    qDebug() << "name:" << name;
+    fst_path       = ini_get(config, "model", "fst");;
+    mdl_path       = ini_get(config, "model", "mdl");;
+    cmvn_stat_path = ini_get(config, "model", "cmvn");;
+//    qDebug() << "name:" << cmvn_stat_path;
+
+    // decoder
+    QString buf;
+    buf = ini_get(config, "decoder", "max_active");
+    max_active = buf.toInt();
+
+    buf = ini_get(config, "decoder", "min_active");
+    min_active = buf.toInt();
+
+    buf = ini_get(config, "decoder", "train_max");
+    train_max = buf.toInt();
+
+    buf = ini_get(config, "decoder", "min_sil");
+    min_sil = buf.toInt();
+
+    // captain
+    buf = ini_get(config, "captain", "hard_threshold");
+    hard_threshold = buf.toDouble();
 }
 
 void BtState::load_default()

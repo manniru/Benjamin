@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     BtState st;
-    if( argc > 1)
+    if( argc>1 )
     {
         QString in_state = argv[1];
         if( in_state == "e" )
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    BtChapar chaper(st);
+    BtChapar chaper(&st);
 
     return app.exec();
 }

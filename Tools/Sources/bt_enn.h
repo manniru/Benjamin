@@ -13,12 +13,14 @@
 #include "kd_decodable.h"
 #include "kd_online_ldecoder.h"
 #include "bt_wav_writer.h"
+#include "bt_state.h"
 
 class BtEnn: public QObject
 {
     Q_OBJECT
 public:
-    explicit BtEnn(QString dir_name, QObject *parent = nullptr);
+    explicit BtEnn(QString dir_name, BtState *state,
+                   QObject *parent = nullptr);
     ~BtEnn();
 
     void   init(QString dir);
@@ -47,6 +49,7 @@ private:
     QStringList       file_list;
     QStringList       exist_list;
     QString           cat_dir; // category directory
+    BtState           *st;
 
     double max_delta[3];
     double min_delta[3];
