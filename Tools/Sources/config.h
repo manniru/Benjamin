@@ -27,10 +27,17 @@
 #define BT_REC_RATE       16000 //Recording Sample Rate
 #define BT_BUF_SIZE       100   //Buffer Size Second(Max Utterance Len)
 #define BT_FFT_SIZE       512   //Rounded Window Size to Power of 2 (400->512)
-#define BT_DEC_TIMEOUT    0.5   //Decode Timeout in Second
 
 #define BT_WAV_MAX        100 // Max recording number(circular)
 #define BT_TRA_MAX        5   // Max number of same sequence train
+
+#define BT_CONFIG_PATH    "BaTool.conf"
+#define BT_MAX_ACTIVE     900 // Maximum number of states that are active
+                              // in a single frame
+#define BT_MIN_ACTIVE     200 // Minimum number of states that are active
+                              // in a single frame
+#define BT_MIN_SIL        20  // minimum number of silence frame after a word
+                              // end to consider it as final 210ms ((x+1)*10)
 
 #endif // BT_CONFIG_H
 

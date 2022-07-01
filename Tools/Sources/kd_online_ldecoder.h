@@ -16,8 +16,6 @@
 #include "kd_mbr.h"
 #include "bt_graph_d.h"
 
-#define BT_MIN_SIL 20 //150ms ((x+1)*100)
-
 struct KdOnlineLDecoderOpts: public KdDecoderConfig
 {
     int batch_size = 27;       // number of features decoded in one go

@@ -1,0 +1,12 @@
+define qq
+	kill
+	quit
+end
+
+define ll
+	info locals
+	info args
+end
+
+target remote | vgdb
+set confirm off

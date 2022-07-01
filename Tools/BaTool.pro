@@ -70,7 +70,8 @@ HEADERS += \
     Sources/kd_online_ldecoder.h \
     Sources/kd_online.h \
     Sources/kd_t_model.h \
-    Sources/kd_token.h
+    Sources/kd_token.h \
+    Sources/ta_ini.h
 
 SOURCES += \
     Sources/backend.cpp \
@@ -119,5 +120,6 @@ SOURCES += \
     Sources/kd_t_model.cpp \
     Sources/kd_token.cpp \
     Sources/main.cpp \
+    Sources/ta_ini.cpp \
     Sources/td_network.cpp
 
