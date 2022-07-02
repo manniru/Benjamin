@@ -7,13 +7,8 @@ colon-> camel
 u-> ut
 github -> caps
 firefox -> copy
-underline -> paste
 link -> repeat
 spotify -> beam
-atom -> select
-dollar -> side
-double -> kick
-star -> drag
 
 -----------------
 old
@@ -29,3 +24,10 @@ quote(fix in cmu)
 spy->meta(fix in cmu)
 arch->arsh(11-fix in cmu)
 uniform->page(32)
+double->kick(89)
+dollar->side(74)
+star->drag(75)
+atom->select(55)
+firefox->copy(42)
+underline->paste(85)
+

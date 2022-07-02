@@ -69,9 +69,9 @@ void BtEnn::startDecode()
     o_decoder->InitDecoding(&decodable);
     KdCompactLattice out_fst;
 
-//    int len = 50;
+    //    int len = 50;
     int len = file_list.size();
-//    qDebug() << file_list.size() << cat_dir;
+    //    qDebug() << file_list.size() << cat_dir;
     for( int i=0 ; i<len ; i++ )
     {
         if( checkExist(file_list[i]) )
@@ -100,11 +100,11 @@ void BtEnn::startDecode()
                 last_r.clear();
                 continue;
             }
-//            exit(1);
+            //            exit(1);
         }
         preProcess();
         saveFeature(file_list[i], decodable.features->o_features);
-//        saveWave(file_list[i]);
+        //        saveWave(file_list[i]);
         o_decoder->wav_id++;
         o_decoder->resetODecoder();
         delete decodable.features->cmvn;
@@ -128,7 +128,7 @@ void BtEnn::openWave(QString filename)
         qDebug() << "Failed To Open" << filename;
         exit(1);
     }
-//    qDebug() << ">>>>" << QFileInfo(filename).fileName();
+    //    qDebug() << ">>>>" << QFileInfo(filename).fileName();
 
     char buff[200];
 
@@ -151,9 +151,9 @@ void BtEnn::openWave(QString filename)
     wav_file.read(buff,4);//subchunk2 id(str="data")
     wav_file.read(buff,4);//subchunk2 size(int=sample count)
     uint16_t data_size = *((uint16_t *)buff);
-//    qDebug() << "sample_rate:"  << sample_rate
-//             << "channel:" << channel_count
-//             << "chunk_size:" << data_size;
+    //    qDebug() << "sample_rate:"  << sample_rate
+    //             << "channel:" << channel_count
+    //             << "chunk_size:" << data_size;
 }
 
 void BtEnn::readWav(BtCyclic *out)
@@ -234,7 +234,7 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
         int len = 100*(last_r[i].end - last_r[i].start);
         int start = 100*last_r[i].start + o_decoder->status.min_frame;
 
-//        qDebug() << "timing :" << len << start << 100*last_r[i].start;
+        //        qDebug() << "timing :" << len << start << 100*last_r[i].start;
 
         QVector<BtFrameBuf *> buffer;
         for( int j=0 ; j<len ; j++ )
@@ -243,7 +243,8 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
             buffer.push_back(buf);
         }
         saveImage(path, buffer);
-//        saveCSV(path, buffer);
+        writeSample(path, buffer);
+        //        saveCSV(path, buffer);
     }
 }
 
@@ -288,14 +289,46 @@ void BtEnn::saveImage(QString filename, QVector<BtFrameBuf *> data)
     {
         qDebug() << "Error: saving image failed.";
     }
-//    qDebug() << "E: path: " << filename << max_delta[0] <<
-//    max_delta[1] << max_delta[2] << min_delta[0] << min_delta[1]
-//    << min_delta[2];
-//    qDebug() << "siza :" << len;
+    //    qDebug() << "E: path: " << filename << max_delta[0] <<
+    //    max_delta[1] << max_delta[2] << min_delta[0] << min_delta[1]
+    //    << min_delta[2];
+    //    qDebug() << "siza :" << len;
     QString cmd = "eog ";
     cmd += filename;
     cmd += ".png &";
-//    system(cmd.toStdString().c_str());
+    //    system(cmd.toStdString().c_str());
+}
+
+void BtEnn::writeSample(QString filename,
+                        QVector<BtFrameBuf *> data)
+{
+    int len = data.length();
+    QFile m_file(filename+".enn");
+    if( !m_file.open(QFile::WriteOnly) )
+    {
+        qDebug() << "Could not open file for writing"
+                 << filename;
+        return;
+    }
+
+    QDataStream out(&m_file);
+    out << BT_ENN_SIZE;
+    out << BT_ENN_SIZE;
+    double scale_val = len/BT_ENN_SIZE;
+    for( int i=0 ; i<BT_ENN_SIZE ; i++ )
+    {
+        for( int j=0 ; j<BT_ENN_SIZE ; j++ )
+        {
+            double z = (i+1)*scale_val;
+            int max_z = qCeil(z);
+            int min_z = qFloor(z);
+            double d = z-min_z;
+            double val = d*data[max_z]->enn[j]
+                    +(1-d)*data[min_z]->enn[j];
+            out << val;
+        }
+    }
+    m_file.close();
 }
 
 void BtEnn::saveCSV(QString filename, QVector<BtFrameBuf *> data)
@@ -376,7 +409,7 @@ bool BtEnn::checkExist(QString path)
     {
         if( exist_list[i].contains(fname) )
         {
-//            qDebug() << exist_list[i] << fname;
+            //            qDebug() << exist_list[i] << fname;
             return true;
         }
     }
@@ -399,7 +432,7 @@ void BtEnn::calcStat(QVector<BtFrameBuf *> data)
             double val = data[i]->enn[j];
             sum += val;
             var += qPow(val, 2);
-//            qDebug() << "val" << val;
+            //            qDebug() << "val" << val;
 
             if( max_delta[0]<data[i]->enn[j] )
             {
@@ -415,6 +448,6 @@ void BtEnn::calcStat(QVector<BtFrameBuf *> data)
     var = qSqrt(var/N - qPow(mean, 2));
     offset_delta = mean;
     scale_delta = var;
-//    qDebug() << "min_delta" << min_delta[0] << max_delta[0] << var << mean;
-//    exit(0);
+    //    qDebug() << "min_delta" << min_delta[0] << max_delta[0] << var << mean;
+    //    exit(0);
 }
