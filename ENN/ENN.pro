@@ -12,7 +12,7 @@ DEFINES += DNN_USE_IMAGE_API \
            NDEBUG
 #           HAVE_CXXABI_H
 
-QMAKE_CXXFLAGS += -std=gnu++14 -m64 -mavx -msse3 -g
+QMAKE_CXXFLAGS += -std=gnu++14 -m64 -mavx -msse3
 QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3
 
@@ -27,6 +27,7 @@ HEADERS += \
     Sources/config.h \
     Sources/enn_chapar.h \
     Sources/enn_dataset.h \
+    Sources/enn_dataset_image.h \
     Sources/enn_network.h \
     Sources/enn_test.h
 
@@ -34,6 +35,7 @@ SOURCES += \
     Sources/backend.cpp \
     Sources/enn_chapar.cpp \
     Sources/enn_dataset.cpp \
+    Sources/enn_dataset_image.cpp \
     Sources/enn_network.cpp \
     Sources/enn_test.cpp \
     Sources/main.cpp

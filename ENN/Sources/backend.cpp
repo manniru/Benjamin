@@ -1,5 +1,6 @@
 #include "backend.h"
 #include <QDir>
+#include <QDataStream>
 
 clock_t bt_last_clock;
 
@@ -101,4 +102,41 @@ QStringList enn_listImages(QString path)
     QStringList file_list = p_dir.entryList(fmt, QDir::Files);
 
     return file_list;
+}
+
+QStringList enn_listDatas(QString path)
+{
+    QDir p_dir(path);
+    QStringList fmt;
+    fmt.append("*.enn");
+    QStringList file_list = p_dir.entryList(fmt, QDir::Files);
+
+    return file_list;
+}
+
+void enn_readENN(QString path, tiny_dnn::vec_t *out)
+{
+    QFile m_file(path);
+
+    m_file.open(QIODevice::ReadOnly);
+    QDataStream in(&m_file);
+    qint32 width;
+    qint32 height;
+    in >> width;
+    in >> height;
+//        qDebug() << data_path << width << height;
+    float val;
+    out->resize(width*height);
+
+    for( int j=0 ; j<height ; j++ )
+    {
+        for( int k=0 ; k<width ; k++ )
+        {
+            in >> val;
+//            printf("%5.1f ", val);
+            (*out)[j*height+k] = val;
+        }
+//        printf("\n");
+    }
+    m_file.close();
 }

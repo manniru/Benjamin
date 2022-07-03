@@ -15,6 +15,10 @@ EnnChapar::EnnChapar(int mode, float l_rate)
     {
         testFullMode();
     }
+    else if( mode==ENN_FILE_MODE )
+    {
+        fileMode();
+    }
 }
 
 EnnChapar::~EnnChapar()
@@ -42,11 +46,12 @@ void EnnChapar::testMode()
     EnnNetwork net(model_name);
     net.load();
     EnnTest    in(input_name);
-    vec_t out = net.test(&(in.images));
+    vec_t out = net.test(&(in.image));
     qDebug() << "Load:" << in.img_address;
     qDebug() << "Test Mode on Model:" << model_name
              << "Input:" << input_name
              << out[0] << out[1];
+    net.benchmark();
 }
 
 void EnnChapar::testFullMode()
@@ -60,13 +65,13 @@ void EnnChapar::testFullMode()
         EnnNetwork net(word_list[i]);
         net.load();
 
-        int test_len = net.dataset->false_images.size();
+        int test_len = net.dataset->false_datas.size();
 
         float loss = 0;
         int  wrong = 0;
         for( int j=0 ; j<test_len ; j++ )
         {
-            vec_t out = net.test(&(net.dataset->false_images[j]));
+            vec_t out = net.test(&(net.dataset->false_datas[j]));
             loss += out[1];
 
             if( out[0]<0.6 )
@@ -78,4 +83,13 @@ void EnnChapar::testFullMode()
                word_list[i].toStdString().c_str(),
                loss, wrong, test_len);
     }
+}
+
+
+void EnnChapar::fileMode()
+{
+    setbuf(stdout,NULL);
+
+    qDebug() << "arch";
+    EnnDataset dataset("arch", true);
 }

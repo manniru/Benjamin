@@ -7,6 +7,7 @@
 #define ENN_LEARN_MODE 1
 #define ENN_TEST_MODE  2
 #define ENN_TF_MODE    3
+#define ENN_FILE_MODE  4
 
 class EnnChapar
 {
@@ -15,6 +16,7 @@ public:
     ~EnnChapar();
 
     void testMode();
+    void fileMode();
     void testFullMode();
     void learnMode(float l_rate);
 
