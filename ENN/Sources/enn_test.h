@@ -18,12 +18,12 @@ public:
     EnnTest(QString word); // binary word to classify
     ~EnnTest();
 
-    vec_t   images;
+    vec_t   image;
 
     QString m_name; //model name
     QString img_address;
 private:
-    void parseImages(QString path);
+    void parseData(QString path);
 
     QStringList listImages(QString path, int num=-1);
 };

@@ -1,4 +1,5 @@
 #include "enn_network.h"
+#include "tiny_dnn/util/target_cost.h"
 
 using namespace tiny_dnn::activation;
 using namespace tiny_dnn::layers;
@@ -26,7 +27,7 @@ void EnnNetwork::benchmark()
     tiny_dnn::timer t;  // start the timer
 
     // predict
-    net.predict(dataset->test_images[0]);
+    net.predict(dataset->test_datas[0]);
 
     double elapsed_s = t.elapsed();
     t.stop();
@@ -91,12 +92,23 @@ bool EnnNetwork::load()
 
 void EnnNetwork::createNNet()
 {
+#ifdef ENN_IMAGE_DATASET
     net << conv(40, 40, 5, 40, 3, 10)      << activation::leaky_relu() // 40x5 kernel, 3 channel, 10 filter
         << ave_pool(36, 1, 10, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
         << conv(18, 1, 3, 1, 10, 20)       << activation::leaky_relu()
         << ave_pool(16, 1, 20, 2, 1, 2, 1) << activation::leaky_relu()
         << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() // flatten conv
         << fc(60, 2)                       << activation::softmax();
+#else
+    int f1 = 20;
+    int f2 = f1 + 10;
+    net << conv(40, 40, 5, 40, 1, f1)      << activation::leaky_relu() // 40x5 kernel, 1 channel, 10 filter
+        << ave_pool(36, 1, f1, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
+        << conv(18, 1, 3, 1, f1, f2)       << activation::leaky_relu() // 40x5 kernel, 20 channel, 10 filter
+        << ave_pool(16, 1, f2, 2, 1, 2, 1) << activation::leaky_relu()
+        << conv(8, 1, 8, 1, f2, 60)        << activation::leaky_relu() // flatten conv
+        << fc(60, 2)                       << activation::softmax();
+#endif
 }
 
 void EnnNetwork::train(float l_rate)
@@ -107,15 +119,23 @@ void EnnNetwork::train(float l_rate)
         return;
     }
 
-    qDebug() << "dataset size: test"  << dataset->test_images.size()
-             << "train" << dataset->train_images.size();
+    qDebug() << "dataset size: test"  << dataset->test_datas.size()
+             << "train" << dataset->train_datas.size();
 
     optim.alpha = l_rate; // learning rate = 1E-4
     nn_epoch = 0;
 
-    net.fit<mse>(optim, dataset->train_images, dataset->train_labels,
-                   n_minibatch, n_train_epochs, [&](){;},
-                   [&](){epochLog();});
+    std::vector<vec_t> target_cost;
+    target_cost = create_balanced_target_cost(dataset->train_labels);
+
+    std::vector<tensor_t> input_tensor, output_tensor, t_cost_tensor;
+    net.normalize_tensor(dataset->train_datas, input_tensor);
+    net.normalize_tensor(dataset->train_labels, output_tensor);
+    net.normalize_tensor(target_cost, t_cost_tensor);
+
+    net.fit<mse>(optim, input_tensor, output_tensor,
+                 n_minibatch, n_train_epochs, [&](){;},
+                 [&](){epochLog();}, false, CNN_TASK_SIZE, t_cost_tensor);
 
     if( is_wrong!=2 )
     {
@@ -138,9 +158,9 @@ void EnnNetwork::epochLog()
         QString t_elapsed = QString::number(nn_t.elapsed());
         t_elapsed += "s";
         float loss = calcLoss();
-        QString acc_test = getAcc(dataset->test_images,
+        QString acc_test = getAcc(dataset->test_datas,
                                   dataset->test_labels);
-        QString acc_train = getAcc(dataset->train_images,
+        QString acc_train = getAcc(dataset->train_datas,
                                   dataset->train_labels);
 
         qDebug() << nn_epoch << t_elapsed
@@ -169,14 +189,14 @@ float EnnNetwork::calcLoss()
 
     std::vector<tensor_t> label_tensor;
     net.normalize_tensor(dataset->train_labels, label_tensor);
-    int len = dataset->train_images.size();
+    int len = dataset->train_datas.size();
 
     float          wrong_sum;
     QVector<int>   wrong_i;
     QVector<float> wrong_loss;
     for( int i=0 ; i<len ; i++ )
     {
-        vec_t predicted = net.predict(dataset->train_images[i]);
+        vec_t predicted = net.predict(dataset->train_datas[i]);
         float s_loss = mse::f(predicted, label_tensor[i][0]);
 
         if( s_loss>0.95 )
@@ -284,9 +304,9 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
         net.stop_ongoing_training();
         is_wrong = 1;
 
-        QString acc_test = getAcc(dataset->test_images,
+        QString acc_test = getAcc(dataset->test_datas,
                                   dataset->test_labels);
-        QString acc_train = getAcc(dataset->train_images,
+        QString acc_train = getAcc(dataset->train_datas,
                                   dataset->train_labels);
 
         qDebug() << "train" << acc_train

@@ -17,6 +17,10 @@ int main(int argc, char *argv[])
         {
             mode = ENN_TF_MODE;
         }
+        else if( arg1=="f" )
+        {
+            mode = ENN_FILE_MODE;
+        }
         else
         {
             learning_rate = arg1.toFloat();

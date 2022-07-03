@@ -6,7 +6,11 @@
 #include <QtDebug>
 
 #include <tiny_dnn/tiny_dnn.h>
+#ifdef ENN_IMAGE_DATASET
+#include "enn_dataset_image.h"
+#else
 #include "enn_dataset.h"
+#endif
 
 using namespace tiny_dnn;
 
@@ -18,7 +22,8 @@ public:
 
     bool  load();
     vec_t test(vec_t *data);
-    void train(float l_rate);
+    void  train(float l_rate);
+    void  benchmark();
 
     EnnDataset       *dataset;
 
@@ -26,7 +31,6 @@ private:
     void  save();
     void  epochLog();
     float calcLoss();
-    void  benchmark();
     void  createNNet();
     QString getAcc(std::vector<vec_t> &data,
                    std::vector<label_t> &label);
