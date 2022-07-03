@@ -30,6 +30,7 @@ private:
     void openWave(QString filename);
     void readWav(BtCyclic *out);
     void saveFeature(QString filename, BtCFB *cfb);
+    void writeSample(QString filename, QVector<BtFrameBuf *> data);
     void saveImage(QString filename, QVector<BtFrameBuf *> data);
     void saveCSV(QString filename, QVector<BtFrameBuf *> data);
     void saveWave(QString filename);

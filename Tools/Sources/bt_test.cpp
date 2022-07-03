@@ -17,8 +17,8 @@ BtTest::BtTest(QString dir_name, BtState *state,
     }
 
     net = new BtNetwork;
-    init();
     st  = state;
+    init();
 }
 
 BtTest::~BtTest()
@@ -184,7 +184,10 @@ float BtTest::getConf(BtWord word, QString prefix)
     fname += prefix + "_" + word.word;
 
     saveWave(100*word.start-10, n_len, fname);
+#ifdef ENN_IMAGE_DATASET
     saveImage(fname);
+#endif
+
     return conf;
 }
 

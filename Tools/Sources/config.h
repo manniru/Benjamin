@@ -38,6 +38,7 @@
                               // in a single frame
 #define BT_MIN_SIL        20  // minimum number of silence frame after a word
                               // end to consider it as final 210ms ((x+1)*10)
+//#define ENN_IMAGE_DATASET
 
 #endif // BT_CONFIG_H
 

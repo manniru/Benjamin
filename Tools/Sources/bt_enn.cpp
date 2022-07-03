@@ -90,17 +90,17 @@ void BtEnn::startDecode()
             qDebug() << "shit [" << shit_counter << "]"
                      << file_list[i] << last_r.size();
             bt_printResult(last_r);
-            if( shit_counter<4 )
+            o_decoder->wav_id++;
+            o_decoder->resetODecoder();
+            delete decodable.features->cmvn;
+            decodable.features->cmvn = new BtCMVN(decodable.features->o_features);
+            decodable.features->delta->min_frame = o_decoder->status.min_frame;
+            last_r.clear();
+            if( shit_counter<13 )
             {
-                o_decoder->wav_id++;
-                o_decoder->resetODecoder();
-                delete decodable.features->cmvn;
-                decodable.features->cmvn = new BtCMVN(decodable.features->o_features);
-                decodable.features->delta->min_frame = o_decoder->status.min_frame;
-                last_r.clear();
                 continue;
             }
-            //            exit(1);
+            exit(1);
         }
         preProcess();
         saveFeature(file_list[i], decodable.features->o_features);
@@ -242,7 +242,7 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
             BtFrameBuf *buf = cfb->get(start + j);
             buffer.push_back(buf);
         }
-        saveImage(path, buffer);
+//        saveImage(path, buffer);
         writeSample(path, buffer);
         //        saveCSV(path, buffer);
     }
@@ -314,17 +314,19 @@ void BtEnn::writeSample(QString filename,
     QDataStream out(&m_file);
     out << BT_ENN_SIZE;
     out << BT_ENN_SIZE;
-    double scale_val = len/BT_ENN_SIZE;
+    double scale_val = (len-1)/(BT_ENN_SIZE-1);
     for( int i=0 ; i<BT_ENN_SIZE ; i++ )
     {
         for( int j=0 ; j<BT_ENN_SIZE ; j++ )
         {
-            double z = (i+1)*scale_val;
-            int max_z = qCeil(z);
-            int min_z = qFloor(z);
-            double d = z-min_z;
-            double val = d*data[max_z]->enn[j]
-                    +(1-d)*data[min_z]->enn[j];
+            double p = j*scale_val;
+            int p_right = qCeil(p);
+            int p_left  = qFloor(p);
+            double d = p-p_left;
+            float val = d*data[p_right]->enn[i]
+                    +(1-d)*data[p_left]->enn[i];
+//            val = 0.1*j- + i*4;
+
             out << val;
         }
     }

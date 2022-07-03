@@ -12,6 +12,11 @@ BtNetwork::BtNetwork()
     nets.resize(len);
     for( int i=0 ; i<len ; i++ )
     {
+        QRegExp rxp("[<!#]");
+        if( word_list[i].contains(rxp) )
+        {
+            continue; // skip silence and unknown
+        }
         nets[i] = new TdNetwork(word_list[i]);
     }
 }
@@ -27,7 +32,11 @@ BtNetwork::~BtNetwork()
 
 float BtNetwork::predict(int id)
 {
+#ifdef ENN_IMAGE_DATASET
     int data_len = BT_ENN_SIZE*BT_ENN_SIZE*3;
+#else
+    int data_len = BT_ENN_SIZE*BT_ENN_SIZE;
+#endif
     vec_t res = nets[id]->predict(data_buf, data_len);
 //    qDebug() << word_list[id]
 //                << "Detect:" << res[0] << res[1];
@@ -43,6 +52,47 @@ float BtNetwork::getConf(int start, int len, int id)
     }
 //    qDebug() << "ww" << word_list[id] << nets[id]->m_name;
 
+#ifdef ENN_IMAGE_DATASET
+    fillImage(start, len);
+#else
+    fillRaw(start, len);
+#endif
+
+
+    return predict(id);
+}
+
+void BtNetwork::fillRaw(int start, int len)
+{
+    double scale_val = (len-1)/(BT_ENN_SIZE-1);
+    int width  = BT_ENN_SIZE;
+    int height = BT_ENN_SIZE;
+
+    BtFrameBuf *buf_l; //left
+    BtFrameBuf *buf_r; //right
+
+    for( int i=0 ; i<height ; i++ )
+    {
+        for( int j=0 ; j<width ; j++ )
+        {
+            double p = j*scale_val;
+            int p_right = qCeil(p);
+            int p_left  = qFloor(p);
+            double d = p-p_left;
+
+            buf_l = cfb->get(start + p_left);
+            buf_r = cfb->get(start + p_right);
+
+            float val = d   *buf_r->enn[i]+
+                       (1-d)*buf_l->enn[i];
+
+            data_buf[i*width+j] = val;
+        }
+    }
+}
+
+void BtNetwork::fillImage(int start, int len)
+{
     calcStat(start, len);
 
     QImage *img = new QImage(len, BT_ENN_SIZE, QImage::Format_RGB888);
@@ -89,8 +139,6 @@ float BtNetwork::getConf(int start, int len, int id)
             data_buf[i*width+j+2*ch_off] = qBlue(color);
         }
     }
-
-    return predict(id);
 }
 
 void BtNetwork::calcStat(int start, int len)
@@ -132,3 +180,4 @@ void BtNetwork::saveWave(int start, int len, QString word)
 
 //    wav_w->writeEnn(path, word_len);
 }
+

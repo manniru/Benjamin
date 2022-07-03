@@ -18,6 +18,8 @@ public:
     ~BtNetwork();
 
     float getConf(int start, int len, int id);
+    void  fillImage(int start, int len);
+    void  fillRaw(int start, int len);
     BtCFB       *cfb;
     BtWavWriter *wav_w;
     QImage img_s;
@@ -29,7 +31,11 @@ private:
 
     QVector<TdNetwork *> nets;
     QStringList word_list;
+#ifdef ENN_IMAGE_DATASET
     float  data_buf[BT_ENN_SIZE*BT_ENN_SIZE*3];
+#else
+    float  data_buf[BT_ENN_SIZE*BT_ENN_SIZE];
+#endif
 
     double offset_delta = -5;
     double scale_delta = 19;

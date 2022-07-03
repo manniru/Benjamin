@@ -11,8 +11,11 @@ DATA_DIR="data"
 SPEAKER="$1"
 REC_NUM="$2"
 WORD_SS="$3" #can be pass to specify train on single word
-WORD_ID=$(grep -n "$WORD_SS" word_list | awk -F: '{print $1}')
-WORD_ID=$(($WORD_ID-1))
+WORD_ID=""
+if [[ "$WORD_SS" ]]; then
+	WORD_ID=$(grep -n "$WORD_SS" word_list | awk -F: '{print $1}')
+	WORD_ID=$(($WORD_ID-1))
+fi
 
 source path.sh
 
