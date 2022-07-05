@@ -13,6 +13,6 @@ QString getLDiffTime();
 QStringList enn_listDirs(QString path);
 QStringList enn_listImages(QString path);
 QStringList enn_listDatas(QString path);
+QStringList bt_parseLexicon(QString filename);
 void enn_readENN(QString path, tiny_dnn::vec_t *out);
-
 #endif // BACKEND_H

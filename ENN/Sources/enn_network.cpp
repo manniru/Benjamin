@@ -7,14 +7,15 @@ using namespace tiny_dnn::layers;
 timer nn_t;
 int nn_epoch;
 
-EnnNetwork::EnnNetwork(QString word)
+EnnNetwork::EnnNetwork(QString word, int id)
 {
-    dataset = new EnnDataset(word);
+    dataset = new EnnDataset(word, id);
     n_minibatch = 16;
     n_train_epochs = ENN_MAX_EPOCH;
     is_wrong = 0;
 
     setbuf(stdout,NULL); //to work out printf
+    need_train = load();
 }
 
 EnnNetwork::~EnnNetwork()
@@ -80,8 +81,9 @@ bool EnnNetwork::load()
             is_wrong = 0;
             return true;
         }
-        qDebug() << "model " << model_path << "loaded"
-                 << "loss"   << loss ;
+        qDebug() << "model " << dataset->model_id
+                 << dataset->m_name
+                 << "loaded" << "loss"   << loss ;
     }
     else // create new
     {
@@ -113,7 +115,6 @@ void EnnNetwork::createNNet()
 
 void EnnNetwork::train(float l_rate)
 {
-    bool need_train = load();
     if( !need_train )
     {
         return;
@@ -210,7 +211,12 @@ float EnnNetwork::calcLoss()
     if( wrong_sum>0 )
     {
         float diff = loss - wrong_sum;
+        last_loss = diff;
         handleWrongs(diff, wrong_i, wrong_loss);
+    }
+    else
+    {
+        last_loss = loss;
     }
     if( loss>200 )
     {
@@ -310,6 +316,7 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
                                   dataset->train_labels);
 
         qDebug() << "train" << acc_train
-                 << "test" << acc_test;
+                 << "test" << acc_test
+                 << "loss(diff)" << diff;
     }
 }

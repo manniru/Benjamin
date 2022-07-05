@@ -28,14 +28,39 @@ EnnChapar::~EnnChapar()
 
 void EnnChapar::learnMode(float l_rate)
 {
-    QStringList word_list = enn_listDirs(ENN_TRAIN_DIR);
-
-    int len = word_list.size();
-    for( int i=0 ; i<len ; i++ )
+    QStringList word_list = bt_parseLexicon(BT_WORDS_PATH);
+    while (1) // until all model reached target loss
     {
-        qDebug() << word_list[i];
-        EnnNetwork net(word_list[i]);
-        net.train(l_rate);
+        int learned_count = 0;
+
+        int len = word_list.size();
+        for( int i=0 ; i<len ; i++ )
+        {
+            word_list[i].remove("\n");
+            qDebug() << word_list[i];
+            EnnNetwork net(word_list[i], i);
+            float first_loss = net.last_loss;
+            net.train(l_rate);
+            float diff_loss = net.last_loss - first_loss;
+
+            if( net.last_loss<ENN_TARGET_LOSS )
+            {
+                learned_count++;
+            }
+            if( diff_loss>0 ) // we are not learning anything
+            {                 // after 100 epoch
+                learned_count++;
+                qDebug() << "BAD LEARNING" << diff_loss;
+            }
+            printf("----- learned [%d/%d] word=%s loss=%.2f ----\n",
+                   learned_count, len, word_list[i].toStdString().c_str(),
+                   net.last_loss);
+        }
+
+        if( learned_count>=len )
+        {
+            break;
+        }
     }
 }
 
@@ -43,7 +68,7 @@ void EnnChapar::testMode()
 {
     QString model_name = "echo";
     QString input_name = "five" ;
-    EnnNetwork net(model_name);
+    EnnNetwork net(model_name, -1); //id -1 works all the time
     net.load();
     EnnTest    in(input_name);
     vec_t out = net.test(&(in.image));
@@ -62,7 +87,8 @@ void EnnChapar::testFullMode()
     int len = word_list.size();
     for( int i=0 ; i<len ; i++ )
     {
-        EnnNetwork net(word_list[i]);
+        //id -1 works all the time
+        EnnNetwork net(word_list[i], -1);
         net.load();
 
         int test_len = net.dataset->false_datas.size();

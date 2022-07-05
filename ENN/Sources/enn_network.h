@@ -17,7 +17,7 @@ using namespace tiny_dnn;
 class EnnNetwork
 {
 public:
-    EnnNetwork(QString word);
+    EnnNetwork(QString word, int id);
     ~EnnNetwork();
 
     bool  load();
@@ -25,7 +25,8 @@ public:
     void  train(float l_rate);
     void  benchmark();
 
-    EnnDataset       *dataset;
+    EnnDataset *dataset;
+    float       last_loss;
 
 private:
     void  save();
@@ -44,6 +45,7 @@ private:
     int n_minibatch;
     int n_train_epochs;
     int is_wrong;
+    bool need_train;
 };
 
 #endif // ENN_NETWORK_H
