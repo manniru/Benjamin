@@ -64,7 +64,7 @@ float BtNetwork::getConf(int start, int len, int id)
 
 void BtNetwork::fillRaw(int start, int len)
 {
-    double scale_val = (len-1)/(BT_ENN_SIZE-1);
+    double scale_val = (len-1.0)/(BT_ENN_SIZE-1.0);
     int width  = BT_ENN_SIZE;
     int height = BT_ENN_SIZE;
 
@@ -76,8 +76,18 @@ void BtNetwork::fillRaw(int start, int len)
         for( int j=0 ; j<width ; j++ )
         {
             double p = j*scale_val;
+            int p_round = qRound(p);
+            if( qAbs(p-p_round)<0.001 )
+            {
+                // if remove this line calc error would
+                // cause segfault in p_left or p_right
+                // in the marginal values
+                p = p_round;
+            }
             int p_right = qCeil(p);
             int p_left  = qFloor(p);
+            double ds = enn_getDimScale(p, len);
+
             double d = p-p_left;
 
             buf_l = cfb->get(start + p_left);
@@ -86,7 +96,7 @@ void BtNetwork::fillRaw(int start, int len)
             float val = d   *buf_r->enn[i]+
                        (1-d)*buf_l->enn[i];
 
-            data_buf[i*width+j] = val;
+            data_buf[i*width+j] = val * ds;
         }
     }
 }

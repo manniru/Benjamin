@@ -142,7 +142,7 @@ void BtWavWriter::readWordList()
 
 void BtWavWriter::writeWavHeader(int len)
 {
-    uint16_t buf_i;
+    uint32_t buf_i;
     uint16_t buf_s; //short
 
     file->write("RIFF", 4); // "RIFF" is the father of wav

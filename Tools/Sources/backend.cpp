@@ -1,4 +1,5 @@
 #include "backend.h"
+#include "config.h"
 #include <QFile>
 #include <QDir>
 
@@ -135,4 +136,26 @@ void bt_mkDir(QString path)
         command += path;
         system( command.toStdString().c_str() );
     }
+}
+
+float enn_getDimScale(double p, int len)
+{
+    int gf = ENN_GAURD_TIME * 100; // gaurd_frame = 5
+    double gs_step = 1.0/(gf+1); // gaurd scale step
+    double ds = 1; //dim scale
+
+    if( p<gf )
+    {
+        ds = (p+1)*gs_step;
+    }
+    else if( p>(len-gf) )
+    {
+        ds = (len-p+1)*gs_step;
+    }
+    if( ds>1 )
+    {
+        ds = 1;
+    }
+
+    return ds;
 }

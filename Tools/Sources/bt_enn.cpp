@@ -104,7 +104,7 @@ void BtEnn::startDecode()
         }
         preProcess();
         saveFeature(file_list[i], decodable.features->o_features);
-        //        saveWave(file_list[i]);
+//        saveWave(file_list[i]);
         o_decoder->wav_id++;
         o_decoder->resetODecoder();
         delete decodable.features->cmvn;
@@ -177,8 +177,8 @@ void BtEnn::preProcess()
 {
     for( int i=0 ; i<last_r.size() ; i++ )
     {
-        last_r[i].start -= 0.1;
-        last_r[i].end += 0.1;
+        last_r[i].start -= ENN_GAURD_TIME;
+        last_r[i].end   += ENN_GAURD_TIME;
 
         if( last_r[i].start<0 )
         {
@@ -314,20 +314,30 @@ void BtEnn::writeSample(QString filename,
     QDataStream out(&m_file);
     out << BT_ENN_SIZE;
     out << BT_ENN_SIZE;
-    double scale_val = (len-1)/(BT_ENN_SIZE-1);
-    for( int i=0 ; i<BT_ENN_SIZE ; i++ )
+    double scale_val = (len-1.0)/(BT_ENN_SIZE-1.0);
+    for( int f=0 ; f<BT_ENN_SIZE ; f++ ) // freq
     {
-        for( int j=0 ; j<BT_ENN_SIZE ; j++ )
+        for( int t=0 ; t<BT_ENN_SIZE ; t++ ) //time
         {
-            double p = j*scale_val;
+            double p = t*scale_val;
+            int p_round = qRound(p);
+            if( qAbs(p-p_round)<0.001 )
+            {
+                // if remove this line calc error would
+                // cause segfault in p_left or p_right
+                // in the marginal values
+                p = p_round;
+            }
+
             int p_right = qCeil(p);
             int p_left  = qFloor(p);
             double d = p-p_left;
-            float val = d*data[p_right]->enn[i]
-                    +(1-d)*data[p_left]->enn[i];
+            float val = d*data[p_right]->enn[f]
+                    +(1-d)*data[p_left]->enn[f];
+            double ds = enn_getDimScale(p, len);
 //            val = 0.1*j- + i*4;
 
-            out << val;
+            out << val * ds;
         }
     }
     m_file.close();

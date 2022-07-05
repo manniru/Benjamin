@@ -39,6 +39,9 @@
 #define BT_MIN_SIL        20  // minimum number of silence frame after a word
                               // end to consider it as final 210ms ((x+1)*10)
 //#define ENN_IMAGE_DATASET
+#define ENN_GAURD_TIME   0.05 // in second(generally 50ms) that added as a
+                              // gaurd time to ensure word is inside region
+
 
 #endif // BT_CONFIG_H
 
