@@ -84,9 +84,11 @@ void EnnDataset::addImagesT(QString path, int i)
 
 void EnnDataset::addImagesF(QString path, int i, int j)
 {
-    if( j<ENN_FALSE_COUNT )
+    int false_count = qRound(train_labels.size()/10.0);
+    int false_count_ft = 2*false_count;
+    if( j<false_count )
     {
-        train_size = ENN_FALSE_COUNT*0.8;
+        train_size = false_count*0.8;
         image<> rgb_img(path.toStdString(), image_type::rgb);
         vec_t vec = rgb_img.to_vec();
         if( j<train_size )
@@ -101,7 +103,7 @@ void EnnDataset::addImagesF(QString path, int i, int j)
             test_labels.push_back(0);
         }
     }
-    else if( j<20 )
+    else if( j<false_count_ft )
     {
         image<> rgb_img(path.toStdString(), image_type::rgb);
         vec_t vec = rgb_img.to_vec();

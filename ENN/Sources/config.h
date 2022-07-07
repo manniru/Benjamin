@@ -1,7 +1,6 @@
 #ifndef BT_CONFIG_H
 #define BT_CONFIG_H
 
-#define ENN_FALSE_COUNT 10
 #define ENN_TRAIN_DIR   "../Nato/audio/enn/"
 #define KAL_NATO_DIR    "../Nato/"
 #define BT_WORDS_PATH   KAL_NATO_DIR "word_list"

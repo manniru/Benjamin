@@ -1,11 +1,11 @@
 #include "enn_dataset.h"
 
-#define ENN_FALSE_COUNT_FT 20
 #ifndef ENN_IMAGE_DATASET
 
-EnnDataset::EnnDataset(QString word, int test)
+EnnDataset::EnnDataset(QString word, int id, int test)
 {
     m_name = word;
+    model_id = id;
 
     if( test )
     {
@@ -58,8 +58,18 @@ void EnnDataset::parseFalses(QString path)
 
         for( int j=0 ; j<len ; j++ )
         {
-            QString img_address = path + false_dirs[i] + "/" + filenames[j];
-            addDataF(img_address, i, j);
+            if( isSuperFalse(filenames[j]) )
+            {
+                QString img_address = path + false_dirs[i] + "/" + filenames[j];
+                addDataF(img_address, i, j);
+            }
+            else
+            {
+               filenames.removeAt(j);
+               len--;
+               j--;
+               continue;
+            }
         }
     }
 }
@@ -85,9 +95,11 @@ void EnnDataset::addDataT(QString path, int i)
 void EnnDataset::addDataF(QString path, int i, int j)
 {
     vec_t vec;
-    if( j<ENN_FALSE_COUNT )
+    int false_count = qRound(train_labels.size()/10.0);
+    int false_count_ft = 2*false_count;
+    if( j<false_count )
     {
-        train_size = ENN_FALSE_COUNT*0.8;
+        train_size = false_count*0.8;
         enn_readENN(path, &vec);
         if( j<train_size )
         {
@@ -101,7 +113,7 @@ void EnnDataset::addDataF(QString path, int i, int j)
             test_labels.push_back(0);
         }
     }
-    else if( j<ENN_FALSE_COUNT_FT )
+    else if( j<false_count_ft )
     {
         // for testFullMode
         enn_readENN(path, &vec);
@@ -140,6 +152,33 @@ void EnnDataset::testFile(QString path)
         vec_t vec;
         enn_readENN(data_path, &vec);
     }
+}
+
+// A sample is super false if and only if it
+// didn't have any true data in it's whole file
+bool EnnDataset::isSuperFalse(QString filename)
+{
+    filename.remove(".enn");
+    // if no dot exist this will do nothing
+    // because dot_index=-1 and mid -1 not to any changes
+    int dot_index = filename.indexOf(".");
+    filename = filename.mid(0, dot_index);
+    QStringList wid = filename.split("_");
+    int len = wid.length();
+    if( dot_index==-1 ) // if no dot then remove
+    {                   // last id
+        len--;
+    }
+
+    for( int i=1 ; i<len ; i++ )
+    {
+        if( wid[i].toInt()==model_id )
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 #endif // ENN_IMAGE_DATASET
