@@ -109,9 +109,11 @@ void BtCaptain::addXBuf(BtWord word)
 {
     if( strict_word.contains(word.word) )
     {
-//        qDebug() << "Strict Word" << word.word;
         word.conf = getConf(word);
-        if( word.conf>0.1 )
+        qDebug() << "Strict Word" << word.word
+                 << st->hard_threshold
+                 << word.conf;
+        if( word.conf>0.3 )
         {
             word.conf = 1.0;
         }

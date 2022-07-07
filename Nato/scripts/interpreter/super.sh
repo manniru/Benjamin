@@ -21,6 +21,18 @@ elif [[ "$WORD" == "kick" ]]; then
     
     OUTPUT="104"
     
+elif [[ "$WORD" == "comment" ]]; then
+    
+    OUTPUT="105"
+    
+elif [[ "$WORD" == "copy" ]]; then
+    
+    OUTPUT="106"
+    
+elif [[ "$WORD" == "paste" ]]; then
+    
+    OUTPUT="107"
+    
 fi
 
 if [[ "$OUTPUT" ]]; then

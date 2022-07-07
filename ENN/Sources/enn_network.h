@@ -14,6 +14,16 @@
 
 using namespace tiny_dnn;
 
+typedef struct EnnResult
+{
+    QString msg;
+
+    int tot_t = 0; //total true
+    int det_t = 0; //corrrect detected true
+    int tot_f = 0; //total false
+    int det_f = 0; //corrrect detected false
+} EnnResult;
+
 class EnnNetwork
 {
 public:
@@ -33,7 +43,7 @@ private:
     void  epochLog();
     float calcLoss();
     void  createNNet();
-    QString getAcc(std::vector<vec_t> &data,
+    EnnResult getAcc(std::vector<vec_t> &data,
                    std::vector<label_t> &label);
     void handleWrongs(float diff, QVector<int> &wrong_i,
                       QVector<float> &wrong_loss);

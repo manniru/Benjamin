@@ -6,10 +6,11 @@ suggestions
 colon-> camel
 u-> ut
 github -> caps
-link -> repeat
+link -> play(repeat)
 spotify -> beam
-type-> higher
-comment-> lower
+paren -> higher
+comment -> lower
+charlie -> resist
 
 -----------------
 old

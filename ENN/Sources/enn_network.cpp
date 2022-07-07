@@ -159,13 +159,13 @@ void EnnNetwork::epochLog()
         QString t_elapsed = QString::number(nn_t.elapsed());
         t_elapsed += "s";
         float loss = calcLoss();
-        QString acc_test = getAcc(dataset->test_datas,
+        EnnResult acc_test = getAcc(dataset->test_datas,
                                   dataset->test_labels);
-        QString acc_train = getAcc(dataset->train_datas,
+        EnnResult acc_train = getAcc(dataset->train_datas,
                                   dataset->train_labels);
 
         qDebug() << nn_epoch << t_elapsed
-                 << acc_train << "test" << acc_test << "loss:"
+                 << acc_train.msg << "test" << acc_test.msg << "loss:"
                  << loss << "alpha" << optim.alpha*1000;
 
         if( loss<ENN_TARGET_LOSS )
@@ -218,26 +218,30 @@ float EnnNetwork::calcLoss()
     {
         last_loss = loss;
     }
-    if( loss>200 )
+    if( loss>70 )
     {
-        qDebug() << "========= NO CONVERGANCE"
-                 << dataset->m_name
-                 << " ==========";
-        net.stop_ongoing_training();
-        is_wrong = 2;
+        EnnResult acc_train = getAcc(dataset->train_datas,
+                                  dataset->train_labels);
+        double learned_percent = acc_train.det_t;
+        learned_percent = learned_percent/acc_train.tot_t;
+        if( learned_percent<0.1 )
+        {
+            qDebug() << "========= NO CONVERGANCE"
+                     << dataset->m_name
+                     << " ==========";
+            net.stop_ongoing_training();
+            is_wrong = 2;
+        }
     }
 
     return loss;
 }
 
-QString EnnNetwork::getAcc(std::vector<vec_t>   &data,
+EnnResult EnnNetwork::getAcc(std::vector<vec_t>   &data,
                            std::vector<label_t> &label)
 {
-    QString ret = "T[";
-    int tot_t = 0; //total true
-    int det_t = 0; //corrrect detected true
-    int tot_f = 0; //total false
-    int det_f = 0; //corrrect detected false
+    EnnResult res;
+    res.msg = "T[";
 
     int len = data.size();
     for( int i=0 ; i<len ; i++ )
@@ -245,32 +249,32 @@ QString EnnNetwork::getAcc(std::vector<vec_t>   &data,
         vec_t out = test(&(data[i]));
         if( label[i]==1 )
         {
-            tot_t++;
+            res.tot_t++;
             if( out[1]>0.6 )
             {
-                det_t++;
+                res.det_t++;
             }
         }
         else
         {
-            tot_f++;
+            res.tot_f++;
             if( out[0]>0.6 )
             {
-                det_f++;
+                res.det_f++;
             }
         }
     }
 
-    ret += QString::number(det_t) + "/";
-    ret += QString::number(tot_t) + "] F[";
+    res.msg += QString::number(res.det_t) + "/";
+    res.msg += QString::number(res.tot_t) + "] F[";
 
-    ret += QString::number(det_f) + "/";
-    ret += QString::number(tot_f) + "] Tot[";
+    res.msg += QString::number(res.det_f) + "/";
+    res.msg += QString::number(res.tot_f) + "] Tot[";
 
-    ret += QString::number(det_t+det_f) + "/";
-    ret += QString::number(len) + "]";
+    res.msg += QString::number(res.det_t+res.det_f) + "/";
+    res.msg += QString::number(len) + "]";
 
-    return ret;
+    return res;
 }
 
 void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
@@ -310,13 +314,13 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
         net.stop_ongoing_training();
         is_wrong = 1;
 
-        QString acc_test = getAcc(dataset->test_datas,
+        EnnResult acc_test = getAcc(dataset->test_datas,
                                   dataset->test_labels);
-        QString acc_train = getAcc(dataset->train_datas,
+        EnnResult acc_train = getAcc(dataset->train_datas,
                                   dataset->train_labels);
 
-        qDebug() << "train" << acc_train
-                 << "test" << acc_test
+        qDebug() << "train" << acc_train.msg
+                 << "test" << acc_test.msg
                  << "loss(diff)" << diff;
     }
 }
