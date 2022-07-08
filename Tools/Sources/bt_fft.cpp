@@ -1,6 +1,6 @@
 #include "bt_fft.h"
 #include <QDebug>
-
+#include <QtMath>
 #define KD_M_2PI 6.283185307179586476925286766559005
 
 KdFFT::KdFFT(int N): KdSrcFFT(N/2)

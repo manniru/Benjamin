@@ -1,5 +1,6 @@
 #include "bt_window.h"
 #include <QDebug>
+#include <QtMath>
 #include <math.h>
 
 // Round up to nearest power of two

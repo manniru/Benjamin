@@ -1,5 +1,7 @@
 #include "bt_mfcc.h"
 #include <QDebug>
+#include <QtMath>
+
 
 BtMFCC::BtMFCC(int ft_size, int mfcc_size)
 {
