@@ -14,6 +14,10 @@
 #define CH_KEY_MIN        ('0'-1)
 #define CH_KEY_MAX        ('Z'+1)
 
+#define CH_LEFT_CLICK   0
+#define CH_NO_CLICK     1
+#define CH_RIGHT_CLICK  2
+
 class Channel : public QObject
 {
     Q_OBJECT
@@ -31,7 +35,7 @@ private:
     void strToPos(QString input, int *x, int *y);
     void setPos(int x, int y);
     void setPosFine(int key);
-    void hideUI(bool click=false);
+    void hideUI();
     void createStatFile();
     void rmStatFile();
 
@@ -39,7 +43,7 @@ private:
     QObject  *root;
     int       count_x; //read from qml
     int       count_y; //read from qml
-    int       no_click_mode;
+    int       click_mode;
     int       meta_mode; // get a number at end
 };
 

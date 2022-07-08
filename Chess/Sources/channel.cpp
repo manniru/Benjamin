@@ -9,7 +9,7 @@ Channel::Channel(QObject *ui,QObject *parent) : QObject(parent)
     count_x   = QQmlProperty::read(root, "count_x").toInt();
     count_y   = QQmlProperty::read(root, "count_y").toInt();
     meta_mode = 0;
-    no_click_mode = 0;
+    click_mode = CH_LEFT_CLICK;
 }
 
 Channel::~Channel()
@@ -40,11 +40,15 @@ void Channel::showUI(const QString &text)
 //    reset();
     if( text=="no_click" )
     {
-        no_click_mode = 1;
+        click_mode = CH_NO_CLICK;
+    }
+    else  if( text=="side" )
+    {
+        click_mode = CH_RIGHT_CLICK;
     }
     else
     {
-        no_click_mode = 0;
+        click_mode = CH_LEFT_CLICK;
     }
 
     system("Scripts/disable_picom_dim.sh");
@@ -54,7 +58,7 @@ void Channel::showUI(const QString &text)
     createStatFile();
 }
 
-void Channel::hideUI(bool click)
+void Channel::hideUI()
 {
     QQmlProperty::write(root, "visible", 0);
     QQmlProperty::write(root, "ch_buffer", "");
@@ -64,13 +68,18 @@ void Channel::hideUI(bool click)
     system("Scripts/enable_picom_dim.sh");
     rmStatFile();
 
-    if( click )
+    if( click_mode==CH_LEFT_CLICK )
     {
         system("sleep 0.05");
         system("xdotool click 1");
     }
+    else if( click_mode==CH_RIGHT_CLICK )
+    {
+        system("sleep 0.05");
+        system("xdotool click 3");
+    }
     meta_mode = 0;
-    no_click_mode = 0;
+    click_mode = CH_LEFT_CLICK;
 }
 
 void Channel::createStatFile()
@@ -89,6 +98,7 @@ void Channel::keyPressed(int key)
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
     if( key==CH_ESCAPE_CODE )
     {
+        click_mode = CH_NO_CLICK;
         hideUI();
     }
     else if( key==CH_BACKSPACE_CODE )
@@ -100,7 +110,6 @@ void Channel::keyPressed(int key)
     }
     else if( key==CH_F1_CODE )
     {
-//        no_click_mode = 1; ///FIXME: MAKE THIS TOGGLE
         meta_mode = 1; ///FIXME: MAKE THIS TOGGLE
     }
     else if( key>CH_KEY_MIN && key<CH_KEY_MAX )
@@ -114,7 +123,7 @@ void Channel::keyPressed(int key)
             setPos(x, y);
             if( meta_mode==0 )
             {
-                hideUI(!no_click_mode);
+                hideUI();
             }
         }
         else if( key_buf.length()==CHESS_CHAR_COUNT+1 &&
@@ -127,7 +136,7 @@ void Channel::keyPressed(int key)
                 return;
             }
             setPosFine(key);
-            hideUI(!no_click_mode);
+            hideUI();
         }
     }
 }

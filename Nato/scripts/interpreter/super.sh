@@ -33,6 +33,10 @@ elif [[ "$WORD" == "paste" ]]; then
     
     OUTPUT="107"
     
+elif [[ "$WORD" == "side" ]]; then
+    
+    OUTPUT="108"
+    
 fi
 
 if [[ "$OUTPUT" ]]; then

@@ -13,6 +13,7 @@ EnnDataset::EnnDataset(QString word, int id, int test)
     }
     else
     {
+        true_counter = 0;
         parseTrues(ENN_TRAIN_DIR);
         parseFalses(ENN_TRAIN_DIR);
     }
@@ -84,6 +85,7 @@ void EnnDataset::addDataT(QString path, int i)
         train_datas.push_back(vec);
         train_labels.push_back(1);
         train_path.push_back(path); // for debug purposes
+        true_counter++;
     }
     else
     {
@@ -95,11 +97,11 @@ void EnnDataset::addDataT(QString path, int i)
 void EnnDataset::addDataF(QString path, int i, int j)
 {
     vec_t vec;
-    int false_count = qRound(train_labels.size()/10.0);
+    int false_count = qRound(true_counter/10.0);
     int false_count_ft = 2*false_count;
     if( j<false_count )
     {
-        train_size = false_count*0.8;
+        train_size = false_count*0.5;
         enn_readENN(path, &vec);
         if( j<train_size )
         {

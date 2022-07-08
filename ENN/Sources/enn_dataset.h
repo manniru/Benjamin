@@ -38,6 +38,7 @@ private:
     void testFile(QString path);
     void shuffleData();
 
+    int true_counter;
     int train_size;
 };
 
