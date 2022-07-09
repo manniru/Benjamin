@@ -11,7 +11,11 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     {
         qDebug() << "Creating" << KAL_AU_DIR"online"
                  << " Directory";
+#ifdef WIN32
+        system("mkdir " KAL_AU_DIR_WIN "online");
+#else //OR __linux
         system("mkdir -p " KAL_AU_DIR "online");
+#endif
     }
 
     QDir au_UnverifiedDir(KAL_AU_DIR"unverified");
@@ -20,7 +24,11 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     {
         qDebug() << "Creating" << KAL_AU_DIR"unverified"
                  << " Directory";
+#ifdef WIN32
+        system("mkdir " KAL_AU_DIR_WIN "unverified");
+#else //OR __linux
         system("mkdir -p " KAL_AU_DIR "unverified");
+#endif
     }
 
     QDir au_TrainDir(KAL_AU_DIR"train/online");
@@ -29,7 +37,11 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     {
         qDebug() << "Creating" << KAL_AU_DIR"train/online"
                  << " Directory";
+#ifdef WIN32
+        system("mkdir " KAL_AU_DIR_WIN "train\\online");
+#else //OR __linux
         system("mkdir -p " KAL_AU_DIR "train/online");
+#endif
     }
     file = new QFile;
 
@@ -200,6 +212,10 @@ void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
 
     QString cmd = "cp "+ filename;
     cmd += " " + uf_name;
+#ifdef WIN32
+    cmd.replace("cp ", "copy ");
+    cmd.replace("/", "\\");
+#endif
     system(cmd.toStdString().c_str());
 }
 

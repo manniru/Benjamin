@@ -8,8 +8,7 @@ INCLUDEPATH += ../PNN
 
 linux:LIBS += -pthread -lm -ldl \
               -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
-win32:LIBS += -LKaldi/Windows -lportaudio \
-              -lwinmm -lrt -lfst
+win32:LIBS += -L../PNN/libs -lMFST -lPortAudio -lwinmm -lole32 -luuid
 
 DEFINES += HAVE_MKL \
            HAVE_CXXABI_H \
@@ -126,4 +125,3 @@ SOURCES += \
     Sources/main.cpp \
     Sources/ta_ini.cpp \
     Sources/td_network.cpp
-

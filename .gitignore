@@ -136,3 +136,9 @@ Chess/chess_en
 Tools/BaTool.conf
 
 ENN/Models_Bak/
+
+Tools/debug/
+
+*.Release
+
+Tools/release/

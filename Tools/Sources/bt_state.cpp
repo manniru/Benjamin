@@ -15,7 +15,11 @@ BtState::BtState()
     else
     {
         qDebug() << "No config file, Load default values";
+#ifdef WIN32
+        system("copy Resources/BaTool.conf BaTool.conf");
+#else //OR __linux
         system("cp Resources/BaTool.conf BaTool.conf");
+#endif
         load_default();
     }
 }

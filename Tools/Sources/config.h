@@ -11,6 +11,9 @@
 #define KAL_WAV_DIR       KAL_DECODE_DIR"wav/"
 #define KAL_MODE          "tri1"
 
+#define KAL_NATO_DIR_WIN  "..\\Nato\\"
+#define KAL_AU_DIR_WIN    KAL_NATO_DIR_WIN"audio\\"
+
 #define BT_WORDS_PATH     KAL_NATO_DIR "exp/" KAL_MODE "/graph/words.txt"
 #define BT_OAMDL_PATH     KAL_NATO_DIR "exp/" KAL_MODE "_online/final.oalimdl" //Online Alignment
 #define BT_FST_PATH       KAL_NATO_DIR "exp/" KAL_MODE "/graph/HCLG.fst"

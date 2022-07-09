@@ -56,10 +56,15 @@ void BtCaptain::exec(QString word)
         return;
     }
 
-    QString cmd = KAL_SI_DIR"main.sh \"";
+    QString cmd;
+#ifdef WIN32
+    cmd = word;
+#else
+    cmd = KAL_SI_DIR"main.sh \"";
     cmd += word;
     cmd += "\"";
     system(cmd.toStdString().c_str());
+#endif
     qDebug() << "exec" << x_buf;
 }
 

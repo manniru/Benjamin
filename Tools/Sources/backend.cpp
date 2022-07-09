@@ -132,7 +132,12 @@ void bt_mkDir(QString path)
     if( !au_Dir.exists() )
     {
 //        qDebug() << "Creating" << path << " Directory";
-        QString command = "mkdir -p ";
+        QString command;
+#ifdef WIN32
+        command = "mkdir ";
+#else //OR __linux
+        command = "mkdir -p ";
+#endif
         command += path;
         system( command.toStdString().c_str() );
     }
