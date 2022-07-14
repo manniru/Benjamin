@@ -8,7 +8,7 @@ INCLUDEPATH += ../PNN
 
 linux:LIBS += -pthread -lm -ldl \
               -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
-win32:LIBS += -L../PNN/libs -lMFST -lPortAudio -lwinmm -lole32 -luuid
+win32:LIBS += -L../PNN/libs -lFstWin64 -lPortAudio -lwinmm
 
 DEFINES += HAVE_MKL \
            HAVE_CXXABI_H \
