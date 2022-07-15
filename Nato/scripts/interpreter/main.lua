@@ -1,58 +1,77 @@
 #!/usr/bin/lua
 
 require('nato')
+require('modifiers')
+require('apps')
+require('meta')
+require('spex')
+require('digits')
+require('dirs')
+require('super')
+require('type')
 
 output = get_Nato(arg[1])
 if output~=nil then
-	type = 'nato'
+	k_type = 'nato'
 end
 
-output = get_Nato(arg[1])
-if output~=nil then
-	type = 'nato'
+if output==nil then
+	output = get_Modifiers(arg[1])
+	if output~=nil then
+		k_type = 'modifiers'
+	end
 end
 
-output = get_Nato(arg[1])
-if output~=nil then
-	type = 'nato'
+if output==nil then
+	output = get_Apps(arg[1])
+	if output~=nil then
+		k_type = 'apps'
+	end
 end
 
-output = get_Nato(arg[1])
-if output~=nil then
-	type = 'nato'
+if output==nil then
+	output = get_Meta(arg[1])
+	if output~=nil then
+		k_type = 'meta'
+	end
 end
 
-output = get_Nato(arg[1])
-if output~=nil then
-	type = 'nato'
+if output==nil then
+	output = get_Spex(arg[1])
+	if output~=nil then
+		k_type = 'spex'
+	end
 end
 
-output = get_Nato(arg[1])
-if output~=nil then
-	type = 'nato'
+if output==nil then
+	output = get_Digits(arg[1])
+	if output~=nil then
+		k_type = 'digits'
+	end
 end
 
-output = get_Nato(arg[1])
-if output~=nil then
-	type = 'nato'
+if output==nil then
+	output = get_Dirs(arg[1])
+	if output~=nil then
+		k_type = 'dirs'
+	end
 end
 
-print(output, type)
+if output==nil then
+	output = get_Super(arg[1])
+	if output~=nil then
+		k_type = 'super'
+	end
+end
+
+if output==nil then
+	output = get_Type(arg[1])
+	if output~=nil then
+		k_type = 'type'
+	end
+end
+
+print(k_type, output)
 
 --DBUS_PATH="--dest=com.binaee.rebound / com.binaee.rebound"
 
---BUF=$($SI/magic.sh "$BUF")
-
---for WORD in $BUF; do
-
---    $SI/dirs.sh $WORD "$DBUS_PATH"
---    $SI/nato.sh $WORD "$DBUS_PATH"
---    $SI/meta.sh $WORD "$DBUS_PATH"
---    $SI/apps.sh $WORD "$DBUS_PATH"
---    $SI/spex.sh $WORD "$DBUS_PATH"
---    $SI/type.sh $WORD "$DBUS_PATH"
---    $SI/super.sh $WORD "$DBUS_PATH"
---    $SI/digits.sh $WORD "$DBUS_PATH"
---    $SI/modifiers.sh $WORD "$DBUS_PATH"
-
---done
