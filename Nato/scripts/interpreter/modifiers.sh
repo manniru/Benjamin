@@ -1,6 +1,5 @@
 #!/bin/bash
-
-#Key Code from input-event-codes.h
+#Modifier Keys Like Control and Alt
 
 WORD="$1"
 DBUS_PATH="$2"
