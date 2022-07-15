@@ -21,8 +21,7 @@ Window
     title: "Chess"
     width: 800
     height: 600
-//    visible: false
-    visible: true
+    visible: false
     color: "transparent"
     opacity: 0.8
     flags: Qt.WA_X11NetWmWindowTypeDock

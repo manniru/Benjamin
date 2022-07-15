@@ -221,7 +221,12 @@ void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
 
 QString BtWavWriter::wordToId(QVector<BtWord> result)
 {
-    QString buf;
+    QString buf = "";
+
+    if( result.length()==0 )
+    {
+        return buf;
+    }
 
     for( int i=0 ; i<result.length()-1 ; i++ )
     {

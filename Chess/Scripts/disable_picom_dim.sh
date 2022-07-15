@@ -9,7 +9,7 @@ while read -r line; do
     WD_ID=$(echo "$line" | awk '{print $2}')
 	if [[ "$WD_ID" == "$DESKTOP_ID" ]]; then
 		WIN_ID=$(echo "$line" | awk '{print $1}')
-		echo $WIN_ID
+		#echo $WIN_ID
 		picom-trans -w $WIN_ID --toggle 100
 	fi
 done < <(wmctrl -l)

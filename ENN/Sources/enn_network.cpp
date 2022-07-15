@@ -195,6 +195,7 @@ float EnnNetwork::calcLoss()
     float          wrong_sum;
     QVector<int>   wrong_i;
     QVector<float> wrong_loss;
+    wrong_sum = 0;
     for( int i=0 ; i<len ; i++ )
     {
         vec_t predicted = net.predict(dataset->train_datas[i]);

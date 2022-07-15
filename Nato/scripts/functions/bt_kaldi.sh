@@ -19,7 +19,7 @@ function checkAudio()
 
 	LEN_WAV=$(soxi -D "$FILE_PATH")
 	LEN_WAV=$(echo "$LEN_WAV*5/1" | bc) #float to int
-	LEN_WAV=$(( $LEN_WAV + 10 ))
+	LEN_WAV=$(( $LEN_WAV + 15 ))
 	
 	LEN_REMAIN="0"
 	for (( i = 0 ; i <= $LEN_WAV ; i++ )) ; do 

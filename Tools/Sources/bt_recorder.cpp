@@ -7,12 +7,16 @@ BtRecorder::BtRecorder(BtCyclic *buffer, QObject *parent): QObject(parent)
     cy_buf  = buffer;
     read_pf = 0;
 
-//    // Done to skip shitty alsa messages
-//    int saved_stdout = dup(STDERR_FILENO);
-//    int devnull = open("/dev/null", O_RDWR);
-//    dup2(devnull, STDERR_FILENO);  // Replace standard out
+#ifdef __linux__
+    // Done to skip shitty alsa messages
+    int saved_stdout = dup(STDERR_FILENO);
+    int devnull = open("/dev/null", O_RDWR);
+    dup2(devnull, STDERR_FILENO);  // Replace standard out
+#endif
     PaError pa_err = Pa_Initialize();
-//    dup2(saved_stdout, STDERR_FILENO);
+#ifdef __linux__
+    dup2(saved_stdout, STDERR_FILENO);
+#endif
     if( pa_err )
     {
         qDebug() << "PortAudio initialization error";
