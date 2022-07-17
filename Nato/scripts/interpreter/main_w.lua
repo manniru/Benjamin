@@ -19,7 +19,7 @@ end
 if output==nil then
 	output = get_Modifiers(in_word)
 	if output~=nil then
-		k_type = 'modifiers'
+		k_type = 'modifier'
 	end
 end
 

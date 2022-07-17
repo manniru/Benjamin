@@ -10,68 +10,81 @@ require('dirs')
 require('super')
 require('type')
 
-output = get_Nato(arg[1])
+in_word = arg[1]
+output = get_Nato(in_word)
 if output~=nil then
 	k_type = 'nato'
 end
 
 if output==nil then
-	output = get_Modifiers(arg[1])
+	output = get_Modifiers(in_word)
 	if output~=nil then
-		k_type = 'modifiers'
+		k_type = 'modifier'
 	end
 end
 
 if output==nil then
-	output = get_Apps(arg[1])
+	output = get_Apps(in_word)
 	if output~=nil then
 		k_type = 'apps'
 	end
 end
 
 if output==nil then
-	output = get_Meta(arg[1])
+	output = get_Meta(in_word)
 	if output~=nil then
 		k_type = 'meta'
 	end
 end
 
 if output==nil then
-	output = get_Spex(arg[1])
+	output = get_Spex(in_word)
 	if output~=nil then
 		k_type = 'spex'
 	end
 end
 
 if output==nil then
-	output = get_Digits(arg[1])
+	output = get_Digits(in_word)
 	if output~=nil then
-		k_type = 'digits'
+		k_type = 'digit'
 	end
 end
 
 if output==nil then
-	output = get_Dirs(arg[1])
+	output = get_Dirs(in_word)
 	if output~=nil then
 		k_type = 'dirs'
 	end
 end
 
 if output==nil then
-	output = get_Super(arg[1])
-	if output~=nil then
-		k_type = 'super'
-	end
-end
-
-if output==nil then
-	output = get_Type(arg[1])
+	output = get_Type(in_word)
 	if output~=nil then
 		k_type = 'type'
 	end
 end
 
+if output==nil then
+	output = get_Super(in_word)
+	if output~=nil then
+		k_type = 'super'
+	end
+end
+
+dbus_path = "--dest=com.binaee.rebound / com.binaee.rebound"
+cmd_debug = "dbus-send --session "
+cmd_debug = cmd_debug .. dbus_path .. ".debug string:"
+cmd_debug = cmd_debug .. in_word
+
+cmd = "dbus-send --session "
+cmd = cmd .. dbus_path .. "."
+cmd = cmd .. k_type .. " string:"
+cmd = cmd .. output
+
 print(k_type, output)
+print(cmd_debug)
+print(cmd)
 
---DBUS_PATH="--dest=com.binaee.rebound / com.binaee.rebound"
-
+os.execute(cmd_debug)
+os.execute(cmd)

@@ -1,4 +1,4 @@
-﻿#include "bt_captain.h"
+#include "bt_captain.h"
 #include <QDebug>
 #include <QColor>
 
@@ -60,7 +60,7 @@ void BtCaptain::exec(QString word)
 #ifdef WIN32
     cmd = word;
 #else
-    cmd = KAL_SI_DIR"main.sh \"";
+    cmd = KAL_SI_DIR"main1.sh \"";
     cmd += word;
     cmd += "\"";
     system(cmd.toStdString().c_str());

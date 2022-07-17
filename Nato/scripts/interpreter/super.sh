@@ -37,6 +37,14 @@ elif [[ "$WORD" == "side" ]]; then
     
     OUTPUT="108"
     
+elif [[ "$WORD" == "love" ]]; then
+    
+    OUTPUT="109"
+
+elif [[ "$WORD" == "roger" ]]; then
+    
+    OUTPUT="110"
+    
 fi
 
 if [[ "$OUTPUT" ]]; then

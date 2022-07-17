@@ -6,8 +6,6 @@ SI="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 DBUS_PATH="--dest=com.binaee.rebound / com.binaee.rebound"
 
-BUF=$($SI/magic.sh "$BUF")
-
 for WORD in $BUF; do
 
     $SI/dirs.sh $WORD "$DBUS_PATH"

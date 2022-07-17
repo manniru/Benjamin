@@ -19,6 +19,10 @@ function get_Super(word)
 		return "107"
 	elseif word == "side" then
 		return "108"
+	elseif word == "love" then
+		return "109"
+	elseif word == "roger" then
+		return "110"
 	end
 
 end

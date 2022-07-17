@@ -53,8 +53,6 @@ function get_Nato(word)
 		return "31"
 	elseif word == "tango" then
 		return "20"
-	elseif word == "uniform" then
-		return "22"
 	elseif word == "u" then
 		return "22"
 	elseif word == "eggs" then
@@ -87,9 +85,7 @@ function get_Nato(word)
 		return "78"
 	elseif word == "slash" then
 		return "53"
-	elseif word == "underline" then
-		return "53"
-		-- xdotool key shift+minus make problem when sleep
+	-- xdotool key shift+minus make problem when sleep
 	elseif word == "bracket" then
 		return "26"
 	elseif word == "curly" then
