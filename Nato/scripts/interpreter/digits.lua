@@ -1,6 +1,6 @@
 #!/usr/bin/lua
 
-function get_Digits(word)
+function get_Digit(word)
 
 	if word == "zero" then
 		return "11"

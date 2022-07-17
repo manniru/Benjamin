@@ -17,7 +17,7 @@ if output~=nil then
 end
 
 if output==nil then
-	output = get_Modifiers(in_word)
+	output = get_Modifier(in_word)
 	if output~=nil then
 		k_type = 'modifier'
 	end
@@ -45,7 +45,7 @@ if output==nil then
 end
 
 if output==nil then
-	output = get_Digits(in_word)
+	output = get_Digit(in_word)
 	if output~=nil then
 		k_type = 'digit'
 	end
@@ -82,9 +82,9 @@ cmd = cmd .. dbus_path .. "."
 cmd = cmd .. k_type .. " string:"
 cmd = cmd .. output
 
-print(k_type, output)
-print(cmd_debug)
-print(cmd)
+--print(k_type, output)
+--print(cmd_debug)
+--print(cmd)
 
 os.execute(cmd_debug)
 os.execute(cmd)

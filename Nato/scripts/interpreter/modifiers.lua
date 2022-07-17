@@ -1,7 +1,7 @@
 #!/usr/bin/lua
 -- Modifier Keys Like Control and Alt
 
-function get_Modifiers(word)
+function get_Modifier(word)
 
 	if word == "control" then
 		return "29"
