@@ -46,7 +46,7 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     file = new QFile;
 
     readWordList();
-    exemption_list << "kick";
+//    exemption_list << "kick";
 }
 
 BtWavWriter::~BtWavWriter()

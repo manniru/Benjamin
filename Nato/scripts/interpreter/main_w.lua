@@ -1,5 +1,3 @@
-#!/usr/bin/lua
-
 require('nato_w')
 require('modifiers_w')
 require('apps')
@@ -10,7 +8,6 @@ require('dirs_w')
 require('super')
 require('type')
 
-in_word = arg[1]
 output = get_Nato(in_word)
 if output~=nil then
 	k_type = 'nato'

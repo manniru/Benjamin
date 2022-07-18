@@ -10,9 +10,7 @@ extern "C" {
 #include <windows.h>
 #include "config.h"
 
-#define SEPARATOR "###"
-#define COMMAND_POSITION 0
-#define ARGUMENT_POSITION 1
+#define BT_PN_SEPARATOR ","
 
 class BtLua : public QObject
 {

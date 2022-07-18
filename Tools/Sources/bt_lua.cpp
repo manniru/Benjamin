@@ -7,10 +7,9 @@ BtLua::BtLua(QObject *parent) : QObject(parent)
     lst = luaL_newstate();
     luaL_openlibs(lst);
 
-    QString pipeName(BT_PIPE_ADDRESS);
-    if(WaitNamedPipeA(pipeName.toStdString().c_str(), NMPWAIT_USE_DEFAULT_WAIT))
+    if( WaitNamedPipeA(BT_PIPE_ADDRESS, NMPWAIT_USE_DEFAULT_WAIT) )
     {
-        hPipe = CreateFileA(pipeName.toStdString().c_str(),
+        hPipe = CreateFileA(BT_PIPE_ADDRESS,
                            GENERIC_WRITE,                   // dwDesiredAccess
                            0,                               // dwShareMode
                            nullptr,                         // lpSecurityAttributes
@@ -18,14 +17,14 @@ BtLua::BtLua(QObject *parent) : QObject(parent)
                            0,                               // dwFlagsAndAttributes
                            nullptr);                        // hTemplateFile
 
-        if (hPipe == INVALID_HANDLE_VALUE)
+        if( hPipe==INVALID_HANDLE_VALUE )
         {
-            qFatal("Cannot create " BT_PIPE_ADDRESS);
+            qDebug() << "Error 120: Cannot create " BT_PIPE_ADDRESS;
         }
     }
     else
     {
-        qFatal("First create pipe " BT_PIPE_ADDRESS);
+        qDebug() << "Error 121: First create pipe " BT_PIPE_ADDRESS;
     }
 }
 
@@ -41,9 +40,14 @@ void BtLua::run(QString word)
     lua_pcall(lst, 0, LUA_MULTRET, 0);
 
     lua_getglobal(lst, "output");
-
     int output = lua_tonumber(lst, -1);
-    qDebug() << "LUA : " << output;
+
+    lua_getglobal(lst, "k_type");
+    QString ktype = lua_tostring(lst, -1);
+
+    qDebug() << "LUA : " << output << ktype;
+
+    sendPipe(ktype, output);
 
     QDir::setCurrent(current_dir);
 }
@@ -55,22 +59,23 @@ BtLua::~BtLua()
 
 void BtLua::sendPipe(QString type, int keycode)
 {
-    QString line(type + SEPARATOR + QString::number(keycode) + "\r\n");
-    if (hPipe != INVALID_HANDLE_VALUE)
+    QString line(type + BT_PN_SEPARATOR + QString::number(keycode) + "\n");
+    if( hPipe!=INVALID_HANDLE_VALUE )
     {
         DWORD dwWritten;
-        if (!WriteFile(hPipe, line.toStdString().c_str(), (DWORD)line.length(), &dwWritten, nullptr))
+        if( !WriteFile(hPipe, line.toStdString().c_str(), (DWORD)line.length(), &dwWritten, nullptr) )
         {
-            qDebug() << "Send error" << GetLastError();
+            qDebug() << "Error: NamedPipe writing failed," << GetLastError();
         }
 
-        if (dwWritten != (DWORD)line.length())
+        if( dwWritten!=(DWORD)line.length() )
         {
-            qDebug() << "Send have a problem. Total send char:" << dwWritten << ", Total char:" << line.length();
+            qDebug() << "Error: Wrong writing length. Total send char:"
+                     << dwWritten << ", Total char:" << line.length();
         }
     }
     else
     {
-        qFatal("Invalid handle pipe for " BT_PIPE_ADDRESS);
+        qDebug() << "Error: Invalid handle pipe for " BT_PIPE_ADDRESS;
     }
 }
