@@ -11,6 +11,9 @@
 #include "config.h"
 #include "kd_mbr.h"
 #include "bt_network.h"
+#ifdef WIN32
+#include "bt_lua.h"
+#endif
 
 #define BT_TIME_NOW QTime::currentTime().toString("hh:mm:ss")
 #define BT_HISTORY_UPDATE 300  // update interval in ms
@@ -31,6 +34,8 @@ class BtCaptain : public QObject
     Q_OBJECT
 public:
     explicit BtCaptain(BtState *state, QObject *parent = nullptr);
+    ~BtCaptain();
+
     bool isValidUtterance();
     void parse(QVector<BtWord> in_words, uint max_frame);
 
@@ -56,6 +61,9 @@ private:
     float      start_treshold;
     QString    x_buf; //exec buf
     BtState   *st;
+#ifdef WIN32
+    BtLua     *lua;
+#endif
 };
 
 #endif // BT_CAPTAIN_H

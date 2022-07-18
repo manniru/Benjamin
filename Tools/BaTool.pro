@@ -5,10 +5,11 @@ QT += multimedia
 CONFIG += console
 
 INCLUDEPATH += ../PNN
+win32:INCLUDEPATH += ../PNN/lua
 
 linux:LIBS += -pthread -lm -ldl \
               -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
-win32:LIBS += -L../PNN/libs -lFstWin64 -lPortAudio -lwinmm
+win32:LIBS += -L../PNN/libs -lFstWin64 -lPortAudio -lwinmm -llua54
 
 DEFINES += HAVE_MKL \
            HAVE_CXXABI_H \
@@ -125,3 +126,7 @@ SOURCES += \
     Sources/main.cpp \
     Sources/ta_ini.cpp \
     Sources/td_network.cpp
+
+win32:HEADERS += Sources/bt_lua.h
+
+win32:SOURCES += Sources/bt_lua.cpp

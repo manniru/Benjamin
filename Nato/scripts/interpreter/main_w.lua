@@ -47,7 +47,7 @@ end
 if output==nil then
 	output = get_Digits(in_word)
 	if output~=nil then
-		k_type = 'digits'
+		k_type = 'digit'
 	end
 end
 

@@ -16,8 +16,20 @@ BtCaptain::BtCaptain(BtState *state,
     net = new BtNetwork;
     st  = state;
 
-    strict_word << "five";
-    strict_word << "four";
+    /// FIXME: ADD STRICT TO THE INI FILE
+//    strict_word << "five";
+//    strict_word << "four";
+    strict_word << "go";
+#ifdef WIN32
+    lua = new BtLua();
+#endif
+}
+
+BtCaptain::~BtCaptain()
+{
+#ifdef WIN32
+    delete lua;
+#endif
 }
 
 void BtCaptain::parse(QVector<BtWord> in_words, uint max_frame)
@@ -58,9 +70,9 @@ void BtCaptain::exec(QString word)
 
     QString cmd;
 #ifdef WIN32
-    cmd = word;
+    lua->run(word);
 #else
-    cmd = KAL_SI_DIR"main1.sh \"";
+    cmd = KAL_SI_DIR"main_l.sh \"";
     cmd += word;
     cmd += "\"";
     system(cmd.toStdString().c_str());

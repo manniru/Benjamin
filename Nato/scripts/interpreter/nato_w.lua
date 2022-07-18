@@ -74,7 +74,7 @@ function get_Nato(word)
 	elseif word == "semi" then
 		return "186"
 	elseif word == "period" then
-		return "190
+		return "190"
 	elseif word == "comma" then
 		return "188"
 	elseif word == "dash" then
