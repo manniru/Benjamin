@@ -4,11 +4,11 @@
 function get_Modifiers(word)
 
 	if word == "control" then
-		return "19"
+		return "17"
 	elseif word == "alt" then
 		return "18"
 	elseif word == "shift" then
-		return "10"
+		return "16"
 	elseif word == "super" then
 		return "91"
 	end

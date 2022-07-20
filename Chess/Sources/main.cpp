@@ -1,4 +1,4 @@
-#include "channel.h"
+#include "ch_channel_l.h"
 
 int main(int argc, char *argv[])
 {
@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     QObject *root = engine.rootObjects().first();
 
-    Channel *dbusChnl = new Channel(root);
+    ChChannelL *dbusChnl = new ChChannelL(root);
 
     QObject::connect(root, SIGNAL(eKeyPressed(int)), dbusChnl, SLOT(keyPressed(int)));
 

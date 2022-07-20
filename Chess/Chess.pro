@@ -4,7 +4,7 @@ QT += qml quick widgets dbus
 
 SOURCES += \
     Sources/backend.cpp \
-    Sources/channel.cpp \
+    Sources/ch_channel_l.cpp \
     Sources/main.cpp
 
 RESOURCES += Qml/ui.qrc
@@ -31,7 +31,7 @@ QMAKE_CXXFLAGS += -pthread
 
 HEADERS += \
     Sources/backend.h \
-    Sources/channel.h \
+    Sources/ch_channel_l.h \
     Sources/config.h
 
 MOC_DIR = Build/.moc

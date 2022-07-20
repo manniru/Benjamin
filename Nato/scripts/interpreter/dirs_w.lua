@@ -3,7 +3,7 @@
 function get_Dirs(word)
 
 	if word == "back" then
-		return "14"
+		return "8"
 	elseif word == "left" then
 		return "37"
 	elseif word == "down" then
