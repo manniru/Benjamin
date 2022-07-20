@@ -10,11 +10,12 @@
 #include "config.h"
 #include "bt_cfb.h"
 #include "bt_wav_writer.h"
+#include "bt_state.h"
 
 class BtNetwork
 {
 public:
-    BtNetwork();
+    BtNetwork(BtState *state);
     ~BtNetwork();
 
     float getConf(int start, int len, int id);

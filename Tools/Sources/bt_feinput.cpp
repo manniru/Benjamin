@@ -1,13 +1,13 @@
 #include "bt_feinput.h"
 
-BtFeInput::BtFeInput(BtCyclic *buf, QObject *parent): QObject(parent)
+BtFeInput::BtFeInput(BtCyclic *buf, BtState *state)
 {
     rec_buf = buf;
     o_features = new BtCFB;
     frame_num = 0;
     mfcc = new BtMFCC;
     delta = new KdDelta(o_features);
-    cmvn = new BtCMVN(o_features);
+    cmvn = new BtCMVN(o_features, state);
 }
 
 BtFeInput::~BtFeInput()

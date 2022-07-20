@@ -1,9 +1,9 @@
 #include "kd_mbr.h"
 #include <QDebug>
 
-KdMBR::KdMBR()
+KdMBR::KdMBR(BtState *state)
 {
-    lexicon = bt_parseLexicon(BT_WORDS_PATH);
+    lexicon = bt_parseLexicon(state->word_path);
 }
 
 void KdMBR::compute(KdCompactLattice *clat_in)

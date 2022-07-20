@@ -2,8 +2,9 @@
 #include <QDebug>
 #include <QFile>
 
-BtCMVN::BtCMVN(BtCFB *feat)
+BtCMVN::BtCMVN(BtCFB *feat, BtState *state)
 {
+    st = state;
     i_feature = feat;
     resetSum();
     readGlobal();
@@ -100,11 +101,11 @@ void BtCMVN::calc(uint frame)
 
 void BtCMVN::readGlobal()
 {
-    QFile file(BT_GCMVN_PATH);
+    QFile file(st->cmvn_stat_path);
 
     if( !file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        qDebug() << "Error opening" << BT_GCMVN_PATH;
+        qDebug() << "Error opening" << st->cmvn_stat_path;
         return;
     }
 

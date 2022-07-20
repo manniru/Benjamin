@@ -4,9 +4,9 @@
 
 using namespace tiny_dnn;
 
-BtNetwork::BtNetwork()
+BtNetwork::BtNetwork(BtState *state)
 {
-    word_list = bt_parseLexicon(BT_WORDS_PATH);
+    word_list = bt_parseLexicon(state->word_path);
 
     int len = word_list.size();
     nets.resize(len);

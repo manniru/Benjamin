@@ -142,3 +142,5 @@ Tools/debug/
 *.Release
 
 Tools/release/
+
+Tools/Model/

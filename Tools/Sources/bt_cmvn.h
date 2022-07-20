@@ -5,6 +5,7 @@
 #include <QVector>
 #include "config.h"
 #include "bt_cfb.h"
+#include "bt_state.h"
 
 #define BT_CMVN_WINDOW 600
 
@@ -20,7 +21,7 @@ typedef struct BtCMVNRing
 class BtCMVN
 {
 public:
-    BtCMVN(BtCFB *feat);
+    BtCMVN(BtCFB *feat, BtState *state);
     ~BtCMVN();
 
     void calc(uint frame);
@@ -31,6 +32,7 @@ private:
     void updateStat();
     void addFrame(BtFrameBuf *buf);
 
+    BtState *st;
     BtCFB *i_feature; //input feature (global buffer filled from outside)
     double global_state[BT_FEAT_SIZE+1];   // reflects the state before we saw this
     double f_sum[BT_FEAT_SIZE]; // feature sum

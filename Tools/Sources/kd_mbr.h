@@ -7,11 +7,12 @@
 #include "kd_levenshtein.h"
 #include "backend.h"
 #include "kd_matrix.h"
+#include "bt_state.h"
 
 class KdMBR
 {
 public:
-    KdMBR();
+    KdMBR(BtState *state);
 
     void compute(KdCompactLattice *clat_in);
     QVector<BtWord>    getResult();

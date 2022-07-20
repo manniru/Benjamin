@@ -16,7 +16,7 @@ BtTest::BtTest(QString dir_name, BtState *state,
         file_list[i] = dir_name + file_list[i];
     }
 
-    net = new BtNetwork;
+    net = new BtNetwork(state);
     st  = state;
     init();
 }
@@ -50,11 +50,10 @@ void BtTest::init()
 
 void BtTest::startDecode()
 {
-    float acoustic_scale = 0.05;
     int chunk_size = 16000; // 1000ms
 
     KdDecodable decodable(cy_buf, oa_model,
-                          t_model, acoustic_scale);
+                          t_model, st);
     net->cfb   = decodable.features->o_features;
     net->wav_w = new BtWavWriter(cy_buf, st);
     decodable.features->enableENN();

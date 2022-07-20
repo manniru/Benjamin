@@ -6,10 +6,10 @@ QString dbg_times;
 KdOnlineLDecoder::KdOnlineLDecoder(KdTransitionModel *trans_model,
                                    BtState *state): KdDecoder(state)
 {
-    fst_graph = kd_readDecodeGraph(BT_FST_PATH);
+    fst_graph = kd_readDecodeGraph(state->fst_path);
 
     qDebug() << "Graph States Count" << kd_NumOfStates(fst_graph);
-    mbr = new KdMBR;
+    mbr = new KdMBR(state);
 
     config = opts;
     t_model = trans_model;

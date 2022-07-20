@@ -10,12 +10,11 @@
 #include "bt_cfb.h"
 
 // Feature Input
-class BtFeInput: public QObject
+class BtFeInput
 {
-    Q_OBJECT
 public:
     explicit BtFeInput(BtCyclic *buf,
-                       QObject *parent = nullptr);
+                       BtState *state);
     ~BtFeInput();
 
     uint  NumFramesReady();

@@ -13,7 +13,7 @@ BtCaptain::BtCaptain(BtState *state,
     time_shifter->start(BT_HISTORY_UPDATE);
 
     start_treshold = -BT_HISTORY_SIZE/1000.0;
-    net = new BtNetwork;
+    net = new BtNetwork(state);
     st  = state;
 
     /// FIXME: ADD STRICT TO THE INI FILE
