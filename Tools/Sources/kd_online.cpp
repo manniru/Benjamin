@@ -37,10 +37,8 @@ void KdOnline::init()
 
 void KdOnline::startDecode()
 {
-    float acoustic_scale = 0.05;
-
     KdDecodable decodable(cy_buf, oa_model,
-                          t_model, acoustic_scale);
+                          t_model, st);
     cap->net->cfb   = decodable.features->o_features;
     cap->net->wav_w = new BtWavWriter(cy_buf, st);
     decodable.features->enableENN();

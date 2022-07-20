@@ -29,6 +29,9 @@
 #define KAL_UCON_TRESHOLD  0.9  //Utterance Total Confidence
 #define KAL_HARD_TRESHOLD  0.5  //word will be removed
 
+#define KAL_AC_SCALE       0.05 //Kaldi acoustic scale(priority of
+                                //accoustic feature over language model)
+
 #define BT_REC_RATE       16000 //Recording Sample Rate
 #define BT_BUF_SIZE       100   //Buffer Size Second(Max Utterance Len)
 #define BT_FFT_SIZE       512   //Rounded Window Size to Power of 2 (400->512)

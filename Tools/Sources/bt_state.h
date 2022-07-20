@@ -1,5 +1,5 @@
-#ifndef BTSTATE_H
-#define BTSTATE_H
+#ifndef BT_STATE_H
+#define BT_STATE_H
 
 #include "config.h"
 
@@ -16,6 +16,7 @@ public:
     // model
     char *fst_path;
     char *mdl_path;
+    char *word_path;
     char *cmvn_stat_path;
 
     // decoder
@@ -23,6 +24,7 @@ public:
     int min_active;
     int train_max;
     int min_sil;
+    double ac_scale;
 
     // captain
     double hard_threshold;
@@ -32,4 +34,4 @@ private:
 
 };
 
-#endif // BTSTATE_H
+#endif // BT_STATE_H

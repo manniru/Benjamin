@@ -2,9 +2,9 @@
 #include <QDebug>
 
 KdDecodable::KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
-                         KdTransitionModel *t_mdl, float scale)
+                         KdTransitionModel *t_mdl, BtState *state)
 {
-    ac_scale_ = scale;
+    ac_scale_ = state->ac_scale;
     cur_frame_ = -1;
 
     ac_model = a_mdl;
@@ -13,7 +13,7 @@ KdDecodable::KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
     int num_pdfs = trans_model->num_pdfs;
     cache_.resize(num_pdfs, std::pair<int,float>(-1, 0.0f));
 
-    features = new BtFeInput(buf);
+    features = new BtFeInput(buf, state);
 }
 
 KdDecodable::~KdDecodable()
@@ -37,7 +37,7 @@ float KdDecodable::LogLikelihood(uint frame, int index)
 
     int pdf_id = trans_model->id2pdf[index];
 
-    if( cache_[pdf_id].first==frame)
+    if( cache_[pdf_id].first==frame )
     {
         return cache_[pdf_id].second;
     }

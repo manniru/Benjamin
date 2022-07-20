@@ -26,7 +26,7 @@ class KdDecodable
 {
 public:
     KdDecodable(BtCyclic *buf, KdAModel *a_mdl,
-                KdTransitionModel *t_mdl, float scale);
+                KdTransitionModel *t_mdl, BtState *state);
     ~KdDecodable();
 
     /// Returns the scaled log likelihood

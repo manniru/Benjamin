@@ -60,10 +60,8 @@ void BtEnn::init(QString dir)
 
 void BtEnn::startDecode()
 {
-    float acoustic_scale = 0.05;
-
     KdDecodable decodable(cy_buf, oa_model,
-                          t_model, acoustic_scale);
+                          t_model, st);
     decodable.features->enableENN();
 
     o_decoder->InitDecoding(&decodable);
@@ -93,7 +91,8 @@ void BtEnn::startDecode()
             o_decoder->wav_id++;
             o_decoder->resetODecoder();
             delete decodable.features->cmvn;
-            decodable.features->cmvn = new BtCMVN(decodable.features->o_features);
+            decodable.features->cmvn = new BtCMVN(
+                        decodable.features->o_features, st);
             decodable.features->delta->min_frame = o_decoder->status.min_frame;
             last_r.clear();
             if( shit_counter<13 )
@@ -108,7 +107,8 @@ void BtEnn::startDecode()
         o_decoder->wav_id++;
         o_decoder->resetODecoder();
         delete decodable.features->cmvn;
-        decodable.features->cmvn = new BtCMVN(decodable.features->o_features);
+        decodable.features->cmvn = new BtCMVN(
+                    decodable.features->o_features, st);
         decodable.features->delta->min_frame = o_decoder->status.min_frame;
         last_r.clear();
     }

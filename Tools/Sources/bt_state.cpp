@@ -29,6 +29,7 @@ void BtState::load_config()
     TaINI *config = ini_load("BaTool.conf");
     fst_path       = ini_get(config, "model", "fst");;
     mdl_path       = ini_get(config, "model", "mdl");;
+    word_path      = ini_get(config, "model", "word");;
     cmvn_stat_path = ini_get(config, "model", "cmvn");;
 //    qDebug() << "name:" << cmvn_stat_path;
 
@@ -43,6 +44,9 @@ void BtState::load_config()
     buf = ini_get(config, "decoder", "train_max");
     train_max = buf.toInt();
 
+    buf = ini_get(config, "decoder", "ac_scale");
+    ac_scale = buf.toDouble();
+
     buf = ini_get(config, "decoder", "min_sil");
     min_sil = buf.toInt();
 
@@ -55,12 +59,14 @@ void BtState::load_default()
 {
     fst_path       = BT_FST_PATH;
     mdl_path       = BT_OAMDL_PATH;
+    word_path      = BT_WORDS_PATH;
     cmvn_stat_path = BT_GCMVN_PATH;
 
     // decoder
     max_active = BT_MAX_ACTIVE;
     min_active = BT_MIN_ACTIVE;
     train_max  = BT_TRA_MAX;
+    ac_scale   = KAL_AC_SCALE;
     min_sil    = BT_MIN_SIL;
 
     // captain
