@@ -22,7 +22,7 @@
 #define BT_FST_PATH       KAL_NATO_DIR "exp/" KAL_MODE "/graph/HCLG.fst"
 #define BT_GCMVN_PATH     KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats"
 #define BT_WORDLIST_PATH  KAL_NATO_DIR"word_list"
-#define BT_BAR_RESULT     "Resources/bar_result"
+#define BT_BAR_RESULT     "bar_result"
 #define BT_GRAPH_PATH     "graph"
 
 #define KAL_CONF_TRESHOLD  0.9

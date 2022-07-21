@@ -168,7 +168,10 @@ void BtCaptain::shiftHistory()
 
 void BtCaptain::writeResult()
 {
-    QFile bar_file(BT_BAR_RESULT);
+    QString bar_path = getenv("HOME");
+    bar_path += "/.config/polybar/awesomewm/";
+    bar_path += BT_BAR_RESULT;
+    QFile bar_file(bar_path);
 
     if( !bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
