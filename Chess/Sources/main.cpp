@@ -1,4 +1,7 @@
 #include "ch_channel_l.h"
+#include "ch_processor_l.h"
+#include <QApplication>
+#include <QQmlApplicationEngine>
 
 int main(int argc, char *argv[])
 {
@@ -8,9 +11,11 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     QObject *root = engine.rootObjects().first();
 
-    ChChannelL *dbusChnl = new ChChannelL(root);
+    ChChannelL *channel = new ChChannelL;
+    ChProcessorL *processor = new ChProcessorL(channel, root);
 
-    QObject::connect(root, SIGNAL(eKeyPressed(int)), dbusChnl, SLOT(keyPressed(int)));
+    QObject::connect(root, SIGNAL(eKeyPressed(int)),
+                     processor, SLOT(keyPressed(int)));
 
     return app.exec();
 }

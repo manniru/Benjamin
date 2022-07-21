@@ -28,16 +28,18 @@ HEADERS += \
     Sources/config.h
 
 linux:HEADERS += \
-    Sources/ch_channel_l.h
+    Sources/ch_channel_l.h \
+    Sources/ch_processor_l.h
 
 win32:HEADERS += \
     Sources/ch_channel_w.h
 
 linux:SOURCES += \
-    Sources/ch_channel_l.h
+    Sources/ch_channel_l.cpp \
+    Sources/ch_processor_l.cpp
 
 win32:SOURCES += \
-    Sources/ch_channel_w.h
+    Sources/ch_channel_w.cpp
 
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc

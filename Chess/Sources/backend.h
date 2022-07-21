@@ -1,8 +1,6 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
-#include <gio/gio.h>
-#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlProperty>
 #include <QtDBus>

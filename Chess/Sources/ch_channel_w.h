@@ -31,8 +31,8 @@ public:
     ~ChChannelW();
 
 signals:
-    void show(const QString &args);
-    void side(const QString &args);
+    void show(QString args);
+    void side(QString args);
 
 private:
     void listenPipe();
