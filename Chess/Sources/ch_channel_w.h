@@ -27,15 +27,18 @@ class ChChannelW : public QObject
 {
     Q_OBJECT
 public:
-    ChChannelW(QObject *ui, QObject *parent = NULL);
+    ChChannelW(QObject *parent = NULL);
     ~ChChannelW();
 
 signals:
     void show(QString args);
     void side(QString args);
 
-private:
+public slots:
     void listenPipe();
+
+private:
+    void createPipe();
     void processCommand(QString cmd, QString arg);
     void processLine(QString line);
 

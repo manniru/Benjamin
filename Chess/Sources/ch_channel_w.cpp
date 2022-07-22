@@ -1,15 +1,9 @@
 #include "ch_channel_w.h"
 #include <unistd.h>
 
-ChChannelW::ChChannelW(QObject *ui,QObject *parent) : QObject(parent)
+ChChannelW::ChChannelW(QObject *parent) : QObject(parent)
 {
-    ConnectDBus();
-    root = ui;
-
-    count_x   = QQmlProperty::read(root, "count_x").toInt();
-    count_y   = QQmlProperty::read(root, "count_y").toInt();
-    meta_mode = 0;
-    click_mode = CH_LEFT_CLICK;
+    createPipe();
 }
 
 ChChannelW::~ChChannelW()
@@ -17,7 +11,7 @@ ChChannelW::~ChChannelW()
     ;
 }
 
-void ChChannelW::ListenPipe()
+void ChChannelW::listenPipe()
 {
     char buffer[BUFFER_SIZE];
     DWORD dwRead;
@@ -50,21 +44,19 @@ void ChChannelW::ListenPipe()
 void ChChannelW::processLine(QString line)
 {
     line = line.trimmed();
-    QStringList fields = line.split(RE_NP_SEPARATOR,
+    QStringList fields = line.split(CH_NP_SEPARATOR,
                                QString::SkipEmptyParts);
-    if ( fields.length()!=2 )
+
+    QString cmd = fields[0];
+    QString arg;
+    if( fields.length()>1 )
     {
-        qDebug() << "Error 128: wrong field length, `"
-                    + line + "`";
-        return;
+        arg = fields[1];
     }
+    qDebug() << "Command:" << cmd
+             << "Args:" << arg;
 
-    QString key_type = fields[0];
-    QString key_code = fields[1];
-    qDebug() << "Command:" << key_type
-             << "Args:" << key_code;
-
-    processCommand(key_type, key_code);
+    processCommand(cmd, arg);
 }
 
 void ChChannelW::createPipe()

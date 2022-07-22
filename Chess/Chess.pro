@@ -19,27 +19,33 @@ linux:LIBS += -lnotify \
     -lgobject-2.0 \
     -lglib-2.0
 
+win32:LIBS += -lUser32
+
 SOURCES += \
     Sources/backend.cpp \
-    Sources/main.cpp
+    Sources/main.cpp \
+    Sources/ch_chapar.cpp
 
 HEADERS += \
     Sources/backend.h \
-    Sources/config.h
+    Sources/config.h \
+    Sources/ch_chapar.h
 
 linux:HEADERS += \
     Sources/ch_channel_l.h \
     Sources/ch_processor_l.h
 
 win32:HEADERS += \
-    Sources/ch_channel_w.h
+    Sources/ch_channel_w.h \
+    Sources/ch_processor_w.h
 
 linux:SOURCES += \
     Sources/ch_channel_l.cpp \
     Sources/ch_processor_l.cpp
 
 win32:SOURCES += \
-    Sources/ch_channel_w.cpp
+    Sources/ch_channel_w.cpp \
+    Sources/ch_processor_w.cpp
 
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc

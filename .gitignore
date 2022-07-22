@@ -144,3 +144,7 @@ Tools/debug/
 Tools/release/
 
 Tools/Model/
+
+*.exe
+
+Chess/release/
