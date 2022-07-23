@@ -2,20 +2,24 @@
 #include <QtDebug>
 #include <QDir>
 
-BtLua::BtLua(QObject *parent) : QObject(parent)
+BtLua::BtLua()
 {
     lst = luaL_newstate();
     luaL_openlibs(lst);
 
-    if( WaitNamedPipeA(BT_PIPE_ADDRESS, NMPWAIT_USE_DEFAULT_WAIT) )
+    connectPipe();
+}
+
+void BtLua::connectPipe()
+{
+    // 0: Default Wait Time
+    int np_is_available = WaitNamedPipeA(BT_PIPE_ADDRESS, 0);
+    if( np_is_available )
     {
-        hPipe = CreateFileA(BT_PIPE_ADDRESS,
-                           GENERIC_WRITE,                   // dwDesiredAccess
-                           0,                               // dwShareMode
-                           nullptr,                         // lpSecurityAttributes
-                           OPEN_EXISTING,                   // dwCreationDisposition
-                           0,                               // dwFlagsAndAttributes
-                           nullptr);                        // hTemplateFile
+        hPipe = CreateFileA(BT_PIPE_ADDRESS, GENERIC_WRITE, // dwDesiredAccess
+                            0, nullptr,    // lpSecurityAttributes
+                            OPEN_EXISTING,  // dwCreationDisposition
+                            0, nullptr);    // hTemplateFile
 
         if( hPipe==INVALID_HANDLE_VALUE )
         {
@@ -24,7 +28,9 @@ BtLua::BtLua(QObject *parent) : QObject(parent)
     }
     else
     {
-        qDebug() << "Error 121: First create pipe " BT_PIPE_ADDRESS;
+        hPipe = INVALID_HANDLE_VALUE;
+        qDebug() << "Error 121: Pipe " BT_PIPE_ADDRESS
+                    " not found";
     }
 }
 
@@ -59,23 +65,31 @@ BtLua::~BtLua()
 
 void BtLua::sendPipe(QString type, int keycode)
 {
-    QString line(type + BT_PN_SEPARATOR + QString::number(keycode) + "\n");
-    if( hPipe!=INVALID_HANDLE_VALUE )
+    QString line = type + BT_PN_SEPARATOR;
+    line += QString::number(keycode) + "\n";
+    if( hPipe==INVALID_HANDLE_VALUE )
     {
-        DWORD dwWritten;
-        if( !WriteFile(hPipe, line.toStdString().c_str(), (DWORD)line.length(), &dwWritten, nullptr) )
+        qDebug() << "Try to reconnect to"
+                 << BT_PIPE_ADDRESS;
+        connectPipe();
+        if( hPipe==INVALID_HANDLE_VALUE )
         {
-            qDebug() << "Error: NamedPipe writing failed," << GetLastError();
-        }
-
-        if( dwWritten!=(DWORD)line.length() )
-        {
-            qDebug() << "Error: Wrong writing length. Total send char:"
-                     << dwWritten << ", Total char:" << line.length();
+            return;
         }
     }
-    else
+
+    DWORD dwWritten;
+    DWORD len = line.length();
+    const char *data = line.toStdString().c_str();
+    int success = WriteFile(hPipe, data, len, &dwWritten, NULL);
+    if( !success )
     {
-        qDebug() << "Error: Invalid handle pipe for " BT_PIPE_ADDRESS;
+        qDebug() << "Error: NamedPipe writing failed," << GetLastError();
+    }
+
+    if( dwWritten!=len )
+    {
+        qDebug() << "Error: Wrong writing length. Total send char:"
+                 << dwWritten << ", Total char:" << line.length();
     }
 }

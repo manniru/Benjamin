@@ -14,8 +14,9 @@
 #define KAL_NATO_DIR_WIN  "..\\Nato\\"
 #define KAL_AU_DIR_WIN    KAL_NATO_DIR_WIN"audio\\"
 // Pipe Named Path follow \\.\pipe\[pipename] format
-// where [pipename] can be change
-#define BT_PIPE_ADDRESS   "\\\\.\\pipe\\com_binaee_benjamin"
+// where [pipename] can be change and dot represent
+// server name, dot refer to local computer
+#define BT_PIPE_ADDRESS   "\\\\.\\pipe\\com_binaee_rebound"
 
 #define BT_WORDS_PATH     KAL_NATO_DIR "exp/" KAL_MODE "/graph/words.txt"
 #define BT_OAMDL_PATH     KAL_NATO_DIR "exp/" KAL_MODE "_online/final.oalimdl" //Online Alignment

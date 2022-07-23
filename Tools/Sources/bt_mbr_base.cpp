@@ -1,5 +1,6 @@
 #include "bt_mbr_base.h"
 
+// Not called in windows (only in test mode)
 void bt_writeBarResult(QVector<BtWord> result)
 {
     QFile bar_file(BT_BAR_RESULT);

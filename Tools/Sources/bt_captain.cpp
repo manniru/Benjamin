@@ -168,6 +168,9 @@ void BtCaptain::shiftHistory()
 
 void BtCaptain::writeResult()
 {
+#ifdef WIN32
+    ///POLYBAR INTEGRATION
+#else
     QString bar_path = getenv("HOME");
     bar_path += "/.config/polybar/awesomewm/";
     bar_path += BT_BAR_RESULT;
@@ -198,6 +201,7 @@ void BtCaptain::writeResult()
     out << "\n";
 
     bar_file.close();
+#endif
 }
 
 //get word polybar formatted

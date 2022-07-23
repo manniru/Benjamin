@@ -1,8 +1,9 @@
-#ifndef BTLUA_H
-#define BTLUA_H
+#ifndef BT_LUA_H
+#define BT_LUA_H
 
-#include <QObject>
-extern "C" {
+#include <QString>
+extern "C"
+{
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
@@ -12,19 +13,19 @@ extern "C" {
 
 #define BT_PN_SEPARATOR ","
 
-class BtLua : public QObject
+class BtLua
 {
-    Q_OBJECT
 public:
-    explicit BtLua(QObject *parent = nullptr);
+    explicit BtLua();
     void run(QString word);
     ~BtLua();
 
 private:
+    void connectPipe();
     void sendPipe(QString type, int keycode);
 
     HANDLE hPipe;
     lua_State *lst;
 };
 
-#endif // BTLUA_H
+#endif // BT_LUA_H
