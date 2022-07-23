@@ -53,7 +53,9 @@ void BtLua::run(QString word)
 
     qDebug() << "LUA : " << output << ktype;
 
-    sendPipe(ktype, output);
+    //Always send debug first
+    sendDebug(word);
+    sendKey(ktype, output);
 
     QDir::setCurrent(current_dir);
 }
@@ -61,12 +63,27 @@ void BtLua::run(QString word)
 BtLua::~BtLua()
 {
     lua_close(lst);
+    CloseHandle(hPipe);
 }
 
-void BtLua::sendPipe(QString type, int keycode)
+void BtLua::sendKey(QString type, int keycode)
 {
     QString line = type + BT_PN_SEPARATOR;
     line += QString::number(keycode) + "\n";
+
+    sendPipe(line.toStdString().c_str(), line.length());
+}
+
+void BtLua::sendDebug(QString word)
+{
+    QString line = "debug" BT_PN_SEPARATOR;
+    line += word + "\n";
+
+    sendPipe(line.toStdString().c_str(), line.length());
+}
+
+void BtLua::sendPipe(const char *data, DWORD len)
+{
     if( hPipe==INVALID_HANDLE_VALUE )
     {
         qDebug() << "Try to reconnect to"
@@ -79,8 +96,6 @@ void BtLua::sendPipe(QString type, int keycode)
     }
 
     DWORD dwWritten;
-    DWORD len = line.length();
-    const char *data = line.toStdString().c_str();
     int success = WriteFile(hPipe, data, len, &dwWritten, NULL);
     if( !success )
     {
@@ -89,7 +104,10 @@ void BtLua::sendPipe(QString type, int keycode)
 
     if( dwWritten!=len )
     {
-        qDebug() << "Error: Wrong writing length. Total send char:"
-                 << dwWritten << ", Total char:" << line.length();
+        qDebug() << "Error: Wrong writing length."
+                    "Try to revive channel";
+        CloseHandle(hPipe);
+        hPipe = INVALID_HANDLE_VALUE;
+        sendPipe(data, len);
     }
 }

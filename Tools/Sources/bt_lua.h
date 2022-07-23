@@ -22,7 +22,9 @@ public:
 
 private:
     void connectPipe();
-    void sendPipe(QString type, int keycode);
+    void sendKey(QString type, int keycode);
+    void sendDebug(QString word);
+    void sendPipe(const char *data, DWORD len);
 
     HANDLE hPipe;
     lua_State *lst;
