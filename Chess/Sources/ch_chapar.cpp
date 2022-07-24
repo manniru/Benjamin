@@ -19,9 +19,9 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
 
 #else
     ChChannelL *channel = new ChChannelL;
-    ChProcessorL *processor = new ChProcessorL(channel, root);
+    ChProcessorL *processor = new ChProcessorL(channel, ui);
 
-    QObject::connect(root, SIGNAL(eKeyPressed(int)),
+    QObject::connect(ui, SIGNAL(eKeyPressed(int)),
                      processor, SLOT(keyPressed(int)));
 #endif
 }

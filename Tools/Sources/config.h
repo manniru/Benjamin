@@ -3,7 +3,6 @@
 
 #define KAL_NATO_DIR      "../Nato/"
 #define KAL_DECODE_DIR    KAL_NATO_DIR"decode/"
-#define KAL_SI_DIR        KAL_NATO_DIR"scripts/interpreter/"
 #define KAL_SD_DIR        KAL_NATO_DIR"scripts/decode/"
 #define KAL_SK_DIR        KAL_NATO_DIR"scripts/kaldi/"
 #define KAL_AU_DIR        KAL_NATO_DIR"audio/"
@@ -11,6 +10,7 @@
 #define KAL_WAV_DIR       KAL_DECODE_DIR"wav/"
 #define KAL_MODE          "tri1"
 
+#define KAL_SI_DIR        "Scripts/interpreter/"
 #define KAL_NATO_DIR_WIN  "..\\Nato\\"
 #define KAL_AU_DIR_WIN    KAL_NATO_DIR_WIN"audio\\"
 // Pipe Named Path follow \\.\pipe\[pipename] format
