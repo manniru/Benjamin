@@ -24,7 +24,7 @@ private:
     void connectPipe();
     void sendKey(QString type, int keycode);
     void sendDebug(QString word);
-    void sendPipe(const char *data, DWORD len);
+    void sendPipe(const char *data);
 
     HANDLE hPipe;
     lua_State *lst;

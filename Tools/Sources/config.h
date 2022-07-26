@@ -11,6 +11,7 @@
 #define KAL_MODE          "tri1"
 
 #define KAL_SI_DIR        "Scripts/interpreter/"
+#define KAL_SI_DIR_WIN    "Scripts\\interpreter\\"
 #define KAL_NATO_DIR_WIN  "..\\Nato\\"
 #define KAL_AU_DIR_WIN    KAL_NATO_DIR_WIN"audio\\"
 // Pipe Named Path follow \\.\pipe\[pipename] format

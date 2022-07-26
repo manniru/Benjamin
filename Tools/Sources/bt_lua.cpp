@@ -37,7 +37,7 @@ void BtLua::connectPipe()
 void BtLua::run(QString word)
 { ///FIXME: solve directory problem
     QString current_dir = QDir::currentPath();
-    QDir::setCurrent(KAL_SI_DIR);
+    QDir::setCurrent(KAL_SI_DIR_WIN);
 
     luaL_loadfile(lst, "main_w.lua");
 
@@ -71,7 +71,7 @@ void BtLua::sendKey(QString type, int keycode)
     QString line = type + BT_PN_SEPARATOR;
     line += QString::number(keycode) + "\n";
 
-    sendPipe(line.toStdString().c_str(), line.length());
+    sendPipe(line.toStdString().c_str());
 }
 
 void BtLua::sendDebug(QString word)
@@ -79,11 +79,12 @@ void BtLua::sendDebug(QString word)
     QString line = "debug" BT_PN_SEPARATOR;
     line += word + "\n";
 
-    sendPipe(line.toStdString().c_str(), line.length());
+    sendPipe(line.toStdString().c_str());
 }
 
-void BtLua::sendPipe(const char *data, DWORD len)
+void BtLua::sendPipe(const char *data)
 {
+    DWORD len = strlen(data);
     if( hPipe==INVALID_HANDLE_VALUE )
     {
         qDebug() << "Try to reconnect to"
@@ -108,6 +109,6 @@ void BtLua::sendPipe(const char *data, DWORD len)
                     "Try to revive channel";
         CloseHandle(hPipe);
         hPipe = INVALID_HANDLE_VALUE;
-        sendPipe(data, len);
+        sendPipe(data);
     }
 }

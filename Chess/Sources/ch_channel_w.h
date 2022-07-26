@@ -16,8 +16,6 @@
 #define CH_LEFT_CLICK   0
 #define CH_NO_CLICK     1
 #define CH_RIGHT_CLICK  2
-
-#define CH_PIPE_PATH "\\\\.\\pipe\\com_binaee_chess"
 // The buffer size specified should be small enough that your
 // process will not run out of nonpaged pool, but large enough
 // to accommodate typical requests.

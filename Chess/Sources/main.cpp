@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     QQmlProperty::write(root, "width", screen.width());
     QQmlProperty::write(root, "height", screen.height()-CH_TASKBAR_HEIGHT);
     QQmlProperty::write(root, "x", 0);
-    QQmlProperty::write(root, "y", 0);
+    QQmlProperty::write(root, "y", CH_TASKBAR_HEIGHT);
     int flags = Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint;
     QQmlProperty::write(root, "flags", flags);
 #endif

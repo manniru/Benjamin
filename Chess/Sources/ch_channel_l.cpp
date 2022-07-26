@@ -21,9 +21,9 @@ void ChChannelL::ConnectDBus()
         return;
     }
 
-    session.connect("", "/", COM_NAME, "show", this, SLOT(showUI(const QString &)));
+    session.connect("", "/", CH_COM_NAME, "show", this, SLOT(showUI(const QString &)));
 
-    if( !session.registerService(COM_NAME) )
+    if( !session.registerService(CH_COM_NAME) )
     {
         return;
     }
