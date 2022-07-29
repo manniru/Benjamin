@@ -1,5 +1,6 @@
 #include "ch_processor_w.h"
 #include <unistd.h>
+#include <QWindow>
 
 ChProcessorW::ChProcessorW(ChChannelW *ch, QObject *ui,
                            QObject *parent) : QObject(parent)
@@ -13,6 +14,9 @@ ChProcessorW::ChProcessorW(ChChannelW *ch, QObject *ui,
 
     connect(ch, SIGNAL(show(QString)),
             this, SLOT(showUI(QString)));
+
+    QWindow *window = qobject_cast<QWindow *>(ui);
+    hWnd = (HWND)(window->winId());
 }
 
 ChProcessorW::~ChProcessorW()
@@ -39,6 +43,8 @@ void ChProcessorW::showUI(QString text)
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
     QQmlProperty::write(root, "visible", true);
     QQmlProperty::write(root, "ch_timer", true);
+
+    activateWindow();
 }
 
 void ChProcessorW::hideUI()
@@ -216,4 +222,18 @@ void ChProcessorW::setPosFine(int key)
     int y2 = pt.y + r_y;
 
     SetCursorPos(x2, y2);
+}
+
+void ChProcessorW::activateWindow()
+{
+    DWORD dwCurrentThread = GetCurrentThreadId();
+    DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
+    AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
+
+    //Actions
+    SetForegroundWindow(hWnd);
+    SetActiveWindow(hWnd);
+//    SetWindowPos(hWnd,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+
+    AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
 }

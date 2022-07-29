@@ -36,6 +36,7 @@ private:
     void hideUI();
     void createStatFile();
     void rmStatFile();
+    void activateWindow();
 
     void sendLeftKey();
     void sendRightKey();
@@ -47,6 +48,7 @@ private:
     int       count_y; //read from qml
     int       click_mode;
     int       meta_mode; // get a number at end
+    HWND      hWnd;
 };
 
 #endif // CH_PROCESSOR_W_H
