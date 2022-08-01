@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     QScreen *screen = QGuiApplication::primaryScreen();
     QQmlProperty::write(mainItem, "width", screen->geometry().width());
 
-    BbChapar *bar = new BbChapar(mainItem);
+    BbChapar bar(mainItem);
 
     return app.exec();
 }
