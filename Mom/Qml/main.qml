@@ -26,11 +26,11 @@ Window
         id: fontAwesomeBrand
         source: "qrc:/Fonts/fa6-brands.ttf"
     }
-//    FontLoader
-//    {
-//        id: fontAwesomeRegular
-//        source: "qrc:/Fonts/fa6-reg.ttf"
-//    }
+    FontLoader
+    {
+        id: fontAwesomeRegular
+        source: "qrc:/Fonts/fa6-reg.ttf"
+    }
 //    FontLoader
 //    {
 //        id: fontRobotoMedium
@@ -42,7 +42,12 @@ Window
         source: "qrc:/Fonts/Roboto-Regular.ttf"
     }
 
-    // Main
+//    onActiveChanged:
+//    {
+//        console.log(fontAwesomeSolid.status)
+//        console.log(fontAwesomeSolid.name)
+//    }
+
     MmDateLabel
     {
         id: date_label
@@ -58,7 +63,6 @@ Window
         anchors.left: parent.left
         anchors.right: date_label.left
         anchors.top: parent.top
-        direction: Qt.LeftToRight
         objectName: "LeftBar"
     }
 
@@ -67,9 +71,7 @@ Window
         id: right_bar
         height: parent.height
         anchors.right: parent.right
-        anchors.left: date_label.right
         anchors.top: parent.top
-        direction: Qt.RightToLeft
         objectName: "RightBar"
     }
 }

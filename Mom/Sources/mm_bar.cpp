@@ -18,7 +18,7 @@ MmBar::MmBar(QObject *root, QObject *parent) : QObject(parent)
 
     // Load labels
     loadLabels(MM_L1_LABEL, left_bar_ui);
-    loadLabels(MM_R1_LABEL, right_bar_ui, true);
+    loadLabels(MM_R1_LABEL, right_bar_ui);
 }
 
 /***************** Private Slots *****************/
@@ -30,17 +30,17 @@ void MmBar::executeCommand(QString action)
 void MmBar::updateLabels()
 {
     loadLabels(MM_L1_LABEL, left_bar_ui);
-    loadLabels(MM_R1_LABEL, right_bar_ui, true);
+    loadLabels(MM_R1_LABEL, right_bar_ui);
 }
 
-void MmBar::loadLabels(QString path, QObject *list_ui, bool reverse)
+void MmBar::loadLabels(QString path, QObject *list_ui)
 {
     QFile file(path);
     if (file.open(QIODevice::ReadOnly))
     {
         QString data = file.readAll();
 //        qDebug() << data;
-        ProccessFile(data, list_ui, reverse);
+        proccessFile(data, list_ui);
         file.close();
     }
     else
@@ -49,7 +49,7 @@ void MmBar::loadLabels(QString path, QObject *list_ui, bool reverse)
     }
 }
 
-void MmBar::ProccessFile(QString data, QObject *list_ui, bool reverse)
+void MmBar::proccessFile(QString data, QObject *list_ui)
 {
     QVector<MmLabel> labels;
     MmProperty properties;
@@ -85,7 +85,8 @@ void MmBar::ProccessFile(QString data, QObject *list_ui, bool reverse)
         if( !content.isEmpty() )
         {
             content = content.replace(" ", " &nbsp;");
-            label.content  = "<div style = 'font-family: Roboto, fa6-solid'>";
+            label.content  = "<div style = 'font-family: Roboto, ";
+            label.content += "\"Font Awesome 6 Pro Solid\"'>";
             label.content += content + "</div>";
             labels.append(label);
         }
@@ -119,7 +120,7 @@ void MmBar::ProccessFile(QString data, QObject *list_ui, bool reverse)
         i = end_i + e_char.length();
     }
 
-    showLabels(labels, list_ui, reverse);
+    showLabels(labels, list_ui);
 }
 
 void MmBar::parseProps(QString raw, MmProperty *properties)
@@ -190,34 +191,19 @@ void MmBar::parseProps(QString raw, MmProperty *properties)
 
 }
 
-void MmBar::showLabels(QVector<MmLabel> labels, QObject *list_ui, bool reverse)
+void MmBar::showLabels(QVector<MmLabel> labels, QObject *list_ui)
 {
     QMetaObject::invokeMethod(list_ui, "clearLabels");
+    int len=labels.length();
 
-    if (reverse)
+    for(int i=0 ; i<len ; i++ )
     {
-        for(int i=labels.length()-1 ; i>=0 ; i--)
-        {
-            QQmlProperty::write(list_ui, "labelBackgroundColor", labels[i].properties.bg);
-            QQmlProperty::write(list_ui, "labelTextColor", labels[i].properties.label_color);
-            QQmlProperty::write(list_ui, "labelUnderlineColor", labels[i].properties.underline_color);
-            QQmlProperty::write(list_ui, "labelHaveUnderline", labels[i].properties.have_underline);
-            QQmlProperty::write(list_ui, "labelContent", labels[i].content);
-            QQmlProperty::write(list_ui, "labelActionString", labels[i].properties.action);
-            QMetaObject::invokeMethod(list_ui, "addLabel");
-        }
-    }
-    else
-    {
-        foreach (auto label, labels)
-        {
-            QQmlProperty::write(list_ui, "labelBackgroundColor", label.properties.bg);
-            QQmlProperty::write(list_ui, "labelTextColor", label.properties.label_color);
-            QQmlProperty::write(list_ui, "labelUnderlineColor", label.properties.underline_color);
-            QQmlProperty::write(list_ui, "labelHaveUnderline", label.properties.have_underline);
-            QQmlProperty::write(list_ui, "labelContent", label.content);
-            QQmlProperty::write(list_ui, "labelActionString", label.properties.action);
-            QMetaObject::invokeMethod(list_ui, "addLabel");
-        }
+        QQmlProperty::write(list_ui, "labelBackgroundColor", labels[i].properties.bg);
+        QQmlProperty::write(list_ui, "labelTextColor", labels[i].properties.label_color);
+        QQmlProperty::write(list_ui, "labelUnderlineColor", labels[i].properties.underline_color);
+        QQmlProperty::write(list_ui, "labelHaveUnderline", labels[i].properties.have_underline);
+        QQmlProperty::write(list_ui, "labelContent", labels[i].content);
+        QQmlProperty::write(list_ui, "labelActionString", labels[i].properties.action);
+        QMetaObject::invokeMethod(list_ui, "addLabel");
     }
 }

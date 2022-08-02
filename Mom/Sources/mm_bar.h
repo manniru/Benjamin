@@ -37,10 +37,10 @@ private slots:
     void updateLabels();
 
 private:
-    void loadLabels(QString path, QObject *list_ui, bool reverse=false);
+    void loadLabels(QString path, QObject *list_ui);
     void parseProps(QString raw, MmProperty *properties);
-    void showLabels(QVector<MmLabel> labels, QObject *list_ui, bool reverse);
-    void ProccessFile(QString data, QObject *list_ui, bool reverse);
+    void showLabels(QVector<MmLabel> labels, QObject *list_ui);
+    void proccessFile(QString data, QObject *list_ui);
 
     QObject *left_bar_ui;
     QObject *right_bar_ui;

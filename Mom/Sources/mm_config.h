@@ -1,8 +1,8 @@
 #ifndef MM_CONFIG_H
 #define MM_CONFIG_H
 
-#define MM_L1_LABEL  "Test/test1.txt"
-#define MM_R1_LABEL  "Test/test3.txt"
+#define MM_L1_LABEL  "Labels/test1.lbl"
+#define MM_R1_LABEL  "Labels/test2.lbl"
 
 #define MM_DEFAULT_BG      "#000000"
 #define MM_DEFAULT_FG     "#dfdfdf"
