@@ -12,7 +12,7 @@
 
 typedef struct MmProperty
 {
-    QString     background_color;
+    QString     bg;
     QString     label_color;
     QString     underline_color;
     bool        have_underline;
@@ -38,13 +38,10 @@ private slots:
 
 private:
     void loadLabels(QString path, QObject *list_ui, bool reverse=false);
-    void updateProperty(QString rawProperty, MmProperty *properties);
+    void parseProps(QString raw, MmProperty *properties);
     void showLabels(QVector<MmLabel> labels, QObject *list_ui, bool reverse);
+    void ProccessFile(QString data, QObject *list_ui, bool reverse);
 
-    // Log function
-    void logError(QString message);
-
-private:
     QObject *left_bar_ui;
     QObject *right_bar_ui;
 

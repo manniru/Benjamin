@@ -35,152 +35,157 @@ void MmBar::updateLabels()
 
 void MmBar::loadLabels(QString path, QObject *list_ui, bool reverse)
 {
-    QFile label_file(path);
-    if (label_file.open(QIODevice::ReadOnly))
+    QFile file(path);
+    if (file.open(QIODevice::ReadOnly))
     {
-        QString data = label_file.readAll();
+        QString data = file.readAll();
 //        qDebug() << data;
-
-        QVector<MmLabel> labels;
-        MmProperty properties;
-        properties.background_color = BPB_DEFAULT_BACKGROUND_COLOR;
-        properties.label_color = BPB_DEFAULT_LABEL_COLOR;
-        properties.underline_color = BPB_DEFAULT_UNDERLINE_COLOR;
-        properties.have_underline = false;
-        properties.action = BPB_DEFAULT_ACTION;
-
-        QString start_property_characters = "%{", end_property_characters = "}";
-        int start_property_index, end_property_index;
-        int current_index = 0;
-        QString content;
-        while (current_index<data.length())
-        {
-            MmLabel label;
-            label.properties = properties;
-
-            // Find start index of property
-            start_property_index = data.indexOf(start_property_characters, current_index);
-
-            // Get substring for label content
-            int n;
-            if (start_property_index == -1)
-            {
-                n = -1;
-            }
-            else
-            {
-                n = start_property_index - current_index;
-            }
-            content = data.mid(current_index, n);
-            if (!content.isEmpty())
-            {
-                content = content.replace(" ", " &nbsp;");
-                label.content = "<div style = 'font-family: Roboto, fa6-solid'>" + content + "</div>";
-                labels.append(label);
-            }
-
-            // All labels are read
-            if (start_property_index == -1)
-            {
-                break;
-            }
-
-            // Find end index of property
-            start_property_index = start_property_index + start_property_characters.length();
-            end_property_index = data.indexOf(end_property_characters, start_property_index);
-            if (end_property_index == -1)
-            {
-                qDebug() << "Invalid format. '" + path + "'";
-                return;
-            }
-            else
-            {
-                n = end_property_index - start_property_index;
-            }
-
-            // Get substring for raw property
-            QString raw_property = data.mid(start_property_index, n);
-
-            // Update properties
-            updateProperty(raw_property, &properties);
-
-            // Update current index
-            current_index = end_property_index + end_property_characters.length();
-        }
-
-        showLabels(labels, list_ui, reverse);
+        ProccessFile(data, list_ui, reverse);
+        file.close();
     }
     else
     {
         qDebug() << "Cann't open '" + path + "'";
     }
-
 }
 
-void MmBar::updateProperty(QString rawProperty, MmProperty *properties)
+void MmBar::ProccessFile(QString data, QObject *list_ui, bool reverse)
+{
+    QVector<MmLabel> labels;
+    MmProperty properties;
+    properties.bg = MM_DEFAULT_BG;
+    properties.label_color = MM_DEFAULT_FG;
+    properties.underline_color = BPB_DEFAULT_UL;
+    properties.have_underline = false;
+
+    QString s_char = "%{";
+    QString e_char = "}";
+    int start_i, end_i;
+    int i = 0;
+    QString content;
+    while( i<data.length() )
+    {
+        MmLabel label;
+        label.properties = properties;
+
+        // Find start index of property
+        start_i = data.indexOf(s_char, i);
+
+        // Get substring for label content
+        int n;
+        if( start_i==-1 )
+        {
+            n = -1;
+        }
+        else
+        {
+            n = start_i - i;
+        }
+        content = data.mid(i, n);
+        if( !content.isEmpty() )
+        {
+            content = content.replace(" ", " &nbsp;");
+            label.content  = "<div style = 'font-family: Roboto, fa6-solid'>";
+            label.content += content + "</div>";
+            labels.append(label);
+        }
+
+        // All labels are read
+        if( start_i==-1 )
+        {
+            break;
+        }
+
+        // Find end index of property
+        start_i = start_i + s_char.length();
+        end_i = data.indexOf(e_char, start_i);
+        if( end_i==-1 )
+        {
+            qDebug() << "Invalid format.";
+            return;
+        }
+        else
+        {
+            n = end_i - start_i;
+        }
+
+        // Get substring for raw property
+        QString raw_property = data.mid(start_i, n);
+
+        // Update properties
+        parseProps(raw_property, &properties);
+
+        // Update current index
+        i = end_i + e_char.length();
+    }
+
+    showLabels(labels, list_ui, reverse);
+}
+
+void MmBar::parseProps(QString raw, MmProperty *properties)
 {
 //    qDebug() << "property" << rawProperty;
 
     //Note: unset property must be checked first
-    QString unset_backround_property = "B-";
-    QString set_backround_property = "B";
+    QString clr_bg = "B-";
+    QString set_bg = "B";
 
     //Note: unset property must be checked first
-    QString unset_foreground_property = "F-";
-    QString set_foreground_property = "F";
+    QString clr_fg = "F-";
+    QString set_fg = "F";
 
     //Note: set must be checked first
-    QString set_action_property = "A1:";
-    QString unset_action_property = "A";
+    QString clr_act = "A";
+    QString set_act = "A1:";
 
-    QString set_underline_property = "+U";
-    QString unset_underline_property = "-U";
-    QString underline_property = "U";
+    QString clr_ul  = "-U";
+    QString set_ul  = "+U";
+    QString ul_prop = "U";
 
     // Background
-    if (rawProperty.startsWith(unset_backround_property, Qt::CaseInsensitive))
+    if (raw.startsWith(clr_bg, Qt::CaseInsensitive))
     {
-        properties->background_color = BPB_DEFAULT_BACKGROUND_COLOR;
+        properties->bg = MM_DEFAULT_BG;
     }
-    else if (rawProperty.startsWith(set_backround_property, Qt::CaseInsensitive))
+    else if (raw.startsWith(set_bg, Qt::CaseInsensitive))
     {
-        properties->background_color = rawProperty.mid(set_backround_property.length());
+        properties->bg = raw.mid(set_bg.length());
     }
     // Foreground
-    else if (rawProperty.startsWith(unset_foreground_property, Qt::CaseInsensitive))
+    else if (raw.startsWith(clr_fg, Qt::CaseInsensitive))
     {
-        properties->label_color = BPB_DEFAULT_LABEL_COLOR;
+        properties->label_color = MM_DEFAULT_FG;
     }
-    else if (rawProperty.startsWith(set_foreground_property, Qt::CaseInsensitive))
+    else if (raw.startsWith(set_fg, Qt::CaseInsensitive))
     {
-        properties->label_color = rawProperty.mid(set_foreground_property.length());
+        properties->label_color = raw.mid(set_fg.length());
     }
     // Action
-    else if (rawProperty.startsWith(set_action_property, Qt::CaseInsensitive))
+    else if (raw.startsWith(set_act, Qt::CaseInsensitive))
     {
-        int n = rawProperty.length() - set_action_property.length() - 1;// end of property contain ':'
-        properties->action = rawProperty.mid(set_action_property.length(), n);
+        int n = raw.length() - set_act.length() - 1;// end of property contain ':'
+        properties->action = raw.mid(set_act.length(), n);
     }
-    else if (rawProperty.startsWith(unset_action_property, Qt::CaseInsensitive))
+    else if (raw.startsWith(clr_act, Qt::CaseInsensitive))
     {
-        properties->action = BPB_DEFAULT_ACTION;
+        properties->action = "";
     }
     // Underline
-    else if (rawProperty.startsWith(set_underline_property, Qt::CaseInsensitive))
+    else if (raw.startsWith(set_ul, Qt::CaseInsensitive))
     {
         properties->have_underline = true;
     }
-    else if (rawProperty.startsWith(unset_underline_property, Qt::CaseInsensitive))
+    else if (raw.startsWith(clr_ul, Qt::CaseInsensitive))
     {
         properties->have_underline = false;
     }
-    else if (rawProperty.startsWith(underline_property, Qt::CaseInsensitive))
+    else if (raw.startsWith(ul_prop, Qt::CaseInsensitive))
     {
-        properties->underline_color = rawProperty.mid(underline_property.length());
+        properties->underline_color = raw.mid(ul_prop.length());
     }
     else
     {
-        qDebug() << "Invalid property: " + rawProperty;
+        qDebug() << "Invalid property: " + raw;
     }
 
 }
@@ -193,7 +198,7 @@ void MmBar::showLabels(QVector<MmLabel> labels, QObject *list_ui, bool reverse)
     {
         for(int i=labels.length()-1 ; i>=0 ; i--)
         {
-            QQmlProperty::write(list_ui, "labelBackgroundColor", labels[i].properties.background_color);
+            QQmlProperty::write(list_ui, "labelBackgroundColor", labels[i].properties.bg);
             QQmlProperty::write(list_ui, "labelTextColor", labels[i].properties.label_color);
             QQmlProperty::write(list_ui, "labelUnderlineColor", labels[i].properties.underline_color);
             QQmlProperty::write(list_ui, "labelHaveUnderline", labels[i].properties.have_underline);
@@ -206,7 +211,7 @@ void MmBar::showLabels(QVector<MmLabel> labels, QObject *list_ui, bool reverse)
     {
         foreach (auto label, labels)
         {
-            QQmlProperty::write(list_ui, "labelBackgroundColor", label.properties.background_color);
+            QQmlProperty::write(list_ui, "labelBackgroundColor", label.properties.bg);
             QQmlProperty::write(list_ui, "labelTextColor", label.properties.label_color);
             QQmlProperty::write(list_ui, "labelUnderlineColor", label.properties.underline_color);
             QQmlProperty::write(list_ui, "labelHaveUnderline", label.properties.have_underline);
