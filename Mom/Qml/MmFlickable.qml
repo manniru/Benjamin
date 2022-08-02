@@ -1,6 +1,7 @@
 import QtQuick 2.0
 
-Rectangle {
+Rectangle
+{
     id: container
 
     // Set this variables in qml
@@ -41,7 +42,7 @@ Rectangle {
             {
                 id: lm
             }
-            delegate: BpbLabel
+            delegate: MmLabel
             {
                 height: parent.height
                 anchors.top: parent.top

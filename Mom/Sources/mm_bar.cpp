@@ -1,38 +1,39 @@
-#include "bb_bar.h"
+#include "mm_bar.h"
 
-BbBar::BbBar(QObject *root, QObject *parent) : QObject(parent)
+MmBar::MmBar(QObject *root, QObject *parent) : QObject(parent)
 {
     // List ui
     left_bar_ui =   root->findChild<QObject*>("LeftBar");
     right_bar_ui =  root->findChild<QObject*>("RightBar");
 
-    connect(left_bar_ui, SIGNAL(executeAction(QString)), this, SLOT(executeCommand(QString)));
-    connect(right_bar_ui, SIGNAL(executeAction(QString)), this, SLOT(executeCommand(QString)));
+    connect(left_bar_ui, SIGNAL(executeAction(QString)),
+            this, SLOT(executeCommand(QString)));
+    connect(right_bar_ui, SIGNAL(executeAction(QString)),
+            this, SLOT(executeCommand(QString)));
 
     // Timer
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateLabels()));
-    timer->start(100);
+    timer->start(MM_BAR_TIMEOUT);
 
     // Load labels
-    loadLabels(BPB_LEFT_LABEL_PATH, left_bar_ui);
-    loadLabels(BPB_RIGHT_LABEL_PATH, right_bar_ui, true);
+    loadLabels(MM_L1_LABEL, left_bar_ui);
+    loadLabels(MM_R1_LABEL, right_bar_ui, true);
 }
 
 /***************** Private Slots *****************/
-void BbBar::executeCommand(QString action)
+void MmBar::executeCommand(QString action)
 {
     qDebug() << "execute" << action;
 }
 
-void BbBar::updateLabels()
+void MmBar::updateLabels()
 {
-    loadLabels(BPB_LEFT_LABEL_PATH, left_bar_ui);
-    loadLabels(BPB_RIGHT_LABEL_PATH, right_bar_ui, true);
+    loadLabels(MM_L1_LABEL, left_bar_ui);
+    loadLabels(MM_R1_LABEL, right_bar_ui, true);
 }
 
-/***************** Private Functions *****************/
-void BbBar::loadLabels(QString path, QObject *list_ui, bool reverse)
+void MmBar::loadLabels(QString path, QObject *list_ui, bool reverse)
 {
     QFile label_file(path);
     if (label_file.open(QIODevice::ReadOnly))
@@ -40,8 +41,8 @@ void BbBar::loadLabels(QString path, QObject *list_ui, bool reverse)
         QString data = label_file.readAll();
 //        qDebug() << data;
 
-        QVector<BpbLabel> labels;
-        BpbProperty properties;
+        QVector<MmLabel> labels;
+        MmProperty properties;
         properties.background_color = BPB_DEFAULT_BACKGROUND_COLOR;
         properties.label_color = BPB_DEFAULT_LABEL_COLOR;
         properties.underline_color = BPB_DEFAULT_UNDERLINE_COLOR;
@@ -54,7 +55,7 @@ void BbBar::loadLabels(QString path, QObject *list_ui, bool reverse)
         QString content;
         while (current_index<data.length())
         {
-            BpbLabel label;
+            MmLabel label;
             label.properties = properties;
 
             // Find start index of property
@@ -89,7 +90,7 @@ void BbBar::loadLabels(QString path, QObject *list_ui, bool reverse)
             end_property_index = data.indexOf(end_property_characters, start_property_index);
             if (end_property_index == -1)
             {
-                logError("Invalid format. '" + path + "'");
+                qDebug() << "Invalid format. '" + path + "'";
                 return;
             }
             else
@@ -111,12 +112,12 @@ void BbBar::loadLabels(QString path, QObject *list_ui, bool reverse)
     }
     else
     {
-        logError("Cann't open '" + path + "'");
+        qDebug() << "Cann't open '" + path + "'";
     }
 
 }
 
-void BbBar::updateProperty(QString rawProperty, BpbProperty *properties)
+void MmBar::updateProperty(QString rawProperty, MmProperty *properties)
 {
 //    qDebug() << "property" << rawProperty;
 
@@ -179,12 +180,12 @@ void BbBar::updateProperty(QString rawProperty, BpbProperty *properties)
     }
     else
     {
-        logError("Invalid property: " + rawProperty);
+        qDebug() << "Invalid property: " + rawProperty;
     }
 
 }
 
-void BbBar::showLabels(QVector<BpbLabel> labels, QObject *list_ui, bool reverse)
+void MmBar::showLabels(QVector<MmLabel> labels, QObject *list_ui, bool reverse)
 {
     QMetaObject::invokeMethod(list_ui, "clearLabels");
 
@@ -213,23 +214,5 @@ void BbBar::showLabels(QVector<BpbLabel> labels, QObject *list_ui, bool reverse)
             QQmlProperty::write(list_ui, "labelActionString", label.properties.action);
             QMetaObject::invokeMethod(list_ui, "addLabel");
         }
-    }
-}
-
-/***************** Log Function *****************/
-void BbBar::logError(QString message)
-{
-    QFile log_file(BPB_LOG_FILE);
-    if (log_file.open(QIODevice::Append))
-    {
-        QLocale en_localce(QLocale::English);
-        QString date = en_localce.toString(QDateTime::currentDateTime(), "(dd/MM hh:mm:ss) : ");
-        QTextStream stream(&log_file);
-        stream << date << message << "\n";
-        log_file.close();
-    }
-    else
-    {
-        qDebug() << "Cann't open log file";
     }
 }

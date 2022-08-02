@@ -148,3 +148,7 @@ Tools/Model/
 *.exe
 
 Chess/release/
+
+Mom/Build/
+
+Mom/Makefile

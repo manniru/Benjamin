@@ -12,8 +12,8 @@ QMLCACHE_DIR = Build/
 CONFIG += c++11
 
 SOURCES += Sources/main.cpp \
-           Sources/bb_chapar.cpp \
-           Sources/bb_bar.cpp
+           Sources/mm_bar.cpp \
+           Sources/mm_chapar.cpp
 
 
 RESOURCES += \
@@ -25,6 +25,6 @@ RESOURCES += \
 # Additional import path used to resolve QML modules in Qt Creator's code model
 #QML_IMPORT_PATH += Qml/
 
-HEADERS += Sources/bb_config.h \
-           Sources/bb_chapar.h \
-           Sources/bb_bar.h
+HEADERS += Sources/mm_config.h \
+           Sources/mm_bar.h \
+           Sources/mm_chapar.h

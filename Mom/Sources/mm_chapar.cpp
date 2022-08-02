@@ -1,9 +1,9 @@
-#include "bb_chapar.h"
+#include "mm_chapar.h"
 #include <QWindow>
 
-BbChapar::BbChapar(QObject *root, QObject *parent) : QObject(parent)
+MmChapar::MmChapar(QObject *root, QObject *parent) : QObject(parent)
 {
-    bar = new BbBar(root);
+    bar = new MmBar(root);
 
     QWindow *window = qobject_cast<QWindow *>(root);
     hWnd = (HWND)(window->winId());
@@ -12,12 +12,12 @@ BbChapar::BbChapar(QObject *root, QObject *parent) : QObject(parent)
     SetSide();
 }
 
-BbChapar::~BbChapar()
+MmChapar::~MmChapar()
 {
     UnRegister();
 }
 
-void BbChapar::UnRegister()
+void MmChapar::UnRegister()
 {
     APPBARDATA abd;
     abd.cbSize = sizeof(APPBARDATA);
@@ -28,19 +28,18 @@ void BbChapar::UnRegister()
 
 }
 
-void BbChapar::Register()
+void MmChapar::Register()
 {
     APPBARDATA abd;
     abd.cbSize = sizeof(APPBARDATA);
     abd.hWnd = hWnd;
-//    abd.uCallbackMessage = APPBAR_CALLBACK;
 
     int is_Registered = SHAppBarMessage(ABM_NEW, &abd);
     qDebug() << is_Registered;
 }
 
 //BOOL AppBar_SetSide(HWND hwnd)
-BOOL BbChapar::SetSide()
+BOOL MmChapar::SetSide()
 {
     RECT rc;
     rc.top = 0;

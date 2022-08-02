@@ -15,7 +15,7 @@ Item
 
     Timer
     {
-        interval: 1000 * 1
+        interval: 1000
         repeat: true
         running: true
 

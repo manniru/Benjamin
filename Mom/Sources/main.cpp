@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QScreen>
 
-#include "bb_chapar.h"
+#include "mm_chapar.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     QScreen *screen = QGuiApplication::primaryScreen();
     QQmlProperty::write(mainItem, "width", screen->geometry().width());
 
-    BbChapar bar(mainItem);
+    MmChapar bar(mainItem);
 
     return app.exec();
 }

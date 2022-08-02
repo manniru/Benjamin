@@ -3,7 +3,8 @@ import QtQuick.Window 2.10
 import QtQuick.Controls 2.4
 import Qt.labs.settings 1.0
 
-Window {
+Window
+{
     id: root
 
     visible: true
@@ -42,7 +43,7 @@ Window {
     }
 
     // Main
-    BpbDateLabel
+    MmDateLabel
     {
         id: date_label
         height: parent.height
@@ -50,7 +51,7 @@ Window {
         anchors.verticalCenterOffset: 6
     }
 
-    BpbFlickable
+    MmFlickable
     {
         id: left_bar
         height: parent.height
@@ -61,7 +62,7 @@ Window {
         objectName: "LeftBar"
     }
 
-    BpbFlickable
+    MmFlickable
     {
         id: right_bar
         height: parent.height
