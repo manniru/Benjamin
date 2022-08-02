@@ -5,6 +5,7 @@
 #include <QScreen>
 
 #include "mm_chapar.h"
+#include "mm_watcher.h"
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
     QQmlProperty::write(mainItem, "width", screen->geometry().width());
 
     MmChapar bar(mainItem);
+    MmWatcher watcher;
 
     return app.exec();
 }

@@ -11,4 +11,10 @@
 #define BB_BAR_HEIGHT  30
 #define MM_BAR_TIMEOUT 100
 
+#define MM_WATCHER_TIMER 5000 // ms
+
+#define MM_CHESS_PATH "..\\Chess\\Chess.exe"
+#define MM_BATOOL_PATH "..\\Tools\\BaTool.exe"
+#define MM_REBOUND_PATH "..\\..\\RAIIS\\Rebound\\Rebound.exe"
+
 #endif // MM_CONFIG_H
