@@ -58,8 +58,7 @@ BOOL MmChapar::SetSide()
     abd.uEdge = ABE_TOP;
 
     // Tell the system we're moving to this new approved position.
-    int is_Registered = SHAppBarMessage(ABM_SETPOS, &abd);
-    qDebug() << "ABM_SETPOS" << is_Registered;
+    SHAppBarMessage(ABM_SETPOS, &abd);
 
     return TRUE;
 }

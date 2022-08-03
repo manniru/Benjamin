@@ -2,29 +2,8 @@
 #define MM_BAR_H
 
 #include <QObject>
-#include <QQmlProperty>
-#include <QVector>
-#include <QFile>
-#include <QDebug>
-#include <QTimer>
-#include <QDateTime>
 #include "mm_config.h"
-
-typedef struct MmProperty
-{
-    QString     bg;
-    QString     label_color;
-    QString     underline_color;
-    bool        have_underline;
-    QString     action;
-}MmProperty;
-
-typedef struct MmLabel
-{
-    QString     content;
-    MmProperty properties;
-}MmLabel;
-
+#include "mm_parser.h"
 
 class MmBar : public QObject
 {
@@ -45,7 +24,8 @@ private:
     QObject *left_bar_ui;
     QObject *right_bar_ui;
 
-    QTimer *timer;
+    QTimer   *timer;
+    MmParser *parser;
 };
 
 #endif // MM_BAR_H

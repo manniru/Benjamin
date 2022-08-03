@@ -46,21 +46,20 @@ void MmWatcher::timeout()
         int is_running = isAppRunning(appNames[i]);
         if ( is_running==0 )
         {
-            if ( appNames[i]=="Chess.exe" )
+            if( appNames[i]=="Chess.exe" )
             {
                 app_h[i] = run(MM_CHESS_PATH);
             }
-            else if ( appNames[i]=="BaTool.exe" )
+            else if( appNames[i]=="BaTool.exe" )
             {
                 app_h[i] = run(MM_BATOOL_PATH);
             }
-            else if ( appNames[i]=="Rebound.exe" )
+            else if( appNames[i]=="Rebound.exe" )
             {
                 app_h[i] = run(MM_REBOUND_PATH);
             }
         }
     }
-
 }
 
 HANDLE MmWatcher::run(QString path)
