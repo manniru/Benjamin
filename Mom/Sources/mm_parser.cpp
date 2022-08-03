@@ -1,43 +1,61 @@
 #include "mm_parser.h"
 
+#define MM_PROP_START "%{"
+#define MM_PROP_END   "}"
+
 MmParser::MmParser()
 {
 
 }
 
-void MmParser::proccessFile(QString data)
+void MmParser::reset()
 {
     labels.clear();
-    MmProperty c_property;
     c_property.bg = MM_DEFAULT_BG;
     c_property.label_color = MM_DEFAULT_FG;
     c_property.underline_color = BPB_DEFAULT_UL;
     c_property.have_underline = false;
+}
 
-    QString s_char = "%{";
-    QString e_char = "}";
-    int start_i, end_i;
+int MmParser::parseProps(QString data, int s_index)
+{
+    // Find end index oLf property
+    int end_i = data.indexOf(MM_PROP_END, s_index);
+    s_index += strlen(MM_PROP_START);
+    int len = end_i - s_index;
+
+    // Get substring for raw property
+    QString prop = data.mid(s_index, len);
+    updateProps(prop, &c_property);
+
+    return end_i + strlen(MM_PROP_END);
+}
+
+void MmParser::proccessFile(QString data)
+{
+    reset();
+
     int i = 0;
-    QString content;
     while( i<data.length() )
     {
         MmLabel label;
         label.properties = c_property;
 
-        // Find start index of property
-        start_i = data.indexOf(s_char, i);
+        // First index starting from i
+        int start_i = data.indexOf(MM_PROP_START, i);
 
-        // Get substring for label content
-        int n;
+        QString content;
         if( start_i==-1 )
         {
-            n = -1;
+            content = data.mid(i); // read to the end
         }
         else
         {
-            n = start_i - i;
+            int len = start_i - i;
+            content = data.mid(i, len);
+
+            i = parseProps(data, start_i);
         }
-        content = data.mid(i, n);
         if( !content.isEmpty() )
         {
             label.setVal(content);
@@ -49,32 +67,10 @@ void MmParser::proccessFile(QString data)
         {
             break;
         }
-
-        // Find end index of property
-        start_i = start_i + s_char.length();
-        end_i = data.indexOf(e_char, start_i);
-        if( end_i==-1 )
-        {
-            qDebug() << "Invalid format.";
-            return;
-        }
-        else
-        {
-            n = end_i - start_i;
-        }
-
-        // Get substring for raw property
-        QString raw_property = data.mid(start_i, n);
-
-        // Update properties
-        parseProps(raw_property, &c_property);
-
-        // Update current index
-        i = end_i + e_char.length();
     }
 }
 
-void MmParser::parseProps(QString raw, MmProperty *properties)
+void MmParser::updateProps(QString raw, MmProperty *properties)
 {
 //    qDebug() << "property" << rawProperty;
 

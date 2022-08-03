@@ -16,10 +16,16 @@ class MmParser
 public:
     MmParser();
 
-    void parseProps(QString raw, MmProperty *properties);
+    void updateProps(QString raw, MmProperty *properties);
     void proccessFile(QString data);
 
     QVector<MmLabel> labels;
+
+private:
+    void reset();
+    int parseProps(QString data, int s_index);
+
+    MmProperty c_property;
 };
 
 #endif // MM_PARSER_H
