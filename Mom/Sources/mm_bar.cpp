@@ -1,58 +1,65 @@
 #include "mm_bar.h"
+#include <QDir>
 
 MmBar::MmBar(QObject *root, QObject *parent) : QObject(parent)
 {
     parser = new MmParser;
     // List ui
-    left_bar_ui =   root->findChild<QObject*>("LeftBar");
-    right_bar_ui =  root->findChild<QObject*>("RightBar");
+    left_bar  = root->findChild<QObject*>("LeftBar");
+    right_bar = root->findChild<QObject*>("RightBar");
 
-    connect(left_bar_ui, SIGNAL(executeAction(QString)),
+    connect(left_bar, SIGNAL(executeAction(QString)),
             this, SLOT(executeCommand(QString)));
-    connect(right_bar_ui, SIGNAL(executeAction(QString)),
+    connect(right_bar, SIGNAL(executeAction(QString)),
             this, SLOT(executeCommand(QString)));
 
     // Timer
     timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateLabels()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(loadLabels()));
     timer->start(MM_BAR_TIMEOUT);
-
-    // Load labels
-    loadLabels(MM_L1_LABEL, left_bar_ui);
-    loadLabels(MM_R1_LABEL, right_bar_ui);
 }
 
-/***************** Private Slots *****************/
 void MmBar::executeCommand(QString action)
 {
     qDebug() << "execute" << action;
 }
 
-void MmBar::updateLabels()
+void MmBar::loadLabels()
 {
-    loadLabels(MM_L1_LABEL, left_bar_ui);
-    loadLabels(MM_R1_LABEL, right_bar_ui);
+    QDir p_dir(MM_LABEL_DIR);
+    QStringList fmt;
+    fmt.append("*.lbl");
+    QStringList file_list = p_dir.entryList(fmt, QDir::Files);
+
+    for( int i=0 ; i<file_list.length() ; i++ )
+    {
+        QString path = MM_LABEL_DIR;
+        path += file_list[i];
+
+        if( file_list[i][0]=="l" )
+        {
+            proccessFile(path, left_bar);
+        }
+        else
+        {
+            proccessFile(path, right_bar);
+        }
+    }
 }
 
-void MmBar::loadLabels(QString path, QObject *list_ui)
+void MmBar::proccessFile(QString path, QObject *obj)
 {
     QFile file(path);
-    if (file.open(QIODevice::ReadOnly))
-    {
-        QString data = file.readAll();
-        parser->proccessFile(data);
-        showLabels(parser->labels, list_ui);
-        file.close();
-    }
-    else
+    if( !file.open(QIODevice::ReadOnly) )
     {
         qDebug() << "Cann't open '" + path + "'";
+        return;
     }
-}
+    QString data = file.readAll();
+    parser->proccessFile(data);
+    showLabels(parser->labels, obj);
 
-void MmBar::proccessFile(QString data, QObject *list_ui)
-{
-
+    file.close();
 }
 
 void MmBar::showLabels(QVector<MmLabel> labels, QObject *list_ui)

@@ -13,16 +13,15 @@ public:
 
 private slots:
     void executeCommand(QString action);
-    void updateLabels();
+    void loadLabels();
 
 private:
-    void loadLabels(QString path, QObject *list_ui);
     void parseProps(QString raw, MmProperty *properties);
     void showLabels(QVector<MmLabel> labels, QObject *list_ui);
-    void proccessFile(QString data, QObject *list_ui);
+    void proccessFile(QString path, QObject *obj);
 
-    QObject *left_bar_ui;
-    QObject *right_bar_ui;
+    QObject *left_bar;
+    QObject *right_bar;
 
     QTimer   *timer;
     MmParser *parser;

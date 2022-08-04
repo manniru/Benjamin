@@ -169,18 +169,22 @@ void BtCaptain::shiftHistory()
 void BtCaptain::writeResult()
 {
 #ifdef WIN32
-    ///POLYBAR INTEGRATION
+    QString bar_path = BT_BAR_DIR_WS;
+    bar_path += BT_BAR_RESULT_WS;
 #else
     QString bar_path = getenv("HOME");
     bar_path += "/.config/polybar/awesomewm/";
     bar_path += BT_BAR_RESULT;
+#endif
     QFile bar_file(bar_path);
 
     if( !bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         qDebug() << "Error creating" << bar_path;
         qDebug() << "Try create Resource Folder";
-        system("mkdir Resources");
+#ifdef WIN32
+        system("mkdir " BT_BAR_RESULT_WS);
+#endif
         return;
     }
     QTextStream out(&bar_file);
@@ -201,7 +205,6 @@ void BtCaptain::writeResult()
     out << "\n";
 
     bar_file.close();
-#endif
 }
 
 //get word polybar formatted

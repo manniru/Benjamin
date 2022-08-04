@@ -69,16 +69,4 @@ if output==nil then
 	end
 end
 
-print(k_type, output)
-
-dbus_path = "--dest=com.binaee.rebound / com.binaee.rebound"
-cmd = "dbus-send --session "
-cmd = cmd .. dbus_path .. ".debug string:"
-cmd = cmd .. in_word
-print(cmd)
-
-cmd = "dbus-send --session ."
-cmd = cmd .. dbus_path .. "."
-cmd = cmd .. k_type .. " string:"
-cmd = cmd .. output
-print(cmd)
+-- print(k_type, output)

@@ -1,12 +1,11 @@
 #ifndef MM_CONFIG_H
 #define MM_CONFIG_H
 
-#define MM_L1_LABEL  "Labels/test1.lbl"
-#define MM_R1_LABEL  "Labels/test2.lbl"
+#define MM_LABEL_DIR   "Labels/"
 
-#define MM_DEFAULT_BG      "#000000"
-#define MM_DEFAULT_FG     "#dfdfdf"
-#define BPB_DEFAULT_UL     "#dfdfdf"
+#define MM_DEFAULT_BG  "#000000"
+#define MM_DEFAULT_FG  "#dfdfdf"
+#define BPB_DEFAULT_UL "#dfdfdf"
 
 #define BB_BAR_HEIGHT  30
 #define MM_BAR_TIMEOUT 100

@@ -2,7 +2,7 @@ TEMPLATE = app
 
 CONFIG += console
 
-linux:INCLUDEPATH += ./Sources
+INCLUDEPATH += ./Sources
 
 #linux:LIBS += -lgio-2.0
 
