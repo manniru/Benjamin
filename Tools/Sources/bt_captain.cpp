@@ -181,9 +181,9 @@ void BtCaptain::writeResult()
     if( !bar_file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         qDebug() << "Error creating" << bar_path;
-        qDebug() << "Try create Resource Folder";
 #ifdef WIN32
-        system("mkdir " BT_BAR_RESULT_WS);
+        qDebug() << "Trying to create" << BT_BAR_DIR_WS;
+        system("mkdir " BT_BAR_DIR_WS);
 #endif
         return;
     }

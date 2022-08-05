@@ -31,6 +31,8 @@ void MmBar::loadLabels()
     fmt.append("*.lbl");
     QStringList file_list = p_dir.entryList(fmt, QDir::Files);
 
+    QMetaObject::invokeMethod(left_bar, "clearLabels");
+    QMetaObject::invokeMethod(right_bar, "clearLabels");
     for( int i=0 ; i<file_list.length() ; i++ )
     {
         QString path = MM_LABEL_DIR;
@@ -64,7 +66,6 @@ void MmBar::proccessFile(QString path, QObject *obj)
 
 void MmBar::showLabels(QVector<MmLabel> labels, QObject *list_ui)
 {
-    QMetaObject::invokeMethod(list_ui, "clearLabels");
     int len=labels.length();
 
     for(int i=0 ; i<len ; i++ )
