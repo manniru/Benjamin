@@ -22,7 +22,6 @@ public:
     QVector<MmLabel> labels;
 
 private:
-    void reset();
     int parseProps(QString data, int s_index);
 
     MmProperty c_property;

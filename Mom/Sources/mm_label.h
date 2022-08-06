@@ -12,11 +12,11 @@
 
 typedef struct MmProperty
 {
-    QString     bg;
-    QString     label_color;
-    QString     underline_color;
-    bool        have_underline;
-    QString     action;
+    QString bg = MM_DEFAULT_BG;
+    QString fg = MM_DEFAULT_FG;
+    QString ul = BPB_DEFAULT_UL;
+    bool    have_underline = false;
+    QString action;
 }MmProperty;
 
 class MmLabel
@@ -26,8 +26,8 @@ public:
 
     void setVal(QString input);
 
+    MmProperty prop;
     QString    val;
-    MmProperty properties;
 };
 
 #endif // MM_LABEL_H

@@ -4,6 +4,7 @@
 #include <QObject>
 #include "mm_config.h"
 #include "mm_parser.h"
+#include "mm_virt.h"
 
 class MmBar : public QObject
 {
@@ -17,7 +18,7 @@ private slots:
 
 private:
     void parseProps(QString raw, MmProperty *properties);
-    void showLabels(QVector<MmLabel> labels, QObject *list_ui);
+    void addLabel(MmLabel label, QObject *list_ui);
     void proccessFile(QString path, QObject *obj);
 
     QObject *left_bar;
@@ -25,6 +26,7 @@ private:
 
     QTimer   *timer;
     MmParser *parser;
+    MmVirt   *virt;
 };
 
 #endif // MM_BAR_H

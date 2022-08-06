@@ -4,6 +4,7 @@
 MmBar::MmBar(QObject *root, QObject *parent) : QObject(parent)
 {
     parser = new MmParser;
+    virt   = new MmVirt;
     // List ui
     left_bar  = root->findChild<QObject*>("LeftBar");
     right_bar = root->findChild<QObject*>("RightBar");
@@ -40,6 +41,14 @@ void MmBar::loadLabels()
 
         if( file_list[i][0]=="l" )
         {
+            MmLabel virt_lbl;
+            QString virt_num = "  ";
+            virt_num += QString::number(virt->getCurrDesktop());
+            virt_num += "  ";
+
+            virt_lbl.setVal(virt_num);
+            addLabel(virt_lbl, left_bar);
+
             proccessFile(path, left_bar);
         }
         else
@@ -59,23 +68,23 @@ void MmBar::proccessFile(QString path, QObject *obj)
     }
     QString data = file.readAll();
     parser->proccessFile(data);
-    showLabels(parser->labels, obj);
+
+    int len = parser->labels.length();
+    for(int i=0 ; i<len ; i++ )
+    {
+        addLabel(parser->labels[i], obj);
+    }
 
     file.close();
 }
 
-void MmBar::showLabels(QVector<MmLabel> labels, QObject *list_ui)
+void MmBar::addLabel(MmLabel labels, QObject *list_ui)
 {
-    int len=labels.length();
-
-    for(int i=0 ; i<len ; i++ )
-    {
-        QQmlProperty::write(list_ui, "labelBackgroundColor", labels[i].properties.bg);
-        QQmlProperty::write(list_ui, "labelTextColor", labels[i].properties.label_color);
-        QQmlProperty::write(list_ui, "labelUnderlineColor", labels[i].properties.underline_color);
-        QQmlProperty::write(list_ui, "labelHaveUnderline", labels[i].properties.have_underline);
-        QQmlProperty::write(list_ui, "labelContent", labels[i].val);
-        QQmlProperty::write(list_ui, "labelActionString", labels[i].properties.action);
-        QMetaObject::invokeMethod(list_ui, "addLabel");
-    }
+    QQmlProperty::write(list_ui, "labelBackgroundColor", labels.prop.bg);
+    QQmlProperty::write(list_ui, "labelTextColor", labels.prop.fg);
+    QQmlProperty::write(list_ui, "labelUnderlineColor", labels.prop.ul);
+    QQmlProperty::write(list_ui, "labelHaveUnderline", labels.prop.have_underline);
+    QQmlProperty::write(list_ui, "labelContent", labels.val);
+    QQmlProperty::write(list_ui, "labelActionString", labels.prop.action);
+    QMetaObject::invokeMethod(list_ui, "addLabel");
 }

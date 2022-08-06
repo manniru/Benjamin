@@ -8,15 +8,6 @@ MmParser::MmParser()
 
 }
 
-void MmParser::reset()
-{
-    labels.clear();
-    c_property.bg = MM_DEFAULT_BG;
-    c_property.label_color = MM_DEFAULT_FG;
-    c_property.underline_color = BPB_DEFAULT_UL;
-    c_property.have_underline = false;
-}
-
 int MmParser::parseProps(QString data, int s_index)
 {
     // Find end index oLf property
@@ -33,13 +24,13 @@ int MmParser::parseProps(QString data, int s_index)
 
 void MmParser::proccessFile(QString data)
 {
-    reset();
+    labels.clear();
 
     int i = 0;
     while( i<data.length() )
     {
         MmLabel label;
-        label.properties = c_property;
+        label.prop = c_property;
 
         // First index starting from i
         int start_i = data.indexOf(MM_PROP_START, i);
@@ -102,11 +93,11 @@ void MmParser::updateProps(QString raw, MmProperty *properties)
     // Foreground
     else if (raw.startsWith(clr_fg, Qt::CaseInsensitive))
     {
-        properties->label_color = MM_DEFAULT_FG;
+        properties->fg = MM_DEFAULT_FG;
     }
     else if (raw.startsWith(set_fg, Qt::CaseInsensitive))
     {
-        properties->label_color = raw.mid(set_fg.length());
+        properties->fg = raw.mid(set_fg.length());
     }
     // Action
     else if (raw.startsWith(set_act, Qt::CaseInsensitive))
@@ -129,7 +120,7 @@ void MmParser::updateProps(QString raw, MmProperty *properties)
     }
     else if (raw.startsWith(ul_prop, Qt::CaseInsensitive))
     {
-        properties->underline_color = raw.mid(ul_prop.length());
+        properties->ul = raw.mid(ul_prop.length());
     }
     else
     {

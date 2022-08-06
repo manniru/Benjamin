@@ -16,8 +16,12 @@ SOURCES += Sources/main.cpp \
            Sources/mm_chapar.cpp \
            Sources/mm_label.cpp \
            Sources/mm_parser.cpp \
+           Sources/mm_virt.cpp \
            Sources/mm_watcher.cpp
 
+win32:LIBS += -lKernel32 -lUser32 -lole32 \
+             -luuid -loleaut32 -loleacc \
+             -lDwmapi -lPsapi -lSetupapi
 
 RESOURCES += \
              Resources/fonts.qrc \
@@ -33,4 +37,5 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_chapar.h \
            Sources/mm_label.h \
            Sources/mm_parser.h \
+           Sources/mm_virt.h \
            Sources/mm_watcher.h
