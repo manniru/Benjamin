@@ -17,9 +17,11 @@ private slots:
     void loadLabels();
 
 private:
-    void parseProps(QString raw, MmProperty *properties);
-    void addLabel(MmLabel label, QObject *list_ui);
-    void proccessFile(QString path, QObject *obj);
+    void    parseProps(QString raw, MmProperty *properties);
+    void    addWorkID(); // add workspace ID
+    QString getWorkStr(int index);
+    void    addLabel(MmLabel label, QObject *list_ui);
+    void    proccessFile(QString path, QObject *obj);
 
     QObject *left_bar;
     QObject *right_bar;

@@ -34,6 +34,8 @@ void MmBar::loadLabels()
 
     QMetaObject::invokeMethod(left_bar, "clearLabels");
     QMetaObject::invokeMethod(right_bar, "clearLabels");
+    addWorkID();
+
     for( int i=0 ; i<file_list.length() ; i++ )
     {
         QString path = MM_LABEL_DIR;
@@ -41,14 +43,6 @@ void MmBar::loadLabels()
 
         if( file_list[i][0]=="l" )
         {
-            MmLabel virt_lbl;
-            QString virt_num = "  ";
-            virt_num += QString::number(virt->getCurrDesktop());
-            virt_num += "  ";
-
-            virt_lbl.setVal(virt_num);
-            addLabel(virt_lbl, left_bar);
-
             proccessFile(path, left_bar);
         }
         else
@@ -56,6 +50,58 @@ void MmBar::loadLabels()
             proccessFile(path, right_bar);
         }
     }
+}
+
+void MmBar::addWorkID()
+{
+    MmLabel virt_lbl;
+    int virt_idx = virt->getCurrDesktop();
+    QString lbl_val = getWorkStr(virt_idx);
+    QVector<MmLabel> out;
+    parser->parse(lbl_val, &out);
+
+    int len = out.length();
+    for(int i=0 ; i<len ; i++ )
+    {
+        addLabel(out[i], left_bar);
+    }
+}
+
+QString MmBar::getWorkStr(int index)
+{
+    QString ret;
+    index--;
+
+    QStringList tag_list;
+
+    tag_list << "   ";
+    tag_list << "   ";
+    tag_list << "   ";
+    tag_list << "    ";
+    tag_list << "    ";
+    tag_list << "    ";
+
+    QString p_format = "%{B#555555}%{F#f3c84a}";
+
+    for( int i=0 ; i<index ; i++ )
+    {
+        ret += tag_list[i];
+    }
+
+    if( index<tag_list.count() )
+    {
+        ret += p_format;
+        ret += tag_list[index];
+        ret += "%{B-}%{F-}";
+    }
+
+    for( int i=index+1 ; i<tag_list.count() ; i++ )
+    {
+        ret += tag_list[i];
+    }
+    ret += "  ";
+
+    return ret;
 }
 
 void MmBar::proccessFile(QString path, QObject *obj)
@@ -67,12 +113,13 @@ void MmBar::proccessFile(QString path, QObject *obj)
         return;
     }
     QString data = file.readAll();
-    parser->proccessFile(data);
+    QVector<MmLabel> out;
+    parser->parse(data, &out);
 
-    int len = parser->labels.length();
+    int len = out.length();
     for(int i=0 ; i<len ; i++ )
     {
-        addLabel(parser->labels[i], obj);
+        addLabel(out[i], obj);
     }
 
     file.close();
@@ -80,11 +127,11 @@ void MmBar::proccessFile(QString path, QObject *obj)
 
 void MmBar::addLabel(MmLabel labels, QObject *list_ui)
 {
-    QQmlProperty::write(list_ui, "labelBackgroundColor", labels.prop.bg);
-    QQmlProperty::write(list_ui, "labelTextColor", labels.prop.fg);
-    QQmlProperty::write(list_ui, "labelUnderlineColor", labels.prop.ul);
-    QQmlProperty::write(list_ui, "labelHaveUnderline", labels.prop.have_underline);
+    QQmlProperty::write(list_ui, "labelBg", labels.prop.bg);
+    QQmlProperty::write(list_ui, "labelFg", labels.prop.fg);
+    QQmlProperty::write(list_ui, "labelUl", labels.prop.ul);
+    QQmlProperty::write(list_ui, "labelUlEn", labels.prop.ul_en);
     QQmlProperty::write(list_ui, "labelContent", labels.val);
-    QQmlProperty::write(list_ui, "labelActionString", labels.prop.action);
+    QQmlProperty::write(list_ui, "labelAction", labels.prop.action);
     QMetaObject::invokeMethod(list_ui, "addLabel");
 }
