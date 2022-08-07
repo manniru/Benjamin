@@ -15,7 +15,7 @@ typedef struct MmProperty
     QString bg = MM_DEFAULT_BG;
     QString fg = MM_DEFAULT_FG;
     QString ul = BPB_DEFAULT_UL;
-    bool    have_underline = false;
+    bool    ul_en = false;
     QString action;
 }MmProperty;
 

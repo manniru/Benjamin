@@ -3,12 +3,12 @@ import QtQuick 2.0
 Flickable
 {
     // Set this variables in cpp
-    property string labelBackgroundColor: ""
-    property string labelTextColor: ""
-    property string labelUnderlineColor: ""
-    property bool   labelHaveUnderline: false
+    property string labelBg: "" //Background
+    property string labelFg: "" //Foreground
+    property string labelUl: "" //Underline Color
+    property bool   labelUlEn: false //Underline Enable
     property string labelContent: ""
-    property string labelActionString: ""
+    property string labelAction: ""
 
     // Cpp Signals
     signal executeAction(string action)
@@ -51,12 +51,12 @@ Flickable
     function addLabel()
     {
         lm.append({
-                      "colorBackground": labelBackgroundColor,
-                      "labelColor": labelTextColor,
-                      "underlineColor": labelUnderlineColor,
-                      "haveUnderline": labelHaveUnderline,
+                      "colorBackground": labelBg,
+                      "labelColor": labelFg,
+                      "underlineColor": labelUl,
+                      "haveUnderline": labelUlEn,
                       "labelText": labelContent,
-                      "labelAction": labelActionString
+                      "labelAction": labelAction
                   })
     }
 }

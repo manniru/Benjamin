@@ -17,9 +17,7 @@ public:
     MmParser();
 
     void updateProps(QString raw, MmProperty *properties);
-    void proccessFile(QString data);
-
-    QVector<MmLabel> labels;
+    void parse(QString data, QVector<MmLabel> *out);
 
 private:
     int parseProps(QString data, int s_index);

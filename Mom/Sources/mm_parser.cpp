@@ -22,10 +22,9 @@ int MmParser::parseProps(QString data, int s_index)
     return end_i + strlen(MM_PROP_END);
 }
 
-void MmParser::proccessFile(QString data)
+void MmParser::parse(QString data, QVector<MmLabel> *out)
 {
-    labels.clear();
-
+    out->clear();
     int i = 0;
     while( i<data.length() )
     {
@@ -50,7 +49,7 @@ void MmParser::proccessFile(QString data)
         if( !content.isEmpty() )
         {
             label.setVal(content);
-            labels.append(label);
+            out->append(label);
         }
 
         // All labels are read
@@ -112,11 +111,11 @@ void MmParser::updateProps(QString raw, MmProperty *properties)
     // Underline
     else if (raw.startsWith(set_ul, Qt::CaseInsensitive))
     {
-        properties->have_underline = true;
+        properties->ul_en = true;
     }
     else if (raw.startsWith(clr_ul, Qt::CaseInsensitive))
     {
-        properties->have_underline = false;
+        properties->ul_en = false;
     }
     else if (raw.startsWith(ul_prop, Qt::CaseInsensitive))
     {
