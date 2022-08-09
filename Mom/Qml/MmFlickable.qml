@@ -3,11 +3,12 @@ import QtQuick 2.0
 Flickable
 {
     // Set this variables in cpp
+    property string labelID: "" //Id
     property string labelBg: "" //Background
     property string labelFg: "" //Foreground
     property string labelUl: "" //Underline Color
     property bool   labelUlEn: false //Underline Enable
-    property string labelContent: ""
+    property string labelVal: ""
     property string labelAction: ""
 
     // Cpp Signals
@@ -45,7 +46,10 @@ Flickable
 
     function clearLabels()
     {
-        lm.clear()
+        for( var i=labelID ; i<lm.count ; )
+        {
+            lm.remove(i);
+        }
     }
 
     function addLabel()
@@ -55,8 +59,18 @@ Flickable
                       "labelColor": labelFg,
                       "underlineColor": labelUl,
                       "haveUnderline": labelUlEn,
-                      "labelText": labelContent,
+                      "labelText": labelVal,
                       "labelAction": labelAction
-                  })
+                  });
+    }
+
+    function updateLabel()
+    {
+        lm.get(labelID).colorBackground = labelBg;
+        lm.get(labelID).labelColor      = labelFg;
+        lm.get(labelID).underlineColor  = labelUl;
+        lm.get(labelID).haveUnderline   = labelUlEn;
+        lm.get(labelID).labelText   = labelVal;
+        lm.get(labelID).labelAction = labelAction;
     }
 }

@@ -32,8 +32,8 @@ void MmBar::loadLabels()
     fmt.append("*.lbl");
     QStringList file_list = p_dir.entryList(fmt, QDir::Files);
 
-    QMetaObject::invokeMethod(left_bar, "clearLabels");
-    QMetaObject::invokeMethod(right_bar, "clearLabels");
+    l_id = 0;
+    r_id = 0;
     addWorkID();
 
     for( int i=0 ; i<file_list.length() ; i++ )
@@ -43,13 +43,30 @@ void MmBar::loadLabels()
 
         if( file_list[i][0]=="l" )
         {
-            proccessFile(path, left_bar);
+            side = left_bar;
+            l_id += proccessFile(l_id, path);
         }
         else
         {
-            proccessFile(path, right_bar);
+            side = right_bar;
+            r_id += proccessFile(r_id, path);
         }
     }
+
+    for( int i=l_id ; i<l_labels.length() ; )
+    {
+        l_labels.remove(i);
+    }
+
+    for( int i=r_id ; i<r_labels.length() ; )
+    {
+        r_labels.remove(i);
+    }
+
+    QQmlProperty::write(left_bar, "labelID", l_id);
+    QMetaObject::invokeMethod(left_bar, "clearLabels");
+    QQmlProperty::write(right_bar, "labelID", r_id);
+    QMetaObject::invokeMethod(right_bar, "clearLabels");
 }
 
 void MmBar::addWorkID()
@@ -61,10 +78,13 @@ void MmBar::addWorkID()
     parser->parse(lbl_val, &out);
 
     int len = out.length();
+    side = left_bar;
     for(int i=0 ; i<len ; i++ )
     {
-        addLabel(out[i], left_bar);
+        updateLbl(i, out[i]);
     }
+
+    l_id += len;
 }
 
 QString MmBar::getWorkStr(int index)
@@ -104,34 +124,122 @@ QString MmBar::getWorkStr(int index)
     return ret;
 }
 
-void MmBar::proccessFile(QString path, QObject *obj)
+int MmBar::proccessFile(int s_id, QString path)
 {
     QFile file(path);
     if( !file.open(QIODevice::ReadOnly) )
     {
         qDebug() << "Cann't open '" + path + "'";
-        return;
+        return 0;
     }
     QString data = file.readAll();
     QVector<MmLabel> out;
     parser->parse(data, &out);
 
     int len = out.length();
-    for(int i=0 ; i<len ; i++ )
+    for(int i=s_id ; i<s_id+len ; i++ )
     {
-        addLabel(out[i], obj);
+        updateLbl(i, out[i-s_id]);
     }
 
     file.close();
+
+    return len;
 }
 
-void MmBar::addLabel(MmLabel labels, QObject *side)
+void MmBar::addLabel(MmLabel labels)
 {
     QQmlProperty::write(side, "labelBg", labels.prop.bg);
     QQmlProperty::write(side, "labelFg", labels.prop.fg);
     QQmlProperty::write(side, "labelUl", labels.prop.ul);
     QQmlProperty::write(side, "labelUlEn", labels.prop.ul_en);
-    QQmlProperty::write(side, "labelContent", labels.val);
+    QQmlProperty::write(side, "labelVal", labels.val);
     QQmlProperty::write(side, "labelAction", labels.prop.action);
     QMetaObject::invokeMethod(side, "addLabel");
+
+    if( side==left_bar )
+    {
+        l_labels.append(labels);
+    }
+    else
+    {
+        r_labels.append(labels);
+    }
+}
+
+void MmBar::updateLabel(int id, MmLabel labels)
+{
+    QQmlProperty::write(side, "labelID", id);
+    QQmlProperty::write(side, "labelBg", labels.prop.bg);
+    QQmlProperty::write(side, "labelFg", labels.prop.fg);
+    QQmlProperty::write(side, "labelUl", labels.prop.ul);
+    QQmlProperty::write(side, "labelUlEn", labels.prop.ul_en);
+    QQmlProperty::write(side, "labelVal", labels.val);
+    QQmlProperty::write(side, "labelAction", labels.prop.action);
+    QMetaObject::invokeMethod(side, "updateLabel");
+
+    QVector<MmLabel> *c_labels;
+    if( side==left_bar )
+    {
+        c_labels = &l_labels;
+    }
+    else
+    {
+        c_labels = &r_labels;
+    }
+    (*c_labels)[id].val = labels.val;
+    (*c_labels)[id].prop.bg = labels.prop.bg;
+    (*c_labels)[id].prop.fg = labels.prop.fg;
+    (*c_labels)[id].prop.ul = labels.prop.ul;
+    (*c_labels)[id].prop.ul_en = labels.prop.ul_en;
+    (*c_labels)[id].prop.action = labels.prop.action;
+}
+
+void MmBar::updateLbl(int id, MmLabel new_lbl)
+{
+    QVector<MmLabel> *c_labels;
+    if( side==left_bar )
+    {
+        c_labels = &l_labels;
+    }
+    else
+    {
+        c_labels = &r_labels;
+    }
+
+    if( id>=c_labels->length() )
+    {
+        addLabel(new_lbl);
+        return;
+    }
+
+    if( (*c_labels)[id].val!=new_lbl.val )
+    {
+        updateLabel(id, new_lbl);
+        return;
+    }
+
+    if( (*c_labels)[id].prop.bg!=new_lbl.prop.bg )
+    {
+        updateLabel(id, new_lbl);
+        return;
+    }
+
+    if( (*c_labels)[id].prop.fg!=new_lbl.prop.fg )
+    {
+        updateLabel(id, new_lbl);
+        return;
+    }
+
+    if( (*c_labels)[id].prop.ul!=new_lbl.prop.ul )
+    {
+        updateLabel(id, new_lbl);
+        return;
+    }
+
+    if( (*c_labels)[id].prop.action!=new_lbl.prop.action )
+    {
+        updateLabel(id, new_lbl);
+        return;
+    }
 }

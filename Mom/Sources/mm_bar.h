@@ -20,15 +20,26 @@ private:
     void    parseProps(QString raw, MmProperty *properties);
     void    addWorkID(); // add workspace ID
     QString getWorkStr(int index);
-    void    addLabel(MmLabel label, QObject *side);
-    void    proccessFile(QString path, QObject *obj);
+    void    addLabel(MmLabel label);
+    void    updateLabel(int id, MmLabel label);
+    int     proccessFile(int s_id, QString path);
+    void    updateLbl(int id, MmLabel new_lbl);
 
     QObject *left_bar;
     QObject *right_bar;
+    QObject *side;
+
+    int l_id; //left  id
+    int r_id; //right id
 
     QTimer   *timer;
     MmParser *parser;
     MmVirt   *virt;
+
+    // These are buffers to help reduce number of updates
+    // requests need
+    QVector<MmLabel> r_labels; //left labels
+    QVector<MmLabel> l_labels; //right label
 };
 
 #endif // MM_BAR_H
