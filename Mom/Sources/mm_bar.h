@@ -20,7 +20,7 @@ private:
     void    parseProps(QString raw, MmProperty *properties);
     void    addWorkID(); // add workspace ID
     QString getWorkStr(int index);
-    void    addLabel(MmLabel label, QObject *list_ui);
+    void    addLabel(MmLabel label, QObject *side);
     void    proccessFile(QString path, QObject *obj);
 
     QObject *left_bar;

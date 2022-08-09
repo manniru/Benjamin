@@ -125,13 +125,13 @@ void MmBar::proccessFile(QString path, QObject *obj)
     file.close();
 }
 
-void MmBar::addLabel(MmLabel labels, QObject *list_ui)
+void MmBar::addLabel(MmLabel labels, QObject *side)
 {
-    QQmlProperty::write(list_ui, "labelBg", labels.prop.bg);
-    QQmlProperty::write(list_ui, "labelFg", labels.prop.fg);
-    QQmlProperty::write(list_ui, "labelUl", labels.prop.ul);
-    QQmlProperty::write(list_ui, "labelUlEn", labels.prop.ul_en);
-    QQmlProperty::write(list_ui, "labelContent", labels.val);
-    QQmlProperty::write(list_ui, "labelAction", labels.prop.action);
-    QMetaObject::invokeMethod(list_ui, "addLabel");
+    QQmlProperty::write(side, "labelBg", labels.prop.bg);
+    QQmlProperty::write(side, "labelFg", labels.prop.fg);
+    QQmlProperty::write(side, "labelUl", labels.prop.ul);
+    QQmlProperty::write(side, "labelUlEn", labels.prop.ul_en);
+    QQmlProperty::write(side, "labelContent", labels.val);
+    QQmlProperty::write(side, "labelAction", labels.prop.action);
+    QMetaObject::invokeMethod(side, "addLabel");
 }
