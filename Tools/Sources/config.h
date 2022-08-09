@@ -43,6 +43,7 @@
 
 #define BT_WAV_MAX        100 // Max recording number(circular)
 #define BT_TRA_MAX        5   // Max number of same sequence train
+#define BT_EXEMPTION_MAX  30  // Max number of same sequence train for exemption word
 
 #define BT_CONFIG_PATH    "BaTool.conf"
 #define BT_MAX_ACTIVE     900 // Maximum number of states that are active

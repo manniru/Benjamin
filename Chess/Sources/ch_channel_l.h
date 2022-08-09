@@ -10,7 +10,7 @@
 class ChChannelL: public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", COM_NAME)
+    Q_CLASSINFO("D-Bus Interface", CH_COM_NAME)
 public:
     ChChannelL(QObject *parent = NULL);
     ~ChChannelL();

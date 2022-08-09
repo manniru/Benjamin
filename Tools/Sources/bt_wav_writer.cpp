@@ -46,7 +46,10 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     file = new QFile;
 
     readWordList();
-//    exemption_list << "kick";
+    exemption_list << "kick";
+    exemption_list << "side";
+    exemption_list << "copy";
+    exemption_list << "paste";
 }
 
 BtWavWriter::~BtWavWriter()
@@ -186,32 +189,31 @@ void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
     QString u_base_name = KAL_AU_DIR"unverified/";
     v_base_name += wordToId(result);
     u_base_name += wordToId(result);
-    QString vf_name = v_base_name + ".wav";
-    QString uf_name = u_base_name + ".wav";
+    QString v_name = v_base_name + ".wav";
+    QString u_name = u_base_name + ".wav";
 
     int ps = 0;
-    while( QFile::exists(uf_name) ||
-           QFile::exists(vf_name) )
+    while( QFile::exists(u_name) ||
+           QFile::exists(v_name) )
     {
         ps++;
-        if( ps>st->train_max )
+        int sn_rec; // Should not record
+        sn_rec = snRec(ps, result);
+        if( sn_rec )
         {
-            QString word0 = result[0].word;
-            if( !exemption_list.contains(word0) )
-            {
-                return; // skip if exist
-            }
+            return;
         }
-        uf_name  = u_base_name + ".";
-        uf_name += QString::number(ps);
-        uf_name += ".wav";
-        vf_name  = v_base_name + ".";
-        vf_name += QString::number(ps);
-        vf_name += ".wav";
+
+        u_name  = u_base_name + ".";
+        u_name += QString::number(ps);
+        u_name += ".wav";
+        v_name  = v_base_name + ".";
+        v_name += QString::number(ps);
+        v_name += ".wav";
     }
 
     QString cmd = "cp "+ filename;
-    cmd += " " + uf_name;
+    cmd += " " + u_name;
 #ifdef WIN32
     cmd.replace("cp ", "copy ");
     cmd.replace("/", "\\");
@@ -219,6 +221,35 @@ void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
     system(cmd.toStdString().c_str());
 }
 
+// Should not record
+int BtWavWriter::snRec(int num, QVector<BtWord> result)
+{
+    if( result.length()>2 )
+    {
+        int half_t = 2; //st->train_max/2;
+        if( num>half_t )
+        {
+            return 1;
+        }
+    }
+    if( num>st->train_max )
+    {
+        if( result.length()==1 )
+        {
+            QString word = result[0].word;
+            if( !exemption_list.contains(word) )
+            {
+                return 1; // skip if exist
+            }
+            else if( num>BT_EXEMPTION_MAX )
+            {
+                return 1; // skip if exist
+            }
+        }
+    }
+
+    return 0;
+}
 QString BtWavWriter::wordToId(QVector<BtWord> result)
 {
     QString buf = "";

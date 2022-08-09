@@ -20,6 +20,8 @@ public:
     QString wordToId(QVector<BtWord> result);
 
 private:
+    // Should not record
+    int  snRec(int num, QVector<BtWord> result);
     void writeWav(int len);
     void writeWavHeader(int len);
     void copyToUnverified(QVector<BtWord> result, QString filename);
