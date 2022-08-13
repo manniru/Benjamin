@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "mm_bar.h"
+#include "mm_monitor.h"
 
 #include <windows.h>
 #include <windowsx.h>
@@ -21,6 +22,7 @@ private:
     BOOL SetSide();
 
     MmBar *bar;
+    MmMonitor *mon;
     HWND hWnd;
 };
 

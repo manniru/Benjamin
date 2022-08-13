@@ -66,6 +66,12 @@ Flickable
 
     function updateLabel()
     {
+        if( labelID>=lm.count )
+        {
+            console.log("updateLabel Error", labelID)
+            return;
+        }
+
         lm.get(labelID).colorBackground = labelBg;
         lm.get(labelID).labelColor      = labelFg;
         lm.get(labelID).underlineColor  = labelUl;

@@ -3,6 +3,7 @@
 
 MmChapar::MmChapar(QObject *root, QObject *parent) : QObject(parent)
 {
+    mon = new MmMonitor(root);
     bar = new MmBar(root);
 
     QWindow *window = qobject_cast<QWindow *>(root);
