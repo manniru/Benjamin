@@ -104,15 +104,17 @@ public:
     explicit MmVirt(QObject *parent = nullptr);
     ~MmVirt();
 
-    void setDesktop(int id);
     int  getCurrDesktop();
+
+public slots:
+    void setDesktop(int id);
 
 private:
     void updateGUID();
 
     QVector<GUID> vd_guids;
+    QVector<IVirtualDesktop *> vd_desks;
     IVirtualDesktopManagerInternal* pDesktopManager;
-
 };
 
 #endif // RE_WIN32_VIRT_H

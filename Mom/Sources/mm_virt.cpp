@@ -33,7 +33,7 @@ MmVirt::~MmVirt()
 void MmVirt::updateGUID()
 {
     IObjectArray *desktops;
-    IVirtualDesktop *nextDesktop;
+    IVirtualDesktop *c_desktop;
 
     pDesktopManager->GetDesktops(&desktops);
     UINT count;
@@ -41,13 +41,12 @@ void MmVirt::updateGUID()
 
     for( unsigned int i=0 ; i<count ; i++ )
     {
-        desktops->GetAt(i, UUID_IVirtualDesktop, (void**)&nextDesktop);
+        desktops->GetAt(i, UUID_IVirtualDesktop, (void**)&c_desktop);
 
         GUID buffer;
-        nextDesktop->GetID(&buffer);
+        c_desktop->GetID(&buffer);
         vd_guids << buffer;
-
-        nextDesktop->Release();
+        vd_desks << c_desktop;
     }
 
     desktops->Release();
@@ -55,16 +54,11 @@ void MmVirt::updateGUID()
 
 void MmVirt::setDesktop(int id)
 {
-    IObjectArray *desktops;
-    IVirtualDesktop *nextDesktop;
-
-    HRESULT hr = pDesktopManager->GetDesktops(&desktops);
-
-    desktops->GetAt(id, UUID_IVirtualDesktop, (void**)&nextDesktop);
-    desktops->Release();
-
-    hr = pDesktopManager->SwitchDesktop(nextDesktop);
-    nextDesktop->Release();
+    if( id<vd_desks.length() )
+    {
+        int res = pDesktopManager->SwitchDesktop(vd_desks[id]);
+        qDebug() << "setDesktop" << res;
+    }
 }
 
 int MmVirt::getCurrDesktop()

@@ -25,6 +25,7 @@ MmMonitor::MmMonitor(QObject *root, QObject *parent) : QObject(parent)
 {
     EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, NULL);
     QueryDisplay();
+    adjustSetting();
 }
 
 MmMonitor::~MmMonitor()
@@ -79,6 +80,14 @@ void MmMonitor::QueryDisplay()
         {
             return;
         }
+
+        // Find the adapter device name
+        DISPLAYCONFIG_ADAPTER_NAME adapterName = {};
+        adapterName.header.adapterId = paths[i].targetInfo.adapterId;
+        adapterName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_ADAPTER_NAME;
+        adapterName.header.size = sizeof(adapterName);
+
+        isError = DisplayConfigGetDeviceInfo(&adapterName.header);
         QString mon_name = "Unknown";
         if( targetName.flags.friendlyNameFromEdid )
         {
@@ -94,13 +103,46 @@ void MmMonitor::QueryDisplay()
         {
             state = MM_MON_UNKNOWN;
         }
-        qDebug() << "Monitor " << mon_name;
+        qDebug() << "Monitor " << mon_name
+//                 << QString::fromStdWString(adapterName.adapterDevicePath)
+                 << paths[i].sourceInfo.id;
+
+        mon_names << mon_name;
     }
 }
 
-void MmMonitor::ListDisplay()
+void MmMonitor::adjustSetting()
 {
-    ;
+    DEVMODE devmode = { 0 };
+
+    DISPLAY_DEVICE dd;
+    dd.cb = sizeof(dd);
+    int deviceIndex = 0;
+    while( EnumDisplayDevices(0, deviceIndex, &dd, 0) )
+    {
+        std::wstring deviceName = dd.DeviceName;
+        int monitorIndex = 0;
+        while( EnumDisplayDevices(deviceName.c_str(), monitorIndex, &dd, 0) )
+        {
+            EnumDisplaySettings(deviceName.c_str(), ENUM_CURRENT_SETTINGS, &devmode);
+            qDebug() << deviceIndex
+                     << QString::fromStdWString(deviceName)
+                     << ", " << QString::fromStdWString(dd.DeviceString)
+                     << dd.StateFlags << " X "
+                     << devmode.dmPelsWidth << " X "
+                     << devmode.dmPelsHeight;
+            monitorIndex++;
+        }
+        deviceIndex++;
+    }
+
+//    EnumDisplaySettings( NULL,ENUM_CURRENT_SETTINGS, &devmode );
+
+//    devmode.dmSize = sizeof(DEVMODE);
+//    devmode.dmPelsWidth = 1920; //take last item maximum value
+//    devmode.dmPelsHeight = 1080; //take last item maximum value
+
+//    long result = ChangeDisplaySettings(&devmode, DM_PELSWIDTH | DM_PELSHEIGHT);
 }
 
 //BOOL AppBar_SetSide(HWND hwnd)

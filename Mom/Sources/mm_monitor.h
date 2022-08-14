@@ -2,6 +2,8 @@
 #define MM_MONITOR_H
 
 #include <QObject>
+#include <QString>
+#include <QVector>
 
 #include <Windows.h>
 
@@ -17,11 +19,12 @@ public:
     ~MmMonitor();
 
 private:
-    void ListDisplay();
+    void adjustSetting();
     void QueryDisplay();
     void SetSide();
 
     int state;
+    QVector<QString> mon_names;
 };
 
 #endif // MM_MONITOR_H
