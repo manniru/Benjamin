@@ -10,7 +10,8 @@ class MmBar : public QObject
 {
     Q_OBJECT
 public:
-    explicit MmBar(QObject *root, QObject *parent = nullptr);
+    explicit MmBar(QObject *root, MmVirt *vi,
+                   QObject *parent = nullptr);
 
 private slots:
     void executeCommand(QString action);

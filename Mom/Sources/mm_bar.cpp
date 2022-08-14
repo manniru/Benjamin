@@ -1,10 +1,11 @@
 #include "mm_bar.h"
 #include <QDir>
 
-MmBar::MmBar(QObject *root, QObject *parent) : QObject(parent)
+MmBar::MmBar(QObject *root, MmVirt *vi,
+             QObject *parent) : QObject(parent)
 {
     parser = new MmParser;
-    virt   = new MmVirt;
+    virt   = vi;
     // List ui
     left_bar  = root->findChild<QObject*>("LeftBar");
     right_bar = root->findChild<QObject*>("RightBar");

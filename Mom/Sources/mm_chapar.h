@@ -4,6 +4,7 @@
 #include <QObject>
 #include "mm_bar.h"
 #include "mm_monitor.h"
+#include "mm_keyboard.h"
 
 #include <windows.h>
 #include <windowsx.h>
@@ -22,7 +23,9 @@ private:
     BOOL SetSide();
 
     MmBar *bar;
-    MmMonitor *mon;
+    MmMonitor  *mon;
+    MmKeyboard *key;
+    MmVirt     *virt;
     HWND hWnd;
 };
 

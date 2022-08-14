@@ -3,8 +3,12 @@
 
 MmChapar::MmChapar(QObject *root, QObject *parent) : QObject(parent)
 {
-    mon = new MmMonitor(root);
-    bar = new MmBar(root);
+    mon  = new MmMonitor(root);
+    virt = new MmVirt;
+    bar  = new MmBar(root, virt);
+    key  = new MmKeyboard(virt);
+
+    mm_setKeyboard(key);
 
     QWindow *window = qobject_cast<QWindow *>(root);
     hWnd = (HWND)(window->winId());
@@ -16,6 +20,9 @@ MmChapar::MmChapar(QObject *root, QObject *parent) : QObject(parent)
 MmChapar::~MmChapar()
 {
     UnRegister();
+
+    delete mon;
+    delete key;
 }
 
 void MmChapar::UnRegister()
