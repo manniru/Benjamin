@@ -21,7 +21,7 @@ public slots:
     void procState();
 
 private:
-    void procVirtKey(int key_code);
+    int procVirtKey(int key_code);
     int procWinKey(int key_code);
     void SetSide();
 

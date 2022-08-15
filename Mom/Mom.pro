@@ -24,7 +24,8 @@ SOURCES += Sources/main.cpp \
 
 win32:LIBS += -lKernel32 -lUser32 -lole32 \
              -luuid -loleaut32 -loleacc \
-             -lDwmapi -lPsapi -lSetupapi
+             -lDwmapi -lPsapi -lSetupapi \
+             -lPowrProf
 
 RESOURCES += \
              Resources/fonts.qrc \

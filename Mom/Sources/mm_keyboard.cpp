@@ -1,5 +1,6 @@
 #include "mm_keyboard.h"
 #include <QDebug>
+#include <powrprof.h>
 
 MmKeyboard *key;
 
@@ -62,7 +63,6 @@ int MmKeyboard::procWinKey(int key_code)
     {
         int id = key_code-'0';
         state = id;
-        qDebug() << "changeWorkspace" << id;
         return 1;
     }
     return 0;
@@ -73,13 +73,27 @@ int MmKeyboard::procPressKey(int key_code)
     if( key_code!=VK_LWIN )
     {
         int w_state = GetKeyState(VK_LWIN);
-//        qDebug() << "key" << key_code
-//                 << w_state;
+        qDebug() << "key" << key_code
+                 << w_state;
         if( w_state<0 )
         {
-            qDebug() << "captured" << key_code;
             int ret = procWinKey(key_code);
             return ret;
+        }
+        else if( key_code==VK_PAUSE )
+        {
+            SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 2);
+            return 1;
+        }
+        else if( key_code==VK_CANCEL )
+        {
+            // go to hibernate
+            int hibernate = 0;
+            int force = 0;
+            int disable_wake = 0;
+            SetSuspendState(hibernate, force,
+                            disable_wake);
+            return 1;
         }
     }
 
@@ -95,8 +109,16 @@ void MmKeyboard::procState()
     }
 }
 
-void MmKeyboard::procVirtKey(int key_code)
+int MmKeyboard::procVirtKey(int key_code)
 {
+    if( key_code>='1' &&
+        key_code<='6' )
+    {
+        int id = key_code-'0';
+        state = id;
+        return 1;
+    }
+    return 0;
 }
 
 //BOOL AppBar_SetSide(HWND hwnd)
