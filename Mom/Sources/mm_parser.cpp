@@ -25,6 +25,10 @@ int MmParser::parseProps(QString data, int s_index)
 void MmParser::parse(QString data, QVector<MmLabel> *out)
 {
     out->clear();
+    c_property.bg = MM_DEFAULT_BG;
+    c_property.fg = MM_DEFAULT_FG;
+    c_property.ul = BPB_DEFAULT_UL;
+
     int i = 0;
     while( i<data.length() )
     {

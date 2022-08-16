@@ -70,12 +70,15 @@ int MmKeyboard::procWinKey(int key_code)
 
 int MmKeyboard::procPressKey(int key_code)
 {
-    if( key_code!=VK_LWIN )
+    if( key_code!=VK_LWIN &&
+        key_code!=VK_RWIN )
     {
-        int w_state = GetKeyState(VK_LWIN);
-        qDebug() << "key" << key_code
-                 << w_state;
-        if( w_state<0 )
+        int wl_state = GetKeyState(VK_LWIN);
+        int wr_state = GetKeyState(VK_RWIN);
+//        qDebug() << "key" << key_code
+//                 << wr_state;
+        if( wl_state<0 ||
+            wr_state<0 )
         {
             int ret = procWinKey(key_code);
             return ret;

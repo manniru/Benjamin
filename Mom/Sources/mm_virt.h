@@ -111,6 +111,11 @@ public slots:
 
 private:
     void updateGUID();
+    void setFocus();
+
+    void sendKey(int key_val);
+    void pressKey(int key_val);
+    void releaseKey(int key_val);
 
     QVector<GUID> vd_guids;
     QVector<IVirtualDesktop *> vd_desks;
