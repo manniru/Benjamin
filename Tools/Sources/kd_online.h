@@ -33,6 +33,8 @@ private:
     void processLat(KdCompactLattice *clat, clock_t start);
     bool isSleep();
     bool isHalt();
+    void writeHalt(QString path);
+    QString readStatusFile();
 
     BtRecorder       *ab_src;
     QVector<BtWord>   c_result; // current_result

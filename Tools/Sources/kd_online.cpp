@@ -147,6 +147,33 @@ bool KdOnline::isSleep()
 
 bool KdOnline::isHalt()
 {
+#ifdef WIN32
+    int s_state = GetKeyState(VK_SCROLL);
+    QString path = MOM_LABEL_DIR;
+    path += MOM_LABEL_STATUS;
+
+    if( s_state )
+    {
+        QString status = readStatusFile();
+        if( !status.contains("Halt") )
+        {
+            writeHalt(path);
+        }
+
+        return true;
+    }
+    else if( QFile::exists(path) )
+    {
+        QString status = readStatusFile();
+        if( status.contains("Halt") )
+        {
+            QString cmd = "del ";
+            cmd += path;
+
+            system(cmd.toStdString().c_str());
+        }
+    }
+#else
     QString status_path = getenv("HOME");
     status_path += "/.config/polybar/awesomewm/ben_status";
     if( QFile::exists(status_path) )
@@ -161,5 +188,40 @@ bool KdOnline::isHalt()
         }
         return false;
     }
+#endif
     return false;
+}
+
+void KdOnline::writeHalt(QString path)
+{
+    QFile st_file(path);
+
+    if( !st_file.open(QIODevice::WriteOnly | QIODevice::Text) )
+    {
+        qDebug() << "Error creating" << MOM_LABEL_STATUS;
+        qDebug() << "Trying to create" << MOM_LABEL_DIR;
+        system("mkdir " MOM_LABEL_DIR);
+    }
+    QTextStream out(&st_file);
+    out << "%{B#666666}%{F#ffffff}%{A1:$HS_CMD:}"
+        << "  Halt  "
+        << "%{A}%{B- F1-}";
+    st_file.close();
+}
+
+QString KdOnline::readStatusFile()
+{
+    QString path = MOM_LABEL_DIR;
+    path += MOM_LABEL_STATUS;
+    QFile file(path);
+    if( file.open(QIODevice::ReadOnly) )
+    {
+        QString line = file.readLine();
+        line.replace('\n', "");
+        file.close();
+
+        return line;
+    }
+
+    return "";
 }

@@ -14,6 +14,9 @@
 #define KAL_SI_DIR_WIN    "Scripts\\interpreter\\"
 #define KAL_NATO_DIR_WIN  "..\\Nato\\"
 #define KAL_AU_DIR_WIN    KAL_NATO_DIR_WIN"audio\\"
+
+#define MOM_LABEL_DIR    "..\\Mom\\Labels"
+#define MOM_LABEL_STATUS "\\r1_status.lbl"
 // Pipe Named Path follow \\.\pipe\[pipename] format
 // where [pipename] can be change and dot represent
 // server name, dot refer to local computer
