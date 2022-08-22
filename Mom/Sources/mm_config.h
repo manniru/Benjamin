@@ -16,4 +16,6 @@
 #define MM_BATOOL_PATH "..\\Tools\\BaTool.exe"
 #define MM_REBOUND_PATH "..\\..\\RAIIS\\Rebound\\Rebound.exe"
 
+#define RE_FIREFOX_DIR  "..\\..\\RAIIS\\Rebound\\Scripts\\Firefox"
+
 #endif // MM_CONFIG_H

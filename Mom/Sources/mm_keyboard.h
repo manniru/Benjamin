@@ -6,6 +6,8 @@
 #include <QVector>
 #include <Windows.h>
 #include "mm_virt.h"
+#include "mm_api.h"
+#include "mm_lua.h"
 
 class MmKeyboard : public QObject
 {
@@ -28,6 +30,7 @@ private:
     HHOOK hHook = NULL;
     MmVirt *virt;
     QTimer *timer;
+    MmLua *lua;
     int state;
 };
 
