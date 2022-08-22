@@ -24,6 +24,9 @@ MmVirt::MmVirt(QObject *parent): QObject(parent)
     pServiceProvider->Release();
 
     updateGUID();
+
+    current_desktop = getCurrDesktop();
+    last_desktop = -1;
 }
 
 MmVirt::~MmVirt()
@@ -60,6 +63,8 @@ void MmVirt::setDesktop(int id)
         int res = pDesktopManager->SwitchDesktop(vd_desks[id]);
         qDebug() << "setDesktop" << res;
         setFocus();
+        last_desktop = current_desktop;
+        current_desktop = id + 1;
     }
 }
 

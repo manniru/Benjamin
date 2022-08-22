@@ -105,6 +105,10 @@ public:
     ~MmVirt();
 
     int  getCurrDesktop();
+    void switchLastDesktop();
+
+    int last_desktop;
+    int current_desktop;
 
 public slots:
     void setDesktop(int id);
