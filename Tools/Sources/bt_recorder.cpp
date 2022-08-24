@@ -22,13 +22,12 @@ BtRecorder::BtRecorder(BtCyclic *buffer, QObject *parent): QObject(parent)
         qDebug() << "PortAudio initialization error";
     }
 
-    pa_err = Pa_OpenDefaultStream(&pa_stream, 1, 0, paInt16
-                         , BT_REC_RATE, 0, PaCallback, this);
-    if( pa_err )
-    {
-        qDebug() << "PortAudio failed to open the default stream";
-        pa_stream = NULL;
-    }
+    openMic();
+
+    callback_time = BT_INV_TIME;
+    con_timer = new QTimer();
+    connect(con_timer, SIGNAL(timeout()), this, SLOT(conTimeOut()));
+    con_timer->start(BT_CON_TIMER);
 }
 
 BtRecorder::~BtRecorder()
@@ -44,6 +43,17 @@ BtRecorder::~BtRecorder()
     }
 }
 
+void BtRecorder::openMic()
+{
+    PaError pa_err = Pa_OpenDefaultStream(&pa_stream, 1, 0, paInt16
+                         , BT_REC_RATE, 0, PaCallback, this);
+    if( pa_err )
+    {
+        qDebug() << "PortAudio failed to open the default stream";
+        pa_stream = NULL;
+    }
+}
+
 // This function deosn't need to be called
 // Only use if you don't plan on using read function
 void BtRecorder::startStream()
@@ -53,9 +63,32 @@ void BtRecorder::startStream()
         PaError paerr = Pa_StartStream(pa_stream);
         if( paerr )
         {
-            qDebug() << "Error while trying to open PortAudio stream";
-            exit(0);
+            qDebug() << "Failed to open PortAudio stream";
         }
+    }
+}
+
+void BtRecorder::conTimeOut()
+{
+    if( callback_time==BT_INV_TIME )
+    {
+        return;
+    }
+
+    clock_t now = clock();
+    int diff = now - callback_time;
+
+    if( diff>BT_CON_TIMER )
+    {
+//        qDebug() << "diff:" << diff
+//                 << "start:" << callback_time
+//                 << "end" << now;
+        if( pa_stream )
+        {
+            Pa_CloseStream(pa_stream);
+        }
+        openMic();
+        startStream();
     }
 }
 
@@ -66,6 +99,7 @@ int BtRecorder::Callback(int16_t *data, int size)
         qDebug() << "BtRecorder Overflow" << size << cy_buf->getFreeSize();
         return paContinue;
     }
+    callback_time = clock();
     cy_buf->write(data, size);
     return paContinue;
 }
