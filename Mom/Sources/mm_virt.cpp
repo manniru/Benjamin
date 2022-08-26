@@ -61,7 +61,7 @@ void MmVirt::setDesktop(int id)
     if( id<vd_desks.length() )
     {
         int res = pDesktopManager->SwitchDesktop(vd_desks[id]);
-        qDebug() << "setDesktop" << res;
+//        qDebug() << "setDesktop" << res;
         setFocus();
         last_desktop = current_desktop;
         current_desktop = id + 1;
