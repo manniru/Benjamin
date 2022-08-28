@@ -72,9 +72,7 @@ int MmKeyboard::procWinKey(int key_code)
     }
     else if( key_code=='D' )
     {
-        lua->run(); // lua fix ask password bug
-        QThread::msleep(2000);
-        mm_launchApp("Firefox", "--remote-debugging-port");
+        state = 'd';
         return 1;
     }
     else if( key_code=='T' )
@@ -100,11 +98,6 @@ int MmKeyboard::procWinKey(int key_code)
     else if( key_code=='S' )
     {
         mm_launchApp("Spotify");
-        return 1;
-    }
-    else if( key_code=='B' )
-    {
-        recordTelegram();
         return 1;
     }
     else if( key_code==VK_TAB )
@@ -152,7 +145,14 @@ int MmKeyboard::procPressKey(int key_code)
 
 void MmKeyboard::procState()
 {
-    if( state )
+    if( state=='d' )
+    {
+        lua->run(); // lua fix ask password bug
+        QThread::msleep(2000);
+        mm_launchApp("Firefox", "--remote-debugging-port");
+        state = 0;
+    }
+    else if( state )
     {
         virt->setDesktop(state-1);
         state = 0;
