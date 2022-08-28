@@ -89,4 +89,8 @@ void ChChannelW::processCommand(QString cmd, QString arg)
     {
         emit side(arg);
     }
+    else if( cmd=="persist" )
+    {
+        emit show(cmd);
+    }
 }

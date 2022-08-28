@@ -7,6 +7,7 @@
 #include "backend.h"
 #include "config.h"
 #include "ch_channel_w.h"
+#include "ch_keyboard_w.h"
 
 #define CH_BACKSPACE_CODE 16777219
 #define CH_ESCAPE_CODE    16777216
@@ -17,6 +18,7 @@
 #define CH_LEFT_CLICK   0
 #define CH_NO_CLICK     1
 #define CH_RIGHT_CLICK  2
+#define CH_PERSIST      3
 
 class ChProcessorW : public QObject
 {
@@ -41,6 +43,11 @@ private:
     void sendLeftKey();
     void sendRightKey();
     void sendMiddleKey();
+
+    void setFocus();
+    void sendKey(int key_val);
+    void pressKey(int key_val);
+    void releaseKey(int key_val);
 
     QString   key_buf; //requested word
     QObject  *root;

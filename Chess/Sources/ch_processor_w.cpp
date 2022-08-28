@@ -31,9 +31,13 @@ void ChProcessorW::showUI(QString text)
     {
         click_mode = CH_NO_CLICK;
     }
-    else  if( text=="side" )
+    else if( text=="side" )
     {
         click_mode = CH_RIGHT_CLICK;
+    }
+    else if( text=="persist" )
+    {
+        click_mode = CH_PERSIST;
     }
     else
     {
@@ -59,14 +63,26 @@ void ChProcessorW::hideUI()
     {
         QThread::msleep(50);
         sendLeftKey();
+        meta_mode = 0;
+        click_mode = CH_LEFT_CLICK;
     }
     else if( click_mode==CH_RIGHT_CLICK )
     {
         QThread::msleep(50);
         sendRightKey();
+        meta_mode = 0;
+        click_mode = CH_LEFT_CLICK;
     }
-    meta_mode = 0;
-    click_mode = CH_LEFT_CLICK;
+    else if( click_mode==CH_PERSIST )
+    {
+        QThread::msleep(50);
+        sendLeftKey();
+        QThread::msleep(10);
+        QQmlProperty::write(root, "visible", 1);
+        meta_mode = 0;
+        activateWindow();
+        QQmlProperty::write(root, "ch_timer", true);
+    }
 }
 
 void ChProcessorW::createStatFile()
@@ -87,6 +103,7 @@ void ChProcessorW::keyPressed(int key)
     {
         click_mode = CH_NO_CLICK;
         hideUI();
+        ch_setFocus();
     }
     else if( key==CH_BACKSPACE_CODE )
     {
