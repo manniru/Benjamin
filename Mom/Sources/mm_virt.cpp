@@ -58,7 +58,7 @@ void MmVirt::updateGUID()
 
 void MmVirt::setDesktop(int id)
 {
-    if( id<vd_desks.length() )
+    if( id<vd_desks.length() && id>=0 )
     {
         int res = pDesktopManager->SwitchDesktop(vd_desks[id]);
 //        qDebug() << "setDesktop" << res;

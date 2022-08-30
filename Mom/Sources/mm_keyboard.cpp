@@ -100,7 +100,7 @@ int MmKeyboard::procWinKey(int key_code)
         mm_launchApp("Spotify");
         return 1;
     }
-    else if( key_code==VK_TAB )
+    else if( key_code==VK_OEM_7 ) // Quote '
     {
         state = virt->last_desktop;
         return 1;
