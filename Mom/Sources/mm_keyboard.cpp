@@ -70,9 +70,24 @@ int MmKeyboard::procWinKey(int key_code)
         state = id;
         return 1;
     }
+    else if( key_code=='A' )
+    {
+        state = 'a';
+        return 1;
+    }
     else if( key_code=='D' )
     {
         state = 'd';
+        return 1;
+    }
+    else if( key_code=='P' )
+    {
+        mm_launchApp("Qt Creator\\Qt Creator 4.15.1 (Community)");
+        return 1;
+    }
+    else if( key_code=='S' )
+    {
+        mm_launchApp("Spotify");
         return 1;
     }
     else if( key_code=='T' )
@@ -90,16 +105,7 @@ int MmKeyboard::procWinKey(int key_code)
         mm_launchApp("Visual Studio Code\\Visual Studio Code");
         return 1;
     }
-    else if( key_code=='P' )
-    {
-        mm_launchApp("Qt Creator\\Qt Creator 4.15.1 (Community)");
-        return 1;
-    }
-    else if( key_code=='S' )
-    {
-        mm_launchApp("Spotify");
-        return 1;
-    }
+
     else if( key_code==VK_OEM_7 ) // Quote '
     {
         state = virt->last_desktop;
@@ -150,13 +156,16 @@ void MmKeyboard::procState()
         lua->run(); // lua fix ask password bug
         QThread::msleep(2000);
         mm_launchApp("Firefox", "--remote-debugging-port");
-        state = 0;
+    }
+    else if( state=='a' )
+    {
+        mm_launchScript(RE_WINSCR_DIR"\\git_date.cmd");
     }
     else if( state )
     {
         virt->setDesktop(state-1);
-        state = 0;
     }
+    state = 0;
 }
 
 int MmKeyboard::procVirtKey(int key_code)

@@ -12,10 +12,11 @@
 
 #define MM_WATCHER_TIMER 5000 // ms
 
-#define MM_CHESS_PATH "..\\Chess\\Chess.exe"
-#define MM_BATOOL_PATH "..\\Tools\\BaTool.exe"
+#define MM_CHESS_PATH   "..\\Chess\\Chess.exe"
+#define MM_BATOOL_PATH  "..\\Tools\\BaTool.exe"
 #define MM_REBOUND_PATH "..\\..\\RAIIS\\Rebound\\Rebound.exe"
 
 #define RE_FIREFOX_DIR  "..\\..\\RAIIS\\Rebound\\Scripts\\Firefox"
+#define RE_WINSCR_DIR   "..\\..\\RAIIS\\Rebound\\Scripts\\Windows"
 
 #endif // MM_CONFIG_H

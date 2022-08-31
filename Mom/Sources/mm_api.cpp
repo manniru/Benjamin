@@ -141,3 +141,28 @@ void mm_launchApp(QString app_name, QString arg)
         qDebug() << "CreateProcess failed" << last_error;
     }
 }
+
+void mm_launchScript(QString path, QString arg)
+{
+    QString cmd = path + arg;
+
+    PROCESS_INFORMATION ProcessInfo; //This is what we get as an [out] parameter
+    STARTUPINFOA StartupInfo; //This is an [in] parameter
+
+    ZeroMemory( &StartupInfo, sizeof(StartupInfo) );
+    StartupInfo.cb = sizeof(StartupInfo);
+    ZeroMemory( &ProcessInfo, sizeof(ProcessInfo) );
+
+    char app_cmd[200];
+    strcpy(app_cmd, path.toStdString().c_str());
+
+    int ret = CreateProcessA(NULL, app_cmd, NULL,
+                             NULL, FALSE, 0, NULL,
+                             NULL, &StartupInfo,
+                             &ProcessInfo);
+    if( ret == 0 )
+    {
+        long last_error = GetLastError();
+        qDebug() << "CreateProcess failed" << last_error;
+    }
+}
