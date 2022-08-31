@@ -24,6 +24,8 @@ MmBar::MmBar(QObject *root, MmVirt *vi,
 void MmBar::executeCommand(QString action)
 {
     qDebug() << "execute" << action;
+    int desktop_id = action.toInt();
+    virt->setDesktop(desktop_id-1);
 }
 
 void MmBar::loadLabels()
@@ -95,12 +97,12 @@ QString MmBar::getWorkStr(int index)
 
     QStringList tag_list;
 
-    tag_list << "   ";
-    tag_list << "   ";
-    tag_list << "   ";
-    tag_list << "    ";
-    tag_list << "    ";
-    tag_list << "    ";
+    tag_list << "%{A1:1:}   %{A}";
+    tag_list << "%{A1:2:}   %{A}";
+    tag_list << "%{A1:3:}   %{A}";
+    tag_list << "%{A1:4:}    %{A}";
+    tag_list << "%{A1:5:}    %{A}";
+    tag_list << "%{A1:6:}    %{A}";
 
     QString p_format = "%{B#555555}%{F#f3c84a}";
 
@@ -130,7 +132,7 @@ int MmBar::proccessFile(int s_id, QString path)
     QFile file(path);
     if( !file.open(QIODevice::ReadOnly) )
     {
-        qDebug() << "Cann't open '" + path + "'";
+        qDebug() << "Cannot open '" + path + "'";
         return 0;
     }
     QString data = file.readAll();
