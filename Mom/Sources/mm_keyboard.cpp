@@ -126,6 +126,15 @@ int MmKeyboard::procPressKey(int key_code)
         if( wl_state<0 ||
             wr_state<0 )
         {
+            int sl_state = GetKeyState(VK_LSHIFT);
+            int sr_state = GetKeyState(VK_RSHIFT);
+
+            if( sl_state<0 ||
+                sr_state<0 ) // if shift is pressed
+            {                // ignore
+                return 0;
+            }
+
             int ret = procWinKey(key_code);
             return ret;
         }
