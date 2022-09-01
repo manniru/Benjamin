@@ -243,14 +243,22 @@ void ChProcessorW::setPosFine(int key)
 
 void ChProcessorW::activateWindow()
 {
-    DWORD dwCurrentThread = GetCurrentThreadId();
-    DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
-    AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
+    bool forground_en = SetForegroundWindow(hWnd);
+    HWND last_active = SetActiveWindow(hWnd);
+    HWND focus_ret = SetFocus(hWnd);
 
-    //Actions
-    SetForegroundWindow(hWnd);
-    SetActiveWindow(hWnd);
-//    SetWindowPos(hWnd,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+    bool pos_ret = SetWindowPos(hWnd, HWND_TOPMOST,
+                                0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-    AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
+//    qDebug() << "SetFocus" << focus_ret
+//             << "SetWindowPos" << pos_ret
+//             << "SetForegroundWindow" << forground_en
+//             << "SetActiveWindow" << last_active;
+
+    int mid_x = count_x/2;
+    int mid_y = count_y/2;
+    QThread::msleep(50);
+    setPos(mid_x, mid_y);
+    QThread::msleep(50);
+    sendLeftKey();
 }
