@@ -22,7 +22,8 @@ SOURCES += Sources/main.cpp \
            Sources/mm_monitor.cpp \
            Sources/mm_parser.cpp \
            Sources/mm_virt.cpp \
-           Sources/mm_watcher.cpp
+           Sources/mm_watcher.cpp \
+           Sources/mm_win32.cpp
 
 win32:LIBS += -L../PNN/libs \
              -lKernel32 -lUser32 -lole32 \
@@ -51,4 +52,5 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_monitor.h \
            Sources/mm_parser.h \
            Sources/mm_virt.h \
-           Sources/mm_watcher.h
+           Sources/mm_watcher.h \
+           Sources/mm_win32.h

@@ -1,4 +1,5 @@
 #include "mm_keyboard.h"
+#include "mm_win32.h"
 #include <QDebug>
 #include <QThread>
 #include <powrprof.h>
@@ -140,7 +141,8 @@ int MmKeyboard::procPressKey(int key_code)
         }
         else if( key_code==VK_PAUSE )
         {
-            SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 2);
+//            SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 2);
+            mm_winSleep();
             return 1;
         }
         else if( key_code==VK_CANCEL )
