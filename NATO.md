@@ -4,10 +4,7 @@
 Clone Kaldi and Benjamin in the same folder
 
 ```
-git clone https://github.com/kaldi-asr/kaldi.git Kaldi
-cd Kaldi
-git checkout 579c9bf1770698f1383cb1cea5528d36fd8e7b93
-cd ..
+git clone https://github.com/bijanbina/KalB.git
 git clone --recursive https://github.com/bijanbina/Benjamin.git
 ```
 
@@ -19,10 +16,7 @@ On Arch Linux
 
 ```
 sudo pacman -S intel-mkl gcc-fortran subversion portaudio python-pyaudio
-cd Kaldi/tools
-extras/check_dependencies.sh
-extras/install_mkl.sh
-extras/install_srilm.sh <name> <organization> <email>
+cd KalB/tools
 make
 cd ../src
 ./configure --mathlib=MKL

@@ -44,6 +44,14 @@ int main(int argc, char *argv[])
             {
                 commands << "two";
             }
+            else if( input[i]=="3" )
+            {
+                commands << "three";
+            }
+            else if( input[i]=="4" )
+            {
+                commands << "four";
+            }
             else if( input[i]=="0" )
             {
                 commands << "departure";

@@ -60,6 +60,7 @@ void MmVirt::setDesktop(int id)
 {
     if( id<vd_desks.length() && id>=0 )
     {
+        current_desktop = getCurrDesktop();
         if( current_desktop==id+1 )
         {
             return;
@@ -100,7 +101,6 @@ int MmVirt::getCurrDesktop()
 
     return -1;
 }
-
 
 void MmVirt::sendKey(int key_val)
 {
