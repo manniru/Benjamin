@@ -36,16 +36,10 @@ echo
 echo "===== LANGUAGE MODEL CREATION ====="
 echo "===== MAKING lm.arpa ====="
 echo
-loc=`which ngram-count`;
-if [ -z $loc ]; then
-	echo "SRILM toolkit is probably not installed.
-		    Instructions: tools/install_srilm.sh"
-	exit 1
-fi
+
 local=data/local
 mkdir $local/tmp
-#ngram-count -order $lm_order -write-vocab $local/tmp/vocab-full.txt -wbdiscount -text $local/corpus.txt -lm $local/tmp/lm.arpa
-ngram-count -order $lm_order -write-vocab $local/tmp/vocab-full.txt -wbdiscount -text word_list -lm $local/tmp/lm.arpa
+steps/ngram-count.sh > $local/tmp/lm.arpa
 echo
 echo "===== MAKING G.fst ====="
 echo
