@@ -27,6 +27,21 @@ MmVirt::MmVirt(QObject *parent): QObject(parent)
 
     current_desktop = getCurrDesktop();
     last_desktop = -1;
+
+//    NtUserBuildHwndList pNtUserBuildHwndList = NULL;
+//    HMODULE hpath;
+//    hpath = LoadLibrary(L"win32u.dll");
+//    pNtUserBuildHwndList = NtUserBuildHwndList(GetProcAddress(hpath, "NtUserBuildHwndList"));
+//    if( Gui_RealEnumWindows(pNtUserBuildHwndList) )
+//    {
+//        qDebug() << "shod :D";
+//    }
+//    else
+//    {
+//        qDebug() << "nashod :(";
+//    }
+
+    reRunThread();
 }
 
 MmVirt::~MmVirt()
