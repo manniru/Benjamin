@@ -1,13 +1,15 @@
 #ifndef RE_WIN32_VIRT_H
 #define RE_WIN32_VIRT_H
 
-#include "mm_config.h"
-#include <windows.h>
 #include <objbase.h>
 #include <ObjectArray.h>
 #include <QVector>
 #include <QObject>
 #include <QTimer>
+#include <windows.h>
+#include "mm_config.h"
+#include "mm_win32.h"
+#include "mm_nt_user.h"
 // https://github.com/senfiron/win10-virtual-desktop-switcher/tree/master/VirtualDesktopSwitcher/VirtualDesktopSwitcher
 // https://github.com/chuckrector/virtual_desktopper/blob/main/virtual_desktopper.h
 
@@ -122,6 +124,7 @@ private:
     void releaseKey(int key_val);
 
     QVector<GUID> vd_guids;
+    QVector<HWND> vd_win[6];
     QVector<IVirtualDesktop *> vd_desks;
     IVirtualDesktopManagerInternal* pDesktopManager;
 };

@@ -6,6 +6,7 @@
 #include <strsafe.h> // StringCbPrintf
 #include <QDebug>
 #include <QThread>
+#include "mm_win32_win.h"
 
 MmVirt::MmVirt(QObject *parent): QObject(parent)
 {
