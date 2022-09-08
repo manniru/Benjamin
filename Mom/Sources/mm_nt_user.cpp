@@ -144,6 +144,6 @@ BOOL Gui_RealEnumWindows(NtUserBuildHwndList pNtUserBuildHwndList)
     }
 
     // return the result
-    exit(0);
+//    exit(0);
     return lv_Result;
 }

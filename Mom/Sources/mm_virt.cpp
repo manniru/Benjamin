@@ -10,18 +10,21 @@
 
 MmVirt::MmVirt(QObject *parent): QObject(parent)
 {
-    pDesktopManager = NULL;
+    pDesktopManagerInt = NULL;
     CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
     IServiceProvider* pServiceProvider = NULL;
     HRESULT hr = CoCreateInstance(
                         CLSID_ImmersiveShell, NULL, CLSCTX_LOCAL_SERVER,
-                        __uuidof(IServiceProvider), (PVOID*)&pServiceProvider);
+                        __uuidof(IServiceProvider), (PVOID*)&pServiceProvider); 
+
+    hr = pServiceProvider->QueryService(CLSID_VirtualDesktopManager,
+                                        IID_IVirtualDesktopManager,
+                                        (void **)&pDesktopManager);
 
     hr = pServiceProvider->QueryService(CLSID_VirtualDesktopAPI_Unknown,
                                         IID_IVirtualDesktopManagerInternal,
-                                        (void **)&pDesktopManager);
-
+                                        (void **)&pDesktopManagerInt);
     pServiceProvider->Release();
 
     updateGUID();
@@ -29,25 +32,12 @@ MmVirt::MmVirt(QObject *parent): QObject(parent)
     current_desktop = getCurrDesktop();
     last_desktop = -1;
 
-//    NtUserBuildHwndList pNtUserBuildHwndList = NULL;
-//    HMODULE hpath;
-//    hpath = LoadLibrary(L"win32u.dll");
-//    pNtUserBuildHwndList = NtUserBuildHwndList(GetProcAddress(hpath, "NtUserBuildHwndList"));
-//    if( Gui_RealEnumWindows(pNtUserBuildHwndList) )
-//    {
-//        qDebug() << "shod :D";
-//    }
-//    else
-//    {
-//        qDebug() << "nashod :(";
-//    }
-
-    reRunThread();
+    win_lister = new MmWin32Win();
 }
 
 MmVirt::~MmVirt()
 {
-    pDesktopManager->Release();
+    pDesktopManagerInt->Release();
 }
 
 void MmVirt::updateGUID()
@@ -55,7 +45,7 @@ void MmVirt::updateGUID()
     IObjectArray *desktops;
     IVirtualDesktop *c_desktop;
 
-    pDesktopManager->GetDesktops(&desktops);
+    pDesktopManagerInt->GetDesktops(&desktops);
     UINT count;
     desktops->GetCount(&count);
 
@@ -81,7 +71,7 @@ void MmVirt::setDesktop(int id)
         {
             return;
         }
-        int res = pDesktopManager->SwitchDesktop(vd_desks[id]);
+        int res = pDesktopManagerInt->SwitchDesktop(vd_desks[id]);
 //        qDebug() << "setDesktop" << res;
         setFocus();
         last_desktop = current_desktop;
@@ -89,20 +79,46 @@ void MmVirt::setDesktop(int id)
     }
 }
 
+int MmVirt::isCurrentActive()
+{
+    win_lister->update();
+
+    int win_len = win_lister->windows.length();
+    for( int i=0 ; i<win_len ; i++ )
+    {
+        MmWindow win = win_lister->windows[i];
+        HWND hwnd = win.hWnd;
+        BOOL ret;
+        pDesktopManager->IsWindowOnCurrentVirtualDesktop(hwnd, &ret);
+        if( ret )
+        {
+            if( win_lister->win_active.hWnd==hwnd )
+            {
+                qDebug() << "New Window" << win.title;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void MmVirt::setFocus()
 {
     QThread::msleep(100);
 
-    pressKey(VK_LMENU); //ALT
-    sendKey(VK_TAB);
-    releaseKey(VK_LMENU);
+    if( isCurrentActive()==0 )
+    {
+        pressKey(VK_LMENU); //ALT
+        sendKey(VK_TAB);
+        releaseKey(VK_LMENU);
+    }
 }
 
 int MmVirt::getCurrDesktop()
 {
     IVirtualDesktop *currDesktop;
 
-    pDesktopManager->GetCurrentDesktop(&currDesktop);
+    pDesktopManagerInt->GetCurrentDesktop(&currDesktop);
     GUID curr_DesktopGUID;
     currDesktop->GetID(&curr_DesktopGUID);
     currDesktop->Release();

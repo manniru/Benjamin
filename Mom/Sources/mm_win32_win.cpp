@@ -74,8 +74,9 @@ void re_AddHwnd(HWND hwnd, MmWin32Win *thread_w)
 
 void MmWin32Win::insertWindow(MmWindow win)
 {
-    qDebug() << "New Window" << win.title
-             << IsAltTabWindow(win.hWnd);
+//    qDebug() << "New Window" << win.title
+//             << IsAltTabWindow(win.hWnd);
+    windows.append(win);
 }
 
 MmWin32Win::MmWin32Win()
@@ -99,14 +100,13 @@ void MmWin32Win::updateActiveWindow()
     }
 }
 
-void reRunThread()
+void MmWin32Win::update()
 {
-    MmWin32Win *priv = new MmWin32Win();
-    CoUninitialize();
-    CoInitializeEx(NULL, COINIT_MULTITHREADED);
-
     //Get Active Window Name
-    priv->updateActiveWindow();
+    updateActiveWindow();
+    windows.clear();
 
-    EnumWindows(EnumWindowsProc, (LPARAM) priv);
+    qDebug() << "-----------START-------------";
+    EnumWindows(EnumWindowsProc, (LPARAM) this);
+    qDebug() << "-----------END-------------";
 }

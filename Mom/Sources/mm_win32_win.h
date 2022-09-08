@@ -24,6 +24,7 @@ class MmWin32Win
 public:
     MmWin32Win();
     void updateActiveWindow();
+    void update();
     void insertWindow(MmWindow win);
 
     QVector<MmWindow> windows;
