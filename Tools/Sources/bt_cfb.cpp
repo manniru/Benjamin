@@ -4,7 +4,7 @@
 BtCFB::BtCFB(int size, QObject *parent) : QObject(parent)
 {
     data = (BtFrameBuf *)malloc( sizeof(BtFrameBuf)*size );
-    len = size;
+    len = size; 
 }
 
 BtCFB::~BtCFB()

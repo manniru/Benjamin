@@ -83,10 +83,10 @@ int MmVirt::isCurrentActive()
 {
     win_lister->update();
 
-    int win_len = win_lister->windows.length();
+    int win_len = win_lister->wins.length();
     for( int i=0 ; i<win_len ; i++ )
     {
-        MmWindow win = win_lister->windows[i];
+        MmWindow win = win_lister->wins[i];
         HWND hwnd = win.hWnd;
         BOOL ret;
         pDesktopManager->IsWindowOnCurrentVirtualDesktop(hwnd, &ret);

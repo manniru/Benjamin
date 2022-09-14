@@ -2,7 +2,7 @@
 #define MM_WIN32_WIN_H
 
 #include <QStringList>
-
+#include <QVector>
 #include <dwmapi.h>
 #include <tlhelp32.h> // to get pid
 #include <psapi.h> // For access to GetModuleFileNameEx
@@ -27,7 +27,7 @@ public:
     void update();
     void insertWindow(MmWindow win);
 
-    QVector<MmWindow> windows;
+    QVector<MmWindow> wins;
     MmWindow win_active;
 
 private:

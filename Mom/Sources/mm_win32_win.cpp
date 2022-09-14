@@ -76,7 +76,7 @@ void MmWin32Win::insertWindow(MmWindow win)
 {
 //    qDebug() << "New Window" << win.title
 //             << IsAltTabWindow(win.hWnd);
-    windows.append(win);
+    wins.append(win);
 }
 
 MmWin32Win::MmWin32Win()
@@ -93,9 +93,9 @@ void MmWin32Win::updateActiveWindow()
 
     if ( win_active.title.length()==0 ) //No active window
     {
-        if ( windows.size()>0 )
+        if ( wins.size()>0 )
         {
-            win_active.hWnd = windows[0].hWnd; //Set last active window
+            win_active.hWnd = wins[0].hWnd; //Set last active window
         }
     }
 }
@@ -104,7 +104,7 @@ void MmWin32Win::update()
 {
     //Get Active Window Name
     updateActiveWindow();
-    windows.clear();
+    wins.clear();
 
     qDebug() << "-----------START-------------";
     EnumWindows(EnumWindowsProc, (LPARAM) this);

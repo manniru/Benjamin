@@ -15,7 +15,7 @@ git clone --recursive https://github.com/bijanbina/Benjamin.git
 On Arch Linux
 
 ```
-sudo pacman -S intel-mkl gcc-fortran subversion portaudio python-pyaudio
+sudo pacman -S intel-mkl gcc-fortran subversion portaudio python-pyaudio bc
 cd KalB/tools
 make
 cd ../src
