@@ -9,7 +9,6 @@
 #define MM_MOUSE_MKEY 2
 #define MM_MOUSE_RKEY 3
 
-void mm_winSleep();
 void mm_sendMouseKey(int key);
 void mm_sendMouseFlag(int flag);
 QString mm_getPNameA(HWND hwnd);

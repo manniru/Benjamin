@@ -142,7 +142,7 @@ int MmKeyboard::procPressKey(int key_code)
         else if( key_code==VK_PAUSE )
         {
 //            SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 2);
-            mm_winSleep();
+            goToSleep();
             return 1;
         }
         else if( key_code==VK_CANCEL )
@@ -158,6 +158,17 @@ int MmKeyboard::procPressKey(int key_code)
     }
 
     return 0;
+}
+
+void MmKeyboard::goToSleep()
+{
+    virt->pressKey(VK_LWIN);
+    virt->sendKey('X');
+    virt->releaseKey(VK_LWIN);
+    Sleep(100);
+    virt->sendKey('U');
+    Sleep(100);
+    virt->sendKey('S');
 }
 
 void MmKeyboard::procState()

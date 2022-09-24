@@ -5,32 +5,6 @@
 #include <QDebug>
 #include <psapi.h>
 
-void mm_winSleep()
-{
-    QRect screen = QGuiApplication::primaryScreen()->geometry();
-    int width = screen.width();
-    int height = screen.height();
-    int x,y;
-    x = 25;
-    y = height - 20;
-    SetCursorPos(x, y);
-    QThread::msleep(MM_DELAY_CLICK);
-    mm_sendMouseKey(MM_MOUSE_LKEY);
-    QThread::msleep(MM_DELAY_CLICK);
-    y = height - 70;
-    SetCursorPos(x, y);
-    QThread::msleep(MM_DELAY_CLICK);
-    mm_sendMouseKey(MM_MOUSE_LKEY);
-    QThread::msleep(MM_DELAY_CLICK);
-    y = height - 180;
-    x = 150;
-    SetCursorPos(x, y);
-    QThread::msleep(MM_DELAY_CLICK);
-    mm_sendMouseKey(MM_MOUSE_LKEY);
-    QThread::msleep(MM_DELAY_CLICK);
-    mm_sendMouseKey(MM_MOUSE_LKEY);
-}
-
 void mm_sendMouseKey(int key)
 {
     if( key==MM_MOUSE_LKEY )

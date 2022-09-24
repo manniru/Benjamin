@@ -26,6 +26,7 @@ private:
     int procVirtKey(int key_code);
     int procWinKey(int key_code);
     void SetSide();
+    void goToSleep();
 
     HHOOK hHook = NULL;
     MmVirt *virt;
