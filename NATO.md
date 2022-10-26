@@ -1,5 +1,7 @@
 # Installation
 
+Following guide is for Arch Linux, If you are on windows follow [WINDOWS.md](https://github.com/bijanbina/Benjamin/blob/master/INSTALL.md) to setup a WSL machine.
+
 ## Step 1: Clone Project
 Clone Kaldi and Benjamin in the same folder
 
@@ -38,25 +40,7 @@ Go to `NATO` directory and
 * `category`: any name so you can distinguish your environment or microphone later
 * `number`: number of samples you want to record
 
-4. Create Lexicon (must run if the word_list changed)
-
-```
-./lang_word.sh
-```
-
-5. Train the Model
+4. Train the Model
 ```
 ./train.sh
 ```
-
-----------
-
-### Windows Cygwin
-Use autotools instead of CMake. Kaldi CMake is deprecated
-
-```
-apt-cyg install portaudio
-```
-
-* Look `steps` and `utils` inside `Kaldi/egs/wsj/s5` for complete set of tools.
-* For Arch Linux simply run `install_arch.sh`

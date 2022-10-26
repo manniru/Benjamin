@@ -23,6 +23,9 @@ DATA_DIR="data"
 source path.sh
 $ST/clean.sh
 
+./lang_word.sh
+echo "------ lang_word generated -------"
+
 update_data "train"
 update_data "test"
 

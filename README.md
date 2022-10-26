@@ -18,8 +18,8 @@ Bijan ASR Engine Based-on KalD Model.
 # Project Strurcture
 
 - **Digits**: Example project implementing zero to nine recognition.
-- **ENN**: Ehsan Nueral Network, Used to calculate confidence scores.
-- **Nato**: NATO task used to create a low vacabulary ASR Model based on CMVN and Delta-Delta Tri-Phone Algorithm.
+- **ENN**: Ehsan Neural Network, Used to calculate confidence scores.
+- **Nato**: NATO task used to create a low vocabulary ASR Model based on CMVN and Delta-Delta Tri-Phone Algorithm.
 - **Tools**: BaTool project do the realtime detection.
 
 # Aknolegdment
