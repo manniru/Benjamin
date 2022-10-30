@@ -12,7 +12,7 @@ DEFINES += DNN_USE_IMAGE_API \
            NDEBUG
 #           HAVE_CXXABI_H
 
-QMAKE_CXXFLAGS += -std=gnu++14 -m64 -mavx -msse3
+QMAKE_CXXFLAGS += -std=gnu++14 -m64 -mavx -msse3 -Wa,-mbig-obj
 QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3
 

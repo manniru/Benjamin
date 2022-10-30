@@ -61,7 +61,7 @@ void BtCaptain::syncFrame(uint max_frame)
     }
 }
 
-void BtCaptain::exec(QString word)
+void BtCaptain::exec(QString words)
 {
     if( x_buf.isEmpty() )
     {
@@ -70,7 +70,12 @@ void BtCaptain::exec(QString word)
 
     QString cmd;
 #ifdef WIN32
-    lua->run(word);
+    QStringList word_list = words.split(" ", Qt::SkipEmptyParts);
+    int len = word_list.length();
+    for(int i=0 ; i<len ; i++)
+    {
+        lua->run(word_list[i]);
+    }
 #else
     cmd = KAL_SI_DIR"main_l.sh \"";
     cmd += word;

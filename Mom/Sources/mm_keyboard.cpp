@@ -106,7 +106,6 @@ int MmKeyboard::procWinKey(int key_code)
         mm_launchApp("Visual Studio Code\\Visual Studio Code");
         return 1;
     }
-
     else if( key_code==VK_OEM_7 ) // Quote '
     {
         state = virt->last_desktop;
@@ -164,10 +163,11 @@ void MmKeyboard::goToSleep()
 {
     virt->pressKey(VK_LWIN);
     virt->sendKey('X');
+    Sleep(200);
     virt->releaseKey(VK_LWIN);
-    Sleep(100);
+    Sleep(200);
     virt->sendKey('U');
-    Sleep(100);
+    Sleep(200);
     virt->sendKey('S');
 }
 
