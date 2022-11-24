@@ -4,10 +4,18 @@
 #include <QObject>
 #include <QString>
 #include <QVector>
+#include <QTimer>
 #include <Windows.h>
-#include "mm_virt.h"
-#include "mm_api.h"
-#include "mm_lua.h"
+#include "mm_key_emulator.h"
+#include "mm_key_executer.h"
+
+// This is complex win+shortcut handler
+// to prevent executing windows default shortcut like
+// <win>+1, ... a low-level hook would capture all key
+// press that includes <win> key in them, process them
+// if the combination wasn't on the "mom" shortcut list
+// it will emulate the key again, otherwise key presses captured
+// and never reach the OS
 
 class MmKeyboard : public QObject
 {
@@ -18,20 +26,16 @@ public:
     ~MmKeyboard();
 
     int procPressKey(int key_code);
-
-public slots:
-    void procState();
+    int supress_r = 0; //suprress release flag for win key
+    int win_p = 0;
 
 private:
-    int procVirtKey(int key_code);
-    int procWinKey(int key_code);
     void SetSide();
     void goToSleep();
 
     HHOOK hHook = NULL;
-    MmVirt *virt;
-    QTimer *timer;
-    MmLua *lua;
+    MmKeyExec *exec;
+    MmKeyEmulator *e_key;
     int state;
 };
 
