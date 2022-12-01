@@ -18,15 +18,18 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         int key_code = keyinfo->vkCode;
         if( wParam==WM_KEYDOWN )
         {
-            int ret = key->procPressKey(key_code);
-//            if( key_code==VK_LWIN ||
-//                key_code==VK_RWIN )
-//            {
-//                return 1;
-//            }
-            if( ret )
+            if( key->emul_mode )
             {
-                return ret;
+                key->emul_mode = 0;
+            }
+            else
+            {
+                int ret = key->procPressKey(key_code);
+
+                if( ret )
+                {
+                    return ret;
+                }
             }
         }
         else if( wParam==WM_KEYUP )
@@ -34,10 +37,20 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             if( key_code==VK_LWIN ||
                 key_code==VK_RWIN )
             {
-                if( key->supress_r )
+                if( key->supress_r==0 )
                 {
                     key->supress_r = 0;
+                    key->emul_mode = 1;
+                    key->e_key->pressKey(VK_LWIN);
                     qDebug() << "key->supress_r";
+                }
+                else if( key->supress_r==2 )
+                {
+                    key->supress_r = 0;
+                }
+                else
+                {
+                    key->supress_r = 0;
                     return 1;
                 }
             }
@@ -49,8 +62,9 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 MmKeyboard::MmKeyboard(MmVirt *vi, QObject *parent) : QObject(parent)
 {
     state = 0;
-    win_p = 0;
+    emul_mode = 0;
     supress_r = 0;
+    virt = vi;
 
     hHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, 0, 0);
     if( hHook==NULL )
@@ -74,30 +88,42 @@ MmKeyboard::~MmKeyboard()
 
 int MmKeyboard::procPressKey(int key_code)
 {
-    if( key_code!=VK_LWIN &&
-        key_code!=VK_RWIN )
+    if( key_code==VK_LWIN ||
+        key_code==VK_RWIN )
     {
-        int wl_state = GetKeyState(VK_LWIN);
-        int wr_state = GetKeyState(VK_RWIN);
+        if( supress_r==0 )
+        {
+            supress_r = 1;
+            return 1;
+        }
+    }
+    else if( key_code==VK_LSHIFT ||
+             key_code==VK_RSHIFT )
+    {
+        if( supress_r==1 )
+        {
+            supress_r = 2; //normal
+            emul_mode = 1;
+            e_key->pressKey(VK_LWIN);
+        }
+    }
+    else
+    {
 //        qDebug() << "key" << key_code
 //                 << wr_state;
-        if( wl_state<0 ||
-            wr_state<0 )
+        if( supress_r==1 )
         {
-            int sl_state = GetKeyState(VK_LSHIFT);
-            int sr_state = GetKeyState(VK_RSHIFT);
-
-            if( sl_state<0 ||
-                sr_state<0 ) // if shift is pressed
-            {                // ignore
-                return 0;
-            }
-
             int ret = exec->execWinKey(key_code);
             if( ret )
             {
                 supress_r = 1;
                 qDebug() << "supress_r";
+            }
+            else // shortcut not captured by us
+            {
+                supress_r = 2; //normal
+                emul_mode = 1;
+                e_key->pressKey(VK_LWIN);
             }
             return ret;
         }

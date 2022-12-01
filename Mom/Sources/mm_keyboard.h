@@ -26,8 +26,10 @@ public:
     ~MmKeyboard();
 
     int procPressKey(int key_code);
-    int supress_r = 0; //suprress release flag for win key
-    int win_p = 0;
+    int supress_r = 0; // suprress release flag for win key
+    int emul_mode = 0; // dont interfere if we are pressing keys
+                       // emulation (fake) keys are on going
+    MmKeyEmulator *e_key;
 
 private:
     void SetSide();
@@ -35,8 +37,8 @@ private:
 
     HHOOK hHook = NULL;
     MmKeyExec *exec;
-    MmKeyEmulator *e_key;
     int state;
+    MmVirt *virt;
 };
 
 void mm_setKeyboard(MmKeyboard *val);
