@@ -26,10 +26,16 @@ public:
     ~MmKeyboard();
 
     int procPressKey(int key_code);
-    int supress_r = 0; // suprress release flag for win key
+    int suppress_r = 0; // suprress release flag for win key
     int emul_mode = 0; // dont interfere if we are pressing keys
                        // emulation (fake) keys are on going
     MmKeyEmulator *e_key;
+    QTimer *timer;
+    QVector<int> key_buf; // buffer of keycodes that
+                          // need to be delayed execute
+
+private slots:
+    void delayedExec();
 
 private:
     void SetSide();

@@ -1,6 +1,7 @@
 #include "mm_keyboard.h"
 #include "mm_win32.h"
 #include <QDebug>
+#include <QThread>
 #include <powrprof.h>
 
 MmKeyboard *key;
@@ -14,22 +15,20 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if( nCode >= 0 )
     {
+        if( key->emul_mode )
+        {
+            return CallNextHookEx(NULL, nCode, wParam, lParam);
+        }
+
         KBDLLHOOKSTRUCT *keyinfo = (KBDLLHOOKSTRUCT *)lParam;
         int key_code = keyinfo->vkCode;
         if( wParam==WM_KEYDOWN )
         {
-            if( key->emul_mode )
-            {
-                key->emul_mode = 0;
-            }
-            else
-            {
-                int ret = key->procPressKey(key_code);
+            int ret = key->procPressKey(key_code);
 
-                if( ret )
-                {
-                    return ret;
-                }
+            if( ret )
+            {
+                return ret;
             }
         }
         else if( wParam==WM_KEYUP )
@@ -37,21 +36,27 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             if( key_code==VK_LWIN ||
                 key_code==VK_RWIN )
             {
-                if( key->supress_r==0 )
+                if( key->suppress_r==1 ) // only win press
                 {
-                    key->supress_r = 0;
-                    key->emul_mode = 1;
-                    key->e_key->pressKey(VK_LWIN);
                     qDebug() << "key->supress_r";
+                    key->key_buf.push_back(VK_LWIN);
+                    key->suppress_r = 0;
+                    key->timer->start(2);
+                    qDebug() << "key->supress_r=0";
                 }
-                else if( key->supress_r==2 )
+                else if( key->suppress_r==2 ) // shortcut that not captured
                 {
-                    key->supress_r = 0;
+                    key->suppress_r = 0;
                 }
-                else
+                else if( key->suppress_r==3 ) // captured and should be suppressed
                 {
-                    key->supress_r = 0;
+                    key->suppress_r = 0;
                     return 1;
+                }
+                else // this would not happen
+                {
+                    qDebug() << "this would not happen";
+                    key->suppress_r = 0;
                 }
             }
         }
@@ -63,8 +68,11 @@ MmKeyboard::MmKeyboard(MmVirt *vi, QObject *parent) : QObject(parent)
 {
     state = 0;
     emul_mode = 0;
-    supress_r = 0;
+    suppress_r = 0;
     virt = vi;
+    timer = new QTimer;
+    connect(timer, SIGNAL(timeout()),
+            this, SLOT(delayedExec()));
 
     hHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, 0, 0);
     if( hHook==NULL )
@@ -86,23 +94,45 @@ MmKeyboard::~MmKeyboard()
     }
 }
 
+void MmKeyboard::delayedExec()
+{
+    int len = key_buf.length();
+    if( len )
+    {
+        emul_mode = 1;
+        for( int i=0 ; i<len ; i++ )
+        {
+            e_key->pressKey(key_buf[i]);
+            QThread::msleep(5);
+            qDebug() << "timer 1";
+        }
+        for( int i=len ; i>0 ; i-- )
+        {
+            e_key->releaseKey(key_buf[i-1]);
+            QThread::msleep(5);
+            qDebug() << "timer 2";
+        }
+        key_buf.clear();
+        timer->stop();
+        emul_mode = 0;
+    }
+}
+
 int MmKeyboard::procPressKey(int key_code)
 {
     if( key_code==VK_LWIN ||
         key_code==VK_RWIN )
     {
-        if( supress_r==0 )
-        {
-            supress_r = 1;
-            return 1;
-        }
+        suppress_r = 1;
+        return 1;
     }
     else if( key_code==VK_LSHIFT ||
              key_code==VK_RSHIFT )
     {
-        if( supress_r==1 )
+        if( suppress_r==1 )
         {
-            supress_r = 2; //normal
+            qDebug() << "VK_RSHIFT";
+            suppress_r = 2; //normal
             emul_mode = 1;
             e_key->pressKey(VK_LWIN);
         }
@@ -111,17 +141,17 @@ int MmKeyboard::procPressKey(int key_code)
     {
 //        qDebug() << "key" << key_code
 //                 << wr_state;
-        if( supress_r==1 )
+        if( suppress_r==1 || suppress_r==3 )
         {
             int ret = exec->execWinKey(key_code);
             if( ret )
             {
-                supress_r = 1;
+                suppress_r = 3;
                 qDebug() << "supress_r";
             }
             else // shortcut not captured by us
             {
-                supress_r = 2; //normal
+                suppress_r = 2; //normal
                 emul_mode = 1;
                 e_key->pressKey(VK_LWIN);
             }

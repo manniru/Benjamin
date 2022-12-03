@@ -8,6 +8,7 @@ MmKeyExec::MmKeyExec(MmVirt *vi, QObject *parent) : QObject(parent)
     state = 0;
     virt = vi;
 
+    lua = new MmLua;
     timer = new QTimer;
     connect(timer, SIGNAL(timeout()),
             this, SLOT(delayedExec()));
