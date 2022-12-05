@@ -29,23 +29,29 @@ OBJECTS_DIR = Build/.obj
 OTHER_FILES = BaTool.conf
 
 HEADERS += \
+    Sources/ab_chapar.h \
+    Sources/ab_mbr_base.h \
+    Sources/ab_recorder.h \
+    Sources/ab_wav_writer.h \
     Sources/backend.h \
-    Sources/bt_chapar.h \
-    Sources/bt_mbr_base.h \
-    Sources/bt_recorder.h \
-    Sources/bt_wav_writer.h \
     Sources/config.h \
     Sources/ta_ini.h
 
 SOURCES += \
+    Sources/ab_chapar.cpp \
+    Sources/ab_mbr_base.cpp \
+    Sources/ab_recorder.cpp \
+    Sources/ab_wav_writer.cpp \
     Sources/backend.cpp \
-    Sources/bt_chapar.cpp \
-    Sources/bt_mbr_base.cpp \
-    Sources/bt_recorder.cpp \
-    Sources/bt_wav_writer.cpp \
     Sources/main.cpp \
     Sources/ta_ini.cpp
 
-win32:HEADERS += Sources/bt_lua.h
+win32:HEADERS +=
 
-win32:SOURCES += Sources/bt_lua.cpp
+win32:SOURCES +=
+
+HEADERS += \
+    Sources/ab_lua.h
+
+SOURCES += \
+    Sources/ab_lua.cpp
