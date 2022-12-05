@@ -1,5 +1,5 @@
-#ifndef BT_LUA_H
-#define BT_LUA_H
+#ifndef AB_LUA_H
+#define AB_LUA_H
 
 #include <QString>
 extern "C"
@@ -13,12 +13,12 @@ extern "C"
 
 #define BT_PN_SEPARATOR ","
 
-class BtLua
+class AbLua
 {
 public:
-    explicit BtLua();
+    explicit AbLua();
     void run(QString word);
-    ~BtLua();
+    ~AbLua();
 
 private:
     void connectPipe();
@@ -30,4 +30,4 @@ private:
     lua_State *lst;
 };
 
-#endif // BT_LUA_H
+#endif // AB_LUA_H

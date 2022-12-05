@@ -1,7 +1,7 @@
-#include "bt_mbr_base.h"
+#include "ab_mbr_base.h"
 #include <QDebug>
 
-void bt_printResult(QVector<BtWord> result)
+void ab_printResult(QVector<AbWord> result)
 {
     QString buf;
 

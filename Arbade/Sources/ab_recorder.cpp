@@ -1,11 +1,9 @@
-#include "bt_recorder.h"
+#include "ab_recorder.h"
 #include <fcntl.h>
 #include <unistd.h>
 
-BtRecorder::BtRecorder(int sample_count, QObject *parent): QObject(parent)
+AbRecorder::AbRecorder(int sample_count, QObject *parent): QObject(parent)
 {
-    read_pf = 0;
-
 #ifdef __linux__
     // Done to skip shitty alsa messages
     int saved_stdout = dup(STDERR_FILENO);
@@ -28,7 +26,7 @@ BtRecorder::BtRecorder(int sample_count, QObject *parent): QObject(parent)
     buf_index = 0;
 }
 
-BtRecorder::~BtRecorder()
+AbRecorder::~AbRecorder()
 {
     if( pa_stream )
     {
@@ -45,7 +43,7 @@ BtRecorder::~BtRecorder()
     }
 }
 
-void BtRecorder::openMic()
+void AbRecorder::openMic()
 {
     PaError pa_err = Pa_OpenDefaultStream(&pa_stream, 1, 0, paInt16,
                                           BT_REC_RATE, 0, PaCallback, this);
@@ -58,7 +56,7 @@ void BtRecorder::openMic()
 
 // This function deosn't need to be called
 // Only use if you don't plan on using read function
-void BtRecorder::startStream()
+void AbRecorder::startStream()
 {
     if( Pa_IsStreamStopped(pa_stream) )
     {
@@ -68,9 +66,10 @@ void BtRecorder::startStream()
             qDebug() << "Failed to open PortAudio stream";
         }
     }
+    buf_index = 0;
 }
 
-int BtRecorder::Callback(int16_t *data, int size)
+int AbRecorder::Callback(int16_t *data, int size)
 {
     int free_len = buf_size-buf_index;
     if( free_len<size )
@@ -80,9 +79,8 @@ int BtRecorder::Callback(int16_t *data, int size)
             cy_buf[buf_index] = data[i];
             buf_index++;
         }
-        qDebug() << "Recording is done" << size << free_len;
+        qDebug() << "Recording is done";
         Pa_StopStream(pa_stream);
-        Pa_CloseStream(pa_stream);
         emit finished();
         return paComplete;
     }
@@ -100,7 +98,7 @@ int PaCallback(const void *input, void *output,
                const PaStreamCallbackTimeInfo *time_info,
                PaStreamCallbackFlags status_flags, void *user_data)
 {
-    BtRecorder *pa_src = reinterpret_cast<BtRecorder*>(user_data);
+    AbRecorder *pa_src = reinterpret_cast<AbRecorder*>(user_data);
 
     int size = frame_count;
     void *ptr = const_cast<void *>(input);

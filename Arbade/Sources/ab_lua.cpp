@@ -1,8 +1,8 @@
-#include "bt_lua.h"
+#include "ab_lua.h"
 #include <QtDebug>
 #include <QDir>
 
-BtLua::BtLua()
+AbLua::AbLua()
 {
     lst = luaL_newstate();
     luaL_openlibs(lst);
@@ -10,7 +10,7 @@ BtLua::BtLua()
     connectPipe();
 }
 
-void BtLua::connectPipe()
+void AbLua::connectPipe()
 {
     // 0: Default Wait Time
     int np_is_available = WaitNamedPipeA(BT_PIPE_ADDRESS, 0);
@@ -34,7 +34,7 @@ void BtLua::connectPipe()
     }
 }
 
-void BtLua::run(QString word)
+void AbLua::run(QString word)
 { ///FIXME: solve directory problem
     QString current_dir = QDir::currentPath();
     QDir::setCurrent(KAL_SI_DIR_WIN);
@@ -60,13 +60,13 @@ void BtLua::run(QString word)
     QDir::setCurrent(current_dir);
 }
 
-BtLua::~BtLua()
+AbLua::~AbLua()
 {
     lua_close(lst);
     CloseHandle(hPipe);
 }
 
-void BtLua::sendKey(QString type, int keycode)
+void AbLua::sendKey(QString type, int keycode)
 {
     QString line = type + BT_PN_SEPARATOR;
     line += QString::number(keycode) + "\n";
@@ -74,7 +74,7 @@ void BtLua::sendKey(QString type, int keycode)
     sendPipe(line.toStdString().c_str());
 }
 
-void BtLua::sendDebug(QString word)
+void AbLua::sendDebug(QString word)
 {
     QString line = "debug" BT_PN_SEPARATOR;
     line += word + "\n";
@@ -82,7 +82,7 @@ void BtLua::sendDebug(QString word)
     sendPipe(line.toStdString().c_str());
 }
 
-void BtLua::sendPipe(const char *data)
+void AbLua::sendPipe(const char *data)
 {
     DWORD len = strlen(data);
     if( hPipe==INVALID_HANDLE_VALUE )

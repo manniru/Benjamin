@@ -1,5 +1,5 @@
-#ifndef BT_RECORDER_H
-#define BT_RECORDER_H
+#ifndef AB_RECORDER_H
+#define AB_RECORDER_H
 
 #include <QObject>
 #include <QDebug>
@@ -12,16 +12,16 @@
 #define BT_CON_TIMER     1000
 #define BT_INV_TIME     -1
 
-class BtRecorder: public QObject
+class AbRecorder: public QObject
 {
     Q_OBJECT
 public:
-    explicit BtRecorder(int sample_count, QObject *parent = nullptr);
+    explicit AbRecorder(int sample_count, QObject *parent = nullptr);
 
     // The real PortAudio callback delegates to this one
     int Callback(int16_t *data, int size);
 
-    ~BtRecorder();
+    ~AbRecorder();
     int16_t *cy_buf;
     int buf_size;
     int buf_index;
@@ -36,12 +36,6 @@ private:
     void openMic();
 
     PaStream *pa_stream;
-    bool pa_started_; // becomes "true" after "pa_stream_" is started
-    uint report_interval_; // interval (in Read() calls) to report PA rb overflows
-    uint nread_calls_; // number of Read() calls so far
-    uint noverflows_; // number of the ringbuf overflows since the last report
-    uint samples_lost_; // samples lost, due to PA ring buffer overflow
-    int    read_pf; //fake pointer for only OnlineDecodable(multicore)
 };
 
 // The actual PortAudio callback - delegates to OnlinePaSource->Callback()
@@ -53,4 +47,4 @@ int PaCallback(const void *input, void *output,
 
 
 
-#endif // BT_RECORDER_H
+#endif // AB_RECORDER_H
