@@ -250,6 +250,7 @@ int BtWavWriter::snRec(int num, QVector<BtWord> result)
 
     return 0;
 }
+
 QString BtWavWriter::wordToId(QVector<BtWord> result)
 {
     QString buf = "";

@@ -30,6 +30,7 @@ void MmKeyExec::delayedExec()
     }
     else if( state=='a' )
     {
+        qDebug() << "PAKAM NAKONID";
         mm_launchScript(RE_WINSCR_DIR"\\git_date.cmd");
     }
     else if( state )
