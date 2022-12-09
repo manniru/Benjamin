@@ -1,6 +1,7 @@
 TEMPLATE = app
 
-QT += multimedia
+QT += multimedia \
+      quick
 
 CONFIG += console
 
@@ -25,22 +26,25 @@ QMAKE_LFLAGS_RELEASE -= -O1
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc
 OBJECTS_DIR = Build/.obj
+QMLCACHE_DIR = ./Build
 
 OTHER_FILES = BaTool.conf
 
 HEADERS += \
-    Sources/ab_chapar.h \
+    Sources/ab_manager.h \
     Sources/ab_mbr_base.h \
     Sources/ab_recorder.h \
+    Sources/ab_scene.h \
     Sources/ab_wav_writer.h \
     Sources/backend.h \
     Sources/config.h \
     Sources/ta_ini.h
 
 SOURCES += \
-    Sources/ab_chapar.cpp \
+    Sources/ab_manager.cpp \
     Sources/ab_mbr_base.cpp \
     Sources/ab_recorder.cpp \
+    Sources/ab_scene.cpp \
     Sources/ab_wav_writer.cpp \
     Sources/backend.cpp \
     Sources/main.cpp \
@@ -55,3 +59,11 @@ HEADERS += \
 
 SOURCES += \
     Sources/ab_lua.cpp
+
+RESOURCES += \
+             Qml/ui.qrc \
+             Resources/fonts.qrc
+
+OTHER_FILES += Qml/*.qml
+
+QML_IMPORT_PATH += Qml/
