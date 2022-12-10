@@ -24,6 +24,7 @@ AbRecorder::AbRecorder(int sample_count, QObject *parent): QObject(parent)
     buf_size = sample_count;
     cy_buf = (int16_t *)malloc(buf_size * sizeof(int16_t));
     buf_index = 0;
+    last_percent = 0;
 }
 
 AbRecorder::~AbRecorder()
@@ -90,6 +91,14 @@ int AbRecorder::Callback(int16_t *data, int size)
         cy_buf[buf_index] = data[i];
         buf_index++;
     }
+
+    int percent = (100*buf_index)/buf_size;
+    if( last_percent!=percent )
+    {
+        last_percent = percent;
+        emit updatePercent(last_percent);
+    }
+
     return paContinue;
 }
 

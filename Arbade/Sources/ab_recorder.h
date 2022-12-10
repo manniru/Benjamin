@@ -31,11 +31,13 @@ public slots:
 
 signals:
     void finished();
+    void updatePercent(int percent);
 
 private:
     void openMic();
 
     PaStream *pa_stream;
+    int last_percent;
 };
 
 // The actual PortAudio callback - delegates to OnlinePaSource->Callback()
