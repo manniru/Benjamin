@@ -1,23 +1,17 @@
 #include <QGuiApplication>
-#include "ab_chapar.h"
+#include <QtQml/QQmlApplicationEngine>
+#include "ab_scene.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    AbChapar chaper;
-    QString category="sag";
-    int count = 100;
 
-    if( argc>1 )
-    {
-        category = argv[1];
-    }
-    if( argc>2 )
-    {
-        count = atoi(argv[2]);
-    }
+    qmlRegisterType<AbScene>("OpenGLUnderQML", 1, 0, "AbScene");
 
-    chaper.record(count, category);
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    QObject *mainItem = engine.rootObjects().first();
+    ab_setUi(mainItem);
 
     return app.exec();
 }
