@@ -1,45 +1,81 @@
-#include "ab_chapar.h"
+#include "ab_manager.h"
 #include <QDebug>
 #include <QDir>
 #include <QThread>
 #include <time.h>
 #include <stdlib.h>
 
-AbChapar::AbChapar(QObject *parent) : QObject(parent)
+AbManager::AbManager(QObject *parent) : QObject(parent)
 {
-    gui_len = 3;
-    gui_pause = 1000;
-
     srand(time(NULL));
-    int sample_count = gui_len*BT_REC_RATE;
+    int sample_count = params.rec_time*BT_REC_RATE;
+    qDebug() << "sample_count" << sample_count;
     rec = new AbRecorder(sample_count);
     wav = new AbWavWriter(rec->cy_buf, sample_count);
     connect(rec, SIGNAL(finished()), this, SLOT(writeWav()));
+    connect(rec, SIGNAL(updatePercent(int)),
+            this, SLOT(updateTime(int)));
     lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
     readWordList();
+    read_timer = new QTimer();
+    connect(read_timer, SIGNAL(timeout()),
+            this, SLOT(readDone()));
 }
 
-void AbChapar::writeWav()
+void AbManager::writeWav()
 {
-    wav->write(wav_path);
-    r_counter--;
-    if( r_counter>0 )
+    if( params.count<=params.total_count )
     {
-        record(r_counter, wav->category);
+        if( params.status==AB_STATE_REQPAUSE )
+        {
+            emit statusChanged(AB_STATE_PAUSE);
+        }
+        else
+        {
+            emit statusChanged(AB_STATE_BREAK);
+            emit timeChanged(0);
+        }
+    }
+    else
+    {
+        emit statusChanged(AB_STATE_STOP);
+        params.count = 0;
+    }
+    wav->write(wav_path);
+
+    if( params.count<=params.total_count &&
+        params.status!=AB_STATE_REQPAUSE )
+    {
+        record();
     }
 }
 
-void AbChapar::record(int count, QString category)
+void AbManager::record()
 {
-    r_counter = count;
-    wav_path = getRandPath(category);
-    wav->setCategory(category);
-    QThread::msleep(gui_pause);
-    qDebug() << "start record";
-    rec->startStream();
+    emit countChanged(params.count + 1);
+    wav_path = getRandPath(params.category);
+    wav->setCategory(params.category);
+    emit statusChanged(AB_STATE_BREAK);
+    emit timeChanged(0);
+    read_timer->start(params.pause_time*1000);
 }
 
-QString AbChapar::getRandPath(QString category)
+void AbManager::readDone()
+{
+    if( params.status==AB_STATE_REQPAUSE )
+    {
+        emit statusChanged(AB_STATE_PAUSE);
+    }
+    else
+    {
+        emit statusChanged(AB_STATE_REC);
+        qDebug() << "start record";
+        rec->startStream();
+    }
+    read_timer->stop();
+}
+
+QString AbManager::getRandPath(QString category)
 {
     int word_id[AB_WORD_LEN];
     int lexicon_size = lexicon.length();
@@ -72,7 +108,7 @@ QString AbChapar::getRandPath(QString category)
     return "";
 }
 
-QString AbChapar::getFileName(QVector<AbWord> words,
+QString AbManager::getFileName(QVector<AbWord> words,
                               QString category)
 {
     // verified base name
@@ -84,7 +120,12 @@ QString AbChapar::getFileName(QVector<AbWord> words,
     return name;
 }
 
-void AbChapar::readWordList()
+void AbManager::updateTime(int percent)
+{
+    emit timeChanged(percent);
+}
+
+void AbManager::readWordList()
 {
     if( word_list.size() )
     {
@@ -112,7 +153,7 @@ void AbChapar::readWordList()
     wl_file.close();
 }
 
-QString AbChapar::wordToId(QVector<AbWord> result)
+QString AbManager::wordToId(QVector<AbWord> result)
 {
     QString buf = "";
 
@@ -147,18 +188,20 @@ QString AbChapar::wordToId(QVector<AbWord> result)
     return buf;
 }
 
-void AbChapar::printWords(QVector<AbWord> words)
+void AbManager::printWords(QVector<AbWord> words)
 {
-    QString msg;
+    QString msg, total_words;
 
     for( int i=0 ; i<words.size() ; i++ )
     {
         msg += words[i].word + "(";
         msg += QString::number(words[i].word_id) + ") ";
+        total_words += "<" + words[i].word + "> ";
     }
     qDebug() << "Message:" << msg;
+    emit wordsChanged(total_words);
 }
 
-AbChapar::~AbChapar()
+AbManager::~AbManager()
 {
 }
