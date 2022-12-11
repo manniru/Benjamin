@@ -23,7 +23,7 @@ ApplicationWindow
     minimumWidth: 760
 
     color: "#FFFFFF"
-    title: "ARBADE_UI"
+    title: "ArBade"
     visible: true
 
     AbHelp
@@ -34,7 +34,7 @@ ApplicationWindow
         height: root.height
         anchors.top: parent.top
         anchors.right: parent.right
-        key_text: "Help:\n" +
+        key_text: "Help\n" +
                    "Up:\n" +
                    "Down:\n" +
                    "Right:\n" +
@@ -117,8 +117,6 @@ ApplicationWindow
         id: fontRobotoRegular
         source: "qrc:/Roboto-Regular.ttf"
     }
-
-
 
     function updatePlotSize()
     {

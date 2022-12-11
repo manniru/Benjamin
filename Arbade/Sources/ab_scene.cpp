@@ -65,15 +65,15 @@ void AbScene::setStatus(qreal status)
     }
     man->params.status = status;
 
-    if( man->params.status==AB_STATE_REC )
+    if( man->params.status==AB_STATUS_REC )
     {
         man->record();
     }
-    else if( man->params.status==AB_STATE_STOP )
+    else if( man->params.status==AB_STATUS_STOP )
     {
 
     }
-    else if( man->params.status==AB_STATE_PAUSE )
+    else if( man->params.status==AB_STATUS_PAUSE )
     {
 
     }

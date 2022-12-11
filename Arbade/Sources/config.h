@@ -60,11 +60,11 @@
                               // gaurd time to ensure word is inside region
 #define AB_WORD_LEN      3
 
-#define AB_STATE_REC      1
-#define AB_STATE_PAUSE    2
-#define AB_STATE_STOP     3
-#define AB_STATE_REQPAUSE 4
-#define AB_STATE_BREAK    5
+#define AB_STATUS_REC      1
+#define AB_STATUS_PAUSE    2
+#define AB_STATUS_STOP     3
+#define AB_STATUS_REQPAUSE 4
+#define AB_STATUS_BREAK    5
 
 #endif // BT_CONFIG_H
 

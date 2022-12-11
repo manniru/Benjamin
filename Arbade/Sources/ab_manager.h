@@ -16,7 +16,7 @@ typedef struct AbRecordParam
     qreal   count = 0;
     qreal   total_count = 100;
     qreal   elapsed_time = 0;
-    qreal   status = AB_STATE_STOP;
+    qreal   status = AB_STATUS_STOP;
     qreal   rec_time = 3;
     qreal   num_words = 3;
     qreal   pause_time = 1;

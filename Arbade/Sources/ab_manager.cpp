@@ -26,25 +26,25 @@ void AbManager::writeWav()
 {
     if( params.count<=params.total_count )
     {
-        if( params.status==AB_STATE_REQPAUSE )
+        if( params.status==AB_STATUS_REQPAUSE )
         {
-            emit statusChanged(AB_STATE_PAUSE);
+            emit statusChanged(AB_STATUS_PAUSE);
         }
         else
         {
-            emit statusChanged(AB_STATE_BREAK);
+            emit statusChanged(AB_STATUS_BREAK);
             emit timeChanged(0);
         }
     }
     else
     {
-        emit statusChanged(AB_STATE_STOP);
+        emit statusChanged(AB_STATUS_STOP);
         params.count = 0;
     }
     wav->write(wav_path);
 
     if( params.count<=params.total_count &&
-        params.status!=AB_STATE_REQPAUSE )
+        params.status!=AB_STATUS_REQPAUSE )
     {
         record();
     }
@@ -55,20 +55,20 @@ void AbManager::record()
     emit countChanged(params.count + 1);
     wav_path = getRandPath(params.category);
     wav->setCategory(params.category);
-    emit statusChanged(AB_STATE_BREAK);
+    emit statusChanged(AB_STATUS_BREAK);
     emit timeChanged(0);
     read_timer->start(params.pause_time*1000);
 }
 
 void AbManager::readDone()
 {
-    if( params.status==AB_STATE_REQPAUSE )
+    if( params.status==AB_STATUS_REQPAUSE )
     {
-        emit statusChanged(AB_STATE_PAUSE);
+        emit statusChanged(AB_STATUS_PAUSE);
     }
     else
     {
-        emit statusChanged(AB_STATE_REC);
+        emit statusChanged(AB_STATUS_REC);
         qDebug() << "start record";
         rec->startStream();
     }

@@ -150,7 +150,7 @@ Rectangle
     {
         id: category_label
 
-        text: "Category \"" + category + "\""
+        text: "Category: \"" + category + "\""
         anchors.left: parent.left
         anchors.leftMargin: 30
         anchors.top: words_label.bottom
@@ -164,7 +164,7 @@ Rectangle
     {
         id: count_label
 
-        text: "Count [" + count.toString() + "/" +
+        text: "Count: [" + count.toString() + "/" +
               count_total.toString() + "]"
         anchors.left: parent.left
         anchors.leftMargin: 30
