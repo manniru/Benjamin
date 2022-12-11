@@ -53,25 +53,30 @@ void AbRecorder::openMic()
         qDebug() << "PortAudio failed to open the default stream";
         pa_stream = NULL;
     }
+
+    state = AB_STATUS_BREAK;
+    PaError paerr = Pa_StartStream(pa_stream);
+    if( paerr )
+    {
+        qDebug() << "Failed to open PortAudio stream";
+    }
 }
 
 // This function deosn't need to be called
 // Only use if you don't plan on using read function
 void AbRecorder::startStream()
 {
-    if( Pa_IsStreamStopped(pa_stream) )
-    {
-        PaError paerr = Pa_StartStream(pa_stream);
-        if( paerr )
-        {
-            qDebug() << "Failed to open PortAudio stream";
-        }
-    }
+    state = AB_STATUS_REC;
     buf_index = 0;
 }
 
 int AbRecorder::Callback(int16_t *data, int size)
 {
+    if( state==AB_STATUS_BREAK )
+    {
+        return paContinue;
+    }
+
     int free_len = buf_size-buf_index;
     if( free_len<size )
     {
@@ -81,9 +86,9 @@ int AbRecorder::Callback(int16_t *data, int size)
             buf_index++;
         }
         qDebug() << "Recording is done";
-        Pa_StopStream(pa_stream);
+        state = AB_STATUS_BREAK;
         emit finished();
-        return paComplete;
+        return paContinue;
     }
 
     for( int i=0 ; i<size ; i++ )
