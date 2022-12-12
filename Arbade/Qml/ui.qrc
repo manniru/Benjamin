@@ -4,5 +4,6 @@
         <file>AbHelp.qml</file>
         <file>AbStatus.qml</file>
         <file>AbConst.qml</file>
+        <file>AbDialog.qml</file>
     </qresource>
 </RCC>

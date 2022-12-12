@@ -105,6 +105,23 @@ ApplicationWindow
         id: ab_const
     }
 
+    AbDialog
+    {
+        id: get_value_dialog
+
+        onDialog_textChanged:
+        {
+            if( title==="Enter Category" )
+            {
+                root_scene.category = get_value_dialog.dialog_text
+            }
+            else if( title==="Enter Count" )
+            {
+                root_scene.totalcount = parseInt(get_value_dialog.dialog_text)
+            }
+        }
+    }
+
     Component.onCompleted:
     {
         root_scene.qmlcreated = 1
@@ -166,9 +183,10 @@ ApplicationWindow
         {
             close()
         }
-        else if( key===Qt.Key_Enter )
+        else if( key===Qt.Key_Return )
         {
-
+            get_value_dialog.title = "Enter Category"
+            get_value_dialog.open()
         }
         else if( key===Qt.Key_T )
         {
@@ -176,7 +194,8 @@ ApplicationWindow
         }
         else if( key===Qt.Key_C )
         {
-
+            get_value_dialog.title = "Enter Count"
+            get_value_dialog.open()
         }
     }
 }
