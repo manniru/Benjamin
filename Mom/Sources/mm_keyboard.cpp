@@ -15,6 +15,8 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if( nCode >= 0 )
     {
+        qDebug() << "emul" << key->emul_mode
+                 << key->suppress_r;
         if( key->emul_mode )
         {
             return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -120,14 +122,18 @@ void MmKeyboard::delayedExec()
 
 int MmKeyboard::procPressKey(int key_code)
 {
+    qDebug() << "procPressKey" << key_code
+             << suppress_r;
     if( key_code==VK_LWIN ||
         key_code==VK_RWIN )
     {
         suppress_r = 1;
         return 1;
     }
-    else if( key_code==VK_LSHIFT ||
-             key_code==VK_RSHIFT )
+    else if( key_code==VK_LSHIFT   ||
+             key_code==VK_RSHIFT   ||
+             key_code==VK_LCONTROL ||
+             key_code==VK_LCONTROL )
     {
         if( suppress_r==1 )
         {
@@ -135,14 +141,16 @@ int MmKeyboard::procPressKey(int key_code)
             suppress_r = 2; //normal
             emul_mode = 1;
             e_key->pressKey(VK_LWIN);
+            emul_mode = 0;
         }
     }
     else
     {
-//        qDebug() << "key" << key_code
-//                 << wr_state;
+        qDebug() << "key" << key_code
+                 << suppress_r;
         if( suppress_r==1 || suppress_r==3 )
         {
+            qDebug() << "execWinKey";
             int ret = exec->execWinKey(key_code);
             if( ret )
             {
@@ -154,13 +162,14 @@ int MmKeyboard::procPressKey(int key_code)
                 suppress_r = 2; //normal
                 emul_mode = 1;
                 e_key->pressKey(VK_LWIN);
+                emul_mode = 0;
             }
             return ret;
         }
         else if( key_code==VK_PAUSE )
         {
 //            SendMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, 2);
-            exec->goToSleep();
+            exec->goToSleep(&emul_mode);
             return 1;
         }
         else if( key_code==VK_CANCEL )

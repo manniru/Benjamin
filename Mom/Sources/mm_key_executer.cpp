@@ -104,7 +104,7 @@ int MmKeyExec::execWinKey(int key_code)
     return 0;
 }
 
-void MmKeyExec::goToSleep()
+void MmKeyExec::goToSleep(int *emul_mode)
 {
     virt->pressKey(VK_LWIN);
     virt->sendKey('X');
@@ -113,5 +113,6 @@ void MmKeyExec::goToSleep()
     Sleep(200);
     virt->sendKey('U');
     Sleep(200);
+    *emul_mode = 0;
     virt->sendKey('S');
 }

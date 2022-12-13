@@ -18,7 +18,7 @@ public:
     int supress_r = 0; //suprress release flag for win key
     int win_p = 0;
     int execWinKey(int key_code);
-    void goToSleep();
+    void goToSleep(int *emul_mode);
 
 public slots:
     void delayedExec();
