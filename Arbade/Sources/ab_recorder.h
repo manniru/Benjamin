@@ -27,7 +27,7 @@ public:
     int buf_index;
 
 public slots:
-    void startStream();
+    void reset();
 
 signals:
     void finished();

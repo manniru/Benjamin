@@ -12,6 +12,8 @@ Dialog
     width: 300
     standardButtons: StandardButton.Ok | StandardButton.Cancel
     focus: true
+    x: (root.width - width) / 2
+    y: (root.height - height) / 2
     property string dialog_text: ""
 
     Text
@@ -19,7 +21,8 @@ Dialog
         id: get_value_label
         anchors.left: parent.Left
         anchors.top: parent.top
-        anchors.topMargin: 10
+        anchors.topMargin: 5
+        font.pixelSize: 20
         text: "value"
         height: 40
     }
@@ -30,6 +33,7 @@ Dialog
         anchors.top: parent.top
         anchors.leftMargin: 10
         text: "Input text"
+        font.pixelSize: 16
         width: parent.width * 0.75
         focus: true
         onFocusChanged: console.log("Focus changed " + focus)

@@ -31,6 +31,7 @@ QMLCACHE_DIR = ./Build
 OTHER_FILES = BaTool.conf
 
 HEADERS += \
+    Sources/ab_counter.h \
     Sources/ab_manager.h \
     Sources/ab_mbr_base.h \
     Sources/ab_recorder.h \
@@ -41,6 +42,7 @@ HEADERS += \
     Sources/ta_ini.h
 
 SOURCES += \
+    Sources/ab_counter.cpp \
     Sources/ab_manager.cpp \
     Sources/ab_mbr_base.cpp \
     Sources/ab_recorder.cpp \

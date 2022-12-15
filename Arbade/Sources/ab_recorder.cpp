@@ -64,7 +64,7 @@ void AbRecorder::openMic()
 
 // This function deosn't need to be called
 // Only use if you don't plan on using read function
-void AbRecorder::startStream()
+void AbRecorder::reset()
 {
     state = AB_STATUS_REC;
     buf_index = 0;
