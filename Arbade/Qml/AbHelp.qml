@@ -1,42 +1,43 @@
 import QtQuick 2.0
+import QtQuick.Layouts 1.2
 
 Rectangle
 {
     property string font_name_label:    fontRobotoRegular.name
 
-    property int    text_heigh:         key_label.height
-
-    property int    font_size:          28
+    property int    font_size:          24
     property color  color_text:         "#333"
 
-    property string key_text:          ""
-    property string description_text:          ""
+    property var help_text: ["Up:Increase Pause","Down:Decrease Pause",
+                             "Right:Increase Num of Words",
+                             "Left:Decrease Num of Words",
+                             "K:Increase Rec Time","J:Decrease Rec Time",
+                             "Space:Pause Recording","Q:Close Window",
+                             "Enter:Change Category name",
+                             "T:Open Category Directory",
+                             "C:Change Count Number"]
 
     color: "transparent"
+//    color: "yellow"
 
-    Text
+    GridLayout
     {
-        id: key_label
-
-        text: key_text
+        columns: 4
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: 30
-        color: color_text
-        font.pixelSize: font_size
-        font.family: font_name_label
-        lineHeight: 1.2
-    }
+        columnSpacing: 20
 
-    Text
-    {
-        text: description_text
-        anchors.left: key_label.right
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: 30
-        color: color_text
-        font.pixelSize: font_size
-        font.family: font_name_label
-        lineHeight: 1.2
+        Repeater
+        {
+            model: help_text
+            Text
+            {
+                text: modelData
+                color: color_text
+                font.pixelSize: font_size
+                font.family: font_name_label
+            }
+        }
     }
 }
