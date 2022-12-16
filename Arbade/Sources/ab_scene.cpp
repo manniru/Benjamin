@@ -13,6 +13,8 @@ AbScene::AbScene()
             this, SLOT(setCount(qreal)));
     connect(man, SIGNAL(timeChanged(qreal)),
             this, SLOT(setElapsedtime(qreal)));
+
+//    qDebug() << ab_getStat("sag");
 }
 
 void AbScene::setQmlcreated(qreal qmlcreated)
@@ -22,6 +24,7 @@ void AbScene::setQmlcreated(qreal qmlcreated)
         return;
     }
     m_qmlcreated = qmlcreated;
+    setStat(ab_getStat(man->params.category));
     emit qmlcreatedChanged();
     if(window())
     {
@@ -65,17 +68,9 @@ void AbScene::setStatus(qreal status)
     }
     man->params.status = status;
 
-    if( man->params.status==AB_STATUS_REC )
+    if( status==AB_STATUS_REC )
     {
         man->record();
-    }
-    else if( man->params.status==AB_STATUS_STOP )
-    {
-
-    }
-    else if( man->params.status==AB_STATUS_PAUSE )
-    {
-
     }
 
     emit statusChanged();
@@ -92,6 +87,11 @@ void AbScene::updateStatus(qreal status)
         return;
     }
     man->params.status = status;
+
+    if( status==AB_STATUS_STOP )
+    {
+        setStat(ab_getStat(man->params.category));
+    }
 
     emit statusChanged();
     if( window() )
@@ -142,6 +142,21 @@ void AbScene::setPausetime(qreal pausetime)
     }
 }
 
+void AbScene::setKey(qreal key)
+{
+    if( key==man->params.key )
+    {
+        return;
+    }
+    processKey(key);
+    man->params.key = 0;
+    emit keyChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
 void AbScene::setCount(qreal count)
 {
     if( count==man->params.count )
@@ -164,6 +179,7 @@ void AbScene::setCategory(QString category)
     }
 
     man->params.category = category;
+    setStat(ab_getStat(man->params.category));
     emit categoryChanged();
     if( window() )
     {
@@ -183,6 +199,38 @@ void AbScene::setWords(QString words)
     if( window() )
     {
         window()->update();
+    }
+}
+
+void AbScene::setStat(QString stat)
+{
+    if( stat==man->params.stat )
+    {
+        return;
+    }
+
+    man->params.stat = stat;
+    emit statChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
+void AbScene::processKey(int key)
+{
+    if( key==Qt::Key_T )
+    {
+        QString path = QDir::currentPath() + "\\";
+        path.replace('/', '\\');
+        path +=  KAL_AU_DIR_WIN"train\\";
+        path += man->params.category + "\\";
+        QString cmd = "explorer.exe " + path;
+        system(cmd.toStdString().c_str());
+    }
+    else
+    {
+        return;
     }
 }
 
