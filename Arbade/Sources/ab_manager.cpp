@@ -19,32 +19,35 @@ AbManager::AbManager(QObject *parent) : QObject(parent)
     readWordList();
     read_timer = new QTimer();
     connect(read_timer, SIGNAL(timeout()),
-            this, SLOT(readDone()));
+            this, SLOT(breakTimeout()));
 }
 
 void AbManager::writeWav()
 {
-    if( params.count<=params.total_count )
+    if( params.count<params.total_count )
     {
         if( params.status==AB_STATUS_REQPAUSE )
         {
             emit statusChanged(AB_STATUS_PAUSE);
+//            qDebug() << "writeWav:AB_STATUS_PAUSE";
         }
         else
         {
             emit statusChanged(AB_STATUS_BREAK);
+//            qDebug() << "writeWav:AB_STATUS_BREAK";
             emit timeChanged(0);
         }
     }
     else
     {
         emit statusChanged(AB_STATUS_STOP);
+//        qDebug() << "writeWav:AB_STATUS_STOP";
         params.count = 0;
     }
     wav->write(wav_path);
 
-    if( params.count<=params.total_count &&
-        params.status!=AB_STATUS_REQPAUSE )
+    if( params.count<params.total_count &&
+        params.status==AB_STATUS_BREAK )
     {
         record();
     }
@@ -56,21 +59,24 @@ void AbManager::record()
     wav_path = getRandPath(params.category);
     wav->setCategory(params.category);
     emit statusChanged(AB_STATUS_BREAK);
+//    qDebug() << "record:AB_STATUS_BREAK";
     emit timeChanged(0);
     read_timer->start(params.pause_time*1000);
 }
 
-void AbManager::readDone()
+void AbManager::breakTimeout()
 {
     if( params.status==AB_STATUS_REQPAUSE )
     {
         emit statusChanged(AB_STATUS_PAUSE);
+//        qDebug() << "readDone:AB_STATUS_PAUSE";
     }
     else
     {
         emit statusChanged(AB_STATUS_REC);
+//        qDebug() << "readDone:AB_STATUS_REC";
         qDebug() << "start record";
-        rec->startStream();
+        rec->reset();
     }
     read_timer->stop();
 }

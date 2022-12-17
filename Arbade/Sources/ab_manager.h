@@ -13,6 +13,7 @@ typedef struct AbRecordParam
 {
     QString category = "sag";
     QString words = "<One> <Roger> <Spotify>";
+    QString stat = "One: 10 Two: 13 ...\nAlpha: 22  ...";
     qreal   count = 0;
     qreal   total_count = 100;
     qreal   elapsed_time = 0;
@@ -20,6 +21,7 @@ typedef struct AbRecordParam
     qreal   rec_time = 3;
     qreal   num_words = 3;
     qreal   pause_time = 1;
+    qreal   key = 0;
 }AbRecordParam;
 
 class AbManager : public QObject
@@ -42,7 +44,7 @@ signals:
 
 private slots:
     void writeWav();
-    void readDone();
+    void breakTimeout();
     void updateTime(int percent);
 
 private:
