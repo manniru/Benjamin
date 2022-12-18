@@ -5,7 +5,7 @@
 #include <QQuickItem>
 #include <QQuickWindow>
 #include "ab_manager.h"
-#include "ab_counter.h"
+#include "ab_stat.h"
 
 class AbScene : public QQuickItem
 {

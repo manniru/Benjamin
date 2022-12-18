@@ -32,12 +32,14 @@ Rectangle
                 font.family: font_name_label
 
                 textFormat: Text.RichText
+//                verticalAlignment: Text.AlignVCenter
+//                Layout.alignment: Qt.AlignVCenter
             }
         }
     }
 
     function setText(text)
     {
-        grid_text = text.split('!');
+        grid_text = text.split('!').filter(Boolean); // filter(Boolean) to remove empty parts
     }
 }

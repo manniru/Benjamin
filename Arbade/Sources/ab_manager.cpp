@@ -203,9 +203,13 @@ void AbManager::printWords(QVector<AbWord> words)
         msg += words[i].word + "(";
         msg += QString::number(words[i].word_id) + ") ";
         total_words += "<" + words[i].word + "> ";
+        if( i%3==2 )
+        {
+            total_words += "\n";
+        }
     }
     qDebug() << "Message:" << msg;
-    emit wordsChanged(total_words);
+    emit wordsChanged(total_words.trimmed());
 }
 
 AbManager::~AbManager()
