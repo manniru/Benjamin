@@ -65,6 +65,7 @@
 #define AB_STATUS_STOP     3
 #define AB_STATUS_REQPAUSE 4
 #define AB_STATUS_BREAK    5
+#define AB_STATUS_PLAY     6
 
 #endif // BT_CONFIG_H
 
