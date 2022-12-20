@@ -36,6 +36,7 @@ HEADERS += \
     Sources/ab_recorder.h \
     Sources/ab_scene.h \
     Sources/ab_stat.h \
+    Sources/ab_wav_reader.h \
     Sources/ab_wav_writer.h \
     Sources/backend.h \
     Sources/config.h \
@@ -47,6 +48,7 @@ SOURCES += \
     Sources/ab_recorder.cpp \
     Sources/ab_scene.cpp \
     Sources/ab_stat.cpp \
+    Sources/ab_wav_reader.cpp \
     Sources/ab_wav_writer.cpp \
     Sources/backend.cpp \
     Sources/main.cpp \

@@ -5,7 +5,7 @@ Rectangle
     property string font_name_label:    fontRobotoRegular.name
 
     property int    font_size:          28
-    property color  color_text:         "#333"
+    property color  color_text:         "#b2b2b2"
 
     property real   pause_time:         1
     property real   num_words:          3
@@ -16,9 +16,9 @@ Rectangle
     property int    count:              5
     property int    count_total:        100
     property real   elapsed_time:       0
+    property real   power:              -45
 
     color: "transparent"
-//    color: "red"
 
     Rectangle
     {
@@ -26,6 +26,8 @@ Rectangle
         height: childrenRect.height
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: 20
+
+        color: "transparent"
 
         Text
         {
@@ -105,6 +107,10 @@ Rectangle
                 {
                     "Break"
                 }
+                else if( status===ab_const.ab_STATUS_PLAY )
+                {
+                    "Play"
+                }
             }
             anchors.left: status_label.right
             anchors.top: rec_label.bottom
@@ -129,6 +135,10 @@ Rectangle
                 else if( status===ab_const.ab_STATUS_BREAK )
                 {
                     "#00b8d7"
+                }
+                else if( status===ab_const.ab_STATUS_PLAY )
+                {
+                    "#f00"
                 }
             }
             font.pixelSize: font_size
@@ -198,6 +208,19 @@ Rectangle
             color: color_text
             width: (elapsed_time/100)*206
             height: 30
+        }
+
+        Text
+        {
+            id: power_label
+
+            text: "Power: " + power.toFixed(2).toString() + "dB"
+            anchors.left: parent.left
+            anchors.top: time_label.bottom
+            color: color_text
+            font.pixelSize: font_size
+            font.family: font_name_label
+            lineHeight: 1.2
         }
 
     }

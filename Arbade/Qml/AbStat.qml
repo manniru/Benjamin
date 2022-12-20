@@ -6,7 +6,7 @@ Rectangle
     property string font_name_label:    fontRobotoRegular.name
 
     property int    font_size:          28
-    property color  color_text:         "#333"
+    property color  color_text:         "#b3b3b3"
 
     property var grid_text: ["apples", "oranges", "pears"]
 

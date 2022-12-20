@@ -6,18 +6,19 @@ Rectangle
     property string font_name_label:    fontRobotoRegular.name
 
     property int    font_size:          24
-    property color  color_text:         "#333"
+    property color  color_text:         "#9a9a9a"
 
     property var help_text: ["Up:Increase Pause","Down:Decrease Pause",
                              "Right:Increase Num of Words",
                              "Left:Decrease Num of Words",
                              "K:Increase Rec Time","J:Decrease Rec Time",
-                             "Space:Pause Recording","Q:Close Window",
+                             "Space:Pause Recording",
                              "Enter:Change Category name",
                              "T:Open Category Directory",
-                             "C:Change Count Number"]
+                             "C:Change Count Number",
+                             "V:Verify Mode","Q:Close Window"]
 
-    color: "transparent"
+    color: "#262626"
 //    color: "yellow"
 
     GridLayout
