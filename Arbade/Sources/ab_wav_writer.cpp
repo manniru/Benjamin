@@ -1,5 +1,4 @@
 #include "ab_wav_writer.h"
-#include <QDir>
 
 AbWavWriter::AbWavWriter(int16_t *buffer, int sample_count)
 {
@@ -69,17 +68,6 @@ void AbWavWriter::writeWav()
         file->write((char *)pt, 2);
         file->write((char *)&zero, 2);
     }
-}
-
-bool AbWavWriter::isSleep()
-{
-    QString status_path = getenv("HOME");
-    status_path += "/.config/polybar/awesomewm/ben_status";
-    if( QFile::exists(status_path) )
-    {
-        return true;
-    }
-    return false;
 }
 
 void AbWavWriter::writeWavHeader(int len)

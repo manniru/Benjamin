@@ -1,7 +1,5 @@
 #include "backend.h"
 #include "config.h"
-#include <QFile>
-#include <QDir>
 
 QFile *log_file = NULL;
 clock_t bt_last_clock;

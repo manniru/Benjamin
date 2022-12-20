@@ -2,8 +2,12 @@
 #define BACKEND_H
 
 #include <QDebug>
+#include <QFile>
+#include <QDir>
+#include <QTimer>
 #include <stdio.h>
 #include <unistd.h>
+#include <math.h>
 
 // KD_STATE_BLOWN: if detect words but
 //                 cannot detect silence

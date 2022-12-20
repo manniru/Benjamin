@@ -1,10 +1,17 @@
 #include "ab_stat.h"
-#include <QDebug>
 
 QString ab_getStat(QString category)
 {
-    QString path = KAL_AU_DIR_WIN"train\\";
-    path += category + "\\";
+    QString path;
+    if( category=="unverified" )
+    {
+        path = KAL_AU_DIR_WIN + category + "\\";
+    }
+    else
+    {
+        path = KAL_AU_DIR_WIN"train\\";
+        path += category + "\\";
+    }
     QDir cat_dir(path);
     if( !cat_dir.exists() )
     {
@@ -27,7 +34,7 @@ QString ab_getStat(QString category)
     for( int i=0 ; i<len ; i++ )
     {
         data = QStringLiteral("%1").arg(i, 3, 10, QLatin1Char('0'));
-        result += setFont(data, count[i], mean, var, 16);
+        result += setFont(data, count[i], mean, var);
         data = lexicon[i];
         result += setFont(data, count[i], mean, var) + "!";
         data = QString::number(count[i]);
@@ -36,6 +43,38 @@ QString ab_getStat(QString category)
     result += "mean!" + QString::number(mean) + "!";
     result += "var!" + QString::number(var) + "!";
     return result.trimmed();
+}
+
+QStringList ab_listDir(QString category)
+{
+    QString path;
+    QStringList ret;
+    if( category=="unverified" )
+    {
+        path = KAL_AU_DIR_WIN + category + "\\";
+    }
+    else
+    {
+        path = KAL_AU_DIR_WIN"train\\";
+        path += category + "\\";
+    }
+
+    QDir cat_dir(path);
+    if( !cat_dir.exists() )
+    {
+        qDebug() << "Warning: Directory doesn't Exist,"
+                 << "cannot generate statistics.";
+        return QStringList();
+    }
+
+    QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files,
+                                 QDir::Time | QDir::Reversed);
+    int len = dir_list.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        ret.push_back(dir_list[i].absoluteFilePath());
+    }
+    return ret;
 }
 
 QString setFont(QString data, int val, int mean, int var,
@@ -54,15 +93,15 @@ QString setFont(QString data, int val, int mean, int var,
     // set font color
     if( val<mean-var )
     {
-        result += "color: red;\"> ";
+        result += "color: #c4635e;\"> ";
     }
     else if( val>mean+var )
     {
-        result += "color: green;\"> ";
+        result += "color: #36b245;\"> ";
     }
     else
     {
-        result += "color: black;\"> ";
+        result += "color: #b3b3b3;\"> ";
     }
     result += data;
     result += "</font>";

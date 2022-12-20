@@ -1,8 +1,7 @@
 #ifndef AB_WAV_WRITER_H
 #define AB_WAV_WRITER_H
 
-#include <QTimer>
-#include <QDebug>
+#include <QDir>
 
 #include "ab_recorder.h"
 #include "ab_mbr_base.h" //For BtWord
@@ -21,7 +20,6 @@ public:
 private:
     void writeWav();
     void writeWavHeader(int len);
-    bool isSleep();
 
     int16_t     *cy_buf;
     int          buf_size;
