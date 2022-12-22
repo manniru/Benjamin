@@ -1,8 +1,8 @@
 #ifndef AB_MBR_BASE_H
 #define AB_MBR_BASE_H
 
-#include <QString>
 #include <QFile>
+#include <QDebug>
 
 typedef struct AbWord
 {

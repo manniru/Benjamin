@@ -1,7 +1,4 @@
 #include "ab_manager.h"
-#include <QDebug>
-#include <QDir>
-#include <QThread>
 #include <time.h>
 #include <stdlib.h>
 
@@ -11,7 +8,8 @@ AbManager::AbManager(QObject *parent) : QObject(parent)
     int sample_count = params.rec_time*BT_REC_RATE;
     qDebug() << "sample_count" << sample_count;
     rec = new AbRecorder(sample_count);
-    wav = new AbWavWriter(rec->cy_buf, sample_count);
+    wav_wr = new AbWavWriter(rec->cy_buf, sample_count);
+    wav_rd = new AbWavReader(rec->cy_buf, sample_count);
     connect(rec, SIGNAL(finished()), this, SLOT(writeWav()));
     connect(rec, SIGNAL(updatePercent(int)),
             this, SLOT(updateTime(int)));
@@ -20,6 +18,26 @@ AbManager::AbManager(QObject *parent) : QObject(parent)
     read_timer = new QTimer();
     connect(read_timer, SIGNAL(timeout()),
             this, SLOT(breakTimeout()));
+}
+
+void AbManager::readWave(QString filename)
+{
+    wav_rd->read(filename);
+    emit recTimeChanged(wav_rd->wave_time);
+    emit powerChanged(wav_rd->power_dB);
+
+    QFileInfo wav_file(filename);
+    filename = wav_file.baseName();
+    QStringList id_strlist = filename.split("_", QString::SkipEmptyParts);
+    int len = id_strlist.size();
+    QVector<int> id_list;
+    for( int i=0 ; i<len ; i++ )
+    {
+        id_list.push_back(id_strlist[i].toInt());
+    }
+    QString words = idsToWords(id_list);
+    emit numWordChanged(len);
+    emit wordsChanged(words);
 }
 
 void AbManager::writeWav()
@@ -44,7 +62,11 @@ void AbManager::writeWav()
 //        qDebug() << "writeWav:AB_STATUS_STOP";
         params.count = 0;
     }
-    wav->write(wav_path);
+
+    double power_dB = calcPower(rec->cy_buf,
+                                params.rec_time*BT_REC_RATE);
+    emit powerChanged(power_dB);
+    wav_wr->write(wav_path);
 
     if( params.count<params.total_count &&
         params.status==AB_STATUS_BREAK )
@@ -57,11 +79,43 @@ void AbManager::record()
 {
     emit countChanged(params.count + 1);
     wav_path = getRandPath(params.category);
-    wav->setCategory(params.category);
+    wav_wr->setCategory(params.category);
     emit statusChanged(AB_STATUS_BREAK);
 //    qDebug() << "record:AB_STATUS_BREAK";
     emit timeChanged(0);
     read_timer->start(params.pause_time*1000);
+}
+
+void AbManager::swapParams()
+{
+    if( params.verifier )
+    {
+        qreal pause_time = p_backup.pause_time;
+
+        p_backup.pause_time = params.pause_time;
+        p_backup.num_words = params.num_words;
+        p_backup.rec_time = params.rec_time;
+        p_backup.category = params.category;
+        p_backup.total_count = params.total_count;
+
+        emit pauseChanged(pause_time);
+    }
+    else
+    {
+        qreal pause_time = p_backup.pause_time;
+        qreal num_words = p_backup.num_words;
+        qreal rec_time = p_backup.rec_time;
+        QString category = p_backup.category;
+        qreal total_count = p_backup.total_count;
+
+        p_backup.pause_time = params.pause_time;
+
+        emit pauseChanged(pause_time);
+        emit numWordChanged(num_words);
+        emit recTimeChanged(rec_time);
+        emit categoryChanged(category);
+        emit totalCountChanged(total_count);
+    }
 }
 
 void AbManager::breakTimeout()
@@ -194,6 +248,17 @@ QString AbManager::wordToId(QVector<AbWord> result)
     return buf;
 }
 
+QString AbManager::idsToWords(QVector<int> ids)
+{
+    int len_id = ids.size();
+    QString ret;
+    for( int i=0 ; i<len_id ; i++ )
+    {
+        ret += "<" + word_list[ids[i]] + "> ";
+    }
+    return ret.trimmed();
+}
+
 void AbManager::printWords(QVector<AbWord> words)
 {
     QString msg, total_words;
@@ -214,4 +279,17 @@ void AbManager::printWords(QVector<AbWord> words)
 
 AbManager::~AbManager()
 {
+}
+
+double calcPower(int16_t *buffer, int len)
+{
+    double sum_sq = 0;
+    for( int i=0 ; i<len ; i++ )
+    {
+        sum_sq += pow(buffer[i],2);
+    }
+    double power = sqrt(sum_sq)/len;
+    double power_dB = 20*log10(power);
+    power_dB += 50; // calibration
+    return power_dB;
 }

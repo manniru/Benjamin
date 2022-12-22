@@ -3,17 +3,18 @@
 
 #include <QObject>
 #include <thread>         // std::thread
-#include <QTimer>
 
 #include "ab_recorder.h"
 #include "ab_wav_writer.h"
+#include "ab_wav_reader.h"
 #include "backend.h"
 
-typedef struct AbRecordParam
+typedef struct AbRecParam
 {
     QString category = "sag";
     QString words = "<One> <Roger> <Spotify>";
     QString stat = "One: 10 Two: 13 ...\nAlpha: 22  ...";
+    QString address = "";
     qreal   count = 0;
     qreal   total_count = 100;
     qreal   elapsed_time = 0;
@@ -22,7 +23,11 @@ typedef struct AbRecordParam
     qreal   num_words = 3;
     qreal   pause_time = 1;
     qreal   key = 0;
-}AbRecordParam;
+    qreal   power = -45;
+    qreal   verifier = 0;
+    qreal   loadsrc = 0;
+    qreal   delfile = 0;
+}AbRecParam;
 
 class AbManager : public QObject
 {
@@ -32,8 +37,11 @@ public:
     ~AbManager();
 
     void record();
+    void swapParams();
+    void readWave(QString filename);
 
-    AbRecordParam params;
+    AbRecParam params;
+    AbRecParam p_backup;
 
 signals:
     void startDecoding();
@@ -41,6 +49,13 @@ signals:
     void statusChanged(qreal status);
     void countChanged(qreal count);
     void timeChanged(qreal time);
+    void powerChanged(qreal power);
+
+    void pauseChanged(qreal time);
+    void numWordChanged(qreal num_word);
+    void recTimeChanged(qreal time);
+    void categoryChanged(QString category);
+    void totalCountChanged(qreal total_count);
 
 private slots:
     void writeWav();
@@ -53,14 +68,18 @@ private:
     QString getFileName(QVector<AbWord> words, QString category);
     QString wordToId(QVector<AbWord> result);
     void printWords(QVector<AbWord> words);
+    QString idsToWords(QVector<int> ids);
 
     QStringList lexicon;
     AbRecorder *rec;
-    AbWavWriter *wav;
+    AbWavWriter *wav_wr;
+    AbWavReader *wav_rd;
     QTimer *read_timer;
     QString wav_path;
     QStringList  word_list;
     int r_counter;
 };
+
+double calcPower(int16_t *buffer, int len);
 
 #endif // AB_MANAGER_H

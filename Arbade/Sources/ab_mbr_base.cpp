@@ -1,5 +1,4 @@
 #include "ab_mbr_base.h"
-#include <QDebug>
 
 void ab_printResult(QVector<AbWord> result)
 {
