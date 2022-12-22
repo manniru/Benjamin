@@ -39,6 +39,7 @@ private:
     PaStream *pa_stream;
     int last_percent;
     int state;
+    double power;
 };
 
 // The actual PortAudio callback - delegates to OnlinePaSource->Callback()

@@ -5,6 +5,7 @@ QObject* root;//root qml object
 AbScene::AbScene()
 {
     man = new AbManager();
+    break_timer = new QTimer();
     connect(man, SIGNAL(wordsChanged(QString)),
             this, SLOT(setWords(QString)));
     connect(man, SIGNAL(statusChanged(qreal)),
@@ -13,7 +14,22 @@ AbScene::AbScene()
             this, SLOT(setCount(qreal)));
     connect(man, SIGNAL(timeChanged(qreal)),
             this, SLOT(setElapsedtime(qreal)));
+    connect(man, SIGNAL(powerChanged(qreal)),
+            this, SLOT(setPower(qreal)));
 
+    connect(man, SIGNAL(pauseChanged(qreal)),
+            this, SLOT(setPausetime(qreal)));
+    connect(man, SIGNAL(numWordChanged(qreal)),
+            this, SLOT(setNumwords(qreal)));
+    connect(man, SIGNAL(recTimeChanged(qreal)),
+            this, SLOT(setRectime(qreal)));
+    connect(man, SIGNAL(totalCountChanged(qreal)),
+            this, SLOT(setTotalcount(qreal)));
+    connect(man, SIGNAL(categoryChanged(QString)),
+            this, SLOT(setCategory(QString)));
+
+    connect(break_timer, SIGNAL(timeout()),
+            this, SLOT(breakTimeout()));
 //    qDebug() << ab_getStat("sag");
 }
 
@@ -68,7 +84,7 @@ void AbScene::setStatus(qreal status)
     }
     man->params.status = status;
 
-    if( status==AB_STATUS_REC )
+    if( status==AB_STATUS_REC && man->params.verifier==0 )
     {
         man->record();
     }
@@ -106,7 +122,7 @@ void AbScene::setRectime(qreal rectime)
     {
         return;
     }
-    man->params.rec_time = man->params.rec_time;
+    man->params.rec_time = rectime;
     emit rectimeChanged();
     if( window() )
     {
@@ -151,6 +167,95 @@ void AbScene::setKey(qreal key)
     processKey(key);
     man->params.key = 0;
     emit keyChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
+void AbScene::setPower(qreal power)
+{
+    if( power==man->params.power )
+    {
+        return;
+    }
+    man->params.power = power;
+    emit powerChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
+void AbScene::setVerifier(qreal verifier)
+{
+    if( verifier==man->params.verifier )
+    {
+        return;
+    }
+    man->params.verifier = verifier;
+    man->swapParams();
+    setStat(ab_getStat(man->params.category));
+    setCount(0);
+
+    if( verifier )
+    {
+        unverified_list = ab_listDir("unverified");
+        setTotalcount(unverified_list.size());
+    }
+
+    emit verifierChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
+void AbScene::setLoadsrc(qreal loadsrc)
+{
+    if( loadsrc==man->params.loadsrc )
+    {
+        return;
+    }
+    man->params.loadsrc = 0;
+    if( loadsrc && man->params.count<man->params.total_count )
+    {
+        if( man->params.status==AB_STATUS_STOP )
+        {
+            setAddress(unverified_list[man->params.count]);
+            setCount(man->params.count+1);
+            setStatus(AB_STATUS_PLAY);
+        }
+        else if( man->params.status==AB_STATUS_PLAY )
+        {
+            setStatus(AB_STATUS_BREAK);
+            break_timer->start(man->params.pause_time*1000);
+        }
+    }
+    else if( loadsrc ) // cnt>=total
+    {
+        setStatus(AB_STATUS_STOP);
+    }
+    emit loadsrcChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
+void AbScene::setDelfile(qreal delfile)
+{
+    if( delfile==man->params.delfile )
+    {
+        return;
+    }
+    if( delfile==1 )
+    {
+        QFile file(unverified_list[man->params.count-1]);
+        file.remove();
+    }
+    man->params.delfile = delfile;
+    emit delfileChanged();
     if( window() )
     {
         window()->update();
@@ -215,6 +320,42 @@ void AbScene::setStat(QString stat)
     {
         window()->update();
     }
+}
+
+void AbScene::setAddress(QString address)
+{
+    if( address==man->params.address )
+    {
+        return;
+    }
+
+    man->readWave(address);
+    man->params.address = address;
+    emit addressChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
+void AbScene::breakTimeout()
+{
+    if( man->params.delfile )
+    {
+        setDelfile(0);
+    }
+    else
+    {
+        QFile file(unverified_list[man->params.count-1]);
+        QFileInfo unver_file(file);
+        file.copy(KAL_AU_DIR"train/online/" +
+                  unver_file.baseName());
+        file.remove();
+    }
+    setStatus(AB_STATUS_PLAY);
+    setAddress(unverified_list[man->params.count]);
+    setCount(man->params.count+1);
+    break_timer->stop();
 }
 
 void AbScene::processKey(int key)

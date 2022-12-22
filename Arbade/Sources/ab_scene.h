@@ -13,6 +13,7 @@ class AbScene : public QQuickItem
     Q_PROPERTY(QString category READ category WRITE setCategory NOTIFY categoryChanged)
     Q_PROPERTY(QString words READ words WRITE setWords NOTIFY wordsChanged)
     Q_PROPERTY(QString stat READ stat WRITE setStat NOTIFY statChanged)
+    Q_PROPERTY(QString address READ address WRITE setAddress NOTIFY addressChanged)
     Q_PROPERTY(qreal count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(qreal totalcount READ totalcount WRITE setTotalcount NOTIFY totalcountChanged)
     Q_PROPERTY(qreal elapsedtime READ elapsedtime WRITE setElapsedtime NOTIFY elapsedtimeChanged)
@@ -21,6 +22,10 @@ class AbScene : public QQuickItem
     Q_PROPERTY(qreal numwords READ numwords WRITE setNumwords NOTIFY numwordsChanged)
     Q_PROPERTY(qreal pausetime READ pausetime WRITE setPausetime NOTIFY pausetimeChanged)
     Q_PROPERTY(qreal key READ key WRITE setKey NOTIFY keyChanged)
+    Q_PROPERTY(qreal power READ power WRITE setPower NOTIFY powerChanged)
+    Q_PROPERTY(qreal verifier READ verifier WRITE setVerifier NOTIFY verifierChanged)
+    Q_PROPERTY(qreal loadsrc READ loadsrc WRITE setLoadsrc NOTIFY loadsrcChanged)
+    Q_PROPERTY(qreal delfile READ delfile WRITE setDelfile NOTIFY delfileChanged)
 
     Q_PROPERTY(qreal qmlcreated READ qmlcreated WRITE setQmlcreated NOTIFY qmlcreatedChanged)
 
@@ -28,24 +33,27 @@ public:
     AbScene();
 
     QString category() const { return man->params.category; }
-    void setCategory(QString category);
     QString words() const { return man->params.words; }
     QString stat() const { return man->params.stat; }
     void setStat(QString stat);
+    QString address() const { return man->params.address; }
     qreal count() const { return man->params.count; }
     qreal totalcount() const { return man->params.total_count; }
-    void setTotalcount(qreal totalcount);
     qreal elapsedtime() const { return man->params.elapsed_time; }
     qreal status() const { return man->params.status; }
     void setStatus(qreal status);
     qreal rectime() const { return man->params.rec_time; }
-    void setRectime(qreal rectime);
     qreal numwords() const { return man->params.num_words; }
-    void setNumwords(qreal numwords);
     qreal pausetime() const { return man->params.pause_time; }
-    void setPausetime(qreal pausetime);
     qreal key() const { return man->params.key; }
     void setKey(qreal key);
+    qreal power() const { return man->params.power; }
+    qreal verifier() const { return man->params.verifier; }
+    void setVerifier(qreal verifier);
+    qreal loadsrc() const { return man->params.loadsrc; }
+    void setLoadsrc(qreal loadsrc);
+    qreal delfile() const { return man->params.delfile; }
+    void setDelfile(qreal delfile);
 
     qreal qmlcreated() const {return m_qmlcreated;}
     void setQmlcreated(qreal qmlcreated);
@@ -55,11 +63,20 @@ public slots:
     void setWords(QString words);
     void setCount(qreal count);
     void setElapsedtime(qreal elapsedtime);
+    void setPower(qreal power);
+    void setPausetime(qreal pausetime);
+    void setNumwords(qreal numwords);
+    void setRectime(qreal rectime);
+    void setTotalcount(qreal totalcount);
+    void setCategory(QString category);
+    void setAddress(QString address);
+    void breakTimeout();
 
 signals:
     void categoryChanged();
     void wordsChanged();
     void statChanged();
+    void addressChanged();
     void countChanged();
     void totalcountChanged();
     void elapsedtimeChanged();
@@ -68,6 +85,10 @@ signals:
     void numwordsChanged();
     void pausetimeChanged();
     void keyChanged();
+    void powerChanged();
+    void verifierChanged();
+    void loadsrcChanged();
+    void delfileChanged();
 
     void qmlcreatedChanged();
 
@@ -76,7 +97,9 @@ private:
     void processKey(int key);
 
     AbManager *man;
-    AbRecordParam *rec_params;
+    AbRecParam *rec_params;
+    QTimer *break_timer;
+    QStringList unverified_list;
     qreal m_qmlcreated=0;
 };
 
