@@ -16,13 +16,14 @@ ApplicationWindow
     id: root
     property int window_base_width : 1650
     property int window_base_height: 750
+    property int sig_del_file: 0
 
     width: window_base_width
     height: window_base_height
     minimumHeight: 500
     minimumWidth: 760
 
-    color: "#FFFFFF"
+    color: "#2e2e2e"
     title: "ArBade"
     visible: true
 
@@ -42,7 +43,12 @@ ApplicationWindow
         pausetime: 1
         focus: true
         stat: "One: 10 Two: 13 ...\nAlpha: 22  ..."
+        address: ""
         key: 0
+        power: -45
+        verifier: 0
+        loadsrc: 0
+        delfile: 0
 
         Keys.onPressed:
         {
@@ -53,6 +59,7 @@ ApplicationWindow
         {
             ab_stat.setText(stat);
         }
+
     }
 
     AbStatus
@@ -69,10 +76,31 @@ ApplicationWindow
         rec_time: root_scene.rectime
         status: root_scene.status
         words: root_scene.words
-        category: root_scene.category
+        category:
+        {
+            if( root_scene.verifier===1 )
+            {
+                "unverified"
+            }
+            else
+            {
+                root_scene.category
+            }
+        }
         count: root_scene.count
         count_total: root_scene.totalcount
-        elapsed_time: root_scene.elapsedtime
+        elapsed_time:
+        {
+            if( root_scene.verifier===0 )
+            {
+                root_scene.elapsedtime
+            }
+            else
+            {
+                audioPlayer.bufferProgress
+            }
+        }
+        power: root_scene.power
     }
 
     AbStat
@@ -117,10 +145,30 @@ ApplicationWindow
         }
     }
 
+    Audio
+    {
+        id: audioPlayer
+        source: root_scene.address
+
+        onSourceChanged:
+        {
+            play()
+        }
+
+        onStopped:
+        {
+            if( sig_del_file )
+            {
+                sig_del_file = 0;
+                root_scene.delfile = 1;
+            }
+            root_scene.loadsrc = 1;
+        }
+    }
+
     Component.onCompleted:
     {
         root_scene.qmlcreated = 1
-        updatePlotSize()
     }
 
     //Fonts:
@@ -128,11 +176,6 @@ ApplicationWindow
     {
         id: fontRobotoRegular
         source: "qrc:/Roboto-Regular.ttf"
-    }
-
-    function updatePlotSize()
-    {
-
     }
 
     function execKey(key)
@@ -163,15 +206,36 @@ ApplicationWindow
         }
         else if( key===Qt.Key_Space )
         {
-            if( root_scene.status===ab_const.ab_STATUS_REC ||
-                root_scene.status===ab_const.ab_STATUS_BREAK )
+            if( root_scene.verifier )
             {
-                root_scene.status = ab_const.ab_STATUS_REQPAUSE
+                if( root_scene.status===ab_const.ab_STATUS_PLAY ||
+                    root_scene.status===ab_const.ab_STATUS_BREAK )
+                {
+                    root_scene.status = ab_const.ab_STATUS_PAUSE;
+                    audioPlayer.pause();
+                }
+                else if( root_scene.status===ab_const.ab_STATUS_PAUSE )
+                {
+                    root_scene.status = ab_const.ab_STATUS_PLAY;
+                    audioPlayer.play();
+                }
+                else if( root_scene.status===ab_const.ab_STATUS_STOP )
+                {
+                    root_scene.loadsrc = 1;
+                }
             }
-            else if( root_scene.status===ab_const.ab_STATUS_PAUSE ||
-                     root_scene.status===ab_const.ab_STATUS_STOP )
+            else
             {
-                root_scene.status = ab_const.ab_STATUS_REC
+                if( root_scene.status===ab_const.ab_STATUS_REC ||
+                    root_scene.status===ab_const.ab_STATUS_BREAK )
+                {
+                    root_scene.status = ab_const.ab_STATUS_REQPAUSE;
+                }
+                else if( root_scene.status===ab_const.ab_STATUS_PAUSE ||
+                         root_scene.status===ab_const.ab_STATUS_STOP )
+                {
+                    root_scene.status = ab_const.ab_STATUS_REC;
+                }
             }
         }
         else if( key===Qt.Key_Q )
@@ -180,8 +244,11 @@ ApplicationWindow
         }
         else if( key===Qt.Key_Return )
         {
-            get_value_dialog.title = "Enter Category";
-            get_value_dialog.open();
+            if( root_scene.verifier===0 )
+            {
+                get_value_dialog.title = "Enter Category";
+                get_value_dialog.open();
+            }
         }
         else if( key===Qt.Key_T )
         {
@@ -191,6 +258,32 @@ ApplicationWindow
         {
             get_value_dialog.title = "Enter Count";
             get_value_dialog.open();
+        }
+        else if( key===Qt.Key_V )
+        {
+            root_scene.status = ab_const.ab_STATUS_STOP;
+            audioPlayer.stop()
+            if( root_scene.verifier===1 )
+            {
+                root_scene.verifier = 0;
+            }
+            else
+            {
+                root_scene.verifier = 1;
+            }
+        }
+        else if( key===Qt.Key_X )
+        {
+            if( root_scene.verifier &&
+                root_scene.status===ab_const.ab_STATUS_PLAY )
+            {
+                sig_del_file = 1;
+            }
+            else if( root_scene.verifier &&
+                   root_scene.status===ab_const.ab_STATUS_BREAK )
+            {
+                root_scene.delfile = 1;
+            }
         }
     }
 }
