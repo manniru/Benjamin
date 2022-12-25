@@ -96,8 +96,9 @@ ApplicationWindow
                 root_scene.elapsedtime
             }
             else
-            {
-                audioPlayer.bufferProgress
+            { // (*100.0 -> 0-100 %) (/1000 -> ms->sec)
+                audioPlayer.position*100.0/1000.0/
+                        root_scene.rectime
             }
         }
         power: root_scene.power
@@ -136,11 +137,26 @@ ApplicationWindow
         {
             if( title==="Enter Category" )
             {
-                root_scene.category = get_value_dialog.dialog_text
+                root_scene.category = dialog_text
             }
             else if( title==="Enter Count" )
             {
-                root_scene.totalcount = parseInt(get_value_dialog.dialog_text)
+                root_scene.totalcount = parseInt(dialog_text)
+            }
+            else if( title==="Delete File ?" )
+            {
+                if( dialog_text=="y" || dialog_text=="Y" )
+                {
+                    sig_del_file = 1;
+                    audioPlayer.stop();
+                }
+//                else if( dialog_text=="n" || dialog_text=="N" )
+                else
+                {
+                    sig_del_file = 0;
+                    root_scene.status = ab_const.ab_STATUS_PLAY;
+                    audioPlayer.play();
+                }
             }
         }
     }
@@ -208,20 +224,18 @@ ApplicationWindow
         {
             if( root_scene.verifier )
             {
-                if( root_scene.status===ab_const.ab_STATUS_PLAY ||
-                    root_scene.status===ab_const.ab_STATUS_BREAK )
-                {
-                    root_scene.status = ab_const.ab_STATUS_PAUSE;
-                    audioPlayer.pause();
-                }
-                else if( root_scene.status===ab_const.ab_STATUS_PAUSE )
-                {
-                    root_scene.status = ab_const.ab_STATUS_PLAY;
-                    audioPlayer.play();
-                }
-                else if( root_scene.status===ab_const.ab_STATUS_STOP )
+                if( root_scene.status===ab_const.ab_STATUS_STOP )
                 {
                     root_scene.loadsrc = 1;
+                }
+                else
+                {
+                    audioPlayer.pause();
+                    root_scene.status = ab_const.ab_STATUS_PAUSE;
+                    get_value_dialog.title = "Delete File ?";
+                    get_value_dialog.dialog_label = "Delete File?" +
+                                                    "(y/n)"
+                    get_value_dialog.open();
                 }
             }
             else
@@ -247,6 +261,7 @@ ApplicationWindow
             if( root_scene.verifier===0 )
             {
                 get_value_dialog.title = "Enter Category";
+                get_value_dialog.dialog_label = "value"
                 get_value_dialog.open();
             }
         }
@@ -257,6 +272,7 @@ ApplicationWindow
         else if( key===Qt.Key_C )
         {
             get_value_dialog.title = "Enter Count";
+            get_value_dialog.dialog_label = "value"
             get_value_dialog.open();
         }
         else if( key===Qt.Key_V )
@@ -270,19 +286,6 @@ ApplicationWindow
             else
             {
                 root_scene.verifier = 1;
-            }
-        }
-        else if( key===Qt.Key_X )
-        {
-            if( root_scene.verifier &&
-                root_scene.status===ab_const.ab_STATUS_PLAY )
-            {
-                sig_del_file = 1;
-            }
-            else if( root_scene.verifier &&
-                   root_scene.status===ab_const.ab_STATUS_BREAK )
-            {
-                root_scene.delfile = 1;
             }
         }
     }

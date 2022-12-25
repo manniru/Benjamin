@@ -218,19 +218,25 @@ void AbScene::setLoadsrc(qreal loadsrc)
         return;
     }
     man->params.loadsrc = 0;
+    if( man->params.status!=AB_STATUS_STOP ) // check if it is the 1st loadsrc
+    {
+        if( man->params.delfile )
+        {
+            setDelfile(0);
+        }
+        else
+        {
+            QFile file(unverified_list[man->params.count-1]);
+            QFileInfo unver_file(file);
+            file.copy(KAL_AU_DIR"train/online/" +
+                      unver_file.fileName());
+            file.remove();
+        }
+    }
     if( loadsrc && man->params.count<man->params.total_count )
     {
-        if( man->params.status==AB_STATUS_STOP )
-        {
-            setAddress(unverified_list[man->params.count]);
-            setCount(man->params.count+1);
-            setStatus(AB_STATUS_PLAY);
-        }
-        else if( man->params.status==AB_STATUS_PLAY )
-        {
-            setStatus(AB_STATUS_BREAK);
-            break_timer->start(man->params.pause_time*1000);
-        }
+        setStatus(AB_STATUS_BREAK);
+        break_timer->start(man->params.pause_time*1000);
     }
     else if( loadsrc ) // cnt>=total
     {
@@ -340,18 +346,6 @@ void AbScene::setAddress(QString address)
 
 void AbScene::breakTimeout()
 {
-    if( man->params.delfile )
-    {
-        setDelfile(0);
-    }
-    else
-    {
-        QFile file(unverified_list[man->params.count-1]);
-        QFileInfo unver_file(file);
-        file.copy(KAL_AU_DIR"train/online/" +
-                  unver_file.baseName());
-        file.remove();
-    }
     setStatus(AB_STATUS_PLAY);
     setAddress(unverified_list[man->params.count]);
     setCount(man->params.count+1);

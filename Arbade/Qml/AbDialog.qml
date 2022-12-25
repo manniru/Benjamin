@@ -15,6 +15,7 @@ Dialog
     x: (root.width - width) / 2
     y: (root.height - height) / 2
     property string dialog_text: ""
+    property string dialog_label: ""
 
     Text
     {
@@ -23,7 +24,7 @@ Dialog
         anchors.top: parent.top
         anchors.topMargin: 5
         font.pixelSize: 20
-        text: "value"
+        text: dialog_label
         height: 40
     }
     TextField
