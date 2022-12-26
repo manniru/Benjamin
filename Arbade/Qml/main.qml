@@ -17,6 +17,7 @@ ApplicationWindow
     property int window_base_width : 1650
     property int window_base_height: 750
     property int sig_del_file: 0
+    property real play_pos: 0
 
     width: window_base_width
     height: window_base_height
@@ -49,6 +50,7 @@ ApplicationWindow
         verifier: 0
         loadsrc: 0
         delfile: 0
+        playkon: 0
 
         Keys.onPressed:
         {
@@ -60,6 +62,28 @@ ApplicationWindow
             ab_stat.setText(stat);
         }
 
+        onPlaykonChanged:
+        {
+            audioPlayer.play();
+        }
+
+        onStatusChanged:
+        {
+            if( verifier )
+            {
+                if( (status===ab_const.ab_STATUS_PLAY ||
+                     status===ab_const.ab_STATUS_BREAK) &&
+                    !audio_timer.running )
+                {
+                    audio_timer.start();
+                }
+                else if( status===ab_const.ab_STATUS_PAUSE ||
+                         status===ab_const.ab_STATUS_STOP )
+                {
+                    audio_timer.stop();
+                }
+            }
+        }
     }
 
     AbStatus
@@ -96,12 +120,12 @@ ApplicationWindow
                 root_scene.elapsedtime
             }
             else
-            { // (*100.0 -> 0-100 %) (/1000 -> ms->sec)
-                audioPlayer.position*100.0/1000.0/
-                        root_scene.rectime
+            {
+                play_pos
             }
         }
         power: root_scene.power
+//        focus_word:
     }
 
     AbStat
@@ -143,33 +167,36 @@ ApplicationWindow
             {
                 root_scene.totalcount = parseInt(dialog_text)
             }
-            else if( title==="Delete File ?" )
-            {
-                if( dialog_text=="y" || dialog_text=="Y" )
-                {
-                    sig_del_file = 1;
-                    audioPlayer.stop();
-                }
-//                else if( dialog_text=="n" || dialog_text=="N" )
-                else
-                {
-                    sig_del_file = 0;
-                    root_scene.status = ab_const.ab_STATUS_PLAY;
-                    audioPlayer.play();
-                }
-            }
         }
+    }
+
+    AbQuery
+    {
+        id: verify_dialog
+
+        onDialog_resultChanged:
+        {
+            if( dialog_result==="Y" )
+            {
+                sig_del_file = 1;
+                audioPlayer.stop();
+            }
+            else if( dialog_result==="N" )
+            {
+                sig_del_file = 0;
+                audioPlayer.stop();
+            }
+            root_scene.forceActiveFocus();
+            dialog_result = ""
+        }
+
+
     }
 
     Audio
     {
         id: audioPlayer
         source: root_scene.address
-
-        onSourceChanged:
-        {
-            play()
-        }
 
         onStopped:
         {
@@ -179,6 +206,24 @@ ApplicationWindow
                 root_scene.delfile = 1;
             }
             root_scene.loadsrc = 1;
+            play_pos = 0;
+        }
+    }
+
+    Timer
+    {
+        id: audio_timer
+        interval: 50
+        repeat: true
+
+        onTriggered:
+        {// (*100.0 -> 0-100 %) (/1000 -> ms->sec)
+            play_pos += 50.0*100.0/1000.0/
+                    (root_scene.rectime+root_scene.pausetime)
+            if( play_pos>100 )
+            {
+                play_pos=100
+            }
         }
     }
 
@@ -232,10 +277,8 @@ ApplicationWindow
                 {
                     audioPlayer.pause();
                     root_scene.status = ab_const.ab_STATUS_PAUSE;
-                    get_value_dialog.title = "Delete File ?";
-                    get_value_dialog.dialog_label = "Delete File?" +
-                                                    "(y/n)"
-                    get_value_dialog.open();
+                    verify_dialog.open();
+                    verify_dialog.forceActiveFocus();
                 }
             }
             else

@@ -27,6 +27,7 @@ typedef struct AbRecParam
     qreal   verifier = 0;
     qreal   loadsrc = 0;
     qreal   delfile = 0;
+    qreal   playkon = 0;
 }AbRecParam;
 
 class AbManager : public QObject

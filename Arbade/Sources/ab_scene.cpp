@@ -236,6 +236,8 @@ void AbScene::setLoadsrc(qreal loadsrc)
     if( loadsrc && man->params.count<man->params.total_count )
     {
         setStatus(AB_STATUS_BREAK);
+        setAddress(unverified_list[man->params.count]);
+        setCount(man->params.count+1);
         break_timer->start(man->params.pause_time*1000);
     }
     else if( loadsrc ) // cnt>=total
@@ -328,6 +330,21 @@ void AbScene::setStat(QString stat)
     }
 }
 
+void AbScene::setPlaykon(qreal playkon)
+{
+    if( playkon==man->params.playkon )
+    {
+        return;
+    }
+
+    man->params.playkon = playkon;
+    emit playkonChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
 void AbScene::setAddress(QString address)
 {
     if( address==man->params.address )
@@ -347,8 +364,14 @@ void AbScene::setAddress(QString address)
 void AbScene::breakTimeout()
 {
     setStatus(AB_STATUS_PLAY);
-    setAddress(unverified_list[man->params.count]);
-    setCount(man->params.count+1);
+    if( man->params.playkon )
+    {
+        setPlaykon(0);
+    }
+    else
+    {
+        setPlaykon(1);
+    }
     break_timer->stop();
 }
 

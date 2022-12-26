@@ -26,6 +26,7 @@ class AbScene : public QQuickItem
     Q_PROPERTY(qreal verifier READ verifier WRITE setVerifier NOTIFY verifierChanged)
     Q_PROPERTY(qreal loadsrc READ loadsrc WRITE setLoadsrc NOTIFY loadsrcChanged)
     Q_PROPERTY(qreal delfile READ delfile WRITE setDelfile NOTIFY delfileChanged)
+    Q_PROPERTY(qreal playkon READ playkon WRITE setPlaykon NOTIFY playkonChanged)
 
     Q_PROPERTY(qreal qmlcreated READ qmlcreated WRITE setQmlcreated NOTIFY qmlcreatedChanged)
 
@@ -54,6 +55,8 @@ public:
     void setLoadsrc(qreal loadsrc);
     qreal delfile() const { return man->params.delfile; }
     void setDelfile(qreal delfile);
+    qreal playkon() const { return man->params.playkon; }
+    void setPlaykon(qreal playkon);
 
     qreal qmlcreated() const {return m_qmlcreated;}
     void setQmlcreated(qreal qmlcreated);
@@ -89,6 +92,7 @@ signals:
     void verifierChanged();
     void loadsrcChanged();
     void delfileChanged();
+    void playkonChanged();
 
     void qmlcreatedChanged();
 
