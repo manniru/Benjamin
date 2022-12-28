@@ -7,5 +7,6 @@
         <file>AbDialog.qml</file>
         <file>AbStat.qml</file>
         <file>AbQuery.qml</file>
+        <file>AbEditor.qml</file>
     </qresource>
 </RCC>
