@@ -20,6 +20,7 @@ AbManager::AbManager(QObject *parent) : QObject(parent)
             this, SLOT(breakTimeout()));
 }
 
+// verification and playing phase
 void AbManager::readWave(QString filename)
 {
     wav_rd->read(filename);
@@ -40,6 +41,7 @@ void AbManager::readWave(QString filename)
     emit wordsChanged(words);
 }
 
+// recording phase
 void AbManager::writeWav()
 {
     if( params.count<params.total_count )
@@ -140,12 +142,30 @@ QString AbManager::getRandPath(QString category)
     int word_id[AB_WORD_LEN];
     int lexicon_size = lexicon.length();
     QVector<AbWord> words;
+    int fix_word_index = -1;
+
+    if( params.focusword.length() )
+    {
+        fix_word_index = rand()%AB_WORD_LEN;
+    }
 
     while( true )
     {
         for( int i=0 ; i<AB_WORD_LEN ; i++ )
         {
-            word_id[i] = rand()%lexicon_size;
+            if( fix_word_index==i )
+            {
+                bool ok=false;
+                word_id[i] = params.focusword.toInt(&ok);
+                if(!ok || word_id[i]<0 || word_id[i]>=lexicon_size )
+                {
+                    word_id[i] = rand()%lexicon_size;
+                }
+            }
+            else
+            {
+                word_id[i] = rand()%lexicon_size;
+            }
         }
 
         words.clear();

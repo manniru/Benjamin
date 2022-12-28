@@ -17,6 +17,7 @@ Rectangle
     property int    count_total:        100
     property real   elapsed_time:       0
     property real   power:              -45
+    property string focus_word:         ""
 
     color: "transparent"
 
@@ -223,6 +224,18 @@ Rectangle
             lineHeight: 1.2
         }
 
+        Text
+        {
+            id: focus_label
+
+            text: "Focus word: " + focus_word
+            anchors.left: parent.left
+            anchors.top: power_label.bottom
+            color: color_text
+            font.pixelSize: font_size
+            font.family: font_name_label
+            lineHeight: 1.2
+        }
     }
 
 }

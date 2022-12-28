@@ -9,13 +9,14 @@ Rectangle
     property color  color_text:         "#9a9a9a"
 
     property var help_text: ["Up:Increase Pause","Down:Decrease Pause",
-                             "Right:Increase Num of Words",
-                             "Left:Decrease Num of Words",
+                             "Right:Increase Word",
+                             "Left:Decrease Word",
                              "K:Increase Rec Time","J:Decrease Rec Time",
                              "Space:Pause Recording",
-                             "Enter:Change Category name",
+                             "Enter:Change Category",
                              "T:Open Category Directory",
                              "C:Change Count Number",
+                             "F:Focus Word", "W:Word List",
                              "V:Verify Mode","Q:Close Window"]
 
     color: "#262626"
@@ -23,7 +24,7 @@ Rectangle
 
     GridLayout
     {
-        columns: 4
+        columns: 5
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: 30
