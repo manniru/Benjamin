@@ -4,13 +4,13 @@ import QtQuick.Layouts 1.0
 import QtQml 2.12
 import QtQuick.Extras 1.4
 import QtQuick.Controls 2.3
+import QtQuick.Window 2.10
 
-Dialog
+Window
 {
     title: "Edit Word List"
     height: 600
     width: 700
-    focus: true
     x: (root.width - width) / 2
     y: (root.height - height) / 2
     property string dialog_text: ""
@@ -24,11 +24,7 @@ Dialog
     property int line_count: 0
 
 
-    background: Rectangle
-    {
-        anchors.fill: parent
-        color: "#2e2e2e"
-    }
+    color: "#2e2e2e"
 
     Rectangle
     {
@@ -165,7 +161,7 @@ Dialog
         }
     }
 
-    onOpened:
+    onVisibleChanged:
     {
         updateText()
     }

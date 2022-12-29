@@ -44,7 +44,9 @@ ApplicationWindow
         pausetime: 1
         focus: true
         stat: "One: 10 Two: 13 ...\nAlpha: 22  ..."
+        wordlist: ""
         address: ""
+        focusword: ""
         key: 0
         power: -45
         verifier: 0
@@ -125,7 +127,7 @@ ApplicationWindow
             }
         }
         power: root_scene.power
-//        focus_word:
+        focus_word: root_scene.focusword
     }
 
     AbStat
@@ -167,6 +169,10 @@ ApplicationWindow
             {
                 root_scene.totalcount = parseInt(dialog_text)
             }
+            else if( title==="Enter Focus Word ID" )
+            {
+                root_scene.focusword = dialog_text
+            }
         }
     }
 
@@ -191,6 +197,13 @@ ApplicationWindow
         }
 
 
+    }
+
+    AbEditor
+    {
+        id: editor_dialog
+
+        dialog_text: root_scene.wordlist
     }
 
     Audio
@@ -330,6 +343,17 @@ ApplicationWindow
             {
                 root_scene.verifier = 1;
             }
+        }
+        else if( key===Qt.Key_F )
+        {
+            get_value_dialog.title = "Enter Focus Word ID";
+            get_value_dialog.dialog_label = "ID"
+            get_value_dialog.open();
+        }
+        else if( key===Qt.Key_W )
+        {
+            root_scene.wordlist = "request data";
+            editor_dialog.visible = true;
         }
     }
 }
