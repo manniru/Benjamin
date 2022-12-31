@@ -11,79 +11,61 @@ Window
     title: "Edit Word List"
     height: 600
     width: 700
-    x: (root.width - width) / 2
-    y: (root.height - height) / 2
     property string dialog_text: ""
     property string botton_border: "#bfbfbf"
     property string botton_text: "#b6b6b6"
     property string botton_bg: "#4d4d4d"
-    property string line_nu_text: "#b4b4b4"
-    property string line_nu_bg: "#666666"
     property string area_text: "#c9c9c9"
-    property string area_bg: "#4e4e4e"
     property int line_count: 0
-
+    visible: true
 
     color: "#2e2e2e"
-
-    Rectangle
-    {
-        id: line_rect
-        width: 70
-        height: parent.height - 70 // 3*10 = margins | 40 buttons
-        anchors
-        {
-            top: parent.top
-            left: parent.left
-            topMargin: 10
-            leftMargin: 10
-        }
-        color: line_nu_bg
-    }
-
-    Rectangle
-    {
-        id: text_rect
-        width: parent.width - 70 - 20 // 2*10 = margins | 70 line_rect
-        height: parent.height - 70 // 3*10 = margins | 40 buttons
-        anchors
-        {
-            top: parent.top
-            left: line_rect.right
-            topMargin: 10
-        }
-        color: area_bg
-    }
 
     ScrollView
     {
         id: scroll_view
         width: parent.width - 20 // 2*10 = margins
         height: parent.height - 70 // 3*10 = margins | 40 buttons
-        anchors
-        {
-            top: parent.top
-            left: parent.left
-            topMargin: 10
-            leftMargin: 10
-        }
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.topMargin: 10
+        anchors.leftMargin: 10
+
         ScrollBar.vertical.policy: ScrollBar.AlwaysOn
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+        clip: true
+
+        Rectangle
+        {
+            id: linenum_bg
+            width: 70
+            height: linenum_lbl.height
+            anchors.top: parent.top
+            anchors.left: parent.left
+
+            color: "#666666"
+        }
 
         Label
         {
-            id: line_numbers
-            height: scroll_view.height
-            anchors
-            {
-                top: parent.top
-                left: parent.left
-                topMargin: 7
-                leftMargin: 25
-            }
+            id: linenum_lbl
+            anchors.top: parent.top
+            anchors.horizontalCenter: linenum_bg.horizontalCenter
+            anchors.topMargin: 7
+
             font.pixelSize: 16
             text: "010"
-            color: line_nu_text
+            color: "#b4b4b4"
+        }
+
+        Rectangle
+        {
+            id: text_bg
+            height: text_area.height
+            anchors.top: parent.top
+            anchors.left: linenum_bg.right
+            width: scroll_view.width - 70
+            color: "#4e4e4e"
         }
 
         TextArea
@@ -92,12 +74,10 @@ Window
             Accessible.name: "document"
             height: scroll_view.height
             width: scroll_view.width - 70
-            anchors
-            {
-                left: line_numbers.right
-                leftMargin: 30
-                top: parent.top
-            }
+            anchors.left: linenum_lbl.right
+            anchors.leftMargin: 30
+            anchors.top: parent.top
+
             text: ""
             font.pixelSize: 16
             Component.onCompleted: forceActiveFocus()
@@ -105,7 +85,7 @@ Window
             color: area_text
             onTextChanged:
             {
-                line_count = (text.match(/\n/g) || []).length
+                line_count = (text.match(/\n/g) || []).length + 1
             }
 
         }
@@ -174,7 +154,7 @@ Window
         {
             line_text += zeroPad(i) + "\n"
         }
-        line_numbers.text = line_text
+        linenum_lbl.text = line_text
     }
 
     function accept()
