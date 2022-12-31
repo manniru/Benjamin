@@ -38,7 +38,7 @@ Window
         Rectangle
         {
             id: linenum_bg
-            width: 70
+            width: 50
             height: linenum_lbl.height
             anchors.top: parent.top
             anchors.left: parent.left
@@ -64,7 +64,7 @@ Window
             height: text_area.height
             anchors.top: parent.top
             anchors.left: linenum_bg.right
-            width: scroll_view.width - 70
+            width: scroll_view.width - 20
             color: "#4e4e4e"
         }
 
@@ -72,7 +72,6 @@ Window
         {
             id: text_area
             Accessible.name: "document"
-            height: scroll_view.height
             width: scroll_view.width - 70
             anchors.left: linenum_lbl.right
             anchors.leftMargin: 30

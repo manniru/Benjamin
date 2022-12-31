@@ -243,6 +243,7 @@ ApplicationWindow
     Component.onCompleted:
     {
         root_scene.qmlcreated = 1
+        root_scene.wordlist = "request data";
     }
 
     //Fonts:
