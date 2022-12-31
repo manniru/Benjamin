@@ -26,6 +26,7 @@ class ChProcessorW : public QObject
 public:
     ChProcessorW(ChChannelW *ch, QObject *ui, QObject *parent = NULL);
     ~ChProcessorW();
+    void setLanguage();
 
 public slots:
     void showUI(QString text);

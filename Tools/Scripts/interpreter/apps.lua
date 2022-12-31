@@ -6,7 +6,7 @@ function get_Apps(word)
 		return "1"
 	elseif word == "files" then
 		return "2"
-	elseif word == "spotify" then
+	elseif word == "spotifyFIXME" then
 		return "3"
 	elseif word == "atom" then
 		return "4"

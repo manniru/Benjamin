@@ -40,7 +40,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             {
                 if( key->suppress_r==1 ) // only win press
                 {
-                    qDebug() << "key->supress_r";
+                    qDebug() << "key->supress_r=1";
                     key->key_buf.push_back(VK_LWIN);
                     key->suppress_r = 0;
                     key->timer->start(2);

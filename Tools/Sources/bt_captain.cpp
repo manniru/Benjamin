@@ -72,7 +72,7 @@ void BtCaptain::exec(QString words)
 #ifdef WIN32
     QStringList word_list = words.split(" ", Qt::SkipEmptyParts);
     int len = word_list.length();
-    for(int i=0 ; i<len ; i++)
+    for( int i=0 ; i<len ; i++ )
     {
         lua->run(word_list[i]);
     }
