@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
@@ -24,6 +24,10 @@ int main(int argc, char *argv[])
 #endif
 
     ChChapar *chapar = new ChChapar(root);
+
+    // This is a bug that the ui thread won't start
+    // unless you show the qml for a sec
+    QQmlProperty::write(root, "visible", 0);
 
     return app.exec();
 }

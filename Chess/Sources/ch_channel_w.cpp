@@ -29,7 +29,7 @@ void ChChannelW::listenPipe()
 
                 QStringList lines = input.split("\n", QString::SkipEmptyParts);
 
-                for(int i=0 ; i<lines.length() ; i++)
+                for( int i=0 ; i<lines.length() ; i++ )
                 {
                     processLine(lines[i]);
                 }
@@ -84,6 +84,7 @@ void ChChannelW::processCommand(QString cmd, QString arg)
     if( cmd=="show" )
     {
         emit show(arg);
+        qDebug() << "show show";
     }
     else if( cmd=="side" )
     {

@@ -4,10 +4,11 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
 {
 #ifdef WIN32
     ch_thread = new QThread;
-    ChChannelW *channel = new ChChannelW;
-    channel->moveToThread(ch_thread);
-    ch_thread->start();
-    ChProcessorW *processor = new ChProcessorW(channel, ui);
+    channel = new ChChannelW;
+    processor = new ChProcessorW(channel, ui);
+
+    connect(channel, SIGNAL(show(QString)),
+            processor, SLOT(showUI(QString)));
 
     connect(ui, SIGNAL(eKeyPressed(int)),
             processor, SLOT(keyPressed(int)));
@@ -15,6 +16,9 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
     connect(this, SIGNAL(run()),
             channel, SLOT(listenPipe()));
 
+    channel->moveToThread(ch_thread);
+    ch_thread->start();
+    processor->setLanguage();
     emit run();
 
 #else

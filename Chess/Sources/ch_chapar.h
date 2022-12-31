@@ -1,4 +1,4 @@
-#ifndef CH_CHAPAR_H
+    #ifndef CH_CHAPAR_H
 #define CH_CHAPAR_H
 
 #include <QObject>
@@ -17,13 +17,14 @@ class ChChapar : public QObject
     Q_OBJECT
 public:
     ChChapar(QObject *ui, QObject *parent = nullptr);
+    QThread *ch_thread;
 
 signals:
     void run();
 
 private:
-    QThread *ch_thread;
-
+    ChChannelW *channel;
+    ChProcessorW *processor;
 };
 
 #endif // CH_CHAPAR_H

@@ -12,9 +12,6 @@ ChProcessorW::ChProcessorW(ChChannelW *ch, QObject *ui,
     meta_mode = 0;
     click_mode = CH_LEFT_CLICK;
 
-    connect(ch, SIGNAL(show(QString)),
-            this, SLOT(showUI(QString)));
-
     QWindow *window = qobject_cast<QWindow *>(ui);
     hWnd = (HWND)(window->winId());
 }
@@ -27,6 +24,7 @@ ChProcessorW::~ChProcessorW()
 void ChProcessorW::showUI(QString text)
 {
 //    reset();
+    qDebug() << "showUI";
     if( text=="no_click" )
     {
         click_mode = CH_NO_CLICK;
@@ -49,6 +47,7 @@ void ChProcessorW::showUI(QString text)
     QQmlProperty::write(root, "ch_timer", true);
 
     activateWindow();
+    setLanguage();
 }
 
 void ChProcessorW::hideUI()
@@ -261,4 +260,20 @@ void ChProcessorW::activateWindow()
     setPos(mid_x, mid_y);
     QThread::msleep(50);
     sendLeftKey();
+}
+
+void ChProcessorW::setLanguage()
+{
+    char layout_id[200];
+    GetKeyboardLayoutNameA(layout_id);
+    QString layout_idq = layout_id;
+
+    qDebug() << "Language" << layout_idq;
+
+    if( layout_idq=="00000429" )
+    {
+        qDebug() << "Changing to english";
+        ActivateKeyboardLayout((HKL)HKL_NEXT,
+                               KLF_SETFORPROCESS);
+    }
 }
