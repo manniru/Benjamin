@@ -12,6 +12,7 @@ Window
     height: 600
     width: 700
     property string dialog_text: ""
+    property string dif_words: ""
     property string botton_border: "#bfbfbf"
     property string botton_text: "#b6b6b6"
     property string botton_bg: "#4d4d4d"
@@ -82,11 +83,28 @@ Window
             Component.onCompleted: forceActiveFocus()
             focus: true
             color: area_text
+            selectByMouse: true
+            selectedTextColor: "#333"
+            selectionColor: "#ccc"
             onTextChanged:
             {
                 line_count = (text.match(/\n/g) || []).length + 1
             }
 
+        }
+
+        Label
+        {
+            id: stat_lbl
+            anchors.top: parent.top
+            anchors.right: text_bg.right
+            anchors.rightMargin: 60
+            anchors.topMargin: 7
+            horizontalAlignment: Text.AlignHCenter
+
+            font.pixelSize: 16
+            text: "(10)\n(100)\n(1000)"
+            color: "#9a9a9a"
         }
     }
 
@@ -111,7 +129,24 @@ Window
 
         onClicked:
         {
-            accept();
+            var dif_result = getDiff();
+            if( dif_result.length!==0 )
+            {
+                dif_words = dif_result.join("\n");
+                wordlist_dialog.dialog_label = "Are you sure" +
+                        " to change these words?\n\n" + dif_words;
+                wordlist_dialog.visible = true;
+            }
+            else
+            {
+                editor_dialog.reject();
+            }
+
+        }
+
+        onHoveredChanged:
+        {
+
         }
     }
 
@@ -129,20 +164,52 @@ Window
         palette.buttonText: botton_text
         background: Rectangle
         {
-            anchors.fill: parent
-            color: botton_bg
-            border.color: botton_border
+            anchors.fill: parent;
+            color: botton_bg;
+            border.color: botton_border;
         }
 
         onClicked:
         {
             reject();
         }
+
+        onHoveredChanged:
+        {
+
+        }
+    }
+
+    AbDiffAccept
+    {
+        id: wordlist_dialog
+
+        onDialog_resultChanged:
+        {
+            if( dialog_result==="Y" )
+            {
+                editor_dialog.accept();
+                root_scene.forceActiveFocus();
+            }
+            else if( dialog_result==="N" )
+            {
+                editor_dialog.reject();
+                root_scene.forceActiveFocus();;
+            }
+            dialog_result = "";
+        }
     }
 
     onVisibleChanged:
     {
-        updateText()
+        if( visible )
+        {
+            updateText();
+        }
+        else
+        {
+            wordlist_dialog.close();
+        }
     }
 
     onLine_countChanged:
@@ -158,16 +225,16 @@ Window
 
     function accept()
     {
-        console.log("Saved")
         root_scene.wordlist = text_area.getText(
                                 0,text_area.length)
-        close()
+        root_scene.difwords = dif_words;
+        dif_words = "";
+        close();
     }
 
     function reject()
     {
-        console.log("Rejected")
-        close()
+        close();
     }
 
     function zeroPad(num)
@@ -179,6 +246,27 @@ Window
     function updateText()
     {
         text_area.text = root_scene.wordlist
-//        console.log(text_area.text)
+        stat_lbl.text = root_scene.wordstat
     }
+
+    function getDiff()
+    {
+        var words_old = root_scene.wordlist.split("\n").filter(i => i);
+        var words_new = text_area.text.split("\n").filter(i => i);
+        var dif = [];
+        var count = 0;
+
+        for( var i=0 ; i<words_new.length ; i++ )
+        {
+            if( words_new[i]!==words_old[i] )
+            {
+                count += 1;
+                dif.push(count.toString() + ". " + words_old[i] +
+                         "(" + i.toString() + ")" +
+                         " => " + words_new[i]);
+            }
+        }
+        return dif;
+    }
+
 }
