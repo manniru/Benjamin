@@ -45,8 +45,10 @@ ApplicationWindow
         focus: true
         stat: "One: 10 Two: 13 ...\nAlpha: 22  ..."
         wordlist: ""
+        wordstat: ""
         address: ""
         focusword: ""
+        difwords: ""
         key: 0
         power: -45
         verifier: 0
@@ -195,8 +197,6 @@ ApplicationWindow
             root_scene.forceActiveFocus();
             dialog_result = ""
         }
-
-
     }
 
     AbEditor
@@ -291,6 +291,9 @@ ApplicationWindow
                 {
                     audioPlayer.pause();
                     root_scene.status = ab_const.ab_STATUS_PAUSE;
+                    verify_dialog.dialog_label = "Are you sure "+
+                                         "you want to delete?\n"+
+                                         "( Yes:space / No:q )"
                     verify_dialog.open();
                     verify_dialog.forceActiveFocus();
                 }

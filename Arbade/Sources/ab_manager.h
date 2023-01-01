@@ -7,7 +7,7 @@
 #include "ab_recorder.h"
 #include "ab_wav_writer.h"
 #include "ab_wav_reader.h"
-#include "backend.h"
+#include "ab_stat.h"
 
 typedef struct AbRecParam
 {
@@ -17,6 +17,8 @@ typedef struct AbRecParam
     QString address = "";
     QString focusword = "";
     QString wordlist = "";
+    QString wordstat = "";
+    QString difwords = "";
     qreal   count = 0;
     qreal   total_count = 100;
     qreal   elapsed_time = 0;
@@ -42,6 +44,10 @@ public:
     void record();
     void swapParams();
     void readWave(QString filename);
+    void writeWordList();
+    QString readWordList();
+    void copyToOnline(QString filename);
+    void delWordSamples();
 
     AbRecParam params;
     AbRecParam p_backup;
@@ -67,11 +73,12 @@ private slots:
 
 private:
     QString getRandPath(QString category);
-    void readWordList();
+    void loadWordList();
     QString getFileName(QVector<AbWord> words, QString category);
     QString wordToId(QVector<AbWord> result);
     void printWords(QVector<AbWord> words);
     QString idsToWords(QVector<int> ids);
+    int wordToIndex(QString word);
 
     QStringList lexicon;
     AbRecorder *rec;

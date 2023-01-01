@@ -14,7 +14,7 @@ AbManager::AbManager(QObject *parent) : QObject(parent)
     connect(rec, SIGNAL(updatePercent(int)),
             this, SLOT(updateTime(int)));
     lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
-    readWordList();
+    loadWordList();
     read_timer = new QTimer();
     connect(read_timer, SIGNAL(timeout()),
             this, SLOT(breakTimeout()));
@@ -205,7 +205,40 @@ void AbManager::updateTime(int percent)
     emit timeChanged(percent);
 }
 
-void AbManager::readWordList()
+void AbManager::copyToOnline(QString filename)
+{
+    QFile file(filename);
+    QFileInfo unver_file(file);
+    file.copy(KAL_AU_DIR"train/online/" +
+              unver_file.fileName());
+    file.remove();
+}
+
+QString AbManager::readWordList()
+{
+    QFile words_file(BT_WORDLIST_PATH);
+    if( !words_file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        qDebug() << "Error opening" << BT_WORDLIST_PATH;
+        return "";
+    }
+    QString ret = QString(words_file.readAll());
+    words_file.close();
+    return ret;
+}
+
+void AbManager::writeWordList()
+{
+    QFile words_file(BT_WORDLIST_PATH);
+    if( !words_file.open(QIODevice::WriteOnly | QIODevice::Text) )
+    {
+        qDebug() << "Error opening" << BT_WORDLIST_PATH;
+    }
+    words_file.write(params.wordlist.toStdString().c_str());
+    words_file.close();
+}
+
+void AbManager::loadWordList()
 {
     if( word_list.size() )
     {
@@ -231,6 +264,62 @@ void AbManager::readWordList()
     }
 
     wl_file.close();
+}
+
+void AbManager::delWordSamples()
+{
+    QStringList dif_words = params.difwords.split("\n");
+    int len = dif_words.length();
+    QVector<int> del_list;
+    for( int i=0 ; i<len ; i++ )
+    {
+        dif_words[i] = dif_words[i].split(".")[1].split("(")[0].trimmed();
+        int result = wordToIndex(dif_words[i]);
+        if( result>=0 && result<lexicon.size() )
+        {
+            del_list.push_back(result);
+        }
+    }
+    len = del_list.size();
+
+    QFileInfoList dir_list = ab_getAudioDirs();
+    int len_dir = dir_list.size();
+    if( len_dir==0 )
+    {
+        return;
+    }
+    for( int i=0 ; i<len_dir ; i++ )
+    {
+        QFileInfoList files_list = ab_listFiles(dir_list[i].
+                                                absoluteFilePath());
+        int len_files = files_list.size();
+        for( int j=0 ; j<len_files ; j++ )
+        {
+            QStringList audio_words = files_list[j].baseName().split("_");
+            for( int k=0 ; k<len ; k++ )
+            {
+                if( audio_words.contains(QString::number(del_list[k])) )
+                {
+                    QFile removing_file(files_list[j].absoluteFilePath());
+                    qDebug() << "del" << files_list[j].absoluteFilePath();
+                    removing_file.remove();
+                }
+            }
+        }
+    }
+}
+
+int AbManager::wordToIndex(QString word)
+{
+    int len = lexicon.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( lexicon[i]==word )
+        {
+            return i;
+        }
+    }
+    return -1;
 }
 
 QString AbManager::wordToId(QVector<AbWord> result)
