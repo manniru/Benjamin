@@ -14,6 +14,7 @@ Dialog
     x: (root.width - width) / 2
     y: (root.height - height) / 2
     property string dialog_result: ""
+    property string dialog_label: ""
 
     Text
     {
@@ -21,8 +22,7 @@ Dialog
         anchors.centerIn: parent
         font.pixelSize: 20
         horizontalAlignment: Text.AlignHCenter
-        text: "Are you sure you want to delete?\n"+
-              "( Yes:space / No:q )"
+        text: dialog_label
         lineHeight: 1.4
 
         Keys.onPressed:

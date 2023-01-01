@@ -16,6 +16,8 @@ class AbScene : public QQuickItem
     Q_PROPERTY(QString address READ address WRITE setAddress NOTIFY addressChanged)
     Q_PROPERTY(QString focusword READ focusword WRITE setFocusword NOTIFY focuswordChanged)
     Q_PROPERTY(QString wordlist READ wordlist WRITE setWordlist NOTIFY wordlistChanged)
+    Q_PROPERTY(QString wordstat READ wordstat WRITE setWordstat NOTIFY wordstatChanged)
+    Q_PROPERTY(QString difwords READ difwords WRITE setDifwords NOTIFY difwordsChanged)
     Q_PROPERTY(qreal count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(qreal totalcount READ totalcount WRITE setTotalcount NOTIFY totalcountChanged)
     Q_PROPERTY(qreal elapsedtime READ elapsedtime WRITE setElapsedtime NOTIFY elapsedtimeChanged)
@@ -44,6 +46,10 @@ public:
     void setFocusword(QString focusword);
     QString wordlist() const { return man->params.wordlist; }
     void setWordlist(QString wordlist);
+    QString wordstat() const { return man->params.wordstat; }
+    void setWordstat(QString wordstat);
+    QString difwords() const { return man->params.difwords; }
+    void setDifwords(QString difwords);
     qreal count() const { return man->params.count; }
     qreal totalcount() const { return man->params.total_count; }
     qreal elapsedtime() const { return man->params.elapsed_time; }
@@ -88,6 +94,8 @@ signals:
     void addressChanged();
     void focuswordChanged();
     void wordlistChanged();
+    void wordstatChanged();
+    void difwordsChanged();
     void countChanged();
     void totalcountChanged();
     void elapsedtimeChanged();

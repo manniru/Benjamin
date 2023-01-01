@@ -8,5 +8,6 @@
         <file>AbStat.qml</file>
         <file>AbQuery.qml</file>
         <file>AbEditor.qml</file>
+        <file>AbDiffAccept.qml</file>
     </qresource>
 </RCC>

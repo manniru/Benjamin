@@ -30,7 +30,6 @@ AbScene::AbScene()
 
     connect(break_timer, SIGNAL(timeout()),
             this, SLOT(breakTimeout()));
-//    qDebug() << ab_getStat("sag");
 }
 
 void AbScene::setQmlcreated(qreal qmlcreated)
@@ -200,7 +199,8 @@ void AbScene::setVerifier(qreal verifier)
 
     if( verifier )
     {
-        unverified_list = ab_listDir("unverified");
+        unverified_list = ab_listFiles(KAL_AU_DIR_WIN"unverified\\",
+                                       AB_LIST_PATHS);
         setTotalcount(unverified_list.size());
     }
 
@@ -218,19 +218,15 @@ void AbScene::setLoadsrc(qreal loadsrc)
         return;
     }
     man->params.loadsrc = 0;
-    if( man->params.status!=AB_STATUS_STOP ) // check if it is the 1st loadsrc
+    if( man->params.status!=AB_STATUS_STOP ) // not for 1st time
     {
-        if( man->params.delfile )
+        if( man->params.delfile ) // deleted shit file
         {
             setDelfile(0);
         }
-        else
+        else // verified
         {
-            QFile file(unverified_list[man->params.count-1]);
-            QFileInfo unver_file(file);
-            file.copy(KAL_AU_DIR"train/online/" +
-                      unver_file.fileName());
-            file.remove();
+            man->copyToOnline(unverified_list[man->params.count-1]);
         }
     }
     if( loadsrc && man->params.count<man->params.total_count )
@@ -354,32 +350,49 @@ void AbScene::setWordlist(QString wordlist)
 
     if( wordlist=="request data" ) // load phase
     {
-        QFile words_file(BT_WORDLIST_PATH);
-        if( !words_file.open(QIODevice::ReadOnly | QIODevice::Text) )
-        {
-            qDebug() << "Error opening" << BT_WORDLIST_PATH;
-            man->params.wordlist = "";
-        }
-        else
-        {
-            man->params.wordlist = QString(words_file.readAll());
-            words_file.close();
-        }
+        man->params.wordlist = man->readWordList();
+        setWordstat(ab_getStat());
     }
     else // save phase
     {
-        QFile words_file(BT_WORDLIST_PATH);
-        if( !words_file.open(QIODevice::WriteOnly | QIODevice::Text) )
-        {
-            qDebug() << "Error opening" << BT_WORDLIST_PATH;
-        }
         man->params.wordlist = wordlist;
-        words_file.write(man->params.wordlist.toStdString().c_str());
-        words_file.close();
+        man->writeWordList();
         man->params.wordlist = "";
     }
 
     emit wordlistChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
+void AbScene::setWordstat(QString wordstat)
+{
+    if( wordstat==man->params.wordstat )
+    {
+        return;
+    }
+
+    man->params.wordstat = wordstat;
+    emit wordstatChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
+void AbScene::setDifwords(QString difwords)
+{
+    if( difwords==man->params.difwords )
+    {
+        return;
+    }
+
+    man->params.difwords = difwords;
+    man->delWordSamples();
+    man->params.difwords = "";
+    emit difwordsChanged();
     if( window() )
     {
         window()->update();
