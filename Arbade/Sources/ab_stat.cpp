@@ -1,5 +1,63 @@
 #include "ab_stat.h"
 
+QString ab_getStat()
+{
+    QFileInfoList dir_list = ab_getAudioDirs();
+    int len_dir = dir_list.size();
+    if( len_dir==0 )
+    {
+        return "";
+    }
+
+    QStringList lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
+    int len = lexicon.length();
+    QVector<int> tot_count;
+    tot_count.resize(len);
+    tot_count.fill(0);
+
+    for( int i=0 ; i<len_dir ; i++ )
+    {
+        QStringList files_list = ab_listFiles(dir_list[i].absoluteFilePath(),
+                                              AB_LIST_NAMES);
+        QVector<int> count = ab_countWords(files_list, len);
+        for( int j=0 ; j<len ; j++ )
+        {
+            tot_count[j] += count[j];
+        }
+    }
+
+    QString result;
+    for( int i=0 ; i<len ; i++ )
+    {
+        result += "(" + QString::number(tot_count[i]) + ")\n";
+    }
+    return result.trimmed();
+}
+
+QFileInfoList ab_getAudioDirs()
+{
+    QString path = KAL_AU_DIR_WIN"train\\";
+    QDir dir(path);
+    if( !dir.exists() )
+    {
+        qDebug() << "Warning: Audio Directory doesn't Exist,"
+                 << "cannot generate statistics.";
+        return QFileInfoList();
+    }
+    QFileInfoList dir_list = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    path = KAL_AU_DIR_WIN"unverified\\";
+    QFileInfo unver(path);
+    if( !unver.exists() )
+    {
+        qDebug() << "Warning: unverified Directory doesn't Exist,"
+                 << "cannot generate statistics.";
+        return QFileInfoList();
+    }
+    dir_list.append(unver); // add unverified dir to list of train category dirs
+
+    return dir_list;
+}
+
 QString ab_getStat(QString category)
 {
     QString path;
@@ -12,24 +70,18 @@ QString ab_getStat(QString category)
         path = KAL_AU_DIR_WIN"train\\";
         path += category + "\\";
     }
-    QDir cat_dir(path);
-    if( !cat_dir.exists() )
+    QStringList files_list = ab_listFiles(path, AB_LIST_NAMES);
+    if( files_list.length()<=0 )
     {
-        qDebug() << "Warning: Directory doesn't Exist,"
-                 << "cannot generate statistics.";
         return "";
     }
-
     QStringList lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
     int len = lexicon.length();
-
-    QString result, data;
-
-    QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files);
-    QVector<int> count = ab_countWords(dir_list, len);
+    QVector<int> count = ab_countWords(files_list, len);
 
     int mean = ab_meanCount(count);
     int var = ab_varCount(count, mean);
+    QString result, data;
 
     for( int i=0 ; i<len ; i++ )
     {
@@ -45,34 +97,35 @@ QString ab_getStat(QString category)
     return result.trimmed();
 }
 
-QStringList ab_listDir(QString category)
+QFileInfoList ab_listFiles(QString path)
 {
-    QString path;
-    QStringList ret;
-    if( category=="unverified" )
-    {
-        path = KAL_AU_DIR_WIN + category + "\\";
-    }
-    else
-    {
-        path = KAL_AU_DIR_WIN"train\\";
-        path += category + "\\";
-    }
-
     QDir cat_dir(path);
     if( !cat_dir.exists() )
     {
         qDebug() << "Warning: Directory doesn't Exist,"
                  << "cannot generate statistics.";
-        return QStringList();
+        return QFileInfoList();
     }
-
     QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files,
                                  QDir::Time | QDir::Reversed);
+    return dir_list;
+}
+
+QStringList ab_listFiles(QString path, int mode)
+{
+    QStringList ret;
+    QFileInfoList dir_list = ab_listFiles(path);
     int len = dir_list.size();
     for( int i=0 ; i<len ; i++ )
     {
-        ret.push_back(dir_list[i].absoluteFilePath());
+        if( mode==AB_LIST_PATHS )
+        {
+            ret.push_back(dir_list[i].absoluteFilePath());
+        }
+        else
+        {
+            ret.push_back(dir_list[i].fileName());
+        }
     }
     return ret;
 }
@@ -108,19 +161,18 @@ QString setFont(QString data, int val, int mean, int var,
     return result;
 }
 
-QVector<int> ab_countWords(QFileInfoList dir_list, int len)
+QVector<int> ab_countWords(QStringList file_list, int len)
 {
     QString filename;
     QStringList words_index;
     QVector<int> count;
     count.resize(len);
     count.fill(0);
-    int file_num = dir_list.size();
+    int file_num = file_list.size();
 
     for( int j=0 ; j<file_num ; j++ )
     {
-        QFileInfo file=dir_list[j];
-        filename = file.fileName();
+        filename = file_list[j];
         filename.remove(".wav");
         words_index = filename.split("_", QString::SkipEmptyParts);
         int words_num = words_index.length();
