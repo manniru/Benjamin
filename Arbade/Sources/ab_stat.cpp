@@ -174,6 +174,11 @@ QVector<int> ab_countWords(QStringList file_list, int len)
     {
         filename = file_list[j];
         filename.remove(".wav");
+        int dot_index = filename.indexOf(".");
+        if( dot_index>=0 )
+        {
+            filename.truncate(dot_index);
+        }
         words_index = filename.split("_", QString::SkipEmptyParts);
         int words_num = words_index.length();
         for( int i=0 ; i<words_num ; i++ )

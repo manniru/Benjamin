@@ -8,103 +8,92 @@ import QtQuick.Window 2.10
 
 Window
 {
+    id: container
     title: "Edit Word List"
     height: 600
-    width: 700
+    width: 1200
     property string dialog_text: ""
     property string dif_words: ""
     property string botton_border: "#bfbfbf"
     property string botton_text: "#b6b6b6"
     property string botton_bg: "#4d4d4d"
-    property string area_text: "#c9c9c9"
+    property string total_words: ""
     property int line_count: 0
+    property int box_count: 0
     visible: true
 
     color: "#2e2e2e"
 
-    ScrollView
+    ListModel
     {
-        id: scroll_view
-        width: parent.width - 20 // 2*10 = margins
-        height: parent.height - 70 // 3*10 = margins | 40 buttons
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.topMargin: 10
-        anchors.leftMargin: 10
+        id: lm_wordedit
+    }
 
-        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-        ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-        clip: true
+    Component
+    {
+        id: ld_wordedit
 
-        Rectangle
+        AbWordBox
         {
-            id: linenum_bg
-            width: 50
-            height: linenum_lbl.height
-            anchors.top: parent.top
-            anchors.left: parent.left
+            id: wordbox_id
 
-            color: "#666666"
-        }
+            width: 200
+            word_list: wl
+            word_stat: ws
+            start_num: sn
 
-        Label
-        {
-            id: linenum_lbl
-            anchors.top: parent.top
-            anchors.horizontalCenter: linenum_bg.horizontalCenter
-            anchors.topMargin: 7
-
-            font.pixelSize: 16
-            text: "010"
-            color: "#b4b4b4"
-        }
-
-        Rectangle
-        {
-            id: text_bg
-            height: text_area.height
-            anchors.top: parent.top
-            anchors.left: linenum_bg.right
-            width: scroll_view.width - 20
-            color: "#4e4e4e"
-        }
-
-        TextArea
-        {
-            id: text_area
-            Accessible.name: "document"
-            width: scroll_view.width - 70
-            anchors.left: linenum_lbl.right
-            anchors.leftMargin: 30
-            anchors.top: parent.top
-
-            text: ""
-            font.pixelSize: 16
-            Component.onCompleted: forceActiveFocus()
-            focus: true
-            color: area_text
-            selectByMouse: true
-            selectedTextColor: "#333"
-            selectionColor: "#ccc"
-            onTextChanged:
+            onWordBoxChanged:
             {
-                line_count = (text.match(/\n/g) || []).length + 1
+                var split_words = total_words.split("\n");
+                split_words[id] = word;
+                total_words = split_words.join("\n");
             }
+        }
+    }
 
+    ListView
+    {
+        id: lv_wordedit
+
+        anchors.left: parent.left
+        anchors.leftMargin: 10
+        anchors.top: parent.top
+        anchors.topMargin: 10
+        width: parent.width - 20 // 20 margins
+        height: parent.height - 70 // 40 button 30 margins
+        layoutDirection: Qt.LeftToRight
+        orientation: ListView.Horizontal
+        spacing: 40
+        clip: true
+        contentWidth: childrenRect.width
+        ScrollBar.horizontal: ScrollBar
+        {
+            active: true
         }
 
-        Label
-        {
-            id: stat_lbl
-            anchors.top: parent.top
-            anchors.right: text_bg.right
-            anchors.rightMargin: 60
-            anchors.topMargin: 7
-            horizontalAlignment: Text.AlignHCenter
+        model: lm_wordedit
+        delegate: ld_wordedit
+    }
 
-            font.pixelSize: 16
-            text: "(10)\n(100)\n(1000)"
-            color: "#9a9a9a"
+    Component.onCompleted:
+    {
+        var all_words = root_scene.wordlist.split("\n");
+        total_words = root_scene.wordlist;
+        var all_stat = root_scene.wordstat.split("\n");
+        var all_count = all_words.length
+        var box_size = ab_const.ab_WORDEDIT_BOX_SIZE;
+        var start_index = 0;
+        box_count = Math.ceil(all_count/box_size);
+
+        for( var i=0 ; i<box_count ; i++ )
+        {
+            var sliced_wl = all_words.slice(start_index,
+                               start_index+box_size).join("\n")
+            var sliced_ws = all_stat.slice(start_index,
+                               start_index+box_size).join("\n")
+            lm_wordedit.append({sn: start_index, wl: sliced_wl,
+                                ws: sliced_ws});
+            start_index += box_size;
         }
     }
 
@@ -113,10 +102,12 @@ Window
         id: save_button
         text: "Save"
         height: 40
-        width: scroll_view.width/2 - 5
-        anchors.left: scroll_view.left
-        anchors.top: scroll_view.bottom
-        anchors.topMargin: 10
+        width: parent.width/4 - 5
+        anchors.left: parent.left
+        anchors.leftMargin: parent.width/4
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+
         font.pixelSize: 20
         DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         palette.buttonText: botton_text
@@ -143,11 +134,6 @@ Window
             }
 
         }
-
-        onHoveredChanged:
-        {
-
-        }
     }
 
     Button
@@ -155,13 +141,16 @@ Window
         id: close_button
         text: "Close"
         height: 40
-        width: scroll_view.width/2 - 5
-        anchors.right: scroll_view.right
-        anchors.top: scroll_view.bottom
-        anchors.topMargin: 10
+        width: parent.width/4 - 5
+        anchors.right: parent.right
+        anchors.rightMargin: parent.width/4
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+
         font.pixelSize: 20
         DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         palette.buttonText: botton_text
+
         background: Rectangle
         {
             anchors.fill: parent;
@@ -172,11 +161,6 @@ Window
         onClicked:
         {
             reject();
-        }
-
-        onHoveredChanged:
-        {
-
         }
     }
 
@@ -202,31 +186,15 @@ Window
 
     onVisibleChanged:
     {
-        if( visible )
-        {
-            updateText();
-        }
-        else
+        if( !visible )
         {
             wordlist_dialog.close();
         }
     }
 
-    onLine_countChanged:
-    {
-        var line_text = ""
-
-        for( var i=0 ; i<line_count ; i++ )
-        {
-            line_text += zeroPad(i) + "\n"
-        }
-        linenum_lbl.text = line_text
-    }
-
     function accept()
     {
-        root_scene.wordlist = text_area.getText(
-                                0,text_area.length)
+        root_scene.wordlist = total_words;
         root_scene.difwords = dif_words;
         dif_words = "";
         close();
@@ -237,22 +205,11 @@ Window
         close();
     }
 
-    function zeroPad(num)
-    {
-        var zero = 3 - num.toString().length + 1;
-        return Array(+(zero > 0 && zero)).join("0") + num;
-    }
-
-    function updateText()
-    {
-        text_area.text = root_scene.wordlist
-        stat_lbl.text = root_scene.wordstat
-    }
 
     function getDiff()
     {
         var words_old = root_scene.wordlist.split("\n").filter(i => i);
-        var words_new = text_area.text.split("\n").filter(i => i);
+        var words_new = total_words.split("\n").filter(i => i);
         var dif = [];
         var count = 0;
 
