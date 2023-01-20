@@ -12,17 +12,19 @@ Window
     title: "Edit Word List"
     height: 600
     width: 1200
+    visible: true
+    color: "#2e2e2e"
+
     property string dialog_text: ""
     property string dif_words: ""
+
     property string botton_border: "#bfbfbf"
     property string botton_text: "#b6b6b6"
     property string botton_bg: "#4d4d4d"
+
     property string total_words: ""
     property int line_count: 0
     property int box_count: 0
-    visible: true
-
-    color: "#2e2e2e"
 
     ListModel
     {
@@ -41,12 +43,25 @@ Window
             word_list: wl
             word_stat: ws
             start_num: sn
+            last_box: lb
 
             onWordBoxChanged:
             {
                 var split_words = total_words.split("\n");
                 split_words[id] = word;
                 total_words = split_words.join("\n");
+            }
+
+            onNewBoxRequired:
+            {
+                lm_wordedit.append({sn: line_count, wl: "",
+                                   ws: "0", lb: Boolean(true)});
+            }
+
+            onNewWord:
+            {
+                line_count++;
+                total_words += "\n";
             }
         }
     }
@@ -73,28 +88,6 @@ Window
 
         model: lm_wordedit
         delegate: ld_wordedit
-    }
-
-    Component.onCompleted:
-    {
-        var all_words = root_scene.wordlist.split("\n");
-        total_words = root_scene.wordlist;
-        var all_stat = root_scene.wordstat.split("\n");
-        var all_count = all_words.length
-        var box_size = ab_const.ab_WORDEDIT_BOX_SIZE;
-        var start_index = 0;
-        box_count = Math.ceil(all_count/box_size);
-
-        for( var i=0 ; i<box_count ; i++ )
-        {
-            var sliced_wl = all_words.slice(start_index,
-                               start_index+box_size).join("\n")
-            var sliced_ws = all_stat.slice(start_index,
-                               start_index+box_size).join("\n")
-            lm_wordedit.append({sn: start_index, wl: sliced_wl,
-                                ws: sliced_ws});
-            start_index += box_size;
-        }
     }
 
     Button
@@ -190,6 +183,9 @@ Window
         {
             wordlist_dialog.close();
         }
+        else
+        {
+            loadWordBoxes();        }
     }
 
     function accept()
@@ -204,7 +200,6 @@ Window
     {
         close();
     }
-
 
     function getDiff()
     {
@@ -226,4 +221,27 @@ Window
         return dif;
     }
 
+    function loadWordBoxes()
+    {
+        lm_wordedit.clear();
+        var all_words = root_scene.wordlist.split("\n");
+        total_words = root_scene.wordlist;
+        line_count = all_words.length;
+        var all_stat = root_scene.wordstat.split("\n");
+        var all_count = all_words.length
+        var box_size = ab_const.ab_WORDEDIT_BOX_SIZE;
+        var start_index = 0;
+        box_count = Math.ceil(all_count/box_size);
+
+        for( var i=0 ; i<box_count ; i++ )
+        {
+            var sliced_wl = all_words.slice(start_index,
+                               start_index+box_size).join("\n")
+            var sliced_ws = all_stat.slice(start_index,
+                               start_index+box_size).join("\n")
+            lm_wordedit.append({sn: start_index, wl: sliced_wl,
+                                ws: sliced_ws, lb: 1?(i===box_count-1):0});
+            start_index += box_size;
+        }
+    }
 }

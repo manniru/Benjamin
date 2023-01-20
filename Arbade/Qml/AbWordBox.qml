@@ -9,13 +9,15 @@ import QtQuick.Window 2.10
 Rectangle
 {
     id: container
-    property string do_job: ""
     property string word_list: ""
     property string word_stat: ""
     property int start_num: 0
     property int wl_count: 0
+    property int last_box: 0
 
     signal wordBoxChanged(int id, string word)
+    signal newBoxRequired()
+    signal newWord()
 
     ListModel
     {
@@ -35,7 +37,22 @@ Rectangle
 
             onWordChanged:
             {
-                wordBoxChanged(word_id, word_text)
+                if( word_id===zeroPad(start_num+wl_count-1) && last_box )
+                {
+                    if( wl_count===ab_const.ab_WORDEDIT_BOX_SIZE )
+                    {
+                        last_box = 0;
+                        newBoxRequired();
+                    }
+                    else
+                    {
+                        wl_count += 1;
+                        lm_wordbox.append({wid: zeroPad(1+parseInt(word_id)),
+                                       wt: "", wc: ""});
+                    }
+                    newWord();
+                }
+                wordBoxChanged(word_id, word_text);
             }
         }
     }
@@ -59,20 +76,6 @@ Rectangle
         updateWords();
     }
 
-    onDo_jobChanged:
-    {
-        if( do_job==="do that fucking job" )
-        {
-            word_list = "";
-            for( var i=0 ; i<wl_count ; i++ )
-            {
-                word_list += lm_wordbox.get(i).word_text + "\n";
-            }
-
-            do_job = "";
-        }
-    }
-
     function updateWords()
     {
         var wl_split = word_list.split("\n");
@@ -82,8 +85,7 @@ Rectangle
         for( var i=0 ; i<wl_count ; i++ )
         {
             lm_wordbox.append({wid: zeroPad(i+start_num),
-                               wt: wl_split[i],
-                               wc: wlc_split[i]});
+                               wt: wl_split[i], wc: wlc_split[i]});
         }
     }
 

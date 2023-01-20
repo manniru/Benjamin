@@ -62,13 +62,11 @@ Rectangle
         text: word_text
         font.pixelSize: 16
         padding: 3
-        focus: true
+        focus: false
         selectByMouse: true
         color: "#c9c9c9"
         selectedTextColor: "#333"
         selectionColor: "#ccc"
-
-        Component.onCompleted: forceActiveFocus();
 
         onTextChanged:
         {
