@@ -1,8 +1,10 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.2
+import QtQuick.Controls 2.3
 
 Rectangle
 {
+    id: container
     property string font_name_label:    fontRobotoRegular.name
 
     property int    font_size:          28
@@ -13,29 +15,73 @@ Rectangle
 //    color: "green"
     color: "transparent"
 
-    GridLayout
+    ScrollView
     {
-        columns: 12
+        id: scroller
+        width: parent.width
         anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: 30
-        columnSpacing: 20
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.verticalCenter: parent.verticalCenter
+        clip : true
 
-        Repeater
+        property int scroll_speed: 30
+
+        GridLayout
         {
-            model: grid_text
-            Text
-            {
-                text: modelData
-                color: color_text
-                font.pixelSize: font_size
-                font.family: font_name_label
+            id: stat_grid
+            columns: 12
+            anchors.fill: parent
+            columnSpacing: 20
 
-                textFormat: Text.RichText
-//                verticalAlignment: Text.AlignVCenter
-//                Layout.alignment: Qt.AlignVCenter
+            Repeater
+            {
+                model: grid_text
+                Text
+                {
+                    text: modelData
+                    color: color_text
+                    font.pixelSize: font_size
+                    font.family: font_name_label
+
+                    textFormat: Text.RichText
+    //                verticalAlignment: Text.AlignVCenter
+    //                Layout.alignment: Qt.AlignVCenter
+                }
             }
         }
+    }
+
+    MouseArea
+    {
+        anchors.fill: scroller
+
+        onWheel:
+        {
+            if( wheel.angleDelta.y>0 )
+            {
+                if( scroller.contentItem.x+30<scroller.x )
+                {
+                    scroller.contentItem.x += scroller.scroll_speed;
+                }
+            }
+            else
+            {
+                if( scroller.contentItem.x+scroller.contentWidth+30
+                   >scroller.x+scroller.width)
+                {
+                    scroller.contentItem.x -= scroller.scroll_speed;
+                }
+            }
+        }
+
+        onClicked: mouse.accepted = false;
+        onPressed: mouse.accepted = false;
+        onReleased: mouse.accepted = false;
+        onDoubleClicked: mouse.accepted = false;
+        onPositionChanged: mouse.accepted = false;
+        onPressAndHold: mouse.accepted = false;
     }
 
     function setText(text)
