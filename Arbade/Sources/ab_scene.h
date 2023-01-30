@@ -18,6 +18,7 @@ class AbScene : public QQuickItem
     Q_PROPERTY(QString wordlist READ wordlist WRITE setWordlist NOTIFY wordlistChanged)
     Q_PROPERTY(QString wordstat READ wordstat WRITE setWordstat NOTIFY wordstatChanged)
     Q_PROPERTY(QString difwords READ difwords WRITE setDifwords NOTIFY difwordsChanged)
+    Q_PROPERTY(QString autocomp READ autocomp WRITE setAutocomp NOTIFY autocompChanged)
     Q_PROPERTY(qreal count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(qreal totalcount READ totalcount WRITE setTotalcount NOTIFY totalcountChanged)
     Q_PROPERTY(qreal elapsedtime READ elapsedtime WRITE setElapsedtime NOTIFY elapsedtimeChanged)
@@ -50,6 +51,8 @@ public:
     void setWordstat(QString wordstat);
     QString difwords() const { return man->params.difwords; }
     void setDifwords(QString difwords);
+    QString autocomp() const { return man->params.autocomp; }
+    void setAutocomp(QString autocomp);
     qreal count() const { return man->params.count; }
     qreal totalcount() const { return man->params.total_count; }
     qreal elapsedtime() const { return man->params.elapsed_time; }
@@ -96,6 +99,7 @@ signals:
     void wordlistChanged();
     void wordstatChanged();
     void difwordsChanged();
+    void autocompChanged();
     void countChanged();
     void totalcountChanged();
     void elapsedtimeChanged();
@@ -115,6 +119,7 @@ signals:
 private:
     void fillRecParams();
     void processKey(int key);
+    void updateCategories();
 
     AbManager *man;
     AbRecParam *rec_params;

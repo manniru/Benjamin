@@ -40,6 +40,7 @@ void AbScene::setQmlcreated(qreal qmlcreated)
     }
     m_qmlcreated = qmlcreated;
     setStat(ab_getStat(man->params.category));
+
     emit qmlcreatedChanged();
     if(window())
     {
@@ -319,6 +320,7 @@ void AbScene::setStat(QString stat)
     }
 
     man->params.stat = stat;
+    updateCategories();
     emit statChanged();
     if( window() )
     {
@@ -399,6 +401,21 @@ void AbScene::setDifwords(QString difwords)
     }
 }
 
+void AbScene::setAutocomp(QString autocomp)
+{
+    if( autocomp==man->params.autocomp )
+    {
+        return;
+    }
+
+    man->params.autocomp = autocomp;
+    emit autocompChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
 void AbScene::setPlaykon(qreal playkon)
 {
     if( playkon==man->params.playkon )
@@ -459,6 +476,19 @@ void AbScene::processKey(int key)
     {
         return;
     }
+}
+
+void AbScene::updateCategories()
+{
+    QFileInfoList dir_list = ab_getAudioDirs();
+    QStringList categories;
+    int len = dir_list.size();
+    for( int i=0 ; i<len ; i++)
+    {
+        categories.append(dir_list[i].fileName());
+    }
+    QString sag = categories.join("!");
+    setAutocomp(sag);
 }
 
 void ab_setUi(QObject *ui)
