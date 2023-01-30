@@ -47,10 +47,11 @@ ApplicationWindow
         wordlist: ""
         wordstat: ""
         address: ""
-        focusword: ""
+        focusword: "<empty>"
         difwords: ""
+        autocomp: ""
         key: 0
-        power: -45
+        power: 0
         verifier: 0
         loadsrc: 0
         delfile: 0
@@ -69,6 +70,12 @@ ApplicationWindow
         onPlaykonChanged:
         {
             audioPlayer.play();
+        }
+
+        onAutocompChanged:
+        {
+            get_value_dialog.auto_complete_list =
+                    autocomp.split("!").filter(i => i);
         }
 
         onStatusChanged:
@@ -173,7 +180,14 @@ ApplicationWindow
             }
             else if( title==="Enter Focus Word ID" )
             {
-                root_scene.focusword = dialog_text
+                if( dialog_text=="" )
+                {
+                    root_scene.focusword = "<empty>";
+                }
+                else
+                {
+                    root_scene.focusword = dialog_text
+                }
             }
         }
     }

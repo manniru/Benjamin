@@ -102,7 +102,7 @@ Rectangle
                 }
                 else if( status===ab_const.ab_STATUS_REQPAUSE )
                 {
-                    "Rec"
+                    "Req Pause"
                 }
                 else if( status===ab_const.ab_STATUS_BREAK )
                 {
@@ -131,7 +131,7 @@ Rectangle
                 }
                 else if( status===ab_const.ab_STATUS_REQPAUSE )
                 {
-                    "#f00"
+                    "#008eca"
                 }
                 else if( status===ab_const.ab_STATUS_BREAK )
                 {

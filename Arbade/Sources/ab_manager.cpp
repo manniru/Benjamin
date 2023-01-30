@@ -144,7 +144,7 @@ QString AbManager::getRandPath(QString category)
     QVector<AbWord> words;
     int fix_word_index = -1;
 
-    if( params.focusword.length() )
+    if( params.focusword.length() && params.focusword!="<empty>" )
     {
         fix_word_index = rand()%AB_WORD_LEN;
     }

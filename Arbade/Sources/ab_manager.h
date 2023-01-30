@@ -15,10 +15,11 @@ typedef struct AbRecParam
     QString words = "<One> <Roger> <Spotify>";
     QString stat = "One: 10 Two: 13 ...\nAlpha: 22  ...";
     QString address = "";
-    QString focusword = "";
+    QString focusword = "<empty>";
     QString wordlist = "";
     QString wordstat = "";
     QString difwords = "";
+    QString autocomp = "";
     qreal   count = 0;
     qreal   total_count = 100;
     qreal   elapsed_time = 0;
@@ -27,7 +28,7 @@ typedef struct AbRecParam
     qreal   num_words = 3;
     qreal   pause_time = 1;
     qreal   key = 0;
-    qreal   power = -45;
+    qreal   power = 0;
     qreal   verifier = 0;
     qreal   loadsrc = 0;
     qreal   delfile = 0;
