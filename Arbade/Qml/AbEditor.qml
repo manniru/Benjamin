@@ -12,7 +12,7 @@ Window
     title: "Edit Word List"
     height: 600
     width: 1200
-    visible: true
+//    visible: true
     color: "#2e2e2e"
 
     property string dialog_text: ""
@@ -20,7 +20,8 @@ Window
 
     property string botton_border: "#bfbfbf"
     property string botton_text: "#b6b6b6"
-    property string botton_bg: "#4d4d4d"
+    property color  botton_bg: "#4d4d4d"
+    property color  botton_hbg: "#666"
 
     property string total_words: ""
     property int line_count: 0
@@ -76,15 +77,10 @@ Window
         anchors.topMargin: 10
         width: parent.width - 20 // 20 margins
         height: parent.height - 70 // 40 button 30 margins
-        layoutDirection: Qt.LeftToRight
         orientation: ListView.Horizontal
         spacing: 40
         clip: true
         contentWidth: childrenRect.width
-        ScrollBar.horizontal: ScrollBar
-        {
-            active: true
-        }
 
         model: lm_wordedit
         delegate: ld_wordedit
@@ -107,7 +103,14 @@ Window
         background: Rectangle
         {
             anchors.fill: parent
-            color: botton_bg
+            color: if( parent.hovered )
+                   {
+                       botton_hbg
+                   }
+                   else
+                   {
+                       botton_bg
+                   }
             border.color: botton_border
         }
 
@@ -147,8 +150,16 @@ Window
         background: Rectangle
         {
             anchors.fill: parent;
-            color: botton_bg;
-            border.color: botton_border;
+            color: if( parent.hovered )
+                   {
+                       botton_hbg
+                   }
+                   else
+                   {
+                       botton_bg
+                   }
+
+            border.color: botton_border
         }
 
         onClicked:

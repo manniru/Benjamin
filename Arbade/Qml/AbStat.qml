@@ -15,15 +15,19 @@ Rectangle
 //    color: "green"
     color: "transparent"
 
-    ScrollView
+    Flickable
     {
         id: scroller
         width: parent.width
         anchors.left: parent.left
         anchors.leftMargin: 30
         anchors.right: parent.right
-        anchors.rightMargin: 10
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.rightMargin: 50
+        anchors.topMargin: 50
+        anchors.bottomMargin: 50
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        contentWidth: stat_grid.width
         clip : true
 
         property int scroll_speed: 30
@@ -31,9 +35,13 @@ Rectangle
         GridLayout
         {
             id: stat_grid
-            columns: 12
-            anchors.fill: parent
+            rows: 12
+            anchors.left: parent.left
+            anchors.top: parent.top
+            width: stat_grid.column*200
+            height: parent.height
             columnSpacing: 20
+            flow: GridLayout.TopToBottom
 
             Repeater
             {
@@ -46,8 +54,6 @@ Rectangle
                     font.family: font_name_label
 
                     textFormat: Text.RichText
-    //                verticalAlignment: Text.AlignVCenter
-    //                Layout.alignment: Qt.AlignVCenter
                 }
             }
         }

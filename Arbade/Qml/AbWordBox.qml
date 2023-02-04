@@ -8,7 +8,6 @@ import QtQuick.Window 2.10
 
 Rectangle
 {
-    id: container
     property string word_list: ""
     property string word_stat: ""
     property int start_num: 0
@@ -18,6 +17,8 @@ Rectangle
     signal wordBoxChanged(int id, string word)
     signal newBoxRequired()
     signal newWord()
+
+    color: "transparent"
 
     ListModel
     {
@@ -30,7 +31,7 @@ Rectangle
 
         AbWordLine
         {
-            width: container.width
+            width: parent.width
             word_id: wid
             word_text: wt
             word_count: wc

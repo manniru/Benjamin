@@ -88,12 +88,12 @@ QString ab_getStat(QString category)
         data = QStringLiteral("%1").arg(i, 3, 10, QLatin1Char('0'));
         result += setFont(data, count[i], mean, var);
         data = lexicon[i];
-        result += setFont(data, count[i], mean, var) + "!";
+        result += setFont(data, count[i], mean, var) + " ";
         data = QString::number(count[i]);
         result += setFont(data, count[i], mean, var) + "!";
     }
-    result += "mean!" + QString::number(mean) + "!";
-    result += "var!" + QString::number(var) + "!";
+    result += "mean  " + QString::number(mean) + "!";
+    result += "var   " + QString::number(var) + "!";
     return result.trimmed();
 }
 
