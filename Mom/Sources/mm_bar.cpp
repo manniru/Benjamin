@@ -5,6 +5,7 @@ MmBar::MmBar(QObject *root, MmVirt *vi,
              QObject *parent) : QObject(parent)
 {
     parser = new MmParser;
+    sound  = new MmSound;
     virt   = vi;
     // List ui
     left_bar  = root->findChild<QObject*>("LeftBar");
@@ -23,9 +24,16 @@ MmBar::MmBar(QObject *root, MmVirt *vi,
 
 void MmBar::executeCommand(QString action)
 {
-    qDebug() << "execute" << action;
-    int desktop_id = action.toInt();
-    virt->setDesktop(desktop_id-1);
+    if( action=="sound" )
+    {
+        sound->leftClick();
+    }
+    else
+    {
+        qDebug() << "execute" << action;
+        int desktop_id = action.toInt();
+        virt->setDesktop(desktop_id-1);
+    }
 }
 
 void MmBar::loadLabels()
@@ -37,7 +45,14 @@ void MmBar::loadLabels()
 
     l_id = 0;
     r_id = 0;
-    addWorkID();
+
+    //add workspace widget
+    side  = left_bar;
+    l_id += addWorkID();
+
+    //add soundbar widget
+    side  = right_bar;
+    r_id += addSound();
 
     for( int i=0 ; i<file_list.length() ; i++ )
     {
@@ -72,7 +87,7 @@ void MmBar::loadLabels()
     QMetaObject::invokeMethod(right_bar, "clearLabels");
 }
 
-void MmBar::addWorkID()
+int MmBar::addWorkID()
 {
     MmLabel virt_lbl;
     int virt_idx = virt->getCurrDesktop();
@@ -81,14 +96,30 @@ void MmBar::addWorkID()
     parser->parse(lbl_val, &out);
 
     int len = out.length();
-    side = left_bar;
     for(int i=0 ; i<len ; i++ )
     {
-        updateLbl(i, out[i]);
+        updateLabel(i, &(out[i]));
     }
 
-    l_id += len;
+    return len;
 }
+
+int MmBar::addSound()
+{
+    MmLabel sound_lbl;
+    QString lbl_val = sound->getLabel();
+    QVector<MmLabel> out;
+    parser->parse(lbl_val, &out);
+
+    int len = out.length();
+    for(int i=0 ; i<len ; i++ )
+    {
+        updateLabel(i, &(out[i]));
+    }
+
+    return len;
+}
+
 
 QString MmBar::getWorkStr(int index)
 {
