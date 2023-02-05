@@ -142,7 +142,7 @@ int MmBar::proccessFile(int s_id, QString path)
     int len = out.length();
     for(int i=s_id ; i<s_id+len ; i++ )
     {
-        updateLbl(i, out[i-s_id]);
+        updateLabel(i, &(out[i-s_id]));
     }
 
     file.close();
@@ -150,35 +150,35 @@ int MmBar::proccessFile(int s_id, QString path)
     return len;
 }
 
-void MmBar::addLabel(MmLabel labels)
+void MmBar::addLabel(MmLabel *label)
 {
-    QQmlProperty::write(side, "labelBg", labels.prop.bg);
-    QQmlProperty::write(side, "labelFg", labels.prop.fg);
-    QQmlProperty::write(side, "labelUl", labels.prop.ul);
-    QQmlProperty::write(side, "labelUlEn", labels.prop.ul_en);
-    QQmlProperty::write(side, "labelVal", labels.val);
-    QQmlProperty::write(side, "labelAction", labels.prop.action);
+    QQmlProperty::write(side, "labelBg", label->prop.bg);
+    QQmlProperty::write(side, "labelFg", label->prop.fg);
+    QQmlProperty::write(side, "labelUl", label->prop.ul);
+    QQmlProperty::write(side, "labelUlEn", label->prop.ul_en);
+    QQmlProperty::write(side, "labelVal", label->val);
+    QQmlProperty::write(side, "labelAction", label->prop.action);
     QMetaObject::invokeMethod(side, "addLabel");
 
     if( side==left_bar )
     {
-        l_labels.append(labels);
+        l_labels.append(*label);
     }
     else
     {
-        r_labels.append(labels);
+        r_labels.append(*label);
     }
 }
 
-void MmBar::updateLabel(int id, MmLabel labels)
+void MmBar::updateUI(int id, MmLabel *label)
 {
     QQmlProperty::write(side, "labelID", id);
-    QQmlProperty::write(side, "labelBg", labels.prop.bg);
-    QQmlProperty::write(side, "labelFg", labels.prop.fg);
-    QQmlProperty::write(side, "labelUl", labels.prop.ul);
-    QQmlProperty::write(side, "labelUlEn", labels.prop.ul_en);
-    QQmlProperty::write(side, "labelVal", labels.val);
-    QQmlProperty::write(side, "labelAction", labels.prop.action);
+    QQmlProperty::write(side, "labelBg", label->prop.bg);
+    QQmlProperty::write(side, "labelFg", label->prop.fg);
+    QQmlProperty::write(side, "labelUl", label->prop.ul);
+    QQmlProperty::write(side, "labelUlEn", label->prop.ul_en);
+    QQmlProperty::write(side, "labelVal", label->val);
+    QQmlProperty::write(side, "labelAction", label->prop.action);
     QMetaObject::invokeMethod(side, "updateLabel");
 
     QVector<MmLabel> *c_labels;
@@ -190,59 +190,75 @@ void MmBar::updateLabel(int id, MmLabel labels)
     {
         c_labels = &r_labels;
     }
-    (*c_labels)[id].val = labels.val;
-    (*c_labels)[id].prop.bg = labels.prop.bg;
-    (*c_labels)[id].prop.fg = labels.prop.fg;
-    (*c_labels)[id].prop.ul = labels.prop.ul;
-    (*c_labels)[id].prop.ul_en = labels.prop.ul_en;
-    (*c_labels)[id].prop.action = labels.prop.action;
+    (*c_labels)[id].val = label->val;
+    (*c_labels)[id].prop.bg = label->prop.bg;
+    (*c_labels)[id].prop.fg = label->prop.fg;
+    (*c_labels)[id].prop.ul = label->prop.ul;
+    (*c_labels)[id].prop.ul_en = label->prop.ul_en;
+    (*c_labels)[id].prop.action = label->prop.action;
 }
 
-void MmBar::updateLbl(int id, MmLabel new_lbl)
+void MmBar::updateLabel(int id, MmLabel *new_lbl)
 {
-    QVector<MmLabel> *c_labels;
+    int count;
     if( side==left_bar )
     {
-        c_labels = &l_labels;
+        count = l_labels.length();
     }
     else
     {
-        c_labels = &r_labels;
+        count = r_labels.length();
     }
 
-    if( id>=c_labels->length() )
+    if( id>=count )
     {
         addLabel(new_lbl);
         return;
     }
 
-    if( (*c_labels)[id].val!=new_lbl.val )
+    MmLabel *curr_label;
+    if( side==left_bar )
     {
-        updateLabel(id, new_lbl);
-        return;
+        curr_label = &(l_labels[id]);
+    }
+    else
+    {
+        curr_label = &(r_labels[id]);
     }
 
-    if( (*c_labels)[id].prop.bg!=new_lbl.prop.bg )
+    if( isChanged(curr_label, new_lbl) )
     {
-        updateLabel(id, new_lbl);
-        return;
+        updateUI(id, new_lbl);
     }
 
-    if( (*c_labels)[id].prop.fg!=new_lbl.prop.fg )
+}
+
+int MmBar::isChanged(MmLabel *label1, MmLabel *label2)
+{
+    if( label1->val!=label2->val )
     {
-        updateLabel(id, new_lbl);
-        return;
+        return 1;
     }
 
-    if( (*c_labels)[id].prop.ul!=new_lbl.prop.ul )
+    if( label1->prop.bg!=label2->prop.bg )
     {
-        updateLabel(id, new_lbl);
-        return;
+        return 1;
     }
 
-    if( (*c_labels)[id].prop.action!=new_lbl.prop.action )
+    if( label1->prop.fg!=label2->prop.fg )
     {
-        updateLabel(id, new_lbl);
-        return;
+        return 1;
     }
+
+    if( label1->prop.ul!=label2->prop.ul )
+    {
+        return 1;
+    }
+
+    if( label1->prop.action!=label2->prop.action )
+    {
+        return 1;
+    }
+
+    return 0;
 }
