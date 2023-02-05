@@ -4,6 +4,7 @@
 #include <QObject>
 #include "mm_config.h"
 #include "mm_parser.h"
+#include "mm_sound.h"
 #include "mm_virt.h"
 
 class MmBar : public QObject
@@ -19,12 +20,14 @@ private slots:
 
 private:
     void    parseProps(QString raw, MmProperty *properties);
-    void    addWorkID(); // add workspace ID
+    int addWorkID(); // add workspace ID
+    int addSound();  // add sound widget
     QString getWorkStr(int index);
-    void    addLabel(MmLabel label);
-    void    updateLabel(int id, MmLabel label);
+    void    addLabel(MmLabel *label);
+    void    updateUI(int id, MmLabel *label);
     int     proccessFile(int s_id, QString path);
-    void    updateLbl(int id, MmLabel new_lbl);
+    void    updateLabel(int id, MmLabel *new_lbl);
+    int     isChanged(MmLabel *label1, MmLabel *label2);
 
     QObject *left_bar;
     QObject *right_bar;
@@ -36,6 +39,7 @@ private:
     QTimer   *timer;
     MmParser *parser;
     MmVirt   *virt;
+    MmSound  *sound;
 
     // These are buffers to help reduce number of updates
     // requests need

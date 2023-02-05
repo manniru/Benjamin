@@ -24,6 +24,7 @@ SOURCES += Sources/main.cpp \
            Sources/mm_monitor.cpp \
            Sources/mm_nt_user.cpp \
            Sources/mm_parser.cpp \
+           Sources/mm_sound.cpp \
            Sources/mm_virt.cpp \
            Sources/mm_watcher.cpp \
            Sources/mm_win32.cpp \
@@ -58,6 +59,7 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_monitor.h \
            Sources/mm_nt_user.h \
            Sources/mm_parser.h \
+           Sources/mm_sound.h \
            Sources/mm_virt.h \
            Sources/mm_watcher.h \
            Sources/mm_win32.h \
