@@ -64,4 +64,5 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_watcher.h \
            Sources/mm_win32.h \
            Sources/mm_win32_const.h \
-           Sources/mm_win32_win.h
+           Sources/mm_win32_win.h \
+           Sources/win_policy.h
