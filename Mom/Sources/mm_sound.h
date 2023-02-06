@@ -1,10 +1,11 @@
 #ifndef MM_SOUND_H
 #define MM_SOUND_H
 
-#include <mmdeviceapi.h>
 #include <stdio.h>
-#include <Windows.h>
 #include <QVector>
+#include <Windows.h>
+#include <mmdeviceapi.h>
+
 #include "mm_virt.h"
 #include "mm_lua.h"
 
@@ -22,10 +23,12 @@ private:
     QString getName(IMMDevice *dev);
     int     getVolume(IMMDevice *dev);
     int     isHeadset(IMMDevice *dev);
-    void    setDevice(QString name);
+    void    setDevice(LPWSTR dev_iid);
+    int     getNextIndex();
 
     QTimer *timer;
     IMMDeviceEnumerator *device_enum;
+    IMMDeviceCollection *collection;
 };
 
 #endif // MM_SOUND_H

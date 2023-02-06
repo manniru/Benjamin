@@ -1,4 +1,5 @@
 #include "mm_sound.h"
+#include "win_policy.h"
 #include <initguid.h> // For PKEY_Device
 #include <endpointvolume.h>
 #include <functiondiscoverykeys_devpkey.h>
@@ -9,9 +10,19 @@ MmSound::MmSound(QObject *parent) : QObject(parent)
     HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
                                     CLSCTX_INPROC_SERVER,
                                     IID_PPV_ARGS(&device_enum));
-    if ( hr==CO_E_NOTINITIALIZED )
+    if ( hr )
     {
-        qDebug() << "CoCreateInstance MMDeviceEnumerator failed";
+        qDebug() << "CoCreateInstance MMDeviceEnumerator failed"
+                 << hr;
+        return;
+    }
+
+    hr = device_enum->EnumAudioEndpoints(
+                eRender, DEVICE_STATE_ACTIVE, &collection);
+
+    if ( hr )
+    {
+        qDebug() << "IMMDeviceCollection::EnumAudioEndpoints: " << hr;
         return;
     }
 }
@@ -23,31 +34,26 @@ MmSound::~MmSound()
 
 void MmSound::leftClick()
 {
-    IMMDeviceCollection *collection;
-    HRESULT hr = device_enum->EnumAudioEndpoints(
-                eRender, DEVICE_STATE_ACTIVE, &collection);
+    LPWSTR next_iid = NULL;
+    int    next_index = getNextIndex();
+    qDebug() << "getNextIndex:" << next_index;
 
-    if ( hr )
+    if( next_index<0 )
     {
-        qDebug() << "IMMDeviceCollection::EnumAudioEndpoints: " << hr;
+        qDebug() << "getNextIndex failed:" << next_index;
         return;
     }
-    // Retrieve the number of active audio devices for the specified direction
-    UINT count = 0;
-    collection->GetCount(&count);
 
-    for ( UINT i=0 ; i<count ; i++ )
+    IMMDevice *next_device;
+    HRESULT hr = collection->Item(next_index, &next_device);
+    if( hr )
     {
-        IMMDevice *p_device;
-        hr = collection->Item(i, &p_device);
-        if( hr )
-        {
-            qDebug() << i << "Getting Item Failed";
-            return ;
-        }
-
-        qDebug() << "[" << i << "]\t" << getName(p_device);
+        qDebug() << next_index << "Getting Item Failed";
+        return;
     }
+    next_device->GetId(&next_iid);
+
+    setDevice(next_iid);
 }
 
 QString MmSound::getLabel()
@@ -133,16 +139,67 @@ int MmSound::getVolume(IMMDevice *dev)
     return volume*100;
 }
 
-void MmSound::setDevice(QString name)
+void MmSound::setDevice(LPWSTR dev_iid)
 {
     IPolicyConfigVista *pPolicyConfig;
-    ERole reserved = eConsole;
+    HRESULT hr = CoCreateInstance(CLSID_CPolicyConfigVistaClient,
+                 NULL, CLSCTX_ALL, IID_IPolicyConfigVista,
+                 (LPVOID *)&pPolicyConfig);
 
-    HRESULT hr = CoCreateInstance(__uuidof(CPolicyConfigVistaClient),
-        NULL, CLSCTX_ALL, __uuidof(IPolicyConfigVista), (LPVOID *)&pPolicyConfig);
-    if (SUCCEEDED(hr))
+    if ( hr )
     {
-        hr = pPolicyConfig->SetDefaultEndpoint(devID, reserved);
-        pPolicyConfig->Release();
+        qDebug() << "CoCreateInstance CPolicyConfigVistaClient Failed";
+        return;
     }
+
+    hr = pPolicyConfig->SetDefaultEndpoint(dev_iid, eConsole);
+    pPolicyConfig->Release();
+}
+
+int MmSound::getNextIndex()
+{
+    IMMDevice *default_dev;
+    LPWSTR     default_iid = NULL;
+    LPWSTR     current_iid = NULL;
+
+    HRESULT hr = device_enum->GetDefaultAudioEndpoint(
+                              eRender, eMultimedia, &default_dev);
+    if ( hr )
+    {
+        qDebug() << "GetDefaultAudioEndpoint Failed" << hr;
+        return -1;
+    }
+    default_dev->GetId(&default_iid);
+
+    // Retrieve the number of active audio devices for the specified direction
+    UINT count = 0;
+    collection->GetCount(&count);
+
+    for ( UINT i=0 ; i<count ; i++ )
+    {
+        IMMDevice *p_device;
+        hr = collection->Item(i, &p_device);
+        if( hr )
+        {
+            qDebug() << i << "Getting Item Failed";
+            return -1;
+        }
+        p_device->GetId(&current_iid);
+
+        if( wcscmp(default_iid, current_iid)==0 )
+        {
+            if( i+1<count )
+            {
+                return i+1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        qDebug() << "[" << i << "]\t" << getName(p_device);
+    }
+
+    return -1;
 }
