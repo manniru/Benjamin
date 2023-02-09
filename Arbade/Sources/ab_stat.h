@@ -9,6 +9,7 @@
 
 QString ab_getStat(); // get total stat for wordlist
 QString ab_getStat(QString category); // get category stat for records
+QString ab_getMeanVar();
 QVector<int> ab_countWords(QStringList file_list, int len);
 QString setFont(QString data, int val, int mean,
                 int var, int font_size=24, int alignment=0);

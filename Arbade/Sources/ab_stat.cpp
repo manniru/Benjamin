@@ -1,4 +1,6 @@
 #include "ab_stat.h"
+int cat_mean = 0;
+int cat_var  = 0;
 
 QString ab_getStat()
 {
@@ -79,22 +81,27 @@ QString ab_getStat(QString category)
     int len = lexicon.length();
     QVector<int> count = ab_countWords(files_list, len);
 
-    int mean = ab_meanCount(count);
-    int var = ab_varCount(count, mean);
+    cat_mean = ab_meanCount(count);
+    cat_var = ab_varCount(count, cat_mean);
     QString result, data;
 
     for( int i=0 ; i<len ; i++ )
     {
         data = QStringLiteral("%1").arg(i, 3, 10, QLatin1Char('0'));
-        result += setFont(data, count[i], mean, var);
+        result += setFont(data, count[i], cat_mean, cat_var);
         data = lexicon[i];
-        result += setFont(data, count[i], mean, var) + " ";
+        result += setFont(data, count[i], cat_mean, cat_var) + " ";
         data = QString::number(count[i]);
-        result += setFont(data, count[i], mean, var) + "!";
+        result += setFont(data, count[i], cat_mean, cat_var) + "!";
     }
-    result += "mean  " + QString::number(mean) + "!";
-    result += "var   " + QString::number(var) + "!";
     return result.trimmed();
+}
+
+QString ab_getMeanVar()
+{
+    QString result = QString::number(cat_mean) + "!";
+    result += QString::number(cat_var) + "!";
+    return result;
 }
 
 QFileInfoList ab_listFiles(QString path)

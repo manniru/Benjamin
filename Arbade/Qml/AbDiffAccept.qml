@@ -47,53 +47,35 @@ Window
         }
     }
 
-    Button
+    AbButton
     {
         id: yes_button
         text: "Yes"
-        height: 40
         width: (parent.width-45)/2
         anchors.left: parent.left
         anchors.leftMargin: 15
         anchors.top: accept_label.bottom
         anchors.topMargin: 10
-        font.pixelSize: 18
         DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
-        palette.buttonText: botton_text
-        background: Rectangle
-        {
-            anchors.fill: parent
-            color: botton_bg
-            border.color: botton_border
-        }
 
-        onClicked:
+        onClick:
         {
             accept();
         }
     }
 
-    Button
+    AbButton
     {
         id: no_button
         text: "No"
-        height: 40
         width: (parent.width-45)/2
         anchors.right: parent.right
         anchors.rightMargin: 15
         anchors.top: accept_label.bottom
         anchors.topMargin: 10
-        font.pixelSize: 18
         DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
-        palette.buttonText: botton_text
-        background: Rectangle
-        {
-            anchors.fill: parent
-            color: botton_bg
-            border.color: botton_border
-        }
 
-        onClicked:
+        onClick:
         {
             reject();
         }
