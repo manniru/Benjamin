@@ -89,9 +89,4 @@ Rectangle
         onPositionChanged: mouse.accepted = false;
         onPressAndHold: mouse.accepted = false;
     }
-
-    function setText(text)
-    {
-        grid_text = text.split('!').filter(Boolean); // filter(Boolean) to remove empty parts
-    }
 }

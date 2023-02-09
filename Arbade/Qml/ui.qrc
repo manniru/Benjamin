@@ -11,5 +11,6 @@
         <file>AbDiffAccept.qml</file>
         <file>AbWordBox.qml</file>
         <file>AbWordLine.qml</file>
+        <file>AbButton.qml</file>
     </qresource>
 </RCC>

@@ -86,35 +86,18 @@ Window
         delegate: ld_wordedit
     }
 
-    Button
+    AbButton
     {
         id: save_button
         text: "Save"
-        height: 40
         width: parent.width/4 - 5
         anchors.left: parent.left
         anchors.leftMargin: parent.width/4
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
-
-        font.pixelSize: 20
         DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
-        palette.buttonText: botton_text
-        background: Rectangle
-        {
-            anchors.fill: parent
-            color: if( parent.hovered )
-                   {
-                       botton_hbg
-                   }
-                   else
-                   {
-                       botton_bg
-                   }
-            border.color: botton_border
-        }
 
-        onClicked:
+        onClick:
         {
             var dif_result = getDiff();
             if( dif_result.length!==0 )
@@ -128,41 +111,22 @@ Window
             {
                 editor_dialog.reject();
             }
-
         }
     }
 
-    Button
+    AbButton
     {
         id: close_button
         text: "Close"
-        height: 40
         width: parent.width/4 - 5
         anchors.right: parent.right
         anchors.rightMargin: parent.width/4
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 10
 
-        font.pixelSize: 20
         DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
-        palette.buttonText: botton_text
 
-        background: Rectangle
-        {
-            anchors.fill: parent;
-            color: if( parent.hovered )
-                   {
-                       botton_hbg
-                   }
-                   else
-                   {
-                       botton_bg
-                   }
-
-            border.color: botton_border
-        }
-
-        onClicked:
+        onClick:
         {
             reject();
         }
@@ -196,7 +160,8 @@ Window
         }
         else
         {
-            loadWordBoxes();        }
+            loadWordBoxes();
+        }
     }
 
     function accept()

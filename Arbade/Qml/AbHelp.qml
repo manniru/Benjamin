@@ -8,7 +8,7 @@ Rectangle
     property int    font_size:          24
     property color  color_text:         "#9a9a9a"
 
-    property var help_text: ["Space:Pause Recording","Enter:Change Category",
+    property var help_text: ["Space:Pause Recording","S:Set Category",
                              "Up:Increase Pause","Down:Decrease Pause",
                              "Right:Increase Word","Left:Decrease Word",
                              "K:Increase Rec Time","J:Decrease Rec Time",
