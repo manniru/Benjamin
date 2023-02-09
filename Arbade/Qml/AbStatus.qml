@@ -4,31 +4,34 @@ Rectangle
 {
     property string font_name_label:    fontRobotoRegular.name
 
-    property int    font_size:          28
+    property int    font_size:          24
     property color  color_text:         "#b2b2b2"
 
-    property real   pause_time:         1
-    property real   num_words:          3
-    property real   rec_time:           3
-    property int    status:             1
-    property string words:              ""
-    property string category:           "sag"
-    property int    count:              5
-    property int    count_total:        100
-    property real   elapsed_time:       0
-    property real   power:              -45
-    property string focus_word:         ""
+    property real   pause_time
+    property real   num_words
+    property real   rec_time
+    property int    status
+    property string words
+    property string category
+    property int    count
+    property int    count_total
+    property real   elapsed_time
+    property real   power
+    property string focus_word
+    property string mean
+    property string variance
 
     color: "transparent"
 
     Rectangle
     {
-        width: childrenRect.width
+        width: 400
         height: childrenRect.height
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: 20
+        anchors.top: parent.top
+        anchors.topMargin: 40
 
         color: "transparent"
+//        color: "red"
 
         Text
         {
@@ -203,12 +206,12 @@ Rectangle
         Rectangle
         {
             anchors.left: time_label.left
-            anchors.leftMargin: 90
+            anchors.leftMargin: 76
             anchors.top: count_label.bottom
-            anchors.topMargin: 3
+            anchors.topMargin: 2
             color: color_text
-            width: (elapsed_time/100)*206
-            height: 30
+            width: (elapsed_time/100)*178
+            height: 25
         }
 
         Text
@@ -235,6 +238,54 @@ Rectangle
             font.pixelSize: font_size
             font.family: font_name_label
             lineHeight: 1.2
+        }
+
+        Text
+        {
+            id: mean_label
+
+            text: "Mean: " + mean
+            anchors.left: parent.left
+            anchors.top: focus_label.bottom
+            color: color_text
+            font.pixelSize: font_size
+            font.family: font_name_label
+            lineHeight: 1.2
+        }
+
+        Text
+        {
+            id: var_label
+
+            text: "Var: " + variance
+            anchors.left: parent.left
+            anchors.top: mean_label.bottom
+            color: color_text
+            font.pixelSize: font_size
+            font.family: font_name_label
+            lineHeight: 1.2
+        }
+
+        AbButton
+        {
+            id: save_button
+            text: "Save"
+            width: .7*parent.width
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: var_label.bottom
+            anchors.topMargin: 30
+            enabled: false
+        }
+
+        AbButton
+        {
+            id: reset_button
+            text: "Reset"
+            width: .7*parent.width
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: save_button.bottom
+            anchors.topMargin: 15
+            enabled: false
         }
     }
 
