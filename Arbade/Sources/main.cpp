@@ -5,12 +5,14 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-
-    qmlRegisterType<AbScene>("OpenGLUnderQML", 1, 0, "AbScene");
+    app.setOrganizationName("Binaee");
+    app.setOrganizationDomain("Binaee.com");
+    app.setApplicationName("ArBade");
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     QObject *mainItem = engine.rootObjects().first();
+    AbScene scene(mainItem);
     ab_setUi(mainItem);
 
     return app.exec();

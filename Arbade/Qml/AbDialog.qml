@@ -4,38 +4,57 @@ import QtQuick.Layouts 1.0
 import QtQml 2.12
 import QtQuick.Extras 1.4
 import QtQuick.Controls 2.3
+import QtQuick.Window 2.10
 
-Dialog
+Window
 {
     title: ""
-    height: 160
+    height: 120
     width: 300
-    standardButtons: StandardButton.Ok | StandardButton.Cancel
-    focus: true
     x: (root.width - width) / 2
     y: (root.height - height) / 2
+    color: "#2e2e2e"
+    property string botton_border: "#bfbfbf"
+    property string botton_text: "#b6b6b6"
+    property color  botton_bg: "#4d4d4d"
+    property color  botton_hbg: "#666"
     property string dialog_text: ""
     property string dialog_label: ""
     property var auto_complete_list:[]
+
+    property string category_title: "Set Category"
+    property string focusword_title: "Enter Focus Word ID"
+    property string cnt_title: "Enter Count"
+    property string value_label: "value"
+    property string id_label: "ID"
 
 
     Text
     {
         id: get_value_label
-        anchors.left: parent.Left
+        anchors.left: parent.left
+        anchors.leftMargin: 10
         anchors.top: parent.top
-        anchors.topMargin: 5
+        anchors.topMargin: 17
         font.pixelSize: 20
         text: dialog_label
         height: 40
+        color: "#b4b4b4"
     }
+
     TextField
     {
         id: get_value_input
         anchors.left: get_value_label.right
         anchors.leftMargin: 10
         anchors.top: parent.top
-        width: parent.width * 0.75
+        anchors.topMargin: 15
+        width: parent.width * 0.7
+        background: Rectangle
+        {
+            anchors.fill: parent
+            color: "#666666"
+        }
 
         text: "Input text"
         font.pixelSize: 16
@@ -47,7 +66,7 @@ Dialog
         onTextChanged:
         {
             suggestion_text.text = ""
-            if( title==="Enter Category" && text.length )
+            if( title===category_title && text.length )
             {
                 for( var i=0 ; i<auto_complete_list.length ; i++ )
                 {
@@ -63,7 +82,8 @@ Dialog
 
         Keys.onTabPressed:
         {
-            text += suggestion_text.text
+            text += suggestion_text.text;
+            accept();
         }
     }
 
@@ -83,24 +103,62 @@ Dialog
         id: suggestion_text
         anchors.left: typed_text.right
         anchors.leftMargin: 1
-        anchors.top: typed_text.top
+        anchors.verticalCenter: get_value_input.verticalCenter
         font.pixelSize: 16
         color: "#999"
+        text: "khar"
     }
 
-    onAccepted:
+    AbButton
     {
-        console.log("Accepted")
-        dialog_text = get_value_input.text
+        id: save_button
+        text: "Save"
+        width: parent.width/4 - 5
+        anchors.left: parent.left
+        anchors.leftMargin: parent.width/4
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+
+        onClick:
+        {
+            accept();
+        }
     }
 
-    onRejected:
+    AbButton
     {
-        console.log("Rejected")
+        id: close_button
+        text: "Close"
+        width: parent.width/4 - 5
+        anchors.right: parent.right
+        anchors.rightMargin: parent.width/4
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
+        DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+
+        onClick:
+        {
+            reject();
+        }
     }
 
-    onOpened:
+    function accept()
     {
-        get_value_input.text = ""
+        dialog_text = get_value_input.text;
+        close();
+    }
+
+    function reject()
+    {
+        close();
+    }
+
+    onVisibleChanged:
+    {
+        if( visible )
+        {
+            get_value_input.text = "";
+        }
     }
 }
