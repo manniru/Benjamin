@@ -1,4 +1,4 @@
-﻿import QtQuick 2.2
+import QtQuick 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import QtQuick.Controls.Styles 1.4
@@ -27,6 +27,16 @@ ApplicationWindow
     color: "#2e2e2e"
     title: "ArBade"
     visible: true
+
+    Settings
+    {
+        property alias totalcount:      root_scene.totalcount
+        property alias category_name:   root_scene.category
+        property alias rectime:         root_scene.rectime
+        property alias numwords:        root_scene.numwords
+        property alias pausetime:       root_scene.pausetime
+        property alias focusword:       root_scene.focusword
+    }
 
     AbScene
     {
@@ -104,7 +114,7 @@ ApplicationWindow
         anchors.top: parent.top
         anchors.bottom: ab_help.top
         anchors.left: parent.left
-        anchors.leftMargin: 30
+        anchors.leftMargin: 50
 
         pause_time: root_scene.pausetime
         num_words: root_scene.numwords
@@ -147,6 +157,8 @@ ApplicationWindow
         anchors.bottom: ab_help.top
         anchors.right: parent.right
         anchors.left: ab_status.right
+
+        grid_text: root_scene.stat.split('!').filter(Boolean);
     }
 
     AbHelp
@@ -168,17 +180,19 @@ ApplicationWindow
     {
         id: get_value_dialog
 
+        auto_complete_list: root_scene.autocomp.split("!").
+                                filter(i => i);
         onDialog_textChanged:
         {
-            if( title==="Enter Category" )
+            if( title===category_title )
             {
                 root_scene.category = dialog_text
             }
-            else if( title==="Enter Count" )
+            else if( title===cnt_title )
             {
                 root_scene.totalcount = parseInt(dialog_text)
             }
-            else if( title==="Enter Focus Word ID" )
+            else if( title===focusword_title )
             {
                 if( dialog_text=="" )
                 {
@@ -330,13 +344,13 @@ ApplicationWindow
         {
             close();
         }
-        else if( key===Qt.Key_Return )
+        else if( key===Qt.Key_S )
         {
             if( root_scene.verifier===0 )
             {
-                get_value_dialog.title = "Enter Category";
-                get_value_dialog.dialog_label = "value"
-                get_value_dialog.open();
+                get_value_dialog.title = get_value_dialog.category_title;
+                get_value_dialog.dialog_label = get_value_dialog.value_label;
+                get_value_dialog.visible = true;
             }
         }
         else if( key===Qt.Key_T )
@@ -345,9 +359,9 @@ ApplicationWindow
         }
         else if( key===Qt.Key_C )
         {
-            get_value_dialog.title = "Enter Count";
-            get_value_dialog.dialog_label = "value"
-            get_value_dialog.open();
+            get_value_dialog.title = get_value_dialog.cnt_title;
+            get_value_dialog.dialog_label = get_value_dialog.value_label;
+            get_value_dialog.visible = true;
         }
         else if( key===Qt.Key_V )
         {
@@ -364,9 +378,9 @@ ApplicationWindow
         }
         else if( key===Qt.Key_F )
         {
-            get_value_dialog.title = "Enter Focus Word ID";
-            get_value_dialog.dialog_label = "ID"
-            get_value_dialog.open();
+            get_value_dialog.title = get_value_dialog.focusword_title;
+            get_value_dialog.dialog_label = get_value_dialog.id_label;
+            get_value_dialog.visible = true;
         }
         else if( key===Qt.Key_W )
         {
