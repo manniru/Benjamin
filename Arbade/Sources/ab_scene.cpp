@@ -219,27 +219,30 @@ void AbScene::setLoadsrc(qreal loadsrc)
         return;
     }
     man->params.loadsrc = 0;
-    if( man->params.status!=AB_STATUS_STOP ) // not for 1st time
+    if( man->params.verifier==1 )
     {
-        if( man->params.delfile ) // deleted shit file
+        if( man->params.status!=AB_STATUS_STOP ) // not for 1st time
         {
-            setDelfile(0);
+            if( man->params.delfile ) // deleted shit file
+            {
+                setDelfile(0);
+            }
+            else // verified
+            {
+                man->copyToOnline(unverified_list[man->params.count-1]);
+            }
         }
-        else // verified
+        if( loadsrc && man->params.count<man->params.total_count )
         {
-            man->copyToOnline(unverified_list[man->params.count-1]);
+            setStatus(AB_STATUS_BREAK);
+            setAddress(unverified_list[man->params.count]);
+            setCount(man->params.count+1);
+            break_timer->start(man->params.pause_time*1000);
         }
-    }
-    if( loadsrc && man->params.count<man->params.total_count )
-    {
-        setStatus(AB_STATUS_BREAK);
-        setAddress(unverified_list[man->params.count]);
-        setCount(man->params.count+1);
-        break_timer->start(man->params.pause_time*1000);
-    }
-    else if( loadsrc ) // cnt>=total
-    {
-        setStatus(AB_STATUS_STOP);
+        else if( loadsrc ) // cnt>=total
+        {
+            setStatus(AB_STATUS_STOP);
+        }
     }
     emit loadsrcChanged();
     if( window() )
@@ -416,6 +419,21 @@ void AbScene::setAutocomp(QString autocomp)
     }
 }
 
+void AbScene::setMeanvar(QString meanvar)
+{
+    if( meanvar==man->params.meanvar )
+    {
+        return;
+    }
+
+    man->params.meanvar = meanvar;
+    emit meanvarChanged();
+    if( window() )
+    {
+        window()->update();
+    }
+}
+
 void AbScene::setPlaykon(qreal playkon)
 {
     if( playkon==man->params.playkon )
@@ -487,8 +505,8 @@ void AbScene::updateCategories()
     {
         categories.append(dir_list[i].fileName());
     }
-    QString sag = categories.join("!");
-    setAutocomp(sag);
+    QString cat_str = categories.join("!");
+    setAutocomp(cat_str);
 }
 
 void ab_setUi(QObject *ui)
@@ -496,7 +514,7 @@ void ab_setUi(QObject *ui)
     root = ui;
 }
 
-QObject* pna_getUi()
+QObject* ab_getUi()
 {
     return root;
 }
