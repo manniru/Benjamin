@@ -170,6 +170,54 @@ void AbScene::processKey(int key)
         QString cmd = "explorer.exe " + path;
         system(cmd.toStdString().c_str());
     }
+    else if( key==Qt::Key_K )
+    {
+        float rec_time = QQmlProperty::read(root,
+                            "ab_rec_time").toFloat();
+        rec_time += .1;
+        man->params.rec_time = rec_time;
+        QQmlProperty::write(root, "ab_rec_time", rec_time);
+    }
+    else if( key==Qt::Key_J )
+    {
+        float rec_time = QQmlProperty::read(root,
+                            "ab_rec_time").toFloat();
+        rec_time -= .1;
+        man->params.rec_time = rec_time;
+        QQmlProperty::write(root, "ab_rec_time", rec_time);
+    }
+    else if( key==Qt::Key_Up )
+    {
+        float pause_time = QQmlProperty::read(root,
+                            "ab_pause_time").toFloat();
+        pause_time += .1;
+        man->params.pause_time = pause_time;
+        QQmlProperty::write(root, "ab_pause_time", pause_time);
+    }
+    else if( key==Qt::Key_Down )
+    {
+        float pause_time = QQmlProperty::read(root,
+                            "ab_pause_time").toFloat();
+        pause_time -= .1;
+        man->params.pause_time = pause_time;
+        QQmlProperty::write(root, "ab_pause_time", pause_time);
+    }
+    else if( key==Qt::Key_Left )
+    {
+        int num_words = QQmlProperty::read(root,
+                            "ab_num_words").toInt();
+        num_words--;
+        man->params.num_words = num_words;
+        QQmlProperty::write(root, "ab_num_words", num_words);
+    }
+    else if( key==Qt::Key_Right )
+    {
+        int num_words = QQmlProperty::read(root,
+                            "ab_num_words").toInt();
+        num_words++;
+        man->params.num_words = num_words;
+        QQmlProperty::write(root, "ab_num_words", num_words);
+    }
     else
     {
         return;
@@ -186,15 +234,5 @@ void AbScene::updateCategories()
         categories.append(dir_list[i].fileName());
     }
     QString cat_str = categories.join("!");
-    setAutocomp(cat_str);
-}
-
-void ab_setUi(QObject *ui)
-{
-    root = ui;
-}
-
-QObject* ab_getUi()
-{
-    return root;
+    QQmlProperty::write(root, "ab_auto_comp", cat_str);
 }
