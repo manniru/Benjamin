@@ -1,9 +1,11 @@
 #include "ab_manager.h"
 #include <time.h>
 #include <stdlib.h>
+#include <QQmlProperty>
 
-AbManager::AbManager(QObject *parent) : QObject(parent)
+AbManager::AbManager(QObject *ui, QObject *parent) : QObject(parent)
 {
+    root = ui;
     srand(time(NULL));
     int sample_count = params.rec_time*BT_REC_RATE;
     qDebug() << "sample_count" << sample_count;
@@ -24,8 +26,8 @@ AbManager::AbManager(QObject *parent) : QObject(parent)
 void AbManager::readWave(QString filename)
 {
     wav_rd->read(filename);
-    emit recTimeChanged(wav_rd->wave_time);
-    emit powerChanged(wav_rd->power_dB);
+    QQmlProperty::write(root, "ab_rec_time", wav_rd->wave_time);
+    QQmlProperty::write(root, "ab_power", wav_rd->power_dB);
 
     QFileInfo wav_file(filename);
     filename = wav_file.baseName();
@@ -37,8 +39,8 @@ void AbManager::readWave(QString filename)
         id_list.push_back(id_strlist[i].toInt());
     }
     QString words = idsToWords(id_list);
-    emit numWordChanged(len);
-    emit wordsChanged(words);
+    QQmlProperty::write(root, "ab_num_words", len);
+    QQmlProperty::write(root, "ab_words", words);
 }
 
 // recording phase
@@ -48,26 +50,26 @@ void AbManager::writeWav()
     {
         if( params.status==AB_STATUS_REQPAUSE )
         {
-            emit statusChanged(AB_STATUS_PAUSE);
+            setStatus(AB_STATUS_PAUSE);
 //            qDebug() << "writeWav:AB_STATUS_PAUSE";
         }
         else
         {
-            emit statusChanged(AB_STATUS_BREAK);
+            setStatus(AB_STATUS_BREAK);
 //            qDebug() << "writeWav:AB_STATUS_BREAK";
-            emit timeChanged(0);
+            QQmlProperty::write(root, "ab_elapsed_time", 0);
         }
     }
     else
     {
-        emit statusChanged(AB_STATUS_STOP);
+        setStatus(AB_STATUS_STOP);
 //        qDebug() << "writeWav:AB_STATUS_STOP";
         params.count = 0;
     }
 
     double power_dB = calcPower(rec->cy_buf,
                                 params.rec_time*BT_REC_RATE);
-    emit powerChanged(power_dB);
+    QQmlProperty::write(root, "ab_power", power_dB);
     wav_wr->write(wav_path);
 
     if( params.count<params.total_count &&
@@ -79,12 +81,13 @@ void AbManager::writeWav()
 
 void AbManager::record()
 {
-    emit countChanged(params.count + 1);
+    params.count++;
+    QQmlProperty::write(root, "ab_count", params.count);
     wav_path = getRandPath(params.category);
     wav_wr->setCategory(params.category);
-    emit statusChanged(AB_STATUS_BREAK);
+    setStatus(AB_STATUS_BREAK);
 //    qDebug() << "record:AB_STATUS_BREAK";
-    emit timeChanged(0);
+    QQmlProperty::write(root, "ab_elapsed_time", 0);
     read_timer->start(params.pause_time*1000);
 }
 
@@ -100,7 +103,7 @@ void AbManager::swapParams()
         p_backup.category = params.category;
         p_backup.total_count = params.total_count;
 
-        emit pauseChanged(pause_time);
+        QQmlProperty::write(root, "ab_pausetime", pause_time);
     }
     else
     {
@@ -112,11 +115,17 @@ void AbManager::swapParams()
 
         p_backup.pause_time = params.pause_time;
 
-        emit pauseChanged(pause_time);
-        emit numWordChanged(num_words);
-        emit recTimeChanged(rec_time);
-        emit categoryChanged(category);
-        emit totalCountChanged(total_count);
+        params.pause_time = pause_time;
+        params.num_words = num_words;
+        params.rec_time = rec_time;
+        params.category = category;
+        params.total_count = total_count;
+
+        QQmlProperty::write(root, "ab_pausetime", pause_time);
+        QQmlProperty::write(root, "ab_num_words", num_words);
+        QQmlProperty::write(root, "ab_rec_time", rec_time);
+        QQmlProperty::write(root, "ab_category", category);
+        QQmlProperty::write(root, "ab_total_count", total_count);
     }
 }
 
@@ -124,12 +133,12 @@ void AbManager::breakTimeout()
 {
     if( params.status==AB_STATUS_REQPAUSE )
     {
-        emit statusChanged(AB_STATUS_PAUSE);
+        setStatus(AB_STATUS_PAUSE);
 //        qDebug() << "readDone:AB_STATUS_PAUSE";
     }
     else
     {
-        emit statusChanged(AB_STATUS_REC);
+        setStatus(AB_STATUS_REC);
 //        qDebug() << "readDone:AB_STATUS_REC";
         qDebug() << "start record";
         rec->reset();
@@ -144,7 +153,7 @@ QString AbManager::getRandPath(QString category)
     QVector<AbWord> words;
     int fix_word_index = -1;
 
-    if( params.focusword.length() && params.focusword!="<empty>" )
+    if( params.focus_word.length() && params.focus_word!="<empty>" )
     {
         fix_word_index = rand()%AB_WORD_LEN;
     }
@@ -156,7 +165,7 @@ QString AbManager::getRandPath(QString category)
             if( fix_word_index==i )
             {
                 bool ok=false;
-                word_id[i] = params.focusword.toInt(&ok);
+                word_id[i] = params.focus_word.toInt(&ok);
                 if(!ok || word_id[i]<0 || word_id[i]>=lexicon_size )
                 {
                     word_id[i] = rand()%lexicon_size;
@@ -202,7 +211,7 @@ QString AbManager::getFileName(QVector<AbWord> words,
 
 void AbManager::updateTime(int percent)
 {
-    emit timeChanged(percent);
+    QQmlProperty::write(root, "ab_elapsed_time", percent);
 }
 
 void AbManager::copyToOnline(QString filename)
@@ -234,7 +243,7 @@ void AbManager::writeWordList()
     {
         qDebug() << "Error opening" << BT_WORDLIST_PATH;
     }
-    words_file.write(params.wordlist.toStdString().c_str());
+    words_file.write(params.word_list.toStdString().c_str());
     words_file.close();
 }
 
@@ -268,7 +277,7 @@ void AbManager::loadWordList()
 
 void AbManager::delWordSamples()
 {
-    QStringList dif_words = params.difwords.split("\n");
+    QStringList dif_words = params.dif_words.split("\n");
     int len = dif_words.length();
     QVector<int> del_list;
     for( int i=0 ; i<len ; i++ )
@@ -383,11 +392,23 @@ void AbManager::printWords(QVector<AbWord> words)
         }
     }
     qDebug() << "Message:" << msg;
-    emit wordsChanged(total_words.trimmed());
+    QQmlProperty::write(root, "ab_words", total_words.trimmed());
 }
 
 AbManager::~AbManager()
 {
+}
+
+void AbManager::setStatus(int status)
+{
+    if( status==AB_STATUS_STOP )
+    {
+        QString stat = ab_getStat(params.category);
+        QQmlProperty::write(root, "ab_stat", stat);
+        QString meanvar = ab_getMeanVar();
+        QQmlProperty::write(root, "ab_mean_var", meanvar);
+    }
+    QQmlProperty::write(root, "ab_status", status);
 }
 
 double calcPower(int16_t *buffer, int len)
