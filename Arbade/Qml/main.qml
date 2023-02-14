@@ -1,4 +1,4 @@
-import QtQuick 2.2
+﻿import QtQuick 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import QtQuick.Controls.Styles 1.4
@@ -233,22 +233,35 @@ ApplicationWindow
     {
         id: editor_dialog
 
-        dialog_text: root_scene.wordlist
+        dialog_text: ab_word_list
+        onUpdateWordList:
+        {
+            saveWordList(word_list);
+        }
+        onUpdateDifWords:
+        {
+            setDifWords(dif_words);
+        }
     }
 
     Audio
     {
         id: audioPlayer
-        source: root_scene.address
+        source: ab_address
 
         onStopped:
         {
             if( sig_del_file )
             {
                 sig_del_file = 0;
-                root_scene.delfile = 1;
+                delFile();
             }
-            root_scene.loadsrc = 1;
+            else
+            {
+                copyFile();
+            }
+
+            loadsrc();
             play_pos = 0;
         }
     }
@@ -262,7 +275,7 @@ ApplicationWindow
         onTriggered:
         {// (*100.0 -> 0-100 %) (/1000 -> ms->sec)
             play_pos += 50.0*100.0/1000.0/
-                    (root_scene.rectime+root_scene.pausetime)
+                    (ab_rec_time+ab_pause_time)
             if( play_pos>100 )
             {
                 play_pos=100
@@ -272,8 +285,7 @@ ApplicationWindow
 
     Component.onCompleted:
     {
-        root_scene.qmlcreated = 1
-        root_scene.wordlist = "request data";
+        loadWordList();
     }
 
     //Fonts:
@@ -285,42 +297,25 @@ ApplicationWindow
 
     function execKey(key)
     {
-        if( key===Qt.Key_Up )
+        if( key===Qt.Key_T || key===Qt.Key_J || key===Qt.Key_K ||
+            key===Qt.Key_Up || key===Qt.Key_Down ||
+            key===Qt.Key_Left || key===Qt.Key_Right )
         {
-            root_scene.pausetime += .1;
-        }
-        else if( key===Qt.Key_Down )
-        {
-            root_scene.pausetime -= .1;
-        }
-        else if( key===Qt.Key_Left )
-        {
-            root_scene.numwords--;
-        }
-        else if( key===Qt.Key_Right )
-        {
-            root_scene.numwords++;
-        }
-        else if( key===Qt.Key_K )
-        {
-            root_scene.rectime += .1;
-        }
-        else if( key===Qt.Key_J )
-        {
-            root_scene.rectime -= .1;
+            sendKey(key);
         }
         else if( key===Qt.Key_Space )
         {
-            if( root_scene.verifier )
+            if( ab_verifier )
             {
-                if( root_scene.status===ab_const.ab_STATUS_STOP )
+                if( ab_status===ab_const.ab_STATUS_STOP )
                 {
-                    root_scene.loadsrc = 1;
+                    loadsrc();
                 }
                 else
                 {
                     audioPlayer.pause();
-                    root_scene.status = ab_const.ab_STATUS_PAUSE;
+                    ab_status = ab_const.ab_STATUS_PAUSE;
+                    setStatus(ab_const.ab_STATUS_PAUSE);
                     verify_dialog.dialog_label = "Are you sure "+
                                          "you want to delete?\n"+
                                          "( Yes:space / No:q )"
@@ -330,15 +325,17 @@ ApplicationWindow
             }
             else
             {
-                if( root_scene.status===ab_const.ab_STATUS_REC ||
-                    root_scene.status===ab_const.ab_STATUS_BREAK )
+                if( ab_status===ab_const.ab_STATUS_REC ||
+                    ab_status===ab_const.ab_STATUS_BREAK )
                 {
-                    root_scene.status = ab_const.ab_STATUS_REQPAUSE;
+                    ab_status = ab_STATUS_REQPAUSE;
+                    setStatus(ab_const.ab_STATUS_REQPAUSE);
                 }
-                else if( root_scene.status===ab_const.ab_STATUS_PAUSE ||
-                         root_scene.status===ab_const.ab_STATUS_STOP )
+                else if( ab_status===ab_const.ab_STATUS_PAUSE ||
+                         ab_status===ab_const.ab_STATUS_STOP )
                 {
-                    root_scene.status = ab_const.ab_STATUS_REC;
+                    ab_status = ab_const.ab_STATUS_REC;
+                    setStatus(ab_const.ab_STATUS_REC);
                 }
             }
         }
@@ -348,16 +345,12 @@ ApplicationWindow
         }
         else if( key===Qt.Key_S )
         {
-            if( root_scene.verifier===0 )
+            if( ab_verifier===0 )
             {
                 get_value_dialog.title = get_value_dialog.category_title;
                 get_value_dialog.dialog_label = get_value_dialog.value_label;
                 get_value_dialog.visible = true;
             }
-        }
-        else if( key===Qt.Key_T )
-        {
-            root_scene.key = key;
         }
         else if( key===Qt.Key_C )
         {
@@ -365,28 +358,31 @@ ApplicationWindow
             get_value_dialog.dialog_label = get_value_dialog.value_label;
             get_value_dialog.visible = true;
         }
-        else if( key===Qt.Key_V )
-        {
-            root_scene.status = ab_const.ab_STATUS_STOP;
-            audioPlayer.stop()
-            if( root_scene.verifier===1 )
-            {
-                root_scene.verifier = 0;
-            }
-            else
-            {
-                root_scene.verifier = 1;
-            }
-        }
         else if( key===Qt.Key_F )
         {
-            get_value_dialog.title = get_value_dialog.focusword_title;
+            get_value_dialog.title = get_value_dialog.focus_word_title;
             get_value_dialog.dialog_label = get_value_dialog.id_label;
             get_value_dialog.visible = true;
         }
+        else if( key===Qt.Key_V )
+        {
+            ab_status = ab_const.ab_STATUS_STOP;
+            setStatus(ab_const.ab_STATUS_STOP);
+            audioPlayer.stop()
+            if( ab_verifier )
+            {
+                ab_verifier = 0;
+                setVerifier(0);
+            }
+            else
+            {
+                ab_verifier = 1;
+                setVerifier(1);
+            }
+        }
         else if( key===Qt.Key_W )
         {
-            root_scene.wordlist = "request data";
+            loadWordList();
             editor_dialog.visible = true;
         }
     }
