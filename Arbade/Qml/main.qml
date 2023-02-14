@@ -8,19 +8,14 @@ import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
 import Qt.labs.settings 1.0
 import QtMultimedia 5.5
-import OpenGLUnderQML 1.0
 import QtQml 2.12
 
 ApplicationWindow
 {
     id: root
-    property int window_base_width : 1650
-    property int window_base_height: 750
-    property int sig_del_file: 0
-    property real play_pos: 0
 
-    width: window_base_width
-    height: window_base_height
+    width: 1650
+    height: 750
     minimumHeight: 500
     minimumWidth: 760
 
@@ -28,137 +23,140 @@ ApplicationWindow
     title: "ArBade"
     visible: true
 
-    Settings
+    property int sig_del_file: 0
+    property real play_pos: 0
+
+    property string ab_category: "online"
+    property string ab_words: "<One> <Roger> <Spotify>"
+    property string ab_stat: "One: 10 Two: 13 ...\nAlpha: 22  ..."
+    property string ab_address: ""
+    property string ab_focus_word: "<empty>"
+    property string ab_word_list: ""
+    property string ab_word_stat: ""
+    property string ab_auto_comp: ""
+    property string ab_mean_var: ""
+    property int ab_count: 0
+    property int ab_total_count: 100
+    property real ab_elapsed_time: 0
+    property int ab_status: ab_const.ab_STATUS_STOP
+    property real ab_rec_time: 3
+    property int ab_num_words: 3
+    property real ab_pause_time: 1
+    property real ab_power: 0
+    property int ab_verifier: 0
+    property int ab_playkon: 0
+
+    signal loadsrc()
+    signal delFile()
+    signal copyFile()
+    signal loadWordList()
+    signal saveWordList()
+    signal sendKey(int key)
+    signal setStatus(int st)
+    signal setVerifier(int ver)
+    signal setTotalCount(int val)
+    signal setCategory(string cat)
+    signal setDifWords(string dif)
+    signal setFocusWord(string fw)
+
+    onAb_playkonChanged:
     {
-        property alias totalcount:      root_scene.totalcount
-        property alias category_name:   root_scene.category
-        property alias rectime:         root_scene.rectime
-        property alias numwords:        root_scene.numwords
-        property alias pausetime:       root_scene.pausetime
-        property alias focusword:       root_scene.focusword
+        audioPlayer.play();
     }
 
-    AbScene
+    onAb_statusChanged:
     {
-        id: root_scene
-        anchors.fill: parent
+        if( ab_verifier )
+        {
+            if( ( ab_status===ab_const.ab_STATUS_PLAY ||
+                  ab_status===ab_const.ab_STATUS_BREAK) &&
+                !audio_timer.running )
+            {
+                audio_timer.start();
+            }
+            else if( ab_status===ab_const.ab_STATUS_PAUSE ||
+                     ab_status===ab_const.ab_STATUS_STOP )
+            {
+                audio_timer.stop();
+            }
+        }
+    }
 
-        count: 0
-        totalcount: 100
-        category: "sag"
-        words: "<One> <Roger> <Spotify>"
-        elapsedtime: 0
-        status: ab_const.ab_STATUS_STOP
-        rectime: 3
-        numwords: 3
-        pausetime: 1
+    onAb_mean_varChanged:
+    {
+        ab_sidebar.mean = ab_mean_var.split("!")[0];
+        ab_sidebar.variance = ab_mean_var.split("!")[1];
+    }
+
+    Settings
+    {
+        property alias totalcount:      root.ab_total_count
+        property alias category_name:   root.ab_category
+        property alias rectime:         root.ab_rec_time
+        property alias numwords:        root.ab_num_words
+        property alias pausetime:       root.ab_pause_time
+        property alias focusword:       root.ab_focus_word
+    }
+
+    Item
+    {
         focus: true
-        stat: "One: 10 Two: 13 ...\nAlpha: 22  ..."
-        wordlist: ""
-        wordstat: ""
-        address: ""
-        focusword: "<empty>"
-        difwords: ""
-        autocomp: ""
-        key: 0
-        power: 0
-        verifier: 0
-        loadsrc: 0
-        delfile: 0
-        playkon: 0
-
         Keys.onPressed:
         {
             execKey(event.key);
-        }
-
-        onStatChanged:
-        {
-            ab_stat.setText(stat);
-        }
-
-        onPlaykonChanged:
-        {
-            audioPlayer.play();
-        }
-
-        onAutocompChanged:
-        {
-            get_value_dialog.auto_complete_list =
-                    autocomp.split("!").filter(i => i);
-        }
-
-        onStatusChanged:
-        {
-            if( verifier )
-            {
-                if( (status===ab_const.ab_STATUS_PLAY ||
-                     status===ab_const.ab_STATUS_BREAK) &&
-                    !audio_timer.running )
-                {
-                    audio_timer.start();
-                }
-                else if( status===ab_const.ab_STATUS_PAUSE ||
-                         status===ab_const.ab_STATUS_STOP )
-                {
-                    audio_timer.stop();
-                }
-            }
         }
     }
 
     AbStatus
     {
-        id: ab_status
+        id: ab_sidebar
         width: 400
         anchors.top: parent.top
         anchors.bottom: ab_help.top
         anchors.left: parent.left
         anchors.leftMargin: 50
 
-        pause_time: root_scene.pausetime
-        num_words: root_scene.numwords
-        rec_time: root_scene.rectime
-        status: root_scene.status
-        words: root_scene.words
+        pause_time: ab_pause_time
+        num_words: ab_num_words
+        rec_time: ab_rec_time
+        status: ab_status
+        words: ab_words
         category:
         {
-            if( root_scene.verifier===1 )
+            if( ab_verifier===1 )
             {
                 "unverified"
             }
             else
             {
-                root_scene.category
+                ab_category
             }
         }
-        count: root_scene.count
-        count_total: root_scene.totalcount
+        count: ab_count
+        count_total: ab_total_count
         elapsed_time:
         {
-            if( root_scene.verifier===0 )
+            if( ab_verifier===0 )
             {
-                root_scene.elapsedtime
+                ab_elapsed_time
             }
             else
             {
                 play_pos
             }
         }
-        power: root_scene.power
-        focus_word: root_scene.focusword
+        power: ab_power
+        focus_word: ab_focus_word
     }
 
     AbStat
     {
-        id: ab_stat
-
         anchors.top: parent.top
         anchors.bottom: ab_help.top
         anchors.right: parent.right
-        anchors.left: ab_status.right
+        anchors.left: ab_sidebar.right
 
-        grid_text: root_scene.stat.split('!').filter(Boolean);
+        grid_text: ab_stat.split('!').filter(Boolean);
     }
 
     AbHelp
@@ -180,27 +178,32 @@ ApplicationWindow
     {
         id: get_value_dialog
 
-        auto_complete_list: root_scene.autocomp.split("!").
+        auto_complete_list: ab_auto_comp.split("!").
                                 filter(i => i);
         onDialog_textChanged:
         {
             if( title===category_title )
             {
-                root_scene.category = dialog_text
+                ab_category = dialog_text;
+                setCategory(dialog_text);
             }
             else if( title===cnt_title )
             {
-                root_scene.totalcount = parseInt(dialog_text)
+                var total_count = parseInt(dialog_text);
+                ab_total_count = total_count;
+                setTotalCount(total_count);
             }
-            else if( title===focusword_title )
+            else if( title===focus_word_title )
             {
                 if( dialog_text=="" )
                 {
-                    root_scene.focusword = "<empty>";
+                    ab_focus_word = ab_focus_word;
+                    setFocusWord("<empty>");
                 }
                 else
                 {
-                    root_scene.focusword = dialog_text
+                    ab_focus_word = dialog_text;
+                    setFocusWord(dialog_text);
                 }
             }
         }
@@ -222,7 +225,6 @@ ApplicationWindow
                 sig_del_file = 0;
                 audioPlayer.stop();
             }
-            root_scene.forceActiveFocus();
             dialog_result = ""
         }
     }
