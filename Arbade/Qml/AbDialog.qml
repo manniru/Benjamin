@@ -23,7 +23,7 @@ Window
     property var auto_complete_list:[]
 
     property string category_title: "Set Category"
-    property string focusword_title: "Enter Focus Word ID"
+    property string focus_word_title: "Enter Focus Word ID"
     property string cnt_title: "Enter Count"
     property string value_label: "value"
     property string id_label: "ID"

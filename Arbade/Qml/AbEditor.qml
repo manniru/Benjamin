@@ -27,6 +27,9 @@ Window
     property int line_count: 0
     property int box_count: 0
 
+    signal updateWordList(string word_list)
+    signal updateDifWords(string dif_words)
+
     ListModel
     {
         id: lm_wordedit
@@ -141,12 +144,10 @@ Window
             if( dialog_result==="Y" )
             {
                 editor_dialog.accept();
-                root_scene.forceActiveFocus();
             }
             else if( dialog_result==="N" )
             {
                 editor_dialog.reject();
-                root_scene.forceActiveFocus();;
             }
             dialog_result = "";
         }
@@ -166,8 +167,8 @@ Window
 
     function accept()
     {
-        root_scene.wordlist = total_words;
-        root_scene.difwords = dif_words;
+        updateWordList(total_words);
+        updateDifWords(dif_words);
         dif_words = "";
         close();
     }
@@ -179,7 +180,7 @@ Window
 
     function getDiff()
     {
-        var words_old = root_scene.wordlist.split("\n").filter(i => i);
+        var words_old = root.ab_word_list.split("\n").filter(i => i);
         var words_new = total_words.split("\n").filter(i => i);
         var dif = [];
         var count = 0;
@@ -200,10 +201,10 @@ Window
     function loadWordBoxes()
     {
         lm_wordedit.clear();
-        var all_words = root_scene.wordlist.split("\n");
-        total_words = root_scene.wordlist;
+        var all_words = root.ab_word_list.split("\n");
+        total_words = root.ab_word_list;
         line_count = all_words.length;
-        var all_stat = root_scene.wordstat.split("\n");
+        var all_stat = root.ab_word_stat.split("\n");
         var all_count = all_words.length
         var box_size = ab_const.ab_WORDEDIT_BOX_SIZE;
         var start_index = 0;
