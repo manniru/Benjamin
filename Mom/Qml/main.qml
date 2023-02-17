@@ -56,7 +56,7 @@ Window
         anchors.verticalCenterOffset: 6
     }
 
-    MmFlickable
+    MmBar
     {
         id: left_bar
         height: parent.height
@@ -66,7 +66,7 @@ Window
         objectName: "LeftBar"
     }
 
-    MmFlickable
+    MmBar
     {
         id: right_bar
         height: parent.height

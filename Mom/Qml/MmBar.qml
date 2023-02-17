@@ -9,10 +9,14 @@ Flickable
     property string labelUl: "" //Underline Color
     property bool   labelUlEn: false //Underline Enable
     property string labelVal: ""
-    property string labelAction: ""
+    property string labelActionL: ""
+    property string labelActionR: ""
+    property string labelActionM: ""
+    property string labelActionU: ""
+    property string labelActionD: ""
 
     // Cpp Signals
-    signal executeAction(string action)
+    signal executeAction(string m_action)
 
     width: lv.width
     clip: true
@@ -38,9 +42,13 @@ Flickable
             color_underline: underlineColor
             underline: haveUnderline
             label_text: labelText
-            label_action: labelAction
+            label_action_l: labelActionL
+            label_action_r: labelActionR
+            label_action_m: labelActionM
+            label_action_u: labelActionU
+            label_action_d: labelActionD
 
-            onLabelClicked: executeAction(labelAction)
+            onLabelClicked: executeAction(action)
         }
     }
 
@@ -60,7 +68,11 @@ Flickable
                       "underlineColor": labelUl,
                       "haveUnderline": labelUlEn,
                       "labelText": labelVal,
-                      "labelAction": labelAction
+                      "labelActionL": labelActionL,
+                      "labelActionR": labelActionR,
+                      "labelActionM": labelActionM,
+                      "labelActionU": labelActionU,
+                      "labelActionD": labelActionD
                   });
     }
 
@@ -77,6 +89,10 @@ Flickable
         lm.get(labelID).underlineColor  = labelUl;
         lm.get(labelID).haveUnderline   = labelUlEn;
         lm.get(labelID).labelText   = labelVal;
-        lm.get(labelID).labelAction = labelAction;
+        lm.get(labelID).labelActionL = labelActionL;
+        lm.get(labelID).labelActionR = labelActionR;
+        lm.get(labelID).labelActionM = labelActionM;
+        lm.get(labelID).labelActionU = labelActionU;
+        lm.get(labelID).labelActionD = labelActionD;
     }
 }
