@@ -120,7 +120,6 @@ int MmBar::addSound()
     return len;
 }
 
-
 QString MmBar::getWorkStr(int index)
 {
     QString ret;
@@ -128,12 +127,12 @@ QString MmBar::getWorkStr(int index)
 
     QStringList tag_list;
 
-    tag_list << "%{A1:1:}   %{A}";
-    tag_list << "%{A1:2:}   %{A}";
-    tag_list << "%{A1:3:}   %{A}";
-    tag_list << "%{A1:4:}    %{A}";
-    tag_list << "%{A1:5:}    %{A}";
-    tag_list << "%{A1:6:}    %{A}";
+    tag_list << "%{A1:1:}   %{A1}";
+    tag_list << "%{A1:2:}   %{A1}";
+    tag_list << "%{A1:3:}   %{A1}";
+    tag_list << "%{A1:4:}    %{A1}";
+    tag_list << "%{A1:5:}    %{A1}";
+    tag_list << "%{A1:6:}    %{A1}";
 
     QString p_format = "%{B#555555}%{F#f3c84a}";
 
@@ -188,7 +187,11 @@ void MmBar::addLabel(MmLabel *label)
     QQmlProperty::write(side, "labelUl", label->prop.ul);
     QQmlProperty::write(side, "labelUlEn", label->prop.ul_en);
     QQmlProperty::write(side, "labelVal", label->val);
-    QQmlProperty::write(side, "labelAction", label->prop.action);
+    QQmlProperty::write(side, "labelActionL", label->prop.action_l);
+    QQmlProperty::write(side, "labelActionR", label->prop.action_r);
+    QQmlProperty::write(side, "labelActionM", label->prop.action_m);
+    QQmlProperty::write(side, "labelActionU", label->prop.action_u);
+    QQmlProperty::write(side, "labelActionD", label->prop.action_d);
     QMetaObject::invokeMethod(side, "addLabel");
 
     if( side==left_bar )
@@ -209,7 +212,11 @@ void MmBar::updateUI(int id, MmLabel *label)
     QQmlProperty::write(side, "labelUl", label->prop.ul);
     QQmlProperty::write(side, "labelUlEn", label->prop.ul_en);
     QQmlProperty::write(side, "labelVal", label->val);
-    QQmlProperty::write(side, "labelAction", label->prop.action);
+    QQmlProperty::write(side, "labelActionL", label->prop.action_l);
+    QQmlProperty::write(side, "labelActionR", label->prop.action_r);
+    QQmlProperty::write(side, "labelActionM", label->prop.action_m);
+    QQmlProperty::write(side, "labelActionU", label->prop.action_u);
+    QQmlProperty::write(side, "labelActionD", label->prop.action_d);
     QMetaObject::invokeMethod(side, "updateLabel");
 
     QVector<MmLabel> *c_labels;
@@ -226,7 +233,11 @@ void MmBar::updateUI(int id, MmLabel *label)
     (*c_labels)[id].prop.fg = label->prop.fg;
     (*c_labels)[id].prop.ul = label->prop.ul;
     (*c_labels)[id].prop.ul_en = label->prop.ul_en;
-    (*c_labels)[id].prop.action = label->prop.action;
+    (*c_labels)[id].prop.action_l = label->prop.action_l;
+    (*c_labels)[id].prop.action_r = label->prop.action_r;
+    (*c_labels)[id].prop.action_m = label->prop.action_m;
+    (*c_labels)[id].prop.action_u = label->prop.action_u;
+    (*c_labels)[id].prop.action_d = label->prop.action_d;
 }
 
 void MmBar::updateLabel(int id, MmLabel *new_lbl)
@@ -286,7 +297,27 @@ int MmBar::isChanged(MmLabel *label1, MmLabel *label2)
         return 1;
     }
 
-    if( label1->prop.action!=label2->prop.action )
+    if( label1->prop.action_l!=label2->prop.action_l )
+    {
+        return 1;
+    }
+
+    if( label1->prop.action_r!=label2->prop.action_r )
+    {
+        return 1;
+    }
+
+    if( label1->prop.action_m!=label2->prop.action_m )
+    {
+        return 1;
+    }
+
+    if( label1->prop.action_u!=label2->prop.action_u )
+    {
+        return 1;
+    }
+
+    if( label1->prop.action_d!=label2->prop.action_d )
     {
         return 1;
     }

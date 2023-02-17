@@ -16,7 +16,12 @@ typedef struct MmProperty
     QString fg = MM_DEFAULT_FG;
     QString ul = BPB_DEFAULT_UL;
     bool    ul_en = false;
-    QString action;
+
+    QString action_l; // Left click
+    QString action_r; // Right click
+    QString action_m; // Middle click
+    QString action_u; // Scroll up
+    QString action_d; // Scroll down
 }MmProperty;
 
 class MmLabel
