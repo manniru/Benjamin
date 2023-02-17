@@ -8,12 +8,16 @@ Rectangle {
     property string color_underline:    ""
     property bool   underline:          false
     property string label_text:         ""
-    property string label_action:       ""
+    property string label_action_l:       ""
+    property string label_action_r:       ""
+    property string label_action_m:       ""
+    property string label_action_u:       ""
+    property string label_action_d:       ""
     property string label_pre:  "<div style = 'font-family: Roboto, \"Font Awesome 6 Brands Regular\", \"Font Awesome 6 Pro Solid\"'>"
     property string label_post: "</div>"
 
     // Qml Signals
-    signal labelClicked()
+    signal labelClicked(string action)
 
     width: label.contentWidth
     color: color_background
@@ -43,9 +47,25 @@ Rectangle {
     MouseArea
     {
         anchors.fill: parent
-        enabled: label_action != ""
+        enabled: label_action_l != ""
         cursorShape: enabled ? Qt.PointingHandCursor:Qt.ArrowCursor
 
-        onClicked: labelClicked()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        onClicked:
+        {
+            // 'mouse' is a MouseEvent argument passed into the onClicked signal handler
+            if ( mouse.button===Qt.LeftButton )
+            {
+                labelClicked(label_action_l)
+            }
+            else if ( mouse.button===Qt.RightButton )
+            {
+                labelClicked(label_action_r)
+            }
+            else if ( mouse.button===Qt.MiddleButton )
+            {
+                labelClicked(label_action_m)
+            }
+        }
     }
 }
