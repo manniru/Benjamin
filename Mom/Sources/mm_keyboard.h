@@ -42,9 +42,11 @@ private:
     void goToSleep();
 
     HHOOK hHook = NULL;
-    MmKeyExec *exec;
     int state;
-    MmVirt *virt;
+    MmVirt *virt;    
+
+    QThread *exec_thread;
+    MmKeyExec *exec;
 };
 
 void mm_setKeyboard(MmKeyboard *val);

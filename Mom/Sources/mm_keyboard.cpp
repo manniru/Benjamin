@@ -38,6 +38,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             if( key_code==VK_LWIN ||
                 key_code==VK_RWIN )
             {
+                qDebug() << "key win up";
                 if( key->suppress_r==1 ) // only win press
                 {
                     qDebug() << "key->supress_r=1";
@@ -85,6 +86,9 @@ MmKeyboard::MmKeyboard(MmVirt *vi, QObject *parent) : QObject(parent)
 
     e_key = new MmKeyEmulator;
     exec  = new MmKeyExec(vi);
+    exec_thread = new QThread;
+    exec->moveToThread(exec_thread);
+    exec_thread->start();
 }
 
 MmKeyboard::~MmKeyboard()

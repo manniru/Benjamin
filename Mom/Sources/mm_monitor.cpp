@@ -59,7 +59,7 @@ void MmMonitor::QueryDisplay()
     modes.resize(modeCount);
 
 
-    if ( isError )
+    if( isError )
     {
         return;
     }

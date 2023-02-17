@@ -25,7 +25,7 @@ void MmKeyExec::delayedExec()
     if( state=='d' )
     {
         lua->run(); // lua fix ask password bug
-        QThread::msleep(2000);
+        QThread::msleep(500);
         mm_launchApp("Firefox", "--remote-debugging-port");
     }
     else if( state=='a' )

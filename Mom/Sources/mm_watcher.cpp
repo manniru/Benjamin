@@ -21,7 +21,7 @@ bool MmWatcher::isAppRunning(QString name)
 
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
 
-    if (Process32First(snapshot, &entry))
+    if(Process32First(snapshot, &entry))
     {
         while (Process32Next(snapshot, &entry))
         {
@@ -44,7 +44,7 @@ void MmWatcher::timeout()
     for( int i=0 ; i<length ; i++ )
     {
         int is_running = isAppRunning(appNames[i]);
-        if ( is_running==0 )
+        if( is_running==0 )
         {
             if( appNames[i]=="Chess.exe" )
             {

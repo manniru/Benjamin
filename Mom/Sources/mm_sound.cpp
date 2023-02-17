@@ -10,7 +10,7 @@ MmSound::MmSound(QObject *parent) : QObject(parent)
     HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
                                     CLSCTX_INPROC_SERVER,
                                     IID_PPV_ARGS(&device_enum));
-    if ( hr )
+    if( hr )
     {
         qDebug() << "CoCreateInstance MMDeviceEnumerator failed"
                  << hr;
@@ -20,7 +20,7 @@ MmSound::MmSound(QObject *parent) : QObject(parent)
     hr = device_enum->EnumAudioEndpoints(
                 eRender, DEVICE_STATE_ACTIVE, &collection);
 
-    if ( hr )
+    if( hr )
     {
         qDebug() << "IMMDeviceCollection::EnumAudioEndpoints: " << hr;
         return;
@@ -62,13 +62,13 @@ QString MmSound::getLabel()
     IMMDevice *spkr_dev;
     HRESULT hr = device_enum->GetDefaultAudioEndpoint(
                               eRender, eMultimedia, &spkr_dev);
-    if ( hr )
+    if( hr )
     {
         qDebug() << "GetDefaultAudioEndpoint Failed" << hr;
         return 0;
     }
 
-    label  = "%{b#d00}    ";
+    label  = "%{B#d00}    ";
 
     if( isHeadset(spkr_dev) )
     {
@@ -79,10 +79,10 @@ QString MmSound::getLabel()
         label += "\uf6a8";
     }
 
-    label += "    %{b-}%{a1:sound:}     ";
+    label += "    %{B-}%{A1:sound:}     ";
     label += QString::number(getVolume(spkr_dev));
 
-    label += "    %{a}";
+    label += "    %{A}";
 
     return label;
 }
@@ -146,7 +146,7 @@ void MmSound::setDevice(LPWSTR dev_iid)
                  NULL, CLSCTX_ALL, IID_IPolicyConfigVista,
                  (LPVOID *)&pPolicyConfig);
 
-    if ( hr )
+    if( hr )
     {
         qDebug() << "CoCreateInstance CPolicyConfigVistaClient Failed";
         return;
@@ -164,7 +164,7 @@ int MmSound::getNextIndex()
 
     HRESULT hr = device_enum->GetDefaultAudioEndpoint(
                               eRender, eMultimedia, &default_dev);
-    if ( hr )
+    if( hr )
     {
         qDebug() << "GetDefaultAudioEndpoint Failed" << hr;
         return -1;

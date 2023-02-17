@@ -81,7 +81,7 @@ BOOL IsAltTabWindow(HWND hwnd)
 {
     HWND hwndTry, hwndWalk = NULL;
 
-    if (!IsWindowVisible(hwnd))
+    if(!IsWindowVisible(hwnd))
         return FALSE;
 
     hwndTry = GetAncestor(hwnd, GA_ROOTOWNER);
@@ -89,21 +89,21 @@ BOOL IsAltTabWindow(HWND hwnd)
     {
         hwndWalk = hwndTry;
         hwndTry = GetLastActivePopup(hwndWalk);
-        if (IsWindowVisible(hwndTry))
+        if(IsWindowVisible(hwndTry))
             break;
     }
-    if (hwndWalk != hwnd)
+    if(hwndWalk != hwnd)
         return FALSE;
 
     // the following removes some task tray programs and "Program Manager"
     //ti.cbSize = sizeof(ti);
     //GetTitleBarInfo(hwnd, &ti);
-    //if (ti.rgstate[0] & STATE_SYSTEM_INVISIBLE)
+    //if(ti.rgstate[0] & STATE_SYSTEM_INVISIBLE)
     //    return FALSE;
 
     // Tool windows should not be displayed either, these do not appear in the
     // task bar.
-    if (GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)
+    if(GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)
         return FALSE;
 
     return TRUE;

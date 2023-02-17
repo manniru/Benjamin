@@ -66,62 +66,63 @@ void MmParser::parse(QString data, QVector<MmLabel> *out)
 
 void MmParser::updateProps(QString raw, MmProperty *properties)
 {
-//    qDebug() << "property" << rawProperty;
+    // Example: a1:sound:
+//    qDebug() << "property" << raw;
 
     //Note: unset property must be checked first
-    QString clr_bg = "B-";
     QString set_bg = "B";
+    QString clr_bg = "B-";
 
     //Note: unset property must be checked first
-    QString clr_fg = "F-";
     QString set_fg = "F";
+    QString clr_fg = "F-";
 
     //Note: set must be checked first
-    QString clr_act = "A";
     QString set_act = "A1:";
+    QString clr_act = "A";
 
     QString clr_ul  = "-U";
     QString set_ul  = "+U";
     QString ul_prop = "U";
 
     // Background
-    if (raw.startsWith(clr_bg, Qt::CaseInsensitive))
+    if( raw.startsWith(clr_bg, Qt::CaseInsensitive) )
     {
         properties->bg = MM_DEFAULT_BG;
     }
-    else if (raw.startsWith(set_bg, Qt::CaseInsensitive))
+    else if( raw.startsWith(set_bg, Qt::CaseInsensitive) )
     {
         properties->bg = raw.mid(set_bg.length());
     }
     // Foreground
-    else if (raw.startsWith(clr_fg, Qt::CaseInsensitive))
+    else if( raw.startsWith(clr_fg, Qt::CaseInsensitive) )
     {
         properties->fg = MM_DEFAULT_FG;
     }
-    else if (raw.startsWith(set_fg, Qt::CaseInsensitive))
+    else if( raw.startsWith(set_fg, Qt::CaseInsensitive) )
     {
         properties->fg = raw.mid(set_fg.length());
     }
     // Action
-    else if (raw.startsWith(set_act, Qt::CaseInsensitive))
+    else if( raw.startsWith(set_act, Qt::CaseInsensitive) )
     {
         int n = raw.length() - set_act.length() - 1;// end of property contain ':'
         properties->action = raw.mid(set_act.length(), n);
     }
-    else if (raw.startsWith(clr_act, Qt::CaseInsensitive))
+    else if( raw.startsWith(clr_act, Qt::CaseInsensitive) )
     {
         properties->action = "";
     }
     // Underline
-    else if (raw.startsWith(set_ul, Qt::CaseInsensitive))
+    else if( raw.startsWith(set_ul, Qt::CaseInsensitive) )
     {
         properties->ul_en = true;
     }
-    else if (raw.startsWith(clr_ul, Qt::CaseInsensitive))
+    else if( raw.startsWith(clr_ul, Qt::CaseInsensitive) )
     {
         properties->ul_en = false;
     }
-    else if (raw.startsWith(ul_prop, Qt::CaseInsensitive))
+    else if( raw.startsWith(ul_prop, Qt::CaseInsensitive) )
     {
         properties->ul = raw.mid(ul_prop.length());
     }

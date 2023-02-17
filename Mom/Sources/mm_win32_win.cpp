@@ -45,7 +45,7 @@ void re_AddHwnd(HWND hwnd, MmWin32Win *thread_w)
             {
                 int success = GetWindowTextA(hwnd, buffer, 128); //get title
 
-                if ( success==0 )
+                if( success==0 )
                 {
                     qDebug() << hwnd << "Failed to GetWindowTextA";
                 }
@@ -91,9 +91,9 @@ void MmWin32Win::updateActiveWindow()
 
     win_active.title = buffer;
 
-    if ( win_active.title.length()==0 ) //No active window
+    if( win_active.title.length()==0 ) //No active window
     {
-        if ( wins.size()>0 )
+        if( wins.size()>0 )
         {
             win_active.hWnd = wins[0].hWnd; //Set last active window
         }
