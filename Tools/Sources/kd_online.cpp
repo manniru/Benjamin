@@ -205,7 +205,7 @@ void KdOnline::writeHalt(QString path)
     QTextStream out(&st_file);
     out << "%{B#666666}%{F#ffffff}%{A1:$HS_CMD:}"
         << "  Halt  "
-        << "%{A}%{B- F1-}";
+        << "%{A1}%{B- F1-}";
     st_file.close();
 }
 

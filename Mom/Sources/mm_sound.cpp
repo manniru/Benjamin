@@ -79,10 +79,10 @@ QString MmSound::getLabel()
         label += "\uf6a8";
     }
 
-    label += "    %{B-}%{A1:sound:}     ";
+    label += "    %{B-}%{A2:right:}%{A1:sound:}     ";
     label += QString::number(getVolume(spkr_dev));
 
-    label += "    %{A}";
+    label += "    %{A2}%{A1}";
 
     return label;
 }
