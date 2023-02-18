@@ -66,69 +66,156 @@ void MmParser::parse(QString data, QVector<MmLabel> *out)
 
 void MmParser::updateProps(QString raw, MmProperty *properties)
 {
-    // Example: a1:sound:
+    // Example: A1:sound:
 //    qDebug() << "property" << raw;
 
     //Note: unset property must be checked first
-    QString set_bg = "B";
-    QString clr_bg = "B-";
+    QString bg_set = "B";
+    QString bg_clr = "B-";
 
     //Note: unset property must be checked first
-    QString set_fg = "F";
-    QString clr_fg = "F-";
+    QString fg_set = "F";
+    QString fg_clr = "F-";
 
-    //Note: set must be checked first
-    QString set_act = "A1:";
-    QString clr_act = "A";
-
-    QString clr_ul  = "-U";
-    QString set_ul  = "+U";
-    QString ul_prop = "U";
+    QString ul_clr  = "-U";
+    QString ul_set  = "+U";
+    QString prop_ul = "U";
 
     // Background
-    if( raw.startsWith(clr_bg, Qt::CaseInsensitive) )
+    if( raw.startsWith(bg_clr) )
     {
         properties->bg = MM_DEFAULT_BG;
     }
-    else if( raw.startsWith(set_bg, Qt::CaseInsensitive) )
+    else if( raw.startsWith(bg_set) )
     {
-        properties->bg = raw.mid(set_bg.length());
+        properties->bg = raw.mid(bg_set.length());
     }
     // Foreground
-    else if( raw.startsWith(clr_fg, Qt::CaseInsensitive) )
+    else if( raw.startsWith(fg_clr) )
     {
         properties->fg = MM_DEFAULT_FG;
     }
-    else if( raw.startsWith(set_fg, Qt::CaseInsensitive) )
+    else if( raw.startsWith(fg_set) )
     {
-        properties->fg = raw.mid(set_fg.length());
+        properties->fg = raw.mid(fg_set.length());
     }
     // Action
-    else if( raw.startsWith(set_act, Qt::CaseInsensitive) )
+    else if( readActions(raw, properties) )
     {
-        int n = raw.length() - set_act.length() - 1;// end of property contain ':'
-        properties->action = raw.mid(set_act.length(), n);
-    }
-    else if( raw.startsWith(clr_act, Qt::CaseInsensitive) )
-    {
-        properties->action = "";
+        return;
     }
     // Underline
-    else if( raw.startsWith(set_ul, Qt::CaseInsensitive) )
+    else if( raw.startsWith(ul_set) )
     {
         properties->ul_en = true;
     }
-    else if( raw.startsWith(clr_ul, Qt::CaseInsensitive) )
+    else if( raw.startsWith(ul_clr) )
     {
         properties->ul_en = false;
     }
-    else if( raw.startsWith(ul_prop, Qt::CaseInsensitive) )
+    else if( raw.startsWith(prop_ul) )
     {
-        properties->ul = raw.mid(ul_prop.length());
+        properties->ul = raw.mid(prop_ul.length());
     }
     else
     {
         qDebug() << "Invalid property: " + raw;
     }
 
+}
+
+int MmParser::readActions(QString raw, MmProperty *properties)
+{
+    //Note: clear must be checked first
+    QString act_l_set = "A1:";
+    QString act_l_clr = "A1";
+
+    QString act_r_set = "A2:";
+    QString act_r_clr = "A2";
+
+    QString act_m_set = "A3:";
+    QString act_m_clr = "A3";
+
+    QString act_u_set = "A4:";
+    QString act_u_clr = "A4";
+
+    QString act_d_set = "A5:";
+    QString act_d_clr = "A5";
+
+    if( raw==act_l_clr )
+    {
+        properties->action_l = "";
+
+        return 1;
+    }
+    else if( raw.startsWith(act_l_set) )
+    {
+        // end of property contain ':'(1)
+        int len = raw.length() - act_l_set.length() - 1;
+        properties->action_l = raw.mid(act_l_set.length(), len);
+
+        return 1;
+    }
+
+    else if( raw==act_r_clr )
+    {
+        properties->action_r = "";
+
+        return 1;
+    }
+    else if( raw.startsWith(act_r_set) )
+    {
+        // end of property contain ':'(1)
+        int len = raw.length() - act_r_set.length() - 1;
+        properties->action_l = raw.mid(act_r_set.length(), len);
+
+        return 1;
+    }
+
+    else if( raw==act_m_clr )
+    {
+        properties->action_m = "";
+
+        return 1;
+    }
+    else if( raw.startsWith(act_m_set) )
+    {
+        // end of property contain ':'(1)
+        int len = raw.length() - act_m_set.length() - 1;
+        properties->action_l = raw.mid(act_m_set.length(), len);
+
+        return 1;
+    }
+
+    else if( raw==act_u_clr )
+    {
+        properties->action_u = "";
+
+        return 1;
+    }
+    else if( raw.startsWith(act_u_set) )
+    {
+        // end of property contain ':'(1)
+        int len = raw.length() - act_u_set.length() - 1;
+        properties->action_l = raw.mid(act_u_set.length(), len);
+
+        return 1;
+    }
+
+    else if( raw==act_d_clr )
+    {
+        properties->action_d = "";
+
+        return 1;
+    }
+    else if( raw.startsWith(act_d_set) )
+    {
+        // end of property contain ':'(1)
+        int len = raw.length() - act_d_set.length() - 1;
+        properties->action_l = raw.mid(act_d_set.length(), len);
+
+        return 1;
+    }
+
+    return 0;
 }

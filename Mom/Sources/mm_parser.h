@@ -21,6 +21,7 @@ public:
 
 private:
     int parseProps(QString data, int s_index);
+    int readActions(QString raw, MmProperty *properties);
 
     MmProperty c_property;
 };
