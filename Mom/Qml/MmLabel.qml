@@ -1,8 +1,9 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.4
- import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls.Styles 1.4
 
-Rectangle {
+Rectangle
+{
     property string color_background:   ""
     property string color_label:        ""
     property string color_underline:    ""
@@ -54,18 +55,32 @@ Rectangle {
         onClicked:
         {
             // 'mouse' is a MouseEvent argument passed into the onClicked signal handler
-            if ( mouse.button===Qt.LeftButton )
+            if( mouse.button===Qt.LeftButton )
             {
-                labelClicked(label_action_l)
+                labelClicked(label_action_l);
             }
-            else if ( mouse.button===Qt.RightButton )
+            else if( mouse.button===Qt.RightButton )
             {
-                labelClicked(label_action_r)
+                labelClicked(label_action_r);
             }
-            else if ( mouse.button===Qt.MiddleButton )
+            else if( mouse.button===Qt.MiddleButton )
             {
-                labelClicked(label_action_m)
+                labelClicked(label_action_m);
             }
+        }
+
+        onWheel:
+        {
+            if( wheel.angleDelta.y>0 )
+            {
+                labelClicked(label_action_u);
+            }
+            else
+            {
+                labelClicked(label_action_d);
+            }
+
+            wheel.accepted=true
         }
     }
 }

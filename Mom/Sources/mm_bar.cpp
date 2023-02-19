@@ -28,6 +28,14 @@ void MmBar::executeCommand(QString action)
     {
         sound->leftClick();
     }
+    else if( action=="vol_up" )
+    {
+        sound->volumeUp();
+    }
+    else if( action=="vol_down" )
+    {
+        sound->volumeDown();
+    }
     else
     {
         qDebug() << "execute" << action;
