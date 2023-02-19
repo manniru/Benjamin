@@ -26,23 +26,23 @@ void bt_writeBarResult(QVector<BtWord> result)
 
         if( result[i].conf<KAL_HARD_TRESHOLD )
         {
-            out << "%{u#f00}%{+u}";
+            out << "%{U#f00}%{+U}";
         }
         else if( result[i].conf==1.00 )
         {
-            out << "%{u#1d1}%{+u}";
+            out << "%{U#1d1}%{+U}";
         }
         else if( result[i].conf>KAL_CONF_TRESHOLD )
         {
-            out << "%{u#16A1CF}%{+u}";
+            out << "%{U#16A1CF}%{+U}";
         }
         else
         {
-            out << "%{u#CF8516}%{+u}";
+            out << "%{U#CF8516}%{+U}";
         }
         out << result[i].word;
 
-        out << "%{-u} ";
+        out << "%{-U} ";
     }
     out << "\n";
 

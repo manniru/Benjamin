@@ -167,7 +167,7 @@ int MmParser::readActions(QString raw, MmProperty *properties)
     {
         // end of property contain ':'(1)
         int len = raw.length() - act_r_set.length() - 1;
-        properties->action_l = raw.mid(act_r_set.length(), len);
+        properties->action_r = raw.mid(act_r_set.length(), len);
 
         return 1;
     }
@@ -182,7 +182,7 @@ int MmParser::readActions(QString raw, MmProperty *properties)
     {
         // end of property contain ':'(1)
         int len = raw.length() - act_m_set.length() - 1;
-        properties->action_l = raw.mid(act_m_set.length(), len);
+        properties->action_m = raw.mid(act_m_set.length(), len);
 
         return 1;
     }
@@ -197,7 +197,7 @@ int MmParser::readActions(QString raw, MmProperty *properties)
     {
         // end of property contain ':'(1)
         int len = raw.length() - act_u_set.length() - 1;
-        properties->action_l = raw.mid(act_u_set.length(), len);
+        properties->action_u = raw.mid(act_u_set.length(), len);
 
         return 1;
     }
@@ -212,7 +212,7 @@ int MmParser::readActions(QString raw, MmProperty *properties)
     {
         // end of property contain ':'(1)
         int len = raw.length() - act_d_set.length() - 1;
-        properties->action_l = raw.mid(act_d_set.length(), len);
+        properties->action_d = raw.mid(act_d_set.length(), len);
 
         return 1;
     }

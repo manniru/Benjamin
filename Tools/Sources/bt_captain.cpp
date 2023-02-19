@@ -226,9 +226,9 @@ QString BtCaptain::getWordFmt(BtHistory word)
         buf = "%{F#777}";
     }
 
-    buf += "%{u";
+    buf += "%{U";
     buf += getConfColor(word.conf);
-    buf += "}%{+u}";
+    buf += "}%{+U}";
 
     int len = word.words.length();
     for( int i=0 ; i<len ; i++ )
@@ -241,7 +241,7 @@ QString BtCaptain::getWordFmt(BtHistory word)
         }
     }
 
-    buf += "%{-u} ";
+    buf += "%{-U} ";
 
     return buf;
 }
