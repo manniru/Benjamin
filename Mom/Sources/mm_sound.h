@@ -17,6 +17,8 @@ public:
     ~MmSound();
 
     void leftClick();
+    void volumeUp();
+    void volumeDown();
     QString getLabel();
 
 private:

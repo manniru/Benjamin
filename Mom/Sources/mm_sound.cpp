@@ -68,7 +68,7 @@ QString MmSound::getLabel()
         return 0;
     }
 
-    label  = "%{B#d00}    ";
+    label  = "%{U#815DB4}%{+U}%{A1:sound:}%{A2:right:}%{A4:vol_up:}%{A5:vol_down:}   ";
 
     if( isHeadset(spkr_dev) )
     {
@@ -79,10 +79,10 @@ QString MmSound::getLabel()
         label += "\uf6a8";
     }
 
-    label += "    %{B-}%{A2:right:}%{A1:sound:}     ";
+    label += "  ";
     label += QString::number(getVolume(spkr_dev));
 
-    label += "    %{A2}%{A1}";
+    label += "%  %{A5}%{A4}%{A2}%{A1}%{-U}  ";
 
     return label;
 }
@@ -202,4 +202,69 @@ int MmSound::getNextIndex()
     }
 
     return -1;
+}
+
+void MmSound::volumeUp()
+{
+    IMMDevice *spkr_dev;
+    HRESULT hr = device_enum->GetDefaultAudioEndpoint(
+                              eRender, eMultimedia, &spkr_dev);
+    if( hr )
+    {
+        qDebug() << "GetDefaultAudioEndpoint Failed" << hr;
+        return;
+    }
+
+    IAudioEndpointVolume *endpointVolume = NULL;
+    hr = spkr_dev->Activate(__uuidof(IAudioEndpointVolume),
+                              CLSCTX_INPROC_SERVER, NULL, (LPVOID *)&endpointVolume);
+
+    float volume = 0;
+    hr = endpointVolume->GetMasterVolumeLevelScalar(&volume);
+
+    if( volume<0.9 )
+    {
+        volume += 0.1;
+    }
+    else
+    {
+        volume = 1;
+    }
+
+    endpointVolume->SetMasterVolumeLevelScalar(volume, NULL);
+
+    endpointVolume->Release();
+}
+
+void MmSound::volumeDown()
+{
+    IMMDevice *spkr_dev;
+    HRESULT hr = device_enum->GetDefaultAudioEndpoint(
+                              eRender, eMultimedia, &spkr_dev);
+    if( hr )
+    {
+        qDebug() << "GetDefaultAudioEndpoint Failed" << hr;
+        return;
+    }
+
+    IAudioEndpointVolume *endpointVolume = NULL;
+    hr = spkr_dev->Activate(__uuidof(IAudioEndpointVolume),
+                              CLSCTX_INPROC_SERVER, NULL, (LPVOID *)&endpointVolume);
+
+    float volume = 0;
+    hr = endpointVolume->GetMasterVolumeLevelScalar(&volume);
+
+    if( volume>0.1 )
+    {
+        volume -= 0.1;
+    }
+    else
+    {
+        volume = 0;
+    }
+
+    endpointVolume->SetMasterVolumeLevelScalar(volume, NULL);
+
+    endpointVolume->Release();
+
 }
