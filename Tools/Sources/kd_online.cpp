@@ -203,7 +203,7 @@ void KdOnline::writeHalt(QString path)
         system("mkdir " MOM_LABEL_DIR);
     }
     QTextStream out(&st_file);
-    out << "%{B#666666}%{F#ffffff}%{A1:$HS_CMD:}"
+    out << "  %{B#666666}%{F#ffffff}%{A1:$HS_CMD:}"
         << "  Halt  "
         << "%{A1}%{B- F1-}";
     st_file.close();

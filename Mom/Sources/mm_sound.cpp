@@ -68,7 +68,8 @@ QString MmSound::getLabel()
         return 0;
     }
 
-    label  = "%{U#815DB4}%{+U}%{A1:sound:}%{A2:right:}%{A4:vol_up:}%{A5:vol_down:}   ";
+    label  = "%{U#815DB4}%{+U}";
+    label += "%{A1:sound:}%{A2:right:}%{A4:vol_up:}%{A5:vol_down:}  ";
 
     if( isHeadset(spkr_dev) )
     {
@@ -79,10 +80,10 @@ QString MmSound::getLabel()
         label += "\uf6a8";
     }
 
-    label += "  ";
+    label += " ";
     label += QString::number(getVolume(spkr_dev));
 
-    label += "%  %{A5}%{A4}%{A2}%{A1}%{-U}  ";
+    label += "% %{A5}%{A4}%{A2}%{A1}%{-U}  ";
 
     return label;
 }
