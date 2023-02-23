@@ -14,6 +14,7 @@ CONFIG += c++11
 
 SOURCES += Sources/main.cpp \
            Sources/mm_api.cpp \
+           Sources/mm_app_launcher.cpp \
            Sources/mm_bar.cpp \
            Sources/mm_chapar.cpp \
            Sources/mm_key_emulator.cpp \
@@ -49,6 +50,7 @@ RESOURCES += \
 
 HEADERS += Sources/mm_config.h \
            Sources/mm_api.h \
+           Sources/mm_app_launcher.h \
            Sources/mm_bar.h \
            Sources/mm_chapar.h \
            Sources/mm_key_emulator.h \
