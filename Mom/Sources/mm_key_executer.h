@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <Windows.h>
 #include <QVector>
+#include "mm_app_launcher.h"
 #include "mm_virt.h"
 #include "mm_lua.h"
 
@@ -30,6 +31,9 @@ private:
     MmLua *lua;
     MmVirt *virt;
     int state;
+
+    QThread *launcher_thread;
+    MmAppLauncher *launcher;
 };
 
 #endif // MM_KEY_EXECUTER_H
