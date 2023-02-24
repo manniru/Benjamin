@@ -1,9 +1,37 @@
 #include "mm_win32.h"
-#include <QScreen>
-#include <QGuiApplication>
-#include <QThread>
 #include <QDebug>
+#include <QGuiApplication>
+#include <QFileInfo>
+#include <QScreen>
+#include <QThread>
 #include <psapi.h>
+
+HWND hwnd_g = NULL;
+
+BOOL CALLBACK EnumWindowsApp(HWND hwnd, LPARAM lParam)
+{
+    MmApplication *app = (MmApplication *)lParam; // requested pname
+    QString win_title = mm_getWinTitle(hwnd);
+
+    if( win_title.length() )
+    {
+        long pid = mm_getPid(hwnd);
+        QString pname = mm_getPName(pid);
+        pname = QFileInfo(pname).completeBaseName();
+        if( pname==app->exe_name )
+        {
+//            qDebug() << "EnumWindowsProc find HWND"
+//                     << pname << app->exe_name << hwnd
+//                     << win_title;
+            if( win_title.contains(app->win_title) )
+            {
+                hwnd_g = hwnd;
+                return FALSE;
+            }
+        }
+    }
+    return TRUE;
+}
 
 void mm_sendMouseKey(int key)
 {
@@ -107,4 +135,47 @@ BOOL IsAltTabWindow(HWND hwnd)
         return FALSE;
 
     return TRUE;
+}
+
+HWND mm_getHWND(MmApplication *app)
+{
+    HWND hwnd = mm_getFocusedHWND(app);
+    if( hwnd )
+    {
+        return hwnd;
+    }
+    //else
+    hwnd_g = 0;
+    EnumWindows(EnumWindowsApp, (LPARAM) app);
+    return hwnd_g;
+}
+
+//return focused HWND if it match exe_name
+HWND mm_getFocusedHWND(MmApplication *app)
+{
+    HWND hwnd = GetForegroundWindow();
+    QString pname = mm_getPName(mm_getPid(hwnd));
+
+    if( pname.contains(app->exe_name) )
+    {
+//        qDebug() << "exe_name" << app->exe_name;
+        return hwnd;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+QString mm_getWinTitle(HWND hwnd)
+{
+    char buffer[MAX_TITLE_LEN];
+    int written = GetWindowTextA(hwnd, buffer, MAX_TITLE_LEN);
+    if( written==0 )
+    {
+        return "";
+    }
+
+    QString ret = buffer;
+    return ret;
 }

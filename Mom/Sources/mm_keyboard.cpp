@@ -15,8 +15,8 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if( nCode >= 0 )
     {
-        qDebug() << "emul" << key->emul_mode
-                 << key->suppress_r;
+        qDebug() << "emul mode:"   << key->emul_mode
+                  << "suppress_r:" << key->suppress_r;
         if( key->emul_mode )
         {
             return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -126,8 +126,8 @@ void MmKeyboard::delayedExec()
 
 int MmKeyboard::procPressKey(int key_code)
 {
-    qDebug() << "procPressKey" << key_code
-             << suppress_r;
+    qDebug() << "procPressKey key code:" << key_code
+             << "suppress_r:"            << suppress_r;
     if( key_code==VK_LWIN ||
         key_code==VK_RWIN )
     {
@@ -150,8 +150,8 @@ int MmKeyboard::procPressKey(int key_code)
     }
     else
     {
-        qDebug() << "key" << key_code
-                 << suppress_r;
+        qDebug() << "##key code:" << key_code
+                 << "suppress_r:" << suppress_r;
         if( suppress_r==1 || suppress_r==3 )
         {
             qDebug() << "execWinKey";
@@ -159,7 +159,7 @@ int MmKeyboard::procPressKey(int key_code)
             if( ret )
             {
                 suppress_r = 3;
-                qDebug() << "supress_r";
+                qDebug() << "supress_r = 3";
             }
             else // shortcut not captured by us
             {
