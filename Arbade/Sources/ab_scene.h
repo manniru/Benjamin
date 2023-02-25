@@ -23,7 +23,7 @@ private slots:
     void setStatus(int status);
     void setTotalcount(int val);
     void setVerifier(int verifier);
-    void saveWordlist(QString word_list);
+    void saveWordList(QString word_list);
     void setCategory(QString cat);
     void setDifWords(QString difwords);
     void setFocusWord(QString focus_word);
@@ -34,13 +34,13 @@ private:
     void updateStat();
     void loadAddress();
     void setCount(int cnt);
+    void readQmlProperties();
 
     QObject* root;//root qml object
     AbManager *man;
     AbRecParam *rec_params;
     QTimer *break_timer;
     QStringList unverified_list;
-    qreal m_qmlcreated=0;
 };
 
 #endif // ABSCENE_H

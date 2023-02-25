@@ -60,7 +60,6 @@ Window
         font.pixelSize: 16
 
         focus: true
-        onFocusChanged: console.log("Focus changed " + focus)
         Keys.onReturnPressed: get_value_dialog.accept()
 
         onTextChanged:
