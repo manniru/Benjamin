@@ -7,6 +7,7 @@ AbManager::AbManager(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
     srand(time(NULL));
+    params.rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
     int sample_count = params.rec_time*BT_REC_RATE;
     qDebug() << "sample_count" << sample_count;
     rec = new AbRecorder(sample_count);
@@ -95,7 +96,7 @@ void AbManager::swapParams()
 {
     if( params.verifier )
     {
-        qreal pause_time = p_backup.pause_time;
+        float pause_time = p_backup.pause_time;
 
         p_backup.pause_time = params.pause_time;
         p_backup.num_words = params.num_words;
@@ -107,11 +108,11 @@ void AbManager::swapParams()
     }
     else
     {
-        qreal pause_time = p_backup.pause_time;
-        qreal num_words = p_backup.num_words;
-        qreal rec_time = p_backup.rec_time;
+        float pause_time = p_backup.pause_time;
+        float num_words = p_backup.num_words;
+        float rec_time = p_backup.rec_time;
         QString category = p_backup.category;
-        qreal total_count = p_backup.total_count;
+        float total_count = p_backup.total_count;
 
         p_backup.pause_time = params.pause_time;
 
@@ -138,9 +139,9 @@ void AbManager::breakTimeout()
     }
     else
     {
+        qDebug() << "start record";
         setStatus(AB_STATUS_REC);
 //        qDebug() << "readDone:AB_STATUS_REC";
-        qDebug() << "start record";
         rec->reset();
     }
     read_timer->stop();
@@ -290,6 +291,7 @@ void AbManager::delWordSamples()
         }
     }
     len = del_list.size();
+    qDebug() << "delWordSamples" << del_list;
 
     QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
@@ -408,6 +410,7 @@ void AbManager::setStatus(int status)
         QString meanvar = ab_getMeanVar();
         QQmlProperty::write(root, "ab_mean_var", meanvar);
     }
+    params.status = status;
     QQmlProperty::write(root, "ab_status", status);
 }
 

@@ -11,17 +11,17 @@
 
 typedef struct AbRecParam
 {
-    QString category = "online";
-    QString focus_word = "<empty>";
+    QString category;
+    QString focus_word;
     QString word_list;
     QString dif_words;
-    qreal   count = 0;
-    qreal   total_count = 100;
-    qreal   status = AB_STATUS_STOP;
-    qreal   rec_time = 3;
-    qreal   num_words = 3;
-    qreal   pause_time = 1;
-    qreal   verifier = 0;
+    int   count;
+    int   total_count;
+    int   status;
+    int   num_words;
+    int   verifier;
+    float   rec_time;
+    float   pause_time;
 }AbRecParam;
 
 class AbManager : public QObject
@@ -45,7 +45,7 @@ public:
 signals:
     void startDecoding();
 
-    void pauseChanged(qreal time);
+    void pauseChanged(float time);
     void categoryChanged(QString category);
 
 private slots:
