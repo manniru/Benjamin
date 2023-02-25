@@ -6,22 +6,16 @@ import QtQuick.Extras 1.4
 import QtQuick.Controls 2.3
 import QtQuick.Window 2.10
 
-Window
+Rectangle
 {
     id: container
-    title: "Edit Word List"
     height: 600
     width: 1200
-//    visible: true
+    visible: true
     color: "#2e2e2e"
 
     property string dialog_text: ""
     property string dif_words: ""
-
-    property string botton_border: "#bfbfbf"
-    property string botton_text: "#b6b6b6"
-    property color  botton_bg: "#4d4d4d"
-    property color  botton_hbg: "#666"
 
     property string total_words: ""
     property int line_count: 0
@@ -29,6 +23,7 @@ Window
 
     signal updateWordList(string word_list)
     signal updateDifWords(string dif_words)
+    signal enableButtons(int enable)
 
     ListModel
     {
@@ -49,17 +44,31 @@ Window
             start_num: sn
             last_box: lb
 
+            onWord_statChanged:
+            {
+                console.log("sag")
+            }
+
             onWordBoxChanged:
             {
                 var split_words = total_words.split("\n");
                 split_words[id] = word;
                 total_words = split_words.join("\n");
+                var dif_result = getDiff();
+                if( dif_result.length )
+                {
+                    enableButtons(1);
+                }
+                else
+                {
+                    enableButtons(0);
+                }
             }
 
             onNewBoxRequired:
             {
-                lm_wordedit.append({sn: line_count, wl: "",
-                                   ws: "0", lb: Boolean(true)});
+                lm_wordedit.append({"sn": line_count, "wl": "",
+                                   "ws": "0", "lb": Boolean(true)});
             }
 
             onNewWord:
@@ -89,52 +98,6 @@ Window
         delegate: ld_wordedit
     }
 
-    AbButton
-    {
-        id: save_button
-        text: "Save"
-        width: parent.width/4 - 5
-        anchors.left: parent.left
-        anchors.leftMargin: parent.width/4
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-        DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
-
-        onClick:
-        {
-            var dif_result = getDiff();
-            if( dif_result.length!==0 )
-            {
-                dif_words = dif_result.join("\n");
-                wordlist_dialog.dialog_label = "Are you sure" +
-                        " to change these words?\n\n" + dif_words;
-                wordlist_dialog.visible = true;
-            }
-            else
-            {
-                editor_dialog.reject();
-            }
-        }
-    }
-
-    AbButton
-    {
-        id: close_button
-        text: "Close"
-        width: parent.width/4 - 5
-        anchors.right: parent.right
-        anchors.rightMargin: parent.width/4
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-
-        DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
-
-        onClick:
-        {
-            reject();
-        }
-    }
-
     AbDiffAccept
     {
         id: wordlist_dialog
@@ -143,25 +106,13 @@ Window
         {
             if( dialog_result==="Y" )
             {
-                editor_dialog.accept();
+                editor_box.accept();
             }
             else if( dialog_result==="N" )
             {
-                editor_dialog.reject();
+                editor_box.reject();
             }
             dialog_result = "";
-        }
-    }
-
-    onVisibleChanged:
-    {
-        if( !visible )
-        {
-            wordlist_dialog.close();
-        }
-        else
-        {
-            loadWordBoxes();
         }
     }
 
@@ -170,12 +121,6 @@ Window
         updateWordList(total_words);
         updateDifWords(dif_words);
         dif_words = "";
-        close();
-    }
-
-    function reject()
-    {
-        close();
     }
 
     function getDiff()
@@ -198,6 +143,50 @@ Window
         return dif;
     }
 
+    function saveProcess()
+    {
+        var dif_result = getDiff();
+        if( dif_result.length!==0 )
+        {
+            dif_words = dif_result.join("\n");
+            wordlist_dialog.dialog_label = "Are you sure" +
+                    " to change these words?\n\n" + dif_words;
+            wordlist_dialog.visible = true;
+        }
+    }
+
+    function resetProcess()
+    {
+        var all_words = root.ab_word_list.split("\n");
+        total_words = root.ab_word_list;
+        line_count = all_words.length;
+        var all_stat = root.ab_word_stat.split("\n");
+        var all_count = all_words.length;
+        var box_size = ab_const.ab_WORDEDIT_BOX_SIZE;
+        var start_index = 0;
+        box_count = Math.ceil(all_count/box_size);
+
+        for( var i=0 ; i<box_count ; i++ )
+        {
+            var sliced_wl = all_words.slice(start_index,
+                               start_index+box_size).join("\n");
+            var sliced_ws = all_stat.slice(start_index,
+                               start_index+box_size).join("\n");
+            var last_box = (i===box_count-1);
+
+            console.log(i, box_count);
+
+            lm_wordedit.get(i).sn = start_index;
+            lm_wordedit.get(i).wl = sliced_wl;
+            lm_wordedit.get(i).ws = sliced_ws;
+            lm_wordedit.get(i).lb = (i===box_count-1);
+//            lm_wordedit.set(i, {"sn": start_index, "wl": sliced_wl,
+//                                "ws": sliced_ws, "lb": (i===box_count-1)});
+
+            start_index += box_size;
+        }
+    }
+
     function loadWordBoxes()
     {
         lm_wordedit.clear();
@@ -216,8 +205,9 @@ Window
                                start_index+box_size).join("\n")
             var sliced_ws = all_stat.slice(start_index,
                                start_index+box_size).join("\n")
-            lm_wordedit.append({sn: start_index, wl: sliced_wl,
-                                ws: sliced_ws, lb: 1?(i===box_count-1):0});
+            lm_wordedit.append({"sn": start_index, "wl": sliced_wl,
+                                "ws": sliced_ws, "lb": (i===box_count-1)});
+
             start_index += box_size;
         }
     }
