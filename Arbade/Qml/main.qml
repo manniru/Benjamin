@@ -41,7 +41,7 @@ ApplicationWindow
     property int ab_status: ab_const.ab_STATUS_STOP
     property real ab_rec_time: 3
     property int ab_num_words: 3
-    property real ab_pause_time: 1
+    property real ab_pause_time: 1.0
     property real ab_power: 0
     property int ab_verifier: 0
     property int ab_playkon: 0
@@ -50,14 +50,24 @@ ApplicationWindow
     signal delFile()
     signal copyFile()
     signal loadWordList()
-    signal saveWordList()
     signal sendKey(int key)
     signal setStatus(int st)
     signal setVerifier(int ver)
     signal setTotalCount(int val)
+    signal saveWordList(string wl)
     signal setCategory(string cat)
     signal setDifWords(string dif)
     signal setFocusWord(string fw)
+
+    onAb_verifierChanged:
+    {
+        setVerifier(ab_verifier);
+    }
+
+    onAb_focus_wordChanged:
+    {
+        setFocusWord(ab_focus_word);
+    }
 
     onAb_playkonChanged:
     {
@@ -82,6 +92,11 @@ ApplicationWindow
         }
     }
 
+    onAb_word_statChanged:
+    {
+        editor_box.loadWordBoxes();
+    }
+
     onAb_mean_varChanged:
     {
         ab_sidebar.mean = ab_mean_var.split("!")[0];
@@ -96,6 +111,7 @@ ApplicationWindow
         property alias numwords:        root.ab_num_words
         property alias pausetime:       root.ab_pause_time
         property alias focusword:       root.ab_focus_word
+        property alias verifier:        root.ab_verifier
     }
 
     Item
@@ -147,17 +163,21 @@ ApplicationWindow
         }
         power: ab_power
         focus_word: ab_focus_word
+
+        onSaveClicked:
+        {
+            editor_box.saveProcess();
+        }
+        onResetClicked:
+        {
+            editor_box.resetProcess();
+        }
     }
 
-    AbStat
-    {
-        anchors.top: parent.top
-        anchors.bottom: ab_help.top
-        anchors.right: parent.right
-        anchors.left: ab_sidebar.right
-
-        grid_text: ab_stat.split('!').filter(Boolean);
-    }
+//    AbStat
+//    {
+//        grid_text: ab_stat.split('!').filter(Boolean);
+//    }
 
     AbHelp
     {
@@ -185,25 +205,23 @@ ApplicationWindow
             if( title===category_title )
             {
                 ab_category = dialog_text;
-                setCategory(dialog_text);
+                setCategory(ab_category);
             }
             else if( title===cnt_title )
             {
                 var total_count = parseInt(dialog_text);
                 ab_total_count = total_count;
-                setTotalCount(total_count);
+                setTotalCount(ab_total_count);
             }
             else if( title===focus_word_title )
             {
                 if( dialog_text=="" )
                 {
-                    ab_focus_word = ab_focus_word;
-                    setFocusWord("<empty>");
+                    ab_focus_word = "<empty>";
                 }
                 else
                 {
                     ab_focus_word = dialog_text;
-                    setFocusWord(dialog_text);
                 }
             }
         }
@@ -231,7 +249,12 @@ ApplicationWindow
 
     AbEditor
     {
-        id: editor_dialog
+        id: editor_box
+
+        anchors.top: parent.top
+        anchors.bottom: ab_help.top
+        anchors.right: parent.right
+        anchors.left: ab_sidebar.right
 
         dialog_text: ab_word_list
         onUpdateWordList:
@@ -241,6 +264,10 @@ ApplicationWindow
         onUpdateDifWords:
         {
             setDifWords(dif_words);
+        }
+        onEnableButtons:
+        {
+            ab_sidebar.enableButtons(enable);
         }
     }
 
@@ -283,11 +310,6 @@ ApplicationWindow
         }
     }
 
-    Component.onCompleted:
-    {
-        loadWordList();
-    }
-
     //Fonts:
     FontLoader
     {
@@ -315,7 +337,7 @@ ApplicationWindow
                 {
                     audioPlayer.pause();
                     ab_status = ab_const.ab_STATUS_PAUSE;
-                    setStatus(ab_const.ab_STATUS_PAUSE);
+                    setStatus(ab_status);
                     verify_dialog.dialog_label = "Are you sure "+
                                          "you want to delete?\n"+
                                          "( Yes:space / No:q )"
@@ -328,14 +350,14 @@ ApplicationWindow
                 if( ab_status===ab_const.ab_STATUS_REC ||
                     ab_status===ab_const.ab_STATUS_BREAK )
                 {
-                    ab_status = ab_STATUS_REQPAUSE;
-                    setStatus(ab_const.ab_STATUS_REQPAUSE);
+                    ab_status = ab_const.ab_STATUS_REQPAUSE;
+                    setStatus(ab_status);
                 }
                 else if( ab_status===ab_const.ab_STATUS_PAUSE ||
                          ab_status===ab_const.ab_STATUS_STOP )
                 {
                     ab_status = ab_const.ab_STATUS_REC;
-                    setStatus(ab_const.ab_STATUS_REC);
+                    setStatus(ab_status);
                 }
             }
         }
@@ -367,23 +389,16 @@ ApplicationWindow
         else if( key===Qt.Key_V )
         {
             ab_status = ab_const.ab_STATUS_STOP;
-            setStatus(ab_const.ab_STATUS_STOP);
+            setStatus(ab_status);
             audioPlayer.stop()
             if( ab_verifier )
             {
                 ab_verifier = 0;
-                setVerifier(0);
             }
             else
             {
                 ab_verifier = 1;
-                setVerifier(1);
             }
-        }
-        else if( key===Qt.Key_W )
-        {
-            loadWordList();
-            editor_dialog.visible = true;
         }
     }
 }
