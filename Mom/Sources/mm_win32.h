@@ -16,6 +16,7 @@ typedef struct MmApplication
     QString shortcut_name;
     QString exe_name;
     QString exe_path;
+    QString working_dir;
     QString win_title;
     DWORD pid = 0;
     QString pname;
