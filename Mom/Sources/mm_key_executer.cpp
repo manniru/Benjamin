@@ -15,7 +15,7 @@ MmKeyExec::MmKeyExec(MmVirt *vi, QObject *parent) : QObject(parent)
     timer->start(2);
 
     launcher_thread = new QThread;
-    launcher = new MmAppLauncher;
+    launcher = new MmAppLauncher(vi);
     launcher->moveToThread(launcher_thread);
     launcher_thread->start();
 }

@@ -13,7 +13,7 @@ class MmKeyExec : public QObject
     Q_OBJECT
 public:
     explicit MmKeyExec(MmVirt *vi,
-                        QObject *parent = nullptr);
+                       QObject *parent = nullptr);
     ~MmKeyExec();
 
     int supress_r = 0; //suprress release flag for win key
