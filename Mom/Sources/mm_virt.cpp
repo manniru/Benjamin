@@ -134,6 +134,22 @@ int MmVirt::getCurrDesktop()
     return -1;
 }
 
+int MmVirt::getDesktop(HWND hwnd)
+{
+    GUID desktopGUID;
+    pDesktopManager->GetWindowDesktopId(hwnd, &desktopGUID);
+
+    for( int i=0 ; i<vd_guids.length() ; i++ )
+    {
+        if( desktopGUID==vd_guids[i] )
+        {
+            return i+1;
+        }
+    }
+
+    return -1;
+}
+
 void MmVirt::sendKey(int key_val)
 {
     pressKey(key_val);

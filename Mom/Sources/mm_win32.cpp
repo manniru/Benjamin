@@ -5,6 +5,7 @@
 #include <QScreen>
 #include <QThread>
 #include <psapi.h>
+#include <dwmapi.h>
 
 HWND hwnd_g = NULL;
 
@@ -13,23 +14,34 @@ BOOL CALLBACK EnumWindowsApp(HWND hwnd, LPARAM lParam)
     MmApplication *app = (MmApplication *)lParam; // requested pname
     QString win_title = mm_getWinTitle(hwnd);
 
-    if( win_title.length() )
+    // skip hidden window
+    if( IsWindowVisible(hwnd)==0 )
     {
-        long pid = mm_getPid(hwnd);
-        QString pname = mm_getPName(pid);
-        pname = QFileInfo(pname).completeBaseName();
-        if( pname==app->exe_name )
+        return TRUE;
+    }
+
+    // skip windows bs windows
+    if( win_title.isEmpty() )
+    {
+        return TRUE;
+    }
+
+    long pid = mm_getPid(hwnd);
+    QString pname = mm_getPName(pid);
+    pname = QFileInfo(pname).completeBaseName();
+    if( pname==app->exe_name )
+    {
+        if( win_title.contains(app->win_title) )
         {
-//            qDebug() << "EnumWindowsProc find HWND"
-//                     << pname << app->exe_name << hwnd
-//                     << win_title;
-            if( win_title.contains(app->win_title) )
-            {
-                hwnd_g = hwnd;
-                return FALSE;
-            }
+            hwnd_g = hwnd;
+            return FALSE;
         }
     }
+
+//    qDebug() << "EnumWindowsProc find HWND"
+//             << pname << app->exe_name << hwnd
+//             << win_title;
+
     return TRUE;
 }
 

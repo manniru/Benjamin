@@ -114,6 +114,7 @@ public:
     ~MmVirt();
 
     int  getCurrDesktop();
+    int  getDesktop(HWND hwnd);
     void switchLastDesktop();
 
     int last_desktop;
