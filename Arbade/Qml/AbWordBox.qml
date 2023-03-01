@@ -11,8 +11,9 @@ Rectangle
     property string word_list: ""
     property string word_stat: ""
     property int start_num: 0
-    property int wl_count: 0
     property int last_box: 0
+    property int commit: 0
+    property int wl_count: 0
 
     signal wordBoxChanged(int id, string word)
     signal newBoxRequired()
@@ -38,11 +39,13 @@ Rectangle
 
             onWordChanged:
             {
-                if( word_id===zeroPad(start_num+wl_count-1) && last_box )
+                var last_id = start_num+wl_count-1;
+                var word_id_int = parseInt(word_id);
+                console.log(word_id_int, last_id, last_box)
+                if( word_id_int===last_id && last_box )
                 {
                     if( wl_count===ab_const.ab_WORDEDIT_BOX_SIZE )
                     {
-                        last_box = 0;
                         newBoxRequired();
                     }
                     else
@@ -53,7 +56,17 @@ Rectangle
                     }
                     newWord();
                 }
-                wordBoxChanged(word_id, word_text);
+                else if( word_id_int===last_id-1 && last_box )
+                {
+                    if( text_w.length===0 )
+                    {
+                        wl_count -= 1;
+                        lm_wordbox.remove(wl_count);
+                    }
+                }
+
+                wordBoxChanged(word_id, text_w);
+                lm_wordbox.get(parseInt(word_id)-start_num).wt = text_w;
             }
         }
     }
@@ -72,21 +85,36 @@ Rectangle
         delegate: ld_wordbox
     }
 
-    onWord_statChanged: // word stat changes after word list
+    onCommitChanged: // commit changes after all property
     {
         updateWords();
     }
 
     function updateWords()
     {
+        var line_count = lm_wordbox.count;
         var wl_split = word_list.split("\n");
-        var wlc_split = word_stat.split("\n");
         wl_count = wl_split.length;
-
-        for( var i=0 ; i<wl_count ; i++ )
+        if( line_count ) // update phase
         {
-            lm_wordbox.append({wid: zeroPad(i+start_num),
-                               wt: wl_split[i], wc: wlc_split[i]});
+            if( line_count>wl_count )
+            {
+                lm_wordbox.remove(wl_count, line_count-wl_count);
+            }
+            for( var j=0 ; j<wl_count ; j++ )
+            {
+                lm_wordbox.get(j).wt = wl_split[j];
+            }
+        }
+        else // creation phase
+        {
+            var wlc_split = word_stat.split("\n");
+
+            for( var i=0 ; i<wl_count ; i++ )
+            {
+                lm_wordbox.append({wid: zeroPad(i+start_num),
+                                   wt: wl_split[i], wc: wlc_split[i]});
+            }
         }
     }
 
