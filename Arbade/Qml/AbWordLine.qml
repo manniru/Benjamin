@@ -14,7 +14,7 @@ Rectangle
     property string word_text: ""
     property string word_count: "0"
 
-    signal wordChanged()
+    signal wordChanged(string text_w)
 
     Rectangle
     {
@@ -70,8 +70,12 @@ Rectangle
 
         onTextChanged:
         {
-            word_text = text;
-            wordChanged();
+            wordChanged(text);
+        }
+
+        Keys.onEscapePressed:
+        {
+            focus_item.forceActiveFocus();
         }
     }
 
@@ -87,6 +91,11 @@ Rectangle
         font.pixelSize: 16
         text: word_count
         color: "#9a9a9a"
+    }
+
+    onWord_textChanged:
+    {
+        text_area.text = word_text;
     }
 }
 

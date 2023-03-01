@@ -406,7 +406,7 @@ void AbManager::setStatus(int status)
     if( status==AB_STATUS_STOP )
     {
         QString stat = ab_getStat(params.category);
-        QQmlProperty::write(root, "ab_stat", stat);
+        QQmlProperty::write(root, "ab_word_stat", stat);
         QString meanvar = ab_getMeanVar();
         QQmlProperty::write(root, "ab_mean_var", meanvar);
     }

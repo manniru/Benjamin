@@ -28,7 +28,6 @@ ApplicationWindow
 
     property string ab_category: "online"
     property string ab_words: "<One> <Roger> <Spotify>"
-    property string ab_stat: "One: 10 Two: 13 ...\nAlpha: 22  ..."
     property string ab_address: ""
     property string ab_focus_word: "<empty>"
     property string ab_word_list: ""
@@ -116,6 +115,7 @@ ApplicationWindow
 
     Item
     {
+        id: focus_item
         focus: true
         Keys.onPressed:
         {
@@ -173,11 +173,6 @@ ApplicationWindow
             editor_box.resetProcess();
         }
     }
-
-//    AbStat
-//    {
-//        grid_text: ab_stat.split('!').filter(Boolean);
-//    }
 
     AbHelp
     {

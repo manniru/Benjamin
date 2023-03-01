@@ -134,20 +134,18 @@ void AbScene::setFocusWord(QString focus_word)
 
 void AbScene::updateStat()
 {
+    loadWordList();
     QString stat = ab_getStat(man->params.category);
-    QQmlProperty::write(root, "ab_stat", stat);
+    QQmlProperty::write(root, "ab_word_stat", stat);
     QString meanvar = ab_getMeanVar();
     QQmlProperty::write(root, "ab_mean_var", meanvar);
     updateCategories();
-    loadWordList();
 }
 
 void AbScene::loadWordList()
 {
     man->params.word_list = man->readWordList();
     QQmlProperty::write(root, "ab_word_list", man->params.word_list);
-    QString word_stat = ab_getStat();
-    QQmlProperty::write(root, "ab_word_stat", word_stat);
 }
 
 void AbScene::saveWordList(QString word_list)
