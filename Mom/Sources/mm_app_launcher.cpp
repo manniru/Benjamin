@@ -42,9 +42,13 @@ void MmAppLauncher::focusOpen(QString shortcut)
 
 void MmAppLauncher::focus(HWND hwnd)
 {
-    int virt_id = virt->getDesktop(hwnd);
-    qDebug() << "virtId" << virt_id << hwnd;
-    virt->setDesktop(virt_id);
+    DWORD windowThreadProcessId = GetWindowThreadProcessId(GetForegroundWindow(),LPDWORD(0));
+    DWORD currentThreadId = GetCurrentThreadId();
+    DWORD CONST_SW_SHOW = 5;
+    AttachThreadInput(windowThreadProcessId, currentThreadId, true);
+    BringWindowToTop(hwnd);
+    ShowWindow(hwnd, CONST_SW_SHOW);
+    AttachThreadInput(windowThreadProcessId,currentThreadId, false);
 
     SetForegroundWindow(hwnd);
     SetActiveWindow(hwnd);

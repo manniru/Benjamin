@@ -134,6 +134,7 @@ int MmVirt::getCurrDesktop()
     return -1;
 }
 
+// this function doesnt work
 int MmVirt::getDesktop(HWND hwnd)
 {
     GUID desktopGUID;
