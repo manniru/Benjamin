@@ -106,7 +106,7 @@ void MmWin32Win::update()
     updateActiveWindow();
     wins.clear();
 
-    qDebug() << "-----------START-------------";
+//    qDebug() << "-----------START-------------";
     EnumWindows(EnumWindowsProc, (LPARAM) this);
-    qDebug() << "-----------END-------------";
+//    qDebug() << "-----------END-------------";
 }

@@ -15,10 +15,9 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if( nCode >= 0 )
     {
-        qDebug() << "emul mode:"   << key->emul_mode
-                  << "suppress_r:" << key->suppress_r;
         if( key->emul_mode )
         {
+            qDebug() << "emul mode, suppress_r:" << key->is_mom;
             return CallNextHookEx(NULL, nCode, wParam, lParam);
         }
 
@@ -35,32 +34,11 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
         else if( wParam==WM_KEYUP )
         {
-            if( key_code==VK_LWIN ||
-                key_code==VK_RWIN )
+            int ret = key->procReleaseKey(key_code);
+
+            if( ret )
             {
-                qDebug() << "key win up";
-                if( key->suppress_r==1 ) // only win press
-                {
-                    qDebug() << "key->supress_r=1";
-                    key->key_buf.push_back(VK_LWIN);
-                    key->suppress_r = 0;
-                    key->timer->start(2);
-                    qDebug() << "key->supress_r=0";
-                }
-                else if( key->suppress_r==2 ) // shortcut that not captured
-                {
-                    key->suppress_r = 0;
-                }
-                else if( key->suppress_r==3 ) // captured and should be suppressed
-                {
-                    key->suppress_r = 0;
-                    return 1;
-                }
-                else // this would not happen
-                {
-                    qDebug() << "this would not happen";
-                    key->suppress_r = 0;
-                }
+                return ret;
             }
         }
     }
@@ -71,7 +49,7 @@ MmKeyboard::MmKeyboard(MmVirt *vi, QObject *parent) : QObject(parent)
 {
     state = 0;
     emul_mode = 0;
-    suppress_r = 0;
+    is_mom = 0;
     virt = vi;
     timer = new QTimer;
     connect(timer, SIGNAL(timeout()),
@@ -126,12 +104,10 @@ void MmKeyboard::delayedExec()
 
 int MmKeyboard::procPressKey(int key_code)
 {
-    qDebug() << "procPressKey key code:" << key_code
-             << "suppress_r:"            << suppress_r;
     if( key_code==VK_LWIN ||
         key_code==VK_RWIN )
     {
-        suppress_r = 1;
+        addPressKey(key_code);
         return 1;
     }
     else if( key_code==VK_LSHIFT   ||
@@ -139,34 +115,28 @@ int MmKeyboard::procPressKey(int key_code)
              key_code==VK_LCONTROL ||
              key_code==VK_LCONTROL )
     {
-        if( suppress_r==1 )
+        if( pk_buf.length() )
         {
-            qDebug() << "VK_RSHIFT";
-            suppress_r = 2; //normal
-            emul_mode = 1;
-            e_key->pressKey(VK_LWIN);
-            emul_mode = 0;
+            qDebug() << "VK_CONTROL";
+            addPressKey(key_code);
+            return 1;
         }
     }
     else
     {
-        qDebug() << "##key code:" << key_code
-                 << "suppress_r:" << suppress_r;
-        if( suppress_r==1 || suppress_r==3 )
+        if( pk_buf.length() )
         {
             qDebug() << "execWinKey";
             int ret = exec->execWinKey(key_code);
             if( ret )
             {
-                suppress_r = 3;
-                qDebug() << "supress_r = 3";
+                rk_buf = pk_buf;
+                is_mom = 1;
             }
-            else // shortcut not captured by us
-            {
-                suppress_r = 2; //normal
-                emul_mode = 1;
-                e_key->pressKey(VK_LWIN);
-                emul_mode = 0;
+            else
+            { // press all captured keys
+                qDebug() << "fakePress";
+                fakePress();
             }
             return ret;
         }
@@ -191,8 +161,104 @@ int MmKeyboard::procPressKey(int key_code)
     return 0;
 }
 
+int MmKeyboard::procReleaseKey(int key_code)
+{
+    qDebug() << "procReleaseKey key code:" << key_code
+             << "suppress_r:"              << is_mom;
+
+    if( is_mom==1 ) // a mom shortcut captured
+    {
+        int is_sup = isSuppressed(key_code);
+
+        if( is_sup )
+        {
+            qDebug() << "suppress release";
+            return 1;
+        }
+    }
+    else if( pk_buf.length() )
+    {
+        fakePress();
+    }
+
+    return 0;
+}
+
 //BOOL AppBar_SetSide(HWND hwnd)
 void MmKeyboard::SetSide()
 {
 
+}
+
+void MmKeyboard::fakePress()
+{
+    emul_mode = 1;
+
+    int len = pk_buf.length();
+    for( int i=0 ; i<len ; i++ )
+    {
+        int key = pk_buf[i];
+        e_key->pressKey(key);
+    }
+
+    pk_buf.clear();
+    emul_mode = 0;
+}
+
+void MmKeyboard::fakeRelease(int key_code)
+{
+    qDebug() << "key->supress_r=1";
+    key->key_buf.push_back(key_code);
+    key->timer->start(2);
+    qDebug() << "key->supress_r=0";
+}
+
+// This function will prevent adding duplicate item
+// to the "press key buffer" as holiding a key down
+// result in duplicates
+void MmKeyboard::addPressKey(int key_code)
+{
+    int len = pk_buf.length();
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( key_code==pk_buf[i] )
+        {
+            return;
+        }
+    }
+
+    qDebug() << "addPressKey" << key_code
+             << "is_mom:"     << is_mom;
+    pk_buf.push_back(key_code);
+}
+
+// Release Suppressed
+int MmKeyboard::isSuppressed(int key_code)
+{
+    int len = pk_buf.length();
+
+    if( len==0 )
+    {
+        return 0;
+    }
+
+    qDebug() << "isSuppressed"
+             << len;
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( key_code==pk_buf[i] )
+        {
+            pk_buf.remove(i);
+            if( pk_buf.length()==0 )
+            {
+                qDebug() << "is_mom RESET";
+                is_mom = 0;
+            }
+            return 1;
+        }
+    }
+
+    return 0;
 }

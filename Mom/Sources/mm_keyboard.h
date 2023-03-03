@@ -25,8 +25,13 @@ public:
                         QObject *parent = nullptr);
     ~MmKeyboard();
 
-    int procPressKey(int key_code);
-    int suppress_r = 0; // suprress release flag for win key
+    // need to be public to be called from a callback
+    int  procPressKey(int key_code);
+    int  procReleaseKey(int key_code);
+
+    // become 1 if a mom shortcut pressed and it shouldn't
+    // be passed to windows
+    int is_mom = 0;
     int emul_mode = 0; // dont interfere if we are pressing keys
                        // emulation (fake) keys are on going
     MmKeyEmulator *e_key;
@@ -40,6 +45,11 @@ private slots:
 private:
     void SetSide();
     void goToSleep();
+    void fakePress();
+    void fakeRelease(int key_code);
+    //return true if the key_code is inside the captured key
+    int  isSuppressed(int key_code);
+    void addPressKey(int key_code);
 
     HHOOK hHook = NULL;
     int state;
@@ -47,6 +57,8 @@ private:
 
     QThread *exec_thread;
     MmKeyExec *exec;
+    QVector<int> pk_buf; // pressed keys buffer
+    QVector<int> rk_buf; // release keys buffer
 };
 
 void mm_setKeyboard(MmKeyboard *val);
