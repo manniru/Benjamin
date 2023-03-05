@@ -8,6 +8,13 @@
 #include "mm_virt.h"
 #include "mm_lua.h"
 
+typedef struct MmKbState
+{
+    int shift_down = 0;
+    int ctrl_down  = 0;
+    int alt_down   = 0;
+} MmKbState;
+
 class MmKeyExec : public QObject
 {
     Q_OBJECT
@@ -18,7 +25,7 @@ public:
 
     int supress_r = 0; //suprress release flag for win key
     int win_p = 0;
-    int execWinKey(int key_code);
+    int execWinKey(int key_code, MmKbState st);
     void goToSleep(int *emul_mode);
 
 public slots:
@@ -26,6 +33,7 @@ public slots:
 
 private:
     int execWinNum(int key_code);
+    int execShiftWin(int key_code);
 
     QTimer *timer;
     MmLua *lua;

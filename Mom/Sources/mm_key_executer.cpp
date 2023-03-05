@@ -57,8 +57,13 @@ int MmKeyExec::execWinNum(int key_code)
     return 0;
 }
 
-int MmKeyExec::execWinKey(int key_code)
+int MmKeyExec::execWinKey(int key_code, MmKbState st)
 {
+    if( st.shift_down )
+    {
+        return execShiftWin(key_code);
+    }
+
     QString shortcut;
 
     if( key_code>='1' &&
@@ -118,6 +123,17 @@ int MmKeyExec::execWinKey(int key_code)
         state = virt->last_desktop;
         return 1;
     }
+    return 0;
+}
+
+int MmKeyExec::execShiftWin(int key_code)
+{
+    if( key_code=='A' )
+    {
+        state = 'a';
+        return 1;
+    }
+
     return 0;
 }
 

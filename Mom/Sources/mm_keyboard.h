@@ -50,6 +50,7 @@ private:
     //return true if the key_code is inside the captured key
     int  isSuppressed(int key_code);
     void addPressKey(int key_code);
+    MmKbState getState();
 
     HHOOK hHook = NULL;
     int state;
@@ -58,7 +59,6 @@ private:
     QThread *exec_thread;
     MmKeyExec *exec;
     QVector<int> pk_buf; // pressed keys buffer
-    QVector<int> rk_buf; // release keys buffer
 };
 
 void mm_setKeyboard(MmKeyboard *val);

@@ -127,10 +127,10 @@ int MmKeyboard::procPressKey(int key_code)
         if( pk_buf.length() )
         {
             qDebug() << "execWinKey";
-            int ret = exec->execWinKey(key_code);
+            MmKbState state = getState();
+            int ret = exec->execWinKey(key_code, state);
             if( ret )
             {
-                rk_buf = pk_buf;
                 is_mom = 1;
             }
             else
@@ -261,4 +261,31 @@ int MmKeyboard::isSuppressed(int key_code)
     }
 
     return 0;
+}
+
+MmKbState MmKeyboard::getState()
+{
+    MmKbState state;
+    int len = pk_buf.length();
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( pk_buf[i]==VK_LSHIFT ||
+            pk_buf[i]==VK_RSHIFT )
+        {
+            state.shift_down = 1;
+        }
+        else if( pk_buf[i]==VK_LCONTROL ||
+                 pk_buf[i]==VK_RCONTROL )
+        {
+            state.ctrl_down = 1;
+        }
+//        else if( pk_buf[i]==VK_ ||
+//                 pk_buf[i]==VK_RSHIFT )
+//        {
+//            state.shift_down = 1;
+//        }
+    }
+
+    return state;
 }
