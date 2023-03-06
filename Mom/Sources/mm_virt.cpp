@@ -18,9 +18,21 @@ MmVirt::MmVirt(QObject *parent): QObject(parent)
                         CLSID_ImmersiveShell, NULL, CLSCTX_LOCAL_SERVER,
                         __uuidof(IServiceProvider), (PVOID*)&pServiceProvider); 
 
-    hr = pServiceProvider->QueryService(CLSID_VirtualDesktopManager,
+    hr = pServiceProvider->QueryService(IID_IVirtualDesktopManager,
                                         IID_IVirtualDesktopManager,
                                         (void **)&pDesktopManager);
+    if( hr )
+    {
+        qDebug() << "VirtualDesktopManager Failed" << hr;
+    }
+
+    hr = pServiceProvider->QueryService(IID_IApplicationViewCollection,
+                                        IID_IApplicationViewCollection,
+                                        (void **)&pAppViewCol);
+    if( hr )
+    {
+        qDebug() << "IApplicationViewCollection Failed" << hr;
+    }
 
     hr = pServiceProvider->QueryService(CLSID_VirtualDesktopAPI_Unknown,
                                         IID_IVirtualDesktopManagerInternal,
@@ -77,6 +89,22 @@ void MmVirt::setDesktop(int id)
         last_desktop = current_desktop;
         current_desktop = id + 1;
     }
+}
+
+void MmVirt::moveToDesktop(int id)
+{
+    HWND hwnd = GetForegroundWindow();
+    IApplicationView *view;
+    HRESULT res = pAppViewCol->GetViewForHwnd(hwnd, &view);
+
+    qDebug() << "GetViewForHwnd" << QString::number(res, 16);
+    qDebug() << "GetViewForHwnd" << GetLastError();
+
+    res = pDesktopManagerInt->MoveViewToDesktop(view, vd_desks[id]);
+
+
+    qDebug() << "moveToDesktop" << QString::number(res, 16);
+    qDebug() << "moveToDesktop" << GetLastError();
 }
 
 int MmVirt::isCurrentActive()

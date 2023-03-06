@@ -117,7 +117,6 @@ int MmKeyboard::procPressKey(int key_code)
     {
         if( pk_buf.length() )
         {
-            qDebug() << "VK_CONTROL";
             addPressKey(key_code);
             return 1;
         }
@@ -126,7 +125,7 @@ int MmKeyboard::procPressKey(int key_code)
     {
         if( pk_buf.length() )
         {
-            qDebug() << "execWinKey";
+            qDebug() << "execWinKey" << key_code;
             MmKbState state = getState();
             int ret = exec->execWinKey(key_code, state);
             if( ret )

@@ -38,9 +38,14 @@ void MmKeyExec::delayedExec()
         qDebug() << "PAKAM NAKONID";
         mm_launchScript(RE_WINSCR_DIR"\\git_date.cmd");
     }
-    else if( state )
+    else if( state<10 )
     {
         virt->setDesktop(state-1);
+    }
+    else if( state )
+    {
+        int desktop_id = state-10;
+        virt->moveToDesktop(desktop_id-1);
     }
     state = 0;
 }
@@ -128,9 +133,11 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
 
 int MmKeyExec::execShiftWin(int key_code)
 {
-    if( key_code=='A' )
+    if( key_code>='1' &&
+        key_code<='6' )
     {
-        state = 'a';
+        int id = key_code-'0';
+        state = id+10;
         return 1;
     }
 
