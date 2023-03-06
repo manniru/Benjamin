@@ -101,38 +101,60 @@ IVirtualDesktopManager : public IUnknown
 {
 public:
     virtual HRESULT STDMETHODCALLTYPE IsWindowOnCurrentVirtualDesktop(
-        /* [in] */ __RPC__in HWND topLevelWindow,
+        HWND topLevelWindow,
         /* [out] */ __RPC__out BOOL *onCurrentDesktop) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE GetWindowDesktopId(
-        /* [in] */ __RPC__in HWND topLevelWindow,
+        HWND topLevelWindow,
         /* [out] */ __RPC__out GUID *desktopId) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE MoveWindowToDesktop(
-        /* [in] */ __RPC__in HWND topLevelWindow,
-        /* [in] */ __RPC__in REFGUID desktopId) = 0;
+        HWND topLevelWindow,
+        REFGUID desktopId) = 0;
 };
 
 // Ignore following API's:
 #define IImmersiveApplication UINT
 #define IApplicationViewChangeListener UINT
 
-MIDL_INTERFACE("2c08adf0-a386-4b35-9250-0fe183476fcc")
-    IApplicationViewCollection : public IUnknown
+struct IApplicationViewCollection : public IUnknown
 {
 public:
     /*** IApplicationViewCollection methods ***/
-    STDMETHOD(GetViews)(THIS_ IObjectArray**) PURE;
-    STDMETHOD(GetViewsByZOrder)(THIS_ IObjectArray**) PURE;
-    STDMETHOD(GetViewsByAppUserModelId)(THIS_ PCWSTR, IObjectArray**) PURE;
-    STDMETHOD(GetViewForHwnd)(THIS_ HWND, IApplicationView**) PURE;
-    STDMETHOD(GetViewForApplication)(THIS_ IImmersiveApplication*, IApplicationView**) PURE;
-    STDMETHOD(GetViewForAppUserModelId)(THIS_ PCWSTR, IApplicationView**) PURE;
-    STDMETHOD(GetViewInFocus)(THIS_ IApplicationView**) PURE;
-    STDMETHOD(RefreshCollection)(THIS) PURE;
-    STDMETHOD(RegisterForApplicationViewChanges)(THIS_ IApplicationViewChangeListener*, DWORD*) PURE;
-    STDMETHOD(RegisterForApplicationViewPositionChanges)(THIS_ IApplicationViewChangeListener*, DWORD*) PURE;
-    STDMETHOD(UnregisterForApplicationViewChanges)(THIS_ DWORD) PURE;
+    virtual HRESULT STDMETHODCALLTYPE
+            GetViews(IObjectArray**) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            GetViewsByZOrder(IObjectArray**) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            GetViewsByAppUserModelId(PCWSTR, IObjectArray**) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            GetViewForHwnd(HWND, IApplicationView**) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            GetViewForApplication(IImmersiveApplication*, IApplicationView**) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            GetViewForAppUserModelId(PCWSTR, IApplicationView**) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            GetViewInFocus(IApplicationView**) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            RefreshCollection() = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            RegisterForApplicationViewChanges(
+            IApplicationViewChangeListener*, DWORD*) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            RegisterForApplicationViewPositionChanges(
+            IApplicationViewChangeListener*, DWORD*) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE
+            UnregisterForApplicationViewChanges(DWORD) = 0;
 };
 #endif // _MSC_VER
 

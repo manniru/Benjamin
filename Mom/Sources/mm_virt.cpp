@@ -147,6 +147,11 @@ int MmVirt::getCurrDesktop()
     IVirtualDesktop *currDesktop;
 
     pDesktopManagerInt->GetCurrentDesktop(&currDesktop);
+
+    if( currDesktop==NULL )
+    {
+        qDebug() << "Error 21: Mom is not movable!";
+    }
     GUID curr_DesktopGUID;
     currDesktop->GetID(&curr_DesktopGUID);
     currDesktop->Release();
