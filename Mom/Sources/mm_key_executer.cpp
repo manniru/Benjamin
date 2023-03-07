@@ -8,16 +8,12 @@ MmKeyExec::MmKeyExec(MmVirt *vi, QObject *parent) : QObject(parent)
     state = 0;
     virt = vi;
 
-    lua = new MmLua;
     timer = new QTimer;
     connect(timer, SIGNAL(timeout()),
             this, SLOT(delayedExec()));
     timer->start(2);
 
-    launcher_thread = new QThread;
     launcher = new MmAppLauncher(vi);
-    launcher->moveToThread(launcher_thread);
-    launcher_thread->start();
 }
 
 MmKeyExec::~MmKeyExec()
@@ -29,20 +25,18 @@ void MmKeyExec::delayedExec()
 {
     if( state=='d' )
     {
-        lua->run(); // lua fix ask password bug
-        QThread::msleep(500);
-        mm_launchApp("Firefox", "--remote-debugging-port");
+        launcher->openFirefox();
     }
     else if( state=='a' )
     {
         qDebug() << "PAKAM NAKONID";
         mm_launchScript(RE_WINSCR_DIR"\\git_date.cmd");
     }
-    else if( state<10 )
+    else if( state>0 && state<10 )
     {
         virt->setDesktop(state-1);
     }
-    else if( state )
+    else if( state ) // Super+Shift+#
     {
         int desktop_id = state-10;
         virt->moveToDesktop(desktop_id-1);
@@ -98,21 +92,21 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
     else if( key_code=='S' )
     {
         shortcut = "Spotify";
-        launcher->focusOpen(shortcut);
+        launcher->focusOpen(shortcut, 4);
 
         return 1;
     }
     else if( key_code=='T' )
     {
         shortcut = "Telegram Desktop\\Telegram";
-        launcher->focusOpen(shortcut);
+        launcher->focusOpen(shortcut, 3);
 
         return 1;
     }
     else if( key_code=='W' )
     {
         shortcut = "GitKraken\\GitKraken";
-        launcher->focusOpen(shortcut);
+        launcher->focusOpen(shortcut, 4);
 
         return 1;
     }

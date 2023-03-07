@@ -6,7 +6,6 @@
 #include <QVector>
 #include "mm_app_launcher.h"
 #include "mm_virt.h"
-#include "mm_lua.h"
 
 typedef struct MmKbState
 {
@@ -36,11 +35,9 @@ private:
     int execShiftWin(int key_code);
 
     QTimer *timer;
-    MmLua *lua;
     MmVirt *virt;
     int state;
 
-    QThread *launcher_thread;
     MmAppLauncher *launcher;
 };
 

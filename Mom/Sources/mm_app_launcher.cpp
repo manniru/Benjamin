@@ -1,10 +1,12 @@
 #include "mm_app_launcher.h"
 #include <QFileInfo>
+#include <QThread>
 
 MmAppLauncher::MmAppLauncher(MmVirt *vi, QObject *parent)
                             : QObject(parent)
 {
     virt = vi;
+    lua = new MmLua;
 }
 
 MmAppLauncher::~MmAppLauncher()
@@ -26,7 +28,7 @@ MmApplication MmAppLauncher::getApplication(QString shortcut_name,
     return app;
 }
 
-void MmAppLauncher::focusOpen(QString shortcut)
+void MmAppLauncher::focusOpen(QString shortcut, int desktop_id)
 {
     MmApplication app = getApplication(shortcut, "");
 
@@ -36,6 +38,14 @@ void MmAppLauncher::focusOpen(QString shortcut)
     }
     else
     {
+        if( desktop_id!=-1 )
+        {
+            qDebug() << "1 focusOpen" << desktop_id << virt;
+            virt->setDesktop(desktop_id);
+            qDebug() << "2 NAKONID";
+            QThread::msleep(5000);
+            qDebug() << "3 NAKONID";
+        }
         mm_launchApp(shortcut);
     }
 }
@@ -53,4 +63,21 @@ void MmAppLauncher::focus(HWND hwnd)
     SetForegroundWindow(hwnd);
     SetActiveWindow(hwnd);
     SetFocus(hwnd);
+}
+
+void MmAppLauncher::openFirefox()
+{
+    MmApplication app = getApplication("Firefox", "");
+
+    if( app.hwnd )
+    {
+        focus(app.hwnd);
+    }
+    else
+    {
+        lua->run(); // lua fix ask password bug
+        virt->setDesktop(4);
+        QThread::msleep(200);
+        mm_launchApp("Firefox", "--remote-debugging-port");
+    }
 }
