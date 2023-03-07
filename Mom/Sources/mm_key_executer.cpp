@@ -21,6 +21,8 @@ MmKeyExec::~MmKeyExec()
     ;
 }
 
+// delayed exec introduced because virtual desktop
+// is sensetive to the thread it's called from
 void MmKeyExec::delayedExec()
 {
     if( state=='d' )
@@ -29,8 +31,27 @@ void MmKeyExec::delayedExec()
     }
     else if( state=='a' )
     {
-        qDebug() << "PAKAM NAKONID";
         mm_launchScript(RE_WINSCR_DIR"\\git_date.cmd");
+    }
+    else if( state=='s' )
+    {
+        QString shortcut = "Spotify";
+        launcher->focusOpen(shortcut, 4);
+    }
+    else if( state=='t' )
+    {
+        QString shortcut = "Telegram Desktop\\Telegram";
+        launcher->focusOpen(shortcut, 3);
+    }
+    else if( state=='w' )
+    {
+        QString shortcut = "GitKraken\\GitKraken";
+        launcher->focusOpen(shortcut, 4);
+    }
+    else if( state=='y' )
+    {
+        QString shortcut = "Visual Studio Code\\Visual Studio Code";
+        launcher->focusOpen(shortcut);
     }
     else if( state>0 && state<10 )
     {
@@ -89,32 +110,24 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
 
         return 1;
     }
-    else if( key_code=='S' )
+    else if( key_code=='S' ) // Spotify
     {
-        shortcut = "Spotify";
-        launcher->focusOpen(shortcut, 4);
-
+        state = 's';
         return 1;
     }
     else if( key_code=='T' )
     {
-        shortcut = "Telegram Desktop\\Telegram";
-        launcher->focusOpen(shortcut, 3);
-
+        state = 't';
         return 1;
     }
     else if( key_code=='W' )
     {
-        shortcut = "GitKraken\\GitKraken";
-        launcher->focusOpen(shortcut, 4);
-
+        state = 'w';
         return 1;
     }
     else if( key_code=='Y' )
     {
-        shortcut = "Visual Studio Code\\Visual Studio Code";
-        launcher->focusOpen(shortcut);
-
+        state = 'y';
         return 1;
     }
     else if( key_code==VK_OEM_7 ) // Quote '

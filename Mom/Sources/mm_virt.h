@@ -170,6 +170,8 @@ public:
     void switchLastDesktop();
 
     int last_desktop;
+    // if called from outside thread this is a better
+    // way to check other wise seg fault will result
     int current_desktop;
 
     void sendKey(int key_val);
@@ -189,7 +191,7 @@ private:
     QVector<IVirtualDesktop *> vd_desks;
     IVirtualDesktopManager         *pDesktopManager;
     IApplicationViewCollection     *pAppViewCol;
-    IVirtualDesktopManagerInternal *pDesktopManagerInt;
+    IVirtualDesktopManagerInternal *manager_int;
     MmWin32Win *win_lister;
 };
 

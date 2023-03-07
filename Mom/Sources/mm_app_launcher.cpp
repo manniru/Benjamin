@@ -40,11 +40,8 @@ void MmAppLauncher::focusOpen(QString shortcut, int desktop_id)
     {
         if( desktop_id!=-1 )
         {
-            qDebug() << "1 focusOpen" << desktop_id << virt;
             virt->setDesktop(desktop_id);
-            qDebug() << "2 NAKONID";
-            QThread::msleep(5000);
-            qDebug() << "3 NAKONID";
+            QThread::msleep(50);
         }
         mm_launchApp(shortcut);
     }

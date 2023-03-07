@@ -11,6 +11,11 @@ void mm_getLinkPath(QString path, MmApplication *app)
     if( app->exe_path.isEmpty() )
     {
         mm_getLinkPathAll(path, app);
+        if( app->exe_path.isEmpty() )
+        {
+            qDebug() << "Error 24: cannot find shortcut"
+                     << path;
+        }
     }
 }
 
@@ -117,7 +122,10 @@ void mm_launchApp(QString app_name, QString arg)
     app_name += ".lnk";
     MmApplication app;
     mm_getLinkPath(app_name, &app);
-    app.exe_path += " " + arg;
+    if( arg.length() )
+    {
+        app.exe_path += " " + arg;
+    }
 
     PROCESS_INFORMATION ProcessInfo; //This is what we get as an [out] parameter
     STARTUPINFOA StartupInfo; //This is an [in] parameter
@@ -133,10 +141,12 @@ void mm_launchApp(QString app_name, QString arg)
                              NULL, FALSE, 0, NULL,
                              app.working_dir.toStdString().c_str(),
                              &StartupInfo, &ProcessInfo);
-    if( ret == 0 )
+    if( ret==0 )
     {
         long last_error = GetLastError();
-        qDebug() << "CreateProcess failed" << last_error;
+        qDebug() << "Error 26: CreateProcess failed" << last_error
+                 << "path" << app.exe_path
+                 << "dir" << app.working_dir;
     }
 }
 
@@ -158,9 +168,10 @@ void mm_launchScript(QString path, QString arg)
                              NULL, FALSE, 0, NULL,
                              NULL, &StartupInfo,
                              &ProcessInfo);
-    if( ret == 0 )
+    if( ret==0 )
     {
         long last_error = GetLastError();
-        qDebug() << "CreateProcess failed" << last_error;
+        qDebug() << "Error 25: CreateProcess failed" << last_error
+                 << "path" << path;
     }
 }

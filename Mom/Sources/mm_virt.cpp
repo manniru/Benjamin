@@ -10,7 +10,7 @@
 
 MmVirt::MmVirt(QObject *parent): QObject(parent)
 {
-    pDesktopManagerInt = NULL;
+    manager_int = NULL;
     CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
     IServiceProvider* pServiceProvider = NULL;
@@ -36,7 +36,7 @@ MmVirt::MmVirt(QObject *parent): QObject(parent)
 
     hr = pServiceProvider->QueryService(CLSID_VirtualDesktopAPI_Unknown,
                                         IID_IVirtualDesktopManagerInternal,
-                                        (void **)&pDesktopManagerInt);
+                                        (void **)&manager_int);
     pServiceProvider->Release();
 
     updateGUID();
@@ -49,7 +49,7 @@ MmVirt::MmVirt(QObject *parent): QObject(parent)
 
 MmVirt::~MmVirt()
 {
-    pDesktopManagerInt->Release();
+    manager_int->Release();
 }
 
 void MmVirt::updateGUID()
@@ -57,7 +57,7 @@ void MmVirt::updateGUID()
     IObjectArray *desktops;
     IVirtualDesktop *c_desktop;
 
-    pDesktopManagerInt->GetDesktops(&desktops);
+    manager_int->GetDesktops(&desktops);
     UINT count;
     desktops->GetCount(&count);
 
@@ -83,7 +83,7 @@ void MmVirt::setDesktop(int id)
         {
             return;
         }
-        int res = pDesktopManagerInt->SwitchDesktop(vd_desks[id]);
+        manager_int->SwitchDesktop(vd_desks[id]);
 //        qDebug() << "setDesktop" << res;
         setFocus();
         last_desktop = current_desktop;
@@ -100,7 +100,7 @@ void MmVirt::moveToDesktop(int id)
     qDebug() << "GetViewForHwnd" << QString::number(res, 16);
     qDebug() << "GetViewForHwnd" << GetLastError();
 
-    res = pDesktopManagerInt->MoveViewToDesktop(view, vd_desks[id]);
+    res = manager_int->MoveViewToDesktop(view, vd_desks[id]);
 
 
     qDebug() << "moveToDesktop" << QString::number(res, 16);
@@ -144,9 +144,10 @@ void MmVirt::setFocus()
 
 int MmVirt::getCurrDesktop()
 {
+    HRESULT hr;
     IVirtualDesktop *currDesktop;
 
-    pDesktopManagerInt->GetCurrentDesktop(&currDesktop);
+    hr = manager_int->GetCurrentDesktop(&currDesktop);
 
     if( currDesktop==NULL )
     {
@@ -160,7 +161,8 @@ int MmVirt::getCurrDesktop()
     {
         if( curr_DesktopGUID==vd_guids[i] )
         {
-            return i+1;
+            current_desktop = i+1;
+            return current_desktop;
         }
     }
 
