@@ -29,11 +29,12 @@ ApplicationWindow
     property string ab_category: "online"
     property string ab_words: "<One> <Roger> <Spotify>"
     property string ab_address: ""
-    property string ab_focus_word: "<empty>"
     property string ab_word_list: ""
     property string ab_word_stat: ""
     property string ab_auto_comp: ""
     property string ab_mean_var: ""
+    property string ab_focus_text: ""
+    property int ab_focus_word: -1
     property int ab_count: 0
     property int ab_total_count: 100
     property real ab_elapsed_time: 0
@@ -52,11 +53,11 @@ ApplicationWindow
     signal sendKey(int key)
     signal setStatus(int st)
     signal setVerifier(int ver)
+    signal setFocusWord(int fw)
     signal setTotalCount(int val)
     signal saveWordList(string wl)
     signal setCategory(string cat)
     signal setDifWords(string dif)
-    signal setFocusWord(string fw)
 
     onAb_verifierChanged:
     {
@@ -127,8 +128,8 @@ ApplicationWindow
     {
         id: ab_sidebar
         width: 400
+        height: childrenRect.height
         anchors.top: parent.top
-        anchors.bottom: ab_help.top
         anchors.left: parent.left
         anchors.leftMargin: 50
 
@@ -162,16 +163,7 @@ ApplicationWindow
             }
         }
         power: ab_power
-        focus_word: ab_focus_word
-
-        onSaveClicked:
-        {
-            editor_box.saveProcess();
-        }
-        onResetClicked:
-        {
-            editor_box.resetProcess();
-        }
+        focus_word: ab_focus_text
     }
 
     AbHelp
@@ -212,11 +204,11 @@ ApplicationWindow
             {
                 if( dialog_text=="" )
                 {
-                    ab_focus_word = "<empty>";
+                    ab_focus_word = -1;
                 }
                 else
                 {
-                    ab_focus_word = dialog_text;
+                    ab_focus_word = parseInt(dialog_text);
                 }
             }
         }
@@ -242,14 +234,56 @@ ApplicationWindow
         }
     }
 
+    MouseArea
+    {
+        anchors.fill: parent
+
+        onClicked: focus_item.forceActiveFocus();
+    }
+
+    AbButton
+    {
+        id: save_button
+        text: "Save"
+        width: .7*ab_sidebar.width
+        anchors.horizontalCenter: ab_sidebar.horizontalCenter
+        anchors.top: ab_sidebar.bottom
+        anchors.topMargin: 60
+        enabled: false
+
+        onClick:
+        {
+            editor_box.saveProcess();
+        }
+    }
+
+    AbButton
+    {
+        id: reset_button
+        text: "Reset"
+        width: .7*ab_sidebar.width
+        anchors.horizontalCenter: ab_sidebar.horizontalCenter
+        anchors.top: save_button.bottom
+        anchors.topMargin: 15
+        enabled: false
+
+        onClick:
+        {
+            editor_box.resetProcess();
+        }
+    }
+
     AbEditor
     {
         id: editor_box
 
         anchors.top: parent.top
-        anchors.bottom: ab_help.top
+        anchors.topMargin: 40
         anchors.right: parent.right
+        anchors.rightMargin: 20
         anchors.left: ab_sidebar.right
+        anchors.bottom: ab_help.top
+        anchors.bottomMargin: 65
 
         dialog_text: ab_word_list
         onUpdateWordList:
@@ -262,7 +296,8 @@ ApplicationWindow
         }
         onEnableButtons:
         {
-            ab_sidebar.enableButtons(enable);
+            save_button.enabled = enable;
+            reset_button.enabled = enable;
         }
     }
 
@@ -314,9 +349,10 @@ ApplicationWindow
 
     function execKey(key)
     {
-        if( key===Qt.Key_T || key===Qt.Key_J || key===Qt.Key_K ||
+        if( key===Qt.Key_O || key===Qt.Key_J || key===Qt.Key_K ||
             key===Qt.Key_Up || key===Qt.Key_Down ||
-            key===Qt.Key_Left || key===Qt.Key_Right )
+            key===Qt.Key_Left || key===Qt.Key_Right ||
+            key===Qt.Key_W || key===Qt.Key_T )
         {
             sendKey(key);
         }

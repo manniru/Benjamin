@@ -23,9 +23,6 @@ Rectangle
 
     color: "transparent"
 
-    signal saveClicked()
-    signal resetClicked()
-
     Rectangle
     {
         width: 400
@@ -268,44 +265,6 @@ Rectangle
             font.family: font_name_label
             lineHeight: 1.2
         }
-
-        AbButton
-        {
-            id: save_button
-            text: "Save"
-            width: .7*parent.width
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: var_label.bottom
-            anchors.topMargin: 30
-            enabled: false
-
-            onClick:
-            {
-                saveClicked();
-            }
-        }
-
-        AbButton
-        {
-            id: reset_button
-            text: "Reset"
-            width: .7*parent.width
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: save_button.bottom
-            anchors.topMargin: 15
-            enabled: false
-
-            onClick:
-            {
-                resetClicked();
-            }
-        }
-    }
-
-    function enableButtons(en)
-    {
-        save_button.enabled = en;
-        reset_button.enabled = en;
     }
 
 }
