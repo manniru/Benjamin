@@ -12,9 +12,9 @@ Rectangle
                              "Up:Increase Pause","Down:Decrease Pause",
                              "Right:Increase Word","Left:Decrease Word",
                              "K:Increase Rec Time","J:Decrease Rec Time",
-                             "T:Open Category Directory",
+                             "O:Open Category Directory",
                              "C:Change Count Number","F:Focus Word",
-                             "W:Word List","V:Verify Mode","Q:Close Window"]
+                             "W:All Word Stat","V:Verify Mode","Q:Close Window"]
 
     color: "#262626"
 //    color: "yellow"

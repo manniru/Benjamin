@@ -8,6 +8,7 @@ import QtQuick.Window 2.10
 
 Rectangle
 {
+    height: lv_wordbox.height
     property string word_list: ""
     property string word_stat: ""
     property int start_num: 0
@@ -41,7 +42,6 @@ Rectangle
             {
                 var last_id = start_num+wl_count-1;
                 var word_id_int = parseInt(word_id);
-                console.log(word_id_int, last_id, last_box)
                 if( word_id_int===last_id && last_box )
                 {
                     if( wl_count===ab_const.ab_WORDEDIT_BOX_SIZE )

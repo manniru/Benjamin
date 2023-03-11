@@ -9,7 +9,7 @@ import QtQuick.Window 2.10
 Window
 {
     title: ""
-    height: 120
+    height: 160
     width: 300
     x: (root.width - width) / 2
     y: (root.height - height) / 2
@@ -28,13 +28,27 @@ Window
     property string value_label: "value"
     property string id_label: "ID"
 
+    Text
+    {
+        id: get_value_top_label
+
+        anchors.left: parent.left
+        anchors.leftMargin: 10
+        anchors.top: parent.top
+        anchors.topMargin: 17
+        font.pixelSize: 20
+
+        text: title
+
+        color: "#b4b4b4"
+    }
 
     Text
     {
         id: get_value_label
         anchors.left: parent.left
         anchors.leftMargin: 10
-        anchors.top: parent.top
+        anchors.top: get_value_top_label.bottom
         anchors.topMargin: 17
         font.pixelSize: 20
         text: dialog_label
@@ -47,9 +61,10 @@ Window
         id: get_value_input
         anchors.left: get_value_label.right
         anchors.leftMargin: 10
-        anchors.top: parent.top
+        anchors.top: get_value_top_label.bottom
         anchors.topMargin: 15
         width: parent.width * 0.7
+        color: "white"
         background: Rectangle
         {
             anchors.fill: parent
@@ -84,6 +99,11 @@ Window
             text += suggestion_text.text;
             accept();
         }
+
+        Keys.onEnterPressed:
+        {
+            accept();
+        }
     }
 
     Label
@@ -104,7 +124,7 @@ Window
         anchors.leftMargin: 1
         anchors.verticalCenter: get_value_input.verticalCenter
         font.pixelSize: 16
-        color: "#999"
+//        color: "#999"
         text: "khar"
     }
 
