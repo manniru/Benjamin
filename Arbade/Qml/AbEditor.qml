@@ -8,10 +8,10 @@ import QtQuick.Window 2.10
 
 Rectangle
 {
-    height: 600
-    width: 1200
+    height: contentItem.height
+    width: contentItem.width
     visible: true
-    color: "#2e2e2e"
+    color: "transparent"
 
     property string dialog_text: ""
     property string dif_words: ""
@@ -23,6 +23,12 @@ Rectangle
     signal updateWordList(string word_list)
     signal updateDifWords(string dif_words)
     signal enableButtons(int enable)
+
+    MouseArea
+    {
+        anchors.fill: parent
+        onClicked: focus_item.forceActiveFocus();
+    }
 
     ListModel
     {
@@ -82,12 +88,10 @@ Rectangle
         id: scroller
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.topMargin: 40
         anchors.right: parent.right
-        anchors.rightMargin: 10
         anchors.bottom: parent.bottom
         width: parent.width
-        height: parent.height
+        height: lv_wordedit.height
         contentWidth: lv_wordedit.childrenRect.width + 20
         clip : true
 
@@ -96,6 +100,7 @@ Rectangle
         ListView
         {
             id: lv_wordedit
+            height: childrenRect.height
             anchors.fill: parent
             orientation: ListView.Horizontal
             spacing: 40

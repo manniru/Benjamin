@@ -26,7 +26,7 @@ private slots:
     void saveWordList(QString word_list);
     void setCategory(QString cat);
     void setDifWords(QString difwords);
-    void setFocusWord(QString focus_word);
+    void setFocusWord(int focus_word);
 
 private:
     void fillRecParams();
@@ -41,6 +41,7 @@ private:
     AbRecParam *rec_params;
     QTimer *break_timer;
     QStringList unverified_list;
+    int catmode = 0;
 };
 
 #endif // ABSCENE_H

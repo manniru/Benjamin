@@ -36,9 +36,9 @@ QString ab_getStat(QString category)
         {
             tot_count[j] += count[j];
         }
-        cat_mean = ab_meanCount(count);
-        cat_var = ab_varCount(count, cat_mean);
     }
+    cat_mean = ab_meanCount(tot_count);
+    cat_var = ab_varCount(tot_count, cat_mean);
 
     QString result;
     for( int i=0 ; i<len ; i++ )
