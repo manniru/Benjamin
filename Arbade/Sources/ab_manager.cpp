@@ -154,7 +154,7 @@ QString AbManager::getRandPath(QString category)
     QVector<AbWord> words;
     int fix_word_index = -1;
 
-    if( params.focus_word.length() && params.focus_word!="<empty>" )
+    if( params.focus_word>=0 && params.focus_word<lexicon.size() )
     {
         fix_word_index = rand()%AB_WORD_LEN;
     }
@@ -166,7 +166,7 @@ QString AbManager::getRandPath(QString category)
             if( fix_word_index==i )
             {
                 bool ok=false;
-                word_id[i] = params.focus_word.toInt(&ok);
+                word_id[i] = params.focus_word;
                 if(!ok || word_id[i]<0 || word_id[i]>=lexicon_size )
                 {
                     word_id[i] = rand()%lexicon_size;
@@ -366,6 +366,11 @@ QString AbManager::wordToId(QVector<AbWord> result)
     }
 
     return buf;
+}
+
+QString AbManager::idToWords(int id)
+{
+    return word_list[id];
 }
 
 QString AbManager::idsToWords(QVector<int> ids)

@@ -12,9 +12,9 @@
 typedef struct AbRecParam
 {
     QString category;
-    QString focus_word;
     QString word_list;
     QString dif_words;
+    int   focus_word;
     int   count;
     int   total_count;
     int   status;
@@ -33,11 +33,13 @@ public:
 
     void record();
     void swapParams();
-    void readWave(QString filename);
     void writeWordList();
-    QString readWordList();
-    void copyToOnline(QString filename);
     void delWordSamples();
+    void readWave(QString filename);
+    void copyToOnline(QString filename);
+    QString readWordList();
+    QString idToWords(int id);
+    QString idsToWords(QVector<int> ids);
 
     AbRecParam params;
     AbRecParam p_backup;
@@ -54,22 +56,21 @@ private slots:
     void updateTime(int percent);
 
 private:
-    QString getRandPath(QString category);
     void loadWordList();
-    QString getFileName(QVector<AbWord> words, QString category);
-    QString wordToId(QVector<AbWord> result);
-    void printWords(QVector<AbWord> words);
-    QString idsToWords(QVector<int> ids);
-    int wordToIndex(QString word);
     void setStatus(int status);
+    void printWords(QVector<AbWord> words);
+    int wordToIndex(QString word);
+    QString getRandPath(QString category);
+    QString wordToId(QVector<AbWord> result);
+    QString getFileName(QVector<AbWord> words, QString category);
 
     QObject* root;//root qml object
-    QStringList lexicon;
+    QTimer *read_timer;
     AbRecorder *rec;
     AbWavWriter *wav_wr;
     AbWavReader *wav_rd;
-    QTimer *read_timer;
     QString wav_path;
+    QStringList lexicon;
     QStringList  word_list;
     int r_counter;
 };

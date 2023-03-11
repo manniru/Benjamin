@@ -27,8 +27,8 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setCategory(QString)));
     connect(root, SIGNAL(setDifWords(QString)),
             this, SLOT(setDifWords(QString)));
-    connect(root, SIGNAL(setFocusWord(QString)),
-            this, SLOT(setFocusWord(QString)));
+    connect(root, SIGNAL(setFocusWord(int)),
+            this, SLOT(setFocusWord(int)));
 
     readQmlProperties();
     updateStat();
@@ -44,8 +44,8 @@ void AbScene::readQmlProperties()
     man->params.verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     man->params.rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
     man->params.pause_time = QQmlProperty::read(root, "ab_pause_time").toFloat();
-    man->params.focus_word = QQmlProperty::read(root, "ab_focus_word").toString();
     man->params.category = QQmlProperty::read(root, "ab_category").toString();
+    setFocusWord(QQmlProperty::read(root, "ab_focus_word").toInt());
 }
 
 void AbScene::setStatus(int status)
@@ -127,15 +127,25 @@ void AbScene::setCategory(QString cat)
     updateStat();
 }
 
-void AbScene::setFocusWord(QString focus_word)
+void AbScene::setFocusWord(int focus_word)
 {
     man->params.focus_word = focus_word;
+    QString focus_text = man->idToWords(focus_word);
+    QQmlProperty::write(root, "ab_focus_text", focus_text);
 }
 
 void AbScene::updateStat()
 {
     loadWordList();
-    QString stat = ab_getStat(man->params.category);
+    QString stat;
+    if( !catmode )
+    {
+        stat = ab_getStat(man->params.category);
+    }
+    else
+    {
+        stat = ab_getStat();
+    }
     QQmlProperty::write(root, "ab_word_stat", stat);
     QString meanvar = ab_getMeanVar();
     QQmlProperty::write(root, "ab_mean_var", meanvar);
@@ -178,7 +188,7 @@ void AbScene::breakTimeout()
 
 void AbScene::processKey(int key)
 {
-    if( key==Qt::Key_T )
+    if( key==Qt::Key_O )
     {
         QString path = QDir::currentPath() + "\\";
         path.replace('/', '\\');
@@ -234,6 +244,16 @@ void AbScene::processKey(int key)
         num_words++;
         man->params.num_words = num_words;
         QQmlProperty::write(root, "ab_num_words", num_words);
+    }
+    else if( key==Qt::Key_W )
+    {
+        catmode = !catmode;
+        updateStat();
+    }
+    else if( key==Qt::Key_T )
+    {
+        qDebug() << "TRAINING STARTED ....";
+        //man->doSomething();
     }
     else
     {
