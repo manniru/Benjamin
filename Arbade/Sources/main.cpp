@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 #include "ab_scene.h"
+#include "ab_train.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,6 +14,7 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     QObject *mainItem = engine.rootObjects().first();
     AbScene scene(mainItem);
+    AbTrain train(mainItem);
 
     return app.exec();
 }
