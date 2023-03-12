@@ -9,7 +9,7 @@ import QtQuick.Window 2.10
 Window
 {
     title: "Delete File ?"
-    height: accept_label.height + 100
+    height: accept_label.height + 110
     width: accept_label.width + 40
     property string dialog_result: ""
     property string dialog_label: ""
@@ -24,7 +24,7 @@ Window
     {
         id: accept_label
         anchors.top: parent.top
-        anchors.topMargin: 40
+        anchors.topMargin: 30
         anchors.left: parent.left
         anchors.leftMargin: 20
         font.pixelSize: 20
@@ -54,8 +54,8 @@ Window
         width: (parent.width-45)/2
         anchors.left: parent.left
         anchors.leftMargin: 15
-        anchors.top: accept_label.bottom
-        anchors.topMargin: 10
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 25
         DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
 
         onClick:
@@ -71,8 +71,8 @@ Window
         width: (parent.width-45)/2
         anchors.right: parent.right
         anchors.rightMargin: 15
-        anchors.top: accept_label.bottom
-        anchors.topMargin: 10
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 25
         DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
 
         onClick:

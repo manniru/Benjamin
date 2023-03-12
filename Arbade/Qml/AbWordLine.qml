@@ -13,8 +13,12 @@ Rectangle
     property string word_id: ""
     property string word_text: ""
     property string word_count: "0"
+    property int    set_focus: 0
 
     signal wordChanged(string text_w)
+    signal arrowPressed(int direction)
+    signal setFocusNum(int id)
+    signal removeLine()
 
     Rectangle
     {
@@ -77,6 +81,25 @@ Rectangle
         {
             focus_item.forceActiveFocus();
         }
+
+        Keys.onPressed:
+        {
+            if( event.key===Qt.Key_Backspace && text==="" &&
+                parseInt(word_id)===editor_box.word_count-2 )
+            {
+                removeLine()
+            }
+            else if( event.key===Qt.Key_Up ||
+                     event.key===Qt.Key_Down )
+            {
+                arrowPressed(event.key);
+            }
+        }
+
+        onFocusChanged:
+        {
+            setFocusNum(parseInt(word_id));
+        }
     }
 
     Label
@@ -91,6 +114,15 @@ Rectangle
         font.pixelSize: 16
         text: word_count
         color: "#9a9a9a"
+    }
+
+    onSet_focusChanged:
+    {
+        if( set_focus )
+        {
+            text_area.forceActiveFocus();
+            text_area.cursorPosition = text_area.text.length;
+        }
     }
 
     onWord_textChanged:
