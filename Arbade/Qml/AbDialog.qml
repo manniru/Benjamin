@@ -7,7 +7,7 @@ import QtQuick.Controls 2.3
 import QtQuick.Window 2.10
 
 Window
-{
+{   
     title: ""
     height: 160
     width: 300
@@ -18,9 +18,11 @@ Window
     property string botton_text: "#b6b6b6"
     property color  botton_bg: "#4d4d4d"
     property color  botton_hbg: "#666"
-    property string dialog_text: ""
+    property string dialog_val: ""
     property string dialog_label: ""
-    property var auto_complete_list:[]
+    property string dialog_text: ""
+    property int    dialog_width: width
+    property var    auto_complete_list:[]
 
     property string category_title: "Set Category"
     property string focus_word_title: "Enter Focus Word ID"
@@ -38,94 +40,102 @@ Window
         anchors.topMargin: 17
         font.pixelSize: 20
 
-        text: title
+        text: dialog_text
 
         color: "#b4b4b4"
     }
 
-    Text
+    Rectangle
     {
-        id: get_value_label
-        anchors.left: parent.left
-        anchors.leftMargin: 10
-        anchors.top: get_value_top_label.bottom
-        anchors.topMargin: 17
-        font.pixelSize: 20
-        text: dialog_label
-        height: 40
-        color: "#b4b4b4"
-    }
-
-    TextField
-    {
-        id: get_value_input
-        anchors.left: get_value_label.right
-        anchors.leftMargin: 10
+        height: childrenRect.height
+        width: childrenRect.width
         anchors.top: get_value_top_label.bottom
         anchors.topMargin: 15
-        width: parent.width * 0.7
-        color: "white"
-        background: Rectangle
+        anchors.horizontalCenter: parent.horizontalCenter
+        color: "transparent"
+
+        Text
         {
-            anchors.fill: parent
-            color: "#666666"
+            id: get_value_label
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.topMargin: 2
+            font.pixelSize: 20
+            text: dialog_label
+            height: 40
+            color: "#b4b4b4"
         }
 
-        text: "Input text"
-        font.pixelSize: 16
-
-        focus: true
-        Keys.onReturnPressed: get_value_dialog.accept()
-
-        onTextChanged:
+        TextField
         {
-            suggestion_text.text = ""
-            if( title===category_title && text.length )
+            id: get_value_input
+            anchors.left: get_value_label.right
+            anchors.leftMargin: 10
+            anchors.top: parent.top
+            width: dialog_width * 0.7
+            color: "white"
+            background: Rectangle
             {
-                for( var i=0 ; i<auto_complete_list.length ; i++ )
+                anchors.fill: parent
+                color: "#666666"
+            }
+
+            text: "Input text"
+            font.pixelSize: 16
+
+            focus: true
+            Keys.onReturnPressed: get_value_dialog.accept()
+
+            onTextChanged:
+            {
+                suggestion_text.text = ""
+                if( title===category_title && text.length )
                 {
-                    var category = auto_complete_list[i];
-                    if( text===category.substr(0,text.length) )
+                    for( var i=0 ; i<auto_complete_list.length ; i++ )
                     {
-                        suggestion_text.text = category.substr(text.length)
-                        break
+                        var category = auto_complete_list[i];
+                        if( text===category.substr(0,text.length) )
+                        {
+                            suggestion_text.text = category.substr(text.length)
+                            break
+                        }
                     }
                 }
             }
+
+            Keys.onTabPressed:
+            {
+                text += suggestion_text.text;
+                accept();
+            }
+
+            Keys.onEnterPressed:
+            {
+                accept();
+            }
         }
 
-        Keys.onTabPressed:
+        Label
         {
-            text += suggestion_text.text;
-            accept();
+            id: typed_text
+            anchors.left: get_value_input.left
+            anchors.leftMargin: 10
+            anchors.verticalCenter: get_value_input.verticalCenter
+            text: get_value_input.text
+            font.pixelSize: 16
+            color: "transparent"
         }
 
-        Keys.onEnterPressed:
+        Label
         {
-            accept();
+            id: suggestion_text
+            anchors.left: typed_text.right
+            anchors.leftMargin: 1
+            anchors.verticalCenter: get_value_input.verticalCenter
+            font.pixelSize: 16
+    //        color: "#999"
+            text: "khar"
         }
-    }
-
-    Label
-    {
-        id: typed_text
-        anchors.left: get_value_input.left
-        anchors.leftMargin: 10
-        anchors.verticalCenter: get_value_input.verticalCenter
-        text: get_value_input.text
-        font.pixelSize: 16
-        color: "transparent"
-    }
-
-    Label
-    {
-        id: suggestion_text
-        anchors.left: typed_text.right
-        anchors.leftMargin: 1
-        anchors.verticalCenter: get_value_input.verticalCenter
-        font.pixelSize: 16
-//        color: "#999"
-        text: "khar"
     }
 
     AbButton
@@ -164,7 +174,7 @@ Window
 
     function accept()
     {
-        dialog_text = get_value_input.text;
+        dialog_val = get_value_input.text;
         close();
     }
 

@@ -11,10 +11,10 @@ Rectangle
     property var help_text: ["Space:Pause Recording","S:Set Category",
                              "Up:Increase Pause","Down:Decrease Pause",
                              "Right:Increase Word","Left:Decrease Word",
-                             "K:Increase Rec Time","J:Decrease Rec Time",
-                             "O:Open Category Directory",
                              "C:Change Count Number","F:Focus Word",
-                             "W:All Word Stat","V:Verify Mode","Q:Close Window"]
+                             "J:Decrease Rec Time", "K:Increase Rec Time",
+                             "O:Open Category Directory", "T: Train",
+                             "V:Verify Mode", "W:All Word Stat","Q:Close Window"]
 
     color: "#262626"
 //    color: "yellow"

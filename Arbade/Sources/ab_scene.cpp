@@ -32,7 +32,6 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 
     readQmlProperties();
     updateStat();
-
 }
 
 void AbScene::readQmlProperties()
@@ -249,11 +248,6 @@ void AbScene::processKey(int key)
     {
         catmode = !catmode;
         updateStat();
-    }
-    else if( key==Qt::Key_T )
-    {
-        qDebug() << "TRAINING STARTED ....";
-        //man->doSomething();
     }
     else
     {
