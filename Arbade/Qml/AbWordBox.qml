@@ -15,10 +15,15 @@ Rectangle
     property int last_box: 0
     property int commit: 0
     property int wl_count: 0
+    property int set_focus: 0
 
     signal wordBoxChanged(int id, string word)
     signal newBoxRequired()
+    signal removeBox()
     signal newWord()
+    signal lineRemoved()
+    signal arrowPrsd(int id, int direction)
+    signal setFNum(int id)
 
     color: "transparent"
 
@@ -37,6 +42,28 @@ Rectangle
             word_id: wid
             word_text: wt
             word_count: wc
+            set_focus: sf
+
+            onArrowPressed:
+            {
+                arrowPrsd(parseInt(word_id), direction)
+            }
+
+            onRemoveLine:
+            {
+                wl_count--;
+                lm_wordbox.remove(wl_count,1);
+                if( wl_count===0 )
+                {
+                    removeBox();
+                }
+                lineRemoved();
+            }
+
+            onSetFocusNum:
+            {
+                setFNum(id)
+            }
 
             onWordChanged:
             {
@@ -50,19 +77,11 @@ Rectangle
                     }
                     else
                     {
-                        wl_count += 1;
+                        wl_count++;
                         lm_wordbox.append({wid: zeroPad(1+parseInt(word_id)),
-                                       wt: "", wc: ""});
+                                       wt: "", wc: "", sf: 0});
                     }
                     newWord();
-                }
-                else if( word_id_int===last_id-1 && last_box )
-                {
-                    if( text_w.length===0 )
-                    {
-                        wl_count -= 1;
-                        lm_wordbox.remove(wl_count);
-                    }
                 }
 
                 wordBoxChanged(word_id, text_w);
@@ -83,6 +102,15 @@ Rectangle
 
         model: lm_wordbox
         delegate: ld_wordbox
+    }
+
+    onSet_focusChanged:
+    {
+        if( set_focus )
+        {
+            var id = editor_box.focused_line%ab_const.ab_WORDEDIT_BOX_SIZE;
+            lm_wordbox.get(id).sf++;
+        }
     }
 
     onCommitChanged: // commit changes after all property
@@ -113,7 +141,7 @@ Rectangle
             for( var i=0 ; i<wl_count ; i++ )
             {
                 lm_wordbox.append({wid: zeroPad(i+start_num),
-                                   wt: wl_split[i], wc: wlc_split[i]});
+                                   wt: wl_split[i], wc: wlc_split[i], sf:0});
             }
         }
     }

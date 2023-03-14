@@ -1,4 +1,4 @@
-﻿import QtQuick 2.2
+import QtQuick 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import QtQuick.Controls.Styles 1.4
@@ -285,7 +285,6 @@ ApplicationWindow
         anchors.bottom: ab_help.top
         anchors.bottomMargin: 65
 
-        dialog_text: ab_word_list
         onUpdateWordList:
         {
             saveWordList(word_list);
@@ -402,6 +401,7 @@ ApplicationWindow
             {
                 get_value_dialog.title = get_value_dialog.category_title;
                 get_value_dialog.dialog_label = get_value_dialog.value_label;
+                get_value_dialog.dialog_text = get_value_dialog.category_title;
                 get_value_dialog.visible = true;
             }
         }
@@ -409,12 +409,14 @@ ApplicationWindow
         {
             get_value_dialog.title = get_value_dialog.cnt_title;
             get_value_dialog.dialog_label = get_value_dialog.value_label;
+            get_value_dialog.dialog_text = get_value_dialog.cnt_title;
             get_value_dialog.visible = true;
         }
         else if( key===Qt.Key_F )
         {
             get_value_dialog.title = get_value_dialog.focus_word_title;
             get_value_dialog.dialog_label = get_value_dialog.id_label;
+            get_value_dialog.dialog_text = get_value_dialog.focus_word_title;
             get_value_dialog.visible = true;
         }
         else if( key===Qt.Key_V )
@@ -431,5 +433,10 @@ ApplicationWindow
                 ab_verifier = 1;
             }
         }
+    }
+
+    function initWsl()
+    {
+        dialog_wsl.visible = true;
     }
 }
