@@ -165,12 +165,7 @@ QString AbManager::getRandPath(QString category)
         {
             if( fix_word_index==i )
             {
-                bool ok=false;
                 word_id[i] = params.focus_word;
-                if(!ok || word_id[i]<0 || word_id[i]>=lexicon_size )
-                {
-                    word_id[i] = rand()%lexicon_size;
-                }
             }
             else
             {
@@ -291,6 +286,10 @@ void AbManager::delWordSamples()
         }
     }
     len = del_list.size();
+    if( len==0 )
+    {
+        return;
+    }
     qDebug() << "delWordSamples" << del_list;
 
     QFileInfoList dir_list = ab_getAudioDirs();

@@ -129,7 +129,15 @@ void AbScene::setCategory(QString cat)
 void AbScene::setFocusWord(int focus_word)
 {
     man->params.focus_word = focus_word;
-    QString focus_text = man->idToWords(focus_word);
+    QString focus_text;
+    if( focus_word==-1 )
+    {
+        focus_text = "<empty>";
+    }
+    else
+    {
+        focus_text = man->idToWords(focus_word);
+    }
     QQmlProperty::write(root, "ab_focus_text", focus_text);
 }
 

@@ -187,28 +187,28 @@ ApplicationWindow
 
         auto_complete_list: ab_auto_comp.split("!").
                                 filter(i => i);
-        onDialog_valChanged:
+        onAcceptDialog:
         {
             if( title===category_title )
             {
-                ab_category = dialog_val;
+                ab_category = value;
                 setCategory(ab_category);
             }
             else if( title===cnt_title )
             {
-                var total_count = parseInt(dialog_val);
+                var total_count = parseInt(value);
                 ab_total_count = total_count;
                 setTotalCount(ab_total_count);
             }
             else if( title===focus_word_title )
             {
-                if( dialog_val=="" )
+                if( value==="" )
                 {
                     ab_focus_word = -1;
                 }
                 else
                 {
-                    ab_focus_word = parseInt(dialog_val);
+                    ab_focus_word = parseInt(value);
                 }
             }
         }
