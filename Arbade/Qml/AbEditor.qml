@@ -13,12 +13,11 @@ Rectangle
     visible: true
     color: "transparent"
 
-    property string dialog_text: ""
     property string dif_words: ""
-
     property string total_words: ""
     property int word_count: 0
     property int box_count: 0
+    property int focused_line: -1
 
     signal updateWordList(string word_list)
     signal updateDifWords(string dif_words)
@@ -49,6 +48,7 @@ Rectangle
             start_num: sn
             last_box: lb
             commit: com
+            set_focus: sf
 
             onWordBoxChanged:
             {
@@ -72,13 +72,35 @@ Rectangle
                 lm_wordedit.get(box_count-1).lb = 0;
                 lm_wordedit.append({"sn": word_count, "wl": "",
                                    "ws": "0", "lb": Boolean(true),
-                                   "com": 1});
+                                   "com": 1, "sf": 0});
             }
 
             onNewWord:
             {
                 word_count++;
                 total_words += "\n";
+            }
+
+            onSetFNum:
+            {
+                focused_line = id;
+            }
+
+            onRemoveBox:
+            {
+
+            }
+
+            onLineRemoved:
+            {
+                word_count--;
+                total_words = total_words.substring(0,total_words.length-1); // removes \n
+                arrowPress(word_count-1, Qt.Key_Up);
+            }
+
+            onArrowPrsd:
+            {
+                arrowPress(id, direction);
             }
         }
     }
@@ -168,19 +190,32 @@ Rectangle
     {
         var words_old = root.ab_word_list.split("\n").filter(i => i);
         var words_new = total_words.split("\n").filter(i => i);
+        var max_dif = (words_old.length>words_new.length)?
+                        words_old.length:words_new.length
         var dif = [];
         var count = 0;
 
-        for( var i=0 ; i<words_new.length ; i++ )
+        for( var i=0 ; i<max_dif ; i++ )
         {
             if( words_new[i]!==words_old[i] )
             {
                 count += 1;
                 if( verbose )
                 {
-                    dif.push(count.toString() + ". " + words_old[i] +
+                    var word_old = words_old[i];
+                    var word_new = words_new[i];
+                    if( word_old===undefined )
+                    {
+                        word_old = "<new>"
+                    }
+                    if( word_new===undefined )
+                    {
+                        word_new = "<deleted>"
+                    }
+
+                    dif.push(count.toString() + ". " + word_old +
                              "(" + i.toString() + ")" +
-                             " => " + words_new[i]);
+                             " => " + word_new);
                 }
                 else
                 {
@@ -199,7 +234,7 @@ Rectangle
         {
             dif_words = dif_result.join("\n");
             wordlist_dialog.dialog_label = "Are you sure" +
-                    " to change these words?\n\n" + dif_words;
+                    " to change these words?\n" + dif_words;
             wordlist_dialog.visible = true;
         }
     }
@@ -210,23 +245,23 @@ Rectangle
         total_words = root.ab_word_list;
         word_count = all_words.length;
         var all_count = all_words.length;
+        var all_stat = root.ab_word_stat.split("\n");
         var box_size = ab_const.ab_WORDEDIT_BOX_SIZE;
         var start_index = 0;
         box_count = Math.ceil(all_count/box_size);
         var box_count_old = lm_wordedit.count;
-        if( box_count<box_count_old )
-        {
-            lm_wordedit.remove(box_count, box_count_old-box_count)
-        }
+        lm_wordedit.clear();
 
         for( var i=0 ; i<box_count ; i++ )
         {
             var sliced_wl = all_words.slice(start_index,
-                               start_index+box_size).join("\n");
-            var is_last_box = (i===box_count-1);
-            lm_wordedit.get(i).wl = sliced_wl;
-            lm_wordedit.get(i).lb = is_last_box;
-            lm_wordedit.get(i).com = lm_wordedit.get(i).com+1;
+                               start_index+box_size).join("\n")
+            var sliced_ws = all_stat.slice(start_index,
+                               start_index+box_size).join("\n")
+            lm_wordedit.append({"sn": start_index, "wl": sliced_wl,
+                                "ws": sliced_ws, "lb": (i===box_count-1),
+                                "com": 1, "sf": 0});
+
             start_index += box_size;
         }
     }
@@ -251,9 +286,36 @@ Rectangle
                                start_index+box_size).join("\n")
             lm_wordedit.append({"sn": start_index, "wl": sliced_wl,
                                 "ws": sliced_ws, "lb": (i===box_count-1),
-                                "com": 1});
+                                "com": 1, "sf": 0});
 
             start_index += box_size;
         }
+    }
+
+    function arrowPress(id, direction)
+    {
+        if( focused_line===-1 )
+        {
+            return;
+        }
+        if( direction===Qt.Key_Up )
+        {
+            if( id===0 )
+            {
+                return;
+            }
+            focused_line = id-1;
+        }
+        else if( direction===Qt.Key_Down )
+        {
+            if( id===word_count-1 )
+            {
+                return;
+            }
+            focused_line = id+1;
+        }
+        var focused_box = Math.floor(focused_line/
+                                     ab_const.ab_WORDEDIT_BOX_SIZE);
+        lm_wordedit.get(focused_box).sf++;
     }
 }

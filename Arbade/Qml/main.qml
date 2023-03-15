@@ -1,4 +1,4 @@
-import QtQuick 2.2
+﻿import QtQuick 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import QtQuick.Controls.Styles 1.4
@@ -187,30 +187,40 @@ ApplicationWindow
 
         auto_complete_list: ab_auto_comp.split("!").
                                 filter(i => i);
-        onDialog_textChanged:
+        onDialog_valChanged:
         {
             if( title===category_title )
             {
-                ab_category = dialog_text;
+                ab_category = dialog_val;
                 setCategory(ab_category);
             }
             else if( title===cnt_title )
             {
-                var total_count = parseInt(dialog_text);
+                var total_count = parseInt(dialog_val);
                 ab_total_count = total_count;
                 setTotalCount(ab_total_count);
             }
             else if( title===focus_word_title )
             {
-                if( dialog_text=="" )
+                if( dialog_val=="" )
                 {
                     ab_focus_word = -1;
                 }
                 else
                 {
-                    ab_focus_word = parseInt(dialog_text);
+                    ab_focus_word = parseInt(dialog_val);
                 }
             }
+        }
+    }
+
+    AbDialogWsl
+    {
+        id: dialog_wsl
+
+        onDriveEntered:
+        {
+
         }
     }
 
