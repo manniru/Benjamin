@@ -18,7 +18,6 @@ Window
     property string botton_text: "#b6b6b6"
     property color  botton_bg: "#4d4d4d"
     property color  botton_hbg: "#666"
-    property string dialog_val: ""
     property string dialog_label: ""
     property string dialog_text: ""
     property int    dialog_width: width
@@ -29,6 +28,8 @@ Window
     property string cnt_title: "Enter Count"
     property string value_label: "value"
     property string id_label: "ID"
+
+    signal acceptDialog(string value)
 
     Text
     {
@@ -174,7 +175,7 @@ Window
 
     function accept()
     {
-        dialog_val = get_value_input.text;
+        acceptDialog(get_value_input.text);
         close();
     }
 

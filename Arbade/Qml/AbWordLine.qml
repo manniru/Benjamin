@@ -84,10 +84,17 @@ Rectangle
 
         Keys.onPressed:
         {
-            if( event.key===Qt.Key_Backspace && text==="" &&
-                parseInt(word_id)===editor_box.word_count-2 )
+            if( event.key===Qt.Key_Backspace && text==="" )
             {
-                removeLine()
+                var id = parseInt(word_id);
+                if( id===editor_box.word_count-2 )
+                {
+                    removeLine();
+                }
+                else if( id===editor_box.word_count-1 )
+                {
+                    arrowPressed(Qt.Key_Up);
+                }
             }
             else if( event.key===Qt.Key_Up ||
                      event.key===Qt.Key_Down )
@@ -113,7 +120,24 @@ Rectangle
 
         font.pixelSize: 16
         text: word_count
-        color: "#9a9a9a"
+        color:
+        {
+            var mean = parseInt(root.ab_mean_var.split("!")[0]);
+            var variance = parseInt(root.ab_mean_var.split("!")[1]);
+            var count = parseInt(word_count.substring(1,word_count.length-1));
+            if( count<mean-variance )
+            {
+                "#cb6565"; // red
+            }
+            else if( count>mean+variance )
+            {
+                "#80bf73"; // green
+            }
+            else
+            {
+                "#9a9a9a"; // gray
+            }
+        }
     }
 
     onSet_focusChanged:

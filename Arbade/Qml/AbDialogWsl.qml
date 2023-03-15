@@ -19,8 +19,8 @@ AbDialog
     height: 230
     width: 550
 
-    onDialog_valChanged:
+    onAcceptDialog:
     {
-        driveEntered(dialog_val);
+        driveEntered(value);
     }
 }
