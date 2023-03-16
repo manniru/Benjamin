@@ -17,8 +17,9 @@ private slots:
 private:
     void initWsl();
 
-    QObject* root;//root qml object
+    QObject   *root; // root qml object
     AbInitWSL *wsl;
+    QObject   *wsl_dialog;
 };
 
 #endif // AB_TRAIN_H

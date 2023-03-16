@@ -10,7 +10,8 @@ win32:INCLUDEPATH += ../PNN/lua
 
 linux:LIBS += -pthread -lm -ldl \
               -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
-win32:LIBS += -L../PNN/libs -lFstWin64 -lPortAudio -lwinmm -llua54
+win32:LIBS += -L../PNN/libs -lFstWin64 -lPortAudio -lwinmm -llua54 \
+              -lole32 -luuid
 
 DEFINES += HAVE_MKL \
            HAVE_CXXABI_H \

@@ -9,6 +9,7 @@
 #define KAL_RESULT_DIR    KAL_DECODE_DIR"result/"
 #define KAL_WAV_DIR       KAL_DECODE_DIR"wav/"
 #define KAL_MODE          "tri1"
+#define AB_WSL_ROOT       "Arch"
 
 #define KAL_SI_DIR        "Scripts/interpreter/"
 #define KAL_SI_DIR_WIN    "Scripts\\interpreter\\"
