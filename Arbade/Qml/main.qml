@@ -37,14 +37,18 @@ ApplicationWindow
     property int ab_focus_word: -1
     property int ab_count: 0
     property int ab_total_count: 100
+    property int ab_total_count_v: 100
     property real ab_elapsed_time: 0
     property int ab_status: ab_const.ab_STATUS_STOP
     property real ab_rec_time: 3
+    property real ab_rec_time_v: 3
     property int ab_num_words: 3
+    property int ab_num_words_v: 3
     property real ab_pause_time: 1.0
     property real ab_power: 0
     property int ab_verifier: 0
-    property int ab_playkon: 0
+
+    property real ab_start_now: 0
 
     signal loadsrc()
     signal delFile()
@@ -54,10 +58,14 @@ ApplicationWindow
     signal setStatus(int st)
     signal setVerifier(int ver)
     signal setFocusWord(int fw)
-    signal setTotalCount(int val)
     signal saveWordList(string wl)
     signal setCategory(string cat)
     signal setDifWords(string dif)
+
+    Component.onCompleted:
+    {
+        ab_start_now = Date.now();
+    }
 
     onAb_verifierChanged:
     {
@@ -67,11 +75,6 @@ ApplicationWindow
     onAb_focus_wordChanged:
     {
         setFocusWord(ab_focus_word);
-    }
-
-    onAb_playkonChanged:
-    {
-        audioPlayer.play();
     }
 
     onAb_statusChanged:
@@ -150,7 +153,18 @@ ApplicationWindow
             }
         }
         count: ab_count
-        count_total: ab_total_count
+        count_total:
+        {
+            if( ab_verifier )
+            {
+                ab_total_count_v
+            }
+            else
+            {
+                ab_total_count
+            }
+        }
+
         elapsed_time:
         {
             if( ab_verifier===0 )
@@ -198,7 +212,6 @@ ApplicationWindow
             {
                 var total_count = parseInt(value);
                 ab_total_count = total_count;
-                setTotalCount(ab_total_count);
             }
             else if( title===focus_word_title )
             {
@@ -217,30 +230,32 @@ ApplicationWindow
     AbDialogWsl
     {
         id: dialog_wsl
-
-        onDriveEntered:
-        {
-
-        }
+        objectName: "WslDialog"
     }
 
     AbQuery
     {
         id: verify_dialog
 
-        onDialog_resultChanged:
+        onAccept:
         {
-            if( dialog_result==="Y" )
+            if( result==="Y" )
             {
                 sig_del_file = 1;
-                audioPlayer.stop();
             }
-            else if( dialog_result==="N" )
+            else if( result==="N" )
             {
                 sig_del_file = 0;
+            }
+            rest_timer.interval = 1;
+            if( audioPlayer.playbackState===Audio.PausedState )
+            {
                 audioPlayer.stop();
             }
-            dialog_result = ""
+            else if( audioPlayer.playbackState===Audio.StoppedState )
+            {
+                rest_timer.start();
+            }
         }
     }
 
@@ -317,18 +332,7 @@ ApplicationWindow
 
         onStopped:
         {
-            if( sig_del_file )
-            {
-                sig_del_file = 0;
-                delFile();
-            }
-            else
-            {
-                copyFile();
-            }
-
-            loadsrc();
-            play_pos = 0;
+            rest_timer.start();
         }
     }
 
@@ -346,6 +350,31 @@ ApplicationWindow
             {
                 play_pos=100
             }
+        }
+    }
+
+    Timer
+    {
+        id: rest_timer
+        interval: 2000
+        repeat: false
+
+        onTriggered:
+        {
+            interval = 2000;
+            rest_timer.stop();
+            if( sig_del_file )
+            {
+                sig_del_file = 0;
+                delFile();
+            }
+            else
+            {
+                copyFile();
+            }
+
+            loadsrc();
+            play_pos = 0;
         }
     }
 
@@ -373,11 +402,19 @@ ApplicationWindow
                 {
                     loadsrc();
                 }
+                else if( ab_status===ab_const.ab_STATUS_BREAK )
+                {
+                    return;
+                }
                 else
                 {
-                    audioPlayer.pause();
+                    if( audioPlayer.playbackState===Audio.PlayingState )
+                    {
+                        audioPlayer.pause();
+                    }
                     ab_status = ab_const.ab_STATUS_PAUSE;
                     setStatus(ab_status);
+                    rest_timer.stop();
                     verify_dialog.dialog_label = "Are you sure "+
                                          "you want to delete?\n"+
                                          "( Yes:space / No:q )"
@@ -443,6 +480,11 @@ ApplicationWindow
                 ab_verifier = 1;
             }
         }
+    }
+
+    function playkon()
+    {
+        audioPlayer.play();
     }
 
     function initWsl()
