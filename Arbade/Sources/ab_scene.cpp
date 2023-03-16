@@ -15,8 +15,6 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     connect(root, SIGNAL(copyFile()), this, SLOT(copyFile()));
     connect(root, SIGNAL(loadWordList()), this, SLOT(loadWordList()));
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
-    connect(root, SIGNAL(setTotalCount(int)),
-            this, SLOT(setTotalcount(int)));
     connect(root, SIGNAL(setVerifier(int)),
             this, SLOT(setVerifier(int)));
     connect(root, SIGNAL(setStatus(int)),
@@ -37,12 +35,10 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 void AbScene::readQmlProperties()
 {
     man->params.status = QQmlProperty::read(root, "ab_status").toInt();
-    man->params.total_count = QQmlProperty::read(root, "ab_total_count").toInt();
     man->params.num_words = QQmlProperty::read(root, "ab_num_words").toInt();
     man->params.count = QQmlProperty::read(root, "ab_count").toInt();
     man->params.verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    man->params.rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
-    man->params.pause_time = QQmlProperty::read(root, "ab_pause_time").toFloat();
+    setVerifier(man->params.verifier);
     man->params.category = QQmlProperty::read(root, "ab_category").toString();
     setFocusWord(QQmlProperty::read(root, "ab_focus_word").toInt());
 }
@@ -60,7 +56,6 @@ void AbScene::setStatus(int status)
 void AbScene::setVerifier(int verifier)
 {
     man->params.verifier = verifier;
-    man->swapParams();
     updateStat();
     setCount(0);
 
@@ -68,26 +63,22 @@ void AbScene::setVerifier(int verifier)
     {
         unverified_list = ab_listFiles(KAL_AU_DIR_WIN"unverified\\",
                                        AB_LIST_PATHS);
-        man->params.total_count = unverified_list.size();
-        QQmlProperty::write(root, "ab_total_count", unverified_list.size());
+        QQmlProperty::write(root, "ab_total_count_v", unverified_list.size());
     }
-}
-
-void AbScene::setTotalcount(int val)
-{
-    man->params.total_count = val;
 }
 
 void AbScene::loadsrc()
 {
     if( man->params.verifier==1 )
     {
-        if( man->params.count<man->params.total_count )
+        int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
+        if( man->params.count<total_count )
         {
             setStatus(AB_STATUS_BREAK);
             loadAddress();
             setCount(man->params.count+1);
-            break_timer->start(man->params.pause_time*1000);
+            float pause_time = QQmlProperty::read(root, "ab_pause_time").toFloat();
+            break_timer->start(pause_time*1000);
         }
         else // cnt>=total
         {
@@ -181,15 +172,7 @@ void AbScene::setDifWords(QString difwords)
 void AbScene::breakTimeout()
 {
     setStatus(AB_STATUS_PLAY);
-    int playkon = QQmlProperty::read(root, "ab_playkon").toInt();
-    if( playkon )
-    {
-        QQmlProperty::write(root, "ab_playkon", 0);
-    }
-    else
-    {
-        QQmlProperty::write(root, "ab_playkon", 1);
-    }
+    QMetaObject::invokeMethod(root, "playkon");
     break_timer->stop();
 }
 
@@ -209,7 +192,6 @@ void AbScene::processKey(int key)
         float rec_time = QQmlProperty::read(root,
                             "ab_rec_time").toFloat();
         rec_time += .1;
-        man->params.rec_time = rec_time;
         QQmlProperty::write(root, "ab_rec_time", rec_time);
     }
     else if( key==Qt::Key_J )
@@ -217,7 +199,6 @@ void AbScene::processKey(int key)
         float rec_time = QQmlProperty::read(root,
                             "ab_rec_time").toFloat();
         rec_time -= .1;
-        man->params.rec_time = rec_time;
         QQmlProperty::write(root, "ab_rec_time", rec_time);
     }
     else if( key==Qt::Key_Up )
@@ -225,7 +206,6 @@ void AbScene::processKey(int key)
         float pause_time = QQmlProperty::read(root,
                             "ab_pause_time").toFloat();
         pause_time += .1;
-        man->params.pause_time = pause_time;
         QQmlProperty::write(root, "ab_pause_time", pause_time);
     }
     else if( key==Qt::Key_Down )
@@ -233,7 +213,6 @@ void AbScene::processKey(int key)
         float pause_time = QQmlProperty::read(root,
                             "ab_pause_time").toFloat();
         pause_time -= .1;
-        man->params.pause_time = pause_time;
         QQmlProperty::write(root, "ab_pause_time", pause_time);
     }
     else if( key==Qt::Key_Left )

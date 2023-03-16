@@ -3,11 +3,12 @@
 
 #include <QObject>
 #include <thread>         // std::thread
-
 #include "ab_recorder.h"
 #include "ab_wav_writer.h"
 #include "ab_wav_reader.h"
 #include "ab_stat.h"
+
+#define AB_REST_PAUSE 500
 
 typedef struct AbRecParam
 {
@@ -16,12 +17,9 @@ typedef struct AbRecParam
     QString dif_words;
     int   focus_word;
     int   count;
-    int   total_count;
     int   status;
     int   num_words;
     int   verifier;
-    float   rec_time;
-    float   pause_time;
 }AbRecParam;
 
 class AbManager : public QObject
@@ -32,7 +30,6 @@ public:
     ~AbManager();
 
     void record();
-    void swapParams();
     void writeWordList();
     void delWordSamples();
     void readWave(QString filename);
@@ -42,7 +39,6 @@ public:
     QString idsToWords(QVector<int> ids);
 
     AbRecParam params;
-    AbRecParam p_backup;
 
 signals:
     void startDecoding();

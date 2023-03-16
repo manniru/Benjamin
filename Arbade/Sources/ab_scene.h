@@ -21,7 +21,6 @@ private slots:
     void loadWordList();
     void processKey(int key);
     void setStatus(int status);
-    void setTotalcount(int val);
     void setVerifier(int verifier);
     void saveWordList(QString word_list);
     void setCategory(QString cat);
