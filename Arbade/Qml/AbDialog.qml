@@ -85,7 +85,6 @@ Window
             font.pixelSize: 16
 
             focus: true
-            Keys.onReturnPressed: get_value_dialog.accept()
 
             onTextChanged:
             {
@@ -104,15 +103,18 @@ Window
                 }
             }
 
-            Keys.onTabPressed:
+            Keys.onPressed:
             {
-                text += suggestion_text.text;
-                accept();
-            }
-
-            Keys.onEnterPressed:
-            {
-                accept();
+                if( event.key===Qt.Key_Tab )
+                {
+                    text += suggestion_text.text;
+                    accept();
+                }
+                else if( event.key===Qt.Key_Enter ||
+                        event.key===Qt.Key_Return )
+                {
+                    accept();
+                }
             }
         }
 

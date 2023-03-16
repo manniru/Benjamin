@@ -16,6 +16,8 @@ Dialog
     property string dialog_result: ""
     property string dialog_label: ""
 
+    signal accept(string result)
+
     Text
     {
         id: verify_label
@@ -30,20 +32,20 @@ Dialog
             if( event.key===Qt.Key_Space ||
                 event.key===Qt.Key_Y )
             {
-                dialog_result = "Y"
-                close()
+                accept("Y");
+                close();
             }
             else
             {
-                dialog_result = "N"
-                close()
+                accept("N");
+                close();
             }
         }
     }
 
     Component.onCompleted:
     {
-        verify_label.forceActiveFocus()
+        verify_label.forceActiveFocus();
     }
 
 }
