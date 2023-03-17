@@ -13,5 +13,6 @@
         <file>AbWordLine.qml</file>
         <file>AbButton.qml</file>
         <file>AbDialogWsl.qml</file>
+        <file>AbConsole.qml</file>
     </qresource>
 </RCC>

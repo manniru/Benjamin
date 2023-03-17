@@ -78,4 +78,5 @@ OTHER_FILES += Qml/*.qml
 QML_IMPORT_PATH += Qml/
 
 DISTFILES += \
+    Qml/AbConsole.qml \
     Qml/AbDialogWsl.qml

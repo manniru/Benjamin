@@ -1,4 +1,4 @@
-﻿import QtQuick 2.2
+import QtQuick 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import QtQuick.Controls.Styles 1.4
@@ -47,6 +47,7 @@ ApplicationWindow
     property real ab_pause_time: 1.0
     property real ab_power: 0
     property int ab_verifier: 0
+    property int ab_show_console: 0
 
     property real ab_start_now: 0
 
@@ -323,6 +324,14 @@ ApplicationWindow
             save_button.enabled = enable;
             reset_button.enabled = enable;
         }
+    }
+
+    AbConsole
+    {
+        id: console_box
+        anchors.fill: editor_box
+        visible: ab_show_console
+        objectName: "Console"
     }
 
     Audio
