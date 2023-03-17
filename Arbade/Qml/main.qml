@@ -1,4 +1,4 @@
-import QtQuick 2.2
+﻿import QtQuick 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import QtQuick.Controls.Styles 1.4
@@ -402,6 +402,23 @@ ApplicationWindow
             key===Qt.Key_W || key===Qt.Key_T )
         {
             sendKey(key);
+        }
+
+        else if( key===Qt.Key_K )
+        {
+            ab_rec_time += .1;
+        }
+        else if( key===Qt.Key_J )
+        {
+            ab_rec_time -= .1;
+        }
+        else if( key===Qt.Key_Up )
+        {
+            ab_pause_time += .1;
+        }
+        else if( key===Qt.Key_Down )
+        {
+            ab_pause_time -= .1;
         }
         else if( key===Qt.Key_Space )
         {

@@ -187,34 +187,7 @@ void AbScene::processKey(int key)
         QString cmd = "explorer.exe " + path;
         system(cmd.toStdString().c_str());
     }
-    else if( key==Qt::Key_K )
-    {
-        float rec_time = QQmlProperty::read(root,
-                            "ab_rec_time").toFloat();
-        rec_time += .1;
-        QQmlProperty::write(root, "ab_rec_time", rec_time);
-    }
-    else if( key==Qt::Key_J )
-    {
-        float rec_time = QQmlProperty::read(root,
-                            "ab_rec_time").toFloat();
-        rec_time -= .1;
-        QQmlProperty::write(root, "ab_rec_time", rec_time);
-    }
-    else if( key==Qt::Key_Up )
-    {
-        float pause_time = QQmlProperty::read(root,
-                            "ab_pause_time").toFloat();
-        pause_time += .1;
-        QQmlProperty::write(root, "ab_pause_time", pause_time);
-    }
-    else if( key==Qt::Key_Down )
-    {
-        float pause_time = QQmlProperty::read(root,
-                            "ab_pause_time").toFloat();
-        pause_time -= .1;
-        QQmlProperty::write(root, "ab_pause_time", pause_time);
-    }
+
     else if( key==Qt::Key_Left )
     {
         int num_words = QQmlProperty::read(root,

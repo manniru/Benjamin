@@ -43,7 +43,7 @@ void AbInitWSL::createWSL(QString drive)
     {
         QString cmd = "mkdir " + arch_dir;
         system(cmd.toStdString().c_str());
-        qDebug() << "Info: Directory" << arch_dir << "created";
+        qDebug() << "Info: Directory" << arch_dir << "Created";
     }
 
     QString rar_path = arch_dir + "\\KalB.rar";
@@ -53,7 +53,7 @@ void AbInitWSL::createWSL(QString drive)
         downloadImage(rar_path);
     }
 
-    QString tar_path = arch_dir + "\\KalB.tar";
+    QString tar_path = arch_dir + "\\install.tar";
     if( !QFile::exists(tar_path) )
     {
         qDebug() << "Info: Uncompressing" << tar_path;
@@ -64,7 +64,19 @@ void AbInitWSL::createWSL(QString drive)
     {
         qDebug() << "Info: Installing WSL";
         system("start cmd /c wsl --install");
+//        system("shutdown /r");
+        return;
     }
+
+    QString vhd_path = arch_dir + "\\ext4.vhdx";
+    QString current_dir = QDir::currentPath();
+    QDir::setCurrent(arch_dir);
+    if( !QFile::exists(vhd_path) )
+    {
+        qDebug() << "Info: Installing KalB Virtual Machine";
+        system("KalB.exe");
+    }
+    QDir::setCurrent(current_dir);
 }
 
 void AbInitWSL::downloadImage(QString path)
@@ -90,7 +102,8 @@ void AbInitWSL::uncompImage(QString path)
 
 int AbInitWSL::checkWSLInstalled()
 {
-    QString output = getStrCommand("wsl");
+//    QString output = getStrCommand("wsl -l");
+    QString output = getStrCommand("echo hello");
     qDebug() << output;
     if( output.isEmpty() )
     {
