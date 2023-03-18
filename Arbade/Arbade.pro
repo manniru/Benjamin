@@ -32,6 +32,7 @@ QMLCACHE_DIR = ./Build
 OTHER_FILES = BaTool.conf
 
 HEADERS += \
+    Sources/ab_console_reader.h \
     Sources/ab_init_wsl.h \
     Sources/ab_manager.h \
     Sources/ab_mbr_base.h \
@@ -46,6 +47,7 @@ HEADERS += \
     Sources/ta_ini.h
 
 SOURCES += \
+    Sources/ab_console_reader.cpp \
     Sources/ab_init_wsl.cpp \
     Sources/ab_manager.cpp \
     Sources/ab_mbr_base.cpp \
