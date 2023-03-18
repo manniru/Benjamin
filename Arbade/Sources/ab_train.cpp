@@ -8,9 +8,21 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
     root = ui;
     wsl_dialog = root->findChild<QObject*>("WslDialog");
     console = root->findChild<QObject*>("Console");
+
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
     connect(wsl_dialog, SIGNAL(driveEntered(QString)),
             wsl, SLOT(createWSL(QString)));
+
+    con_read = new AbConsoleReader();
+    con_thread = new QThread();
+    con_read->moveToThread(con_thread);
+    con_thread->start();
+    connect(con_read, SIGNAL(readyData(QString)),
+            this, SLOT(writeConsole(QString)));
+    connect(this, SIGNAL(readConsole()),
+            con_read, SLOT(run()));
+    connect(con_read, SIGNAL(readyCommand()),
+            this, SLOT(WriteToPipe()));
 }
 
 AbTrain::~AbTrain()
@@ -66,43 +78,39 @@ void AbTrain::writeConsole(QString line)
 
 int AbTrain::openApp()
 {
-   SECURITY_ATTRIBUTES saAttr;
+    SECURITY_ATTRIBUTES saAttr;
 
-   saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-   saAttr.bInheritHandle = TRUE;
-   saAttr.lpSecurityDescriptor = NULL;
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
 
-   // stdout
-   if( !CreatePipe(&h_out_read, &h_out_write, &saAttr, 0) )
-   {
+    // stdout
+    if( !CreatePipe(&con_read->handle, &h_out_write, &saAttr, 0) )
+    {
        qDebug() << "StdoutRd CreatePipe failed";
-   }
-   if( !SetHandleInformation(h_out_read, HANDLE_FLAG_INHERIT, 0) )
-   {
+    }
+    if( !SetHandleInformation(con_read->handle, HANDLE_FLAG_INHERIT, 0) )
+    {
        qDebug() << "Stdout SetHandleInformation failed";
-   }
+    }
 
-   // stdin
-   if( !CreatePipe(&h_in_read, &h_in_write, &saAttr, 0) )
-   {
+    // stdin
+    if( !CreatePipe(&h_in_read, &h_in_write, &saAttr, 0) )
+    {
        qDebug() << "Stdin CreatePipe failed";
-   }
-   if( !SetHandleInformation(h_in_write, HANDLE_FLAG_INHERIT, 0) )
-   {
+    }
+    if( !SetHandleInformation(h_in_write, HANDLE_FLAG_INHERIT, 0) )
+    {
        qDebug() << "Stdin SetHandleInformation failed";
-   }
+    }
 
-   CreateChildProcess("KalB.exe");
+//    CreateChildProcess("KalB.exe");
+    CreateChildProcess("cmd.exe");
 
-   ReadFromPipe();
+    qDebug() << "ghable emit";
+    emit readConsole();
 
-    // Write from file to stdin
-   WriteToPipe();
-
-    // Print stdout
-   ReadFromPipe();
-
-   return 0;
+    return 0;
 }
 
 void AbTrain::CreateChildProcess(QString cmd)
@@ -147,11 +155,12 @@ void AbTrain::CreateChildProcess(QString cmd)
 
 void AbTrain::WriteToPipe()
 {
-    DWORD dwRead, dwWritten;
-    QString cmd = "ls";
+    DWORD dwWritten;
+    QString cmd = "dir\n";
+//    QString cmd = "ls";
 
     WriteFile(h_in_write, cmd.toStdString().c_str(),
-              dwRead, &dwWritten, NULL);
+              cmd.length(), &dwWritten, NULL);
 
    if ( !CloseHandle(h_in_write) )
    {
@@ -159,27 +168,3 @@ void AbTrain::WriteToPipe()
    }
 }
 
-void AbTrain::ReadFromPipe()
-{
-    DWORD dwRead;
-    char chBuf[CONSOLE_BUF_SIZE];
-    BOOL bSuccess = FALSE;
-    QString output;
-
-    while(true)
-    {
-        qDebug() << "ye khoruji";
-        bSuccess = ReadFile(h_out_read, chBuf,
-                            CONSOLE_BUF_SIZE, &dwRead, NULL);
-        qDebug() << "do khoruji";
-        if( !bSuccess || dwRead==0 )
-        {
-            qDebug() << "se khoruji";
-            break;
-        }
-
-        output = chBuf;
-        qDebug() << output;
-        writeConsole(output);
-    }
-}
