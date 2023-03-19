@@ -28,6 +28,7 @@ void AbConsoleReader::run()
             qDebug() << flag << "ERROR" << ok << read_len;
             break;
         }
+        chBuf[read_len] = 0;
 
         output = chBuf;
         emit readyData(output, flag);
@@ -42,8 +43,8 @@ void AbConsoleReader::processLine(QString line)
     {
         if( state==0 )
         {
-            QString cmd = "KalB.exe\n";
-    //        QString cmd = "dir\n";
+            QString cmd = "KalB.exe run ls\n";
+//            QString cmd = "dir\n";
         //    QString cmd = "ls\n";
             state = 1;
             emit sendCommand(cmd);

@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QThread>
-#include <QProcess>
 #include "ab_init_wsl.h"
 #include "ab_console_reader.h"
 
@@ -22,15 +21,11 @@ signals:
 
 private slots:
     void processKey(int key);
-    void writeConsole();
-    void writeEConsole();
+    void writeConsole(QString line, int flag=0);
     void WriteToPipe(QString cmd);
 
 private:
     void createKalB();
-    void processLine(QString line);
-
-    int state = 0;
 
     int openApp();
     void CreateChildProcess(QString cmd);
@@ -42,14 +37,13 @@ private:
     QString    wsl_path;
 
     QThread   *con_thread;
-    QProcess *con_read;
+    AbConsoleReader *con_read;
     QThread         *err_thread;
     AbConsoleReader *err_read;
 
     HANDLE h_in_read = NULL;
     HANDLE h_in_write = NULL;
-    HANDLE h_out_write = NULL;
-    HANDLE g_hInputFile = NULL;
+    PROCESS_INFORMATION piProcInfo;
 };
 
 
