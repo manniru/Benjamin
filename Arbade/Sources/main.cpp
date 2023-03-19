@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     QObject *mainItem = engine.rootObjects().first();
     AbScene scene(mainItem);
     AbTrain train(mainItem);
+    train.initWsl();
 
     return app.exec();
 }

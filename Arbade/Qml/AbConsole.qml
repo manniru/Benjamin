@@ -16,13 +16,14 @@ Rectangle
         anchors.leftMargin: 5
 
         text: ""
+        textFormat: Text.RichText
         color: "white"
         font.pixelSize: 14
     }
 
     function addLine()
     {
-        console_text.text += line_buf + "\n";
+        console_text.text += line_buf;
     }
 
 }

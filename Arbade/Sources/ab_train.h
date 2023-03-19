@@ -13,16 +13,18 @@ public:
     explicit AbTrain(QObject *ui, QObject *parent = nullptr);
     ~AbTrain();
 
+    void initWsl();
+
 signals:
     void readConsole();
+    void readError();
 
 private slots:
     void processKey(int key);
-    void writeConsole(QString line);
-    void WriteToPipe();
+    void writeConsole(QString line, int flag=0);
+    void WriteToPipe(QString cmd);
 
 private:
-    void initWsl();
     void createKalB();
 
     int openApp();

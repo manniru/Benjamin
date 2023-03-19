@@ -148,23 +148,17 @@ void AbTrain::CreateChildProcess(QString cmd)
    {
       CloseHandle(piProcInfo.hProcess);
       CloseHandle(piProcInfo.hThread);
-      CloseHandle(h_out_write);
+      CloseHandle(err_read->handle);
       CloseHandle(h_in_read);
    }
 }
 
-void AbTrain::WriteToPipe()
+void AbTrain::WriteToPipe(QString cmd)
 {
     DWORD dwWritten;
-    QString cmd = "dir\n";
-//    QString cmd = "ls";
+    qDebug() << "Write" << cmd;
 
     WriteFile(h_in_write, cmd.toStdString().c_str(),
               cmd.length(), &dwWritten, NULL);
 
-   if ( !CloseHandle(h_in_write) )
-   {
-       qDebug() << "StdInWr CloseHandle failed";
-   }
 }
-
