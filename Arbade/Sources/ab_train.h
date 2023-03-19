@@ -35,8 +35,11 @@ private:
     QObject   *console;
     AbInitWSL *wsl;
     QString    wsl_path;
+
     QThread   *con_thread;
     AbConsoleReader *con_read;
+    QThread         *err_thread;
+    AbConsoleReader *err_read;
 
     HANDLE h_in_read = NULL;
     HANDLE h_in_write = NULL;

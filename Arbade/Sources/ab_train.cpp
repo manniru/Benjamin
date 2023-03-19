@@ -8,26 +8,39 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
     root = ui;
     wsl_dialog = root->findChild<QObject*>("WslDialog");
     console = root->findChild<QObject*>("Console");
-
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
     connect(wsl_dialog, SIGNAL(driveEntered(QString)),
             wsl, SLOT(createWSL(QString)));
 
-    con_read = new AbConsoleReader();
+    con_read = new AbConsoleReader(AB_CONSOLE_NORML);
     con_thread = new QThread();
     con_read->moveToThread(con_thread);
     con_thread->start();
-    connect(con_read, SIGNAL(readyData(QString)),
-            this, SLOT(writeConsole(QString)));
+    connect(con_read, SIGNAL(readyData(QString, int)),
+            this, SLOT(writeConsole(QString, int)));
     connect(this, SIGNAL(readConsole()),
             con_read, SLOT(run()));
-    connect(con_read, SIGNAL(readyCommand()),
-            this, SLOT(WriteToPipe()));
+    connect(con_read, SIGNAL(sendCommand(QString)),
+            this, SLOT(WriteToPipe(QString)));
+
+    err_read = new AbConsoleReader(AB_CONSOLE_ERROR);
+    err_thread = new QThread();
+    err_read->moveToThread(err_thread);
+    err_thread->start();
+    connect(err_read, SIGNAL(readyData(QString, int)),
+            this, SLOT(writeConsole(QString, int)));
+    connect(this, SIGNAL(readError()),
+            err_read, SLOT(run()));
+    connect(err_read, SIGNAL(sendCommand(QString)),
+            this, SLOT(WriteToPipe(QString)));
 }
 
 AbTrain::~AbTrain()
 {
-
+    if ( !CloseHandle(h_in_write) )
+    {
+        qDebug() << "StdInWr CloseHandle failed";
+    }
 }
 
 void AbTrain::processKey(int key)
@@ -70,10 +83,42 @@ void AbTrain::createKalB()
     openApp();
 }
 
-void AbTrain::writeConsole(QString line)
+void AbTrain::writeConsole(QString line, int flag)
 {
-    QQmlProperty::write(console, "line_buf", line);
-    QMetaObject::invokeMethod(console, "addLine");
+    QString color = "#ffffff";
+    int ll_flag = 0; //last line
+    if( line[line.length()-1]=='\n' )
+    {
+        ll_flag = 1;
+    }
+    QStringList lines = line.split("\n");
+    int count = lines.count();
+    for( int i=0; i<count ; i++)
+    {
+        QString line_fmt;
+        line_fmt += lines[i];
+        if( flag==AB_CONSOLE_ERROR )
+        {
+            QString line_fmt = "<font style=\"color: ";
+            color = "#00f";
+            line_fmt += color;
+            line_fmt += ";\">";
+            line_fmt += line;
+            line_fmt += "</font>";
+        }
+
+        if( i<count-1 )
+        {
+            line_fmt += "<br>";
+        }
+        else if( ll_flag )
+        {
+            line_fmt += "<br>";
+        }
+        QQmlProperty::write(console, "line_buf", line_fmt);
+        qDebug() << "line_fmt" << line_fmt;
+        QMetaObject::invokeMethod(console, "addLine");
+    }
 }
 
 int AbTrain::openApp()
@@ -85,7 +130,7 @@ int AbTrain::openApp()
     saAttr.lpSecurityDescriptor = NULL;
 
     // stdout
-    if( !CreatePipe(&con_read->handle, &h_out_write, &saAttr, 0) )
+    if( !CreatePipe(&con_read->handle, &err_read->handle, &saAttr, 0) )
     {
        qDebug() << "StdoutRd CreatePipe failed";
     }
@@ -109,6 +154,7 @@ int AbTrain::openApp()
 
     qDebug() << "ghable emit";
     emit readConsole();
+    emit readError();
 
     return 0;
 }
@@ -118,19 +164,20 @@ void AbTrain::CreateChildProcess(QString cmd)
    BOOL bSuccess = FALSE;
 
    PROCESS_INFORMATION piProcInfo;
-   ZeroMemory( &piProcInfo, sizeof(PROCESS_INFORMATION) );
+   ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
 
    STARTUPINFOA siStartInfo;
-   ZeroMemory( &siStartInfo, sizeof(STARTUPINFO) );
+   ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
    siStartInfo.cb = sizeof(STARTUPINFO);
-   siStartInfo.hStdError = h_out_write;
-   siStartInfo.hStdOutput = h_out_write;
+   siStartInfo.hStdError = err_read->handle;
+   siStartInfo.hStdOutput = err_read->handle;
    siStartInfo.hStdInput = h_in_read;
    siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
-   LPSTR cmd_a = const_cast<char *>(cmd.toStdString().c_str());
+   char cmd_a[100];
+   strcpy(cmd_a, cmd.toStdString().c_str());
    bSuccess = CreateProcessA(NULL,
-      cmd_a,     // command line
+      cmd_a,         // command line
       NULL,          // process security attributes
       NULL,          // primary thread security attributes
       TRUE,          // handles are inherited
