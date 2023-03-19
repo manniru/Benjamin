@@ -12,27 +12,11 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
     connect(wsl_dialog, SIGNAL(driveEntered(QString)),
             wsl, SLOT(createWSL(QString)));
 
-    con_read = new AbConsoleReader(AB_CONSOLE_NORML);
-    con_thread = new QThread();
-    con_read->moveToThread(con_thread);
-    con_thread->start();
-    connect(con_read, SIGNAL(readyData(QString, int)),
-            this, SLOT(writeConsole(QString, int)));
-    connect(this, SIGNAL(readConsole()),
-            con_read, SLOT(run()));
-    connect(con_read, SIGNAL(sendCommand(QString)),
-            this, SLOT(WriteToPipe(QString)));
-
-    err_read = new AbConsoleReader(AB_CONSOLE_ERROR);
-    err_thread = new QThread();
-    err_read->moveToThread(err_thread);
-    err_thread->start();
-    connect(err_read, SIGNAL(readyData(QString, int)),
-            this, SLOT(writeConsole(QString, int)));
-    connect(this, SIGNAL(readError()),
-            err_read, SLOT(run()));
-    connect(err_read, SIGNAL(sendCommand(QString)),
-            this, SLOT(WriteToPipe(QString)));
+    con_read = new QProcess(parent);
+    connect(con_read, SIGNAL(readyRead()),
+            this, SLOT(writeConsole()));
+    connect(con_read, SIGNAL(readyReadStandardError()),
+            this, SLOT(writeEConsole()));
 }
 
 AbTrain::~AbTrain()
@@ -83,8 +67,9 @@ void AbTrain::createKalB()
     openApp();
 }
 
-void AbTrain::writeConsole(QString line, int flag)
+void AbTrain::writeConsole()
 {
+    QString line = con_read->readAll();
     QString color = "#ffffff";
     int ll_flag = 0; //last line
     if( line[line.length()-1]=='\n' )
@@ -97,15 +82,6 @@ void AbTrain::writeConsole(QString line, int flag)
     {
         QString line_fmt;
         line_fmt += lines[i];
-        if( flag==AB_CONSOLE_ERROR )
-        {
-            QString line_fmt = "<font style=\"color: ";
-            color = "#00f";
-            line_fmt += color;
-            line_fmt += ";\">";
-            line_fmt += line;
-            line_fmt += "</font>";
-        }
 
         if( i<count-1 )
         {
@@ -118,86 +94,70 @@ void AbTrain::writeConsole(QString line, int flag)
         QQmlProperty::write(console, "line_buf", line_fmt);
         qDebug() << "line_fmt" << line_fmt;
         QMetaObject::invokeMethod(console, "addLine");
+        processLine(lines[i]);
     }
 }
+
+
+void AbTrain::writeEConsole()
+{
+    QString line = con_read->readAllStandardError();
+    QString color = "#ff0000";
+    int ll_flag = 0; //last line
+    if( line[line.length()-1]=='\n' )
+    {
+        ll_flag = 1;
+    }
+    QStringList lines = line.split("\n");
+    int count = lines.count();
+    for( int i=0; i<count ; i++)
+    {
+        QString line_fmt;
+        line_fmt += "<font style=\"color: ";
+        line_fmt += color;
+        line_fmt += ";\">";
+        line_fmt += lines[i];
+        line_fmt += "</font>";
+
+        if( i<count-1 )
+        {
+            line_fmt += "<br>";
+        }
+        else if( ll_flag )
+        {
+            line_fmt += "<br>";
+        }
+        QQmlProperty::write(console, "line_buf", line_fmt);
+        qDebug() << "line_fmt" << line_fmt.toStdString().c_str();
+        QMetaObject::invokeMethod(console, "addLine");
+        processLine(lines[i]);
+    }
+}
+
+void AbTrain::processLine(QString line)
+{
+    if( line.contains("Arch>") )
+    {
+        if( state==0 )
+        {
+            QString cmd = "KalbnB.exe\n";
+//            QString cmd = "dir\n";
+        //    QString cmd = "ls\n";
+            state = 1;
+            con_read->write(cmd.toStdString().c_str());
+            con_read->waitForBytesWritten();
+        }
+    }
+}
+
 
 int AbTrain::openApp()
 {
-    SECURITY_ATTRIBUTES saAttr;
-
-    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saAttr.bInheritHandle = TRUE;
-    saAttr.lpSecurityDescriptor = NULL;
-
-    // stdout
-    if( !CreatePipe(&con_read->handle, &err_read->handle, &saAttr, 0) )
-    {
-       qDebug() << "StdoutRd CreatePipe failed";
-    }
-    if( !SetHandleInformation(con_read->handle, HANDLE_FLAG_INHERIT, 0) )
-    {
-       qDebug() << "Stdout SetHandleInformation failed";
-    }
-
-    // stdin
-    if( !CreatePipe(&h_in_read, &h_in_write, &saAttr, 0) )
-    {
-       qDebug() << "Stdin CreatePipe failed";
-    }
-    if( !SetHandleInformation(h_in_write, HANDLE_FLAG_INHERIT, 0) )
-    {
-       qDebug() << "Stdin SetHandleInformation failed";
-    }
-
 //    CreateChildProcess("KalB.exe");
-    CreateChildProcess("cmd.exe");
-
-    qDebug() << "ghable emit";
-    emit readConsole();
-    emit readError();
+//    con_read->start("KalB.exe");
+    con_read->start("cmd.exe");
 
     return 0;
-}
-
-void AbTrain::CreateChildProcess(QString cmd)
-{
-   BOOL bSuccess = FALSE;
-
-   PROCESS_INFORMATION piProcInfo;
-   ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
-
-   STARTUPINFOA siStartInfo;
-   ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
-   siStartInfo.cb = sizeof(STARTUPINFO);
-   siStartInfo.hStdError = err_read->handle;
-   siStartInfo.hStdOutput = err_read->handle;
-   siStartInfo.hStdInput = h_in_read;
-   siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
-
-   char cmd_a[100];
-   strcpy(cmd_a, cmd.toStdString().c_str());
-   bSuccess = CreateProcessA(NULL,
-      cmd_a,         // command line
-      NULL,          // process security attributes
-      NULL,          // primary thread security attributes
-      TRUE,          // handles are inherited
-      0,             // creation flags
-      NULL,          // use parent's environment
-      NULL,          // use parent's current directory
-      &siStartInfo,  // STARTUPINFO pointer
-      &piProcInfo);  // receives PROCESS_INFORMATION
-
-   if ( !bSuccess )
-   {
-       qDebug() << "CreateProcess failed";
-   }
-   else
-   {
-      CloseHandle(piProcInfo.hProcess);
-      CloseHandle(piProcInfo.hThread);
-      CloseHandle(err_read->handle);
-      CloseHandle(h_in_read);
-   }
 }
 
 void AbTrain::WriteToPipe(QString cmd)

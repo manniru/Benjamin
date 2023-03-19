@@ -19,7 +19,7 @@ void AbConsoleReader::run()
     BOOL ok;
     QString output;
 
-    while(true)
+    while( true )
     {
         ok = ReadFile(handle, chBuf,
                       CONSOLE_BUF_SIZE, &read_len, NULL);
@@ -30,9 +30,9 @@ void AbConsoleReader::run()
         }
 
         output = chBuf;
+        emit readyData(output, flag);
         qDebug() << flag << output;
         processLine(output);
-        emit readyData(output, flag);
     }
 }
 
