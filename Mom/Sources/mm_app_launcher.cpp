@@ -43,7 +43,7 @@ void MmAppLauncher::focusOpen(QString shortcut, int desktop_id)
             virt->setDesktop(desktop_id);
             QThread::msleep(50);
         }
-        mm_launchApp(shortcut);
+        mm_launchLnk(shortcut);
     }
 }
 
@@ -75,6 +75,14 @@ void MmAppLauncher::openFirefox()
         lua->run(); // lua fix ask password bug
         virt->setDesktop(4);
         QThread::msleep(200);
-        mm_launchApp("Firefox", "--remote-debugging-port");
+        mm_launchLnk("Firefox", "--remote-debugging-port");
     }
+}
+
+void MmAppLauncher::launchCMD()
+{
+    MmApplication app;
+    app.exe_path = "cmd";
+    app.working_dir = "C:\\Arch";
+    mm_launchApp(&app);
 }

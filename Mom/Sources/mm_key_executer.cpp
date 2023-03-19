@@ -5,7 +5,7 @@
 
 MmKeyExec::MmKeyExec(MmVirt *vi, QObject *parent) : QObject(parent)
 {
-    state = 0;
+    key_buf = 0;
     virt = vi;
 
     timer = new QTimer;
@@ -25,44 +25,49 @@ MmKeyExec::~MmKeyExec()
 // is sensetive to the thread it's called from
 void MmKeyExec::delayedExec()
 {
-    if( state=='d' )
+    if( key_buf=='d' )
     {
         launcher->openFirefox();
     }
-    else if( state=='a' )
+    else if( key_buf=='a' )
     {
         mm_launchScript(RE_WINSCR_DIR"\\git_date.cmd");
     }
-    else if( state=='s' )
+    else if( key_buf=='s' )
     {
         QString shortcut = "Spotify";
         launcher->focusOpen(shortcut, 4);
     }
-    else if( state=='t' )
+    else if( key_buf=='t' )
     {
         QString shortcut = "Telegram Desktop\\Telegram";
         launcher->focusOpen(shortcut, 3);
     }
-    else if( state=='w' )
+    else if( key_buf=='w' )
     {
         QString shortcut = "GitKraken\\GitKraken";
         launcher->focusOpen(shortcut, 4);
     }
-    else if( state=='y' )
+    else if( key_buf=='y' )
     {
         QString shortcut = "Visual Studio Code\\Visual Studio Code";
         launcher->focusOpen(shortcut);
     }
-    else if( state>0 && state<10 )
+    else if( key_buf=='-' ) //enter
     {
-        virt->setDesktop(state-1);
+//        QString shortcut = "Visual Studio Code\\Visual Studio Code";
+        launcher->launchCMD();
     }
-    else if( state ) // Super+Shift+#
+    else if( key_buf>0 && key_buf<10 )
     {
-        int desktop_id = state-10;
+        virt->setDesktop(key_buf-1);
+    }
+    else if( key_buf ) // Super+Shift+#
+    {
+        int desktop_id = key_buf-10;
         virt->moveToDesktop(desktop_id-1);
     }
-    state = 0;
+    key_buf = 0;
 }
 
 int MmKeyExec::execWinNum(int key_code)
@@ -71,7 +76,7 @@ int MmKeyExec::execWinNum(int key_code)
         key_code<='6' )
     {
         int id = key_code-'0';
-        state = id;
+        key_buf = id;
         return 1;
     }
     return 0;
@@ -90,17 +95,17 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
         key_code<='6' )
     {
         int id = key_code-'0';
-        state = id;
+        key_buf = id;
         return 1;
     }
     else if( key_code=='A' )
     {
-        state = 'a';
+        key_buf = 'a';
         return 1;
     }
     else if( key_code=='D' )
     {
-        state = 'd';
+        key_buf = 'd';
         return 1;
     }
     else if( key_code=='P' )
@@ -112,27 +117,32 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
     }
     else if( key_code=='S' ) // Spotify
     {
-        state = 's';
+        key_buf = 's';
         return 1;
     }
     else if( key_code=='T' )
     {
-        state = 't';
+        key_buf = 't';
         return 1;
     }
     else if( key_code=='W' )
     {
-        state = 'w';
+        key_buf = 'w';
         return 1;
     }
     else if( key_code=='Y' )
     {
-        state = 'y';
+        key_buf = 'y';
         return 1;
     }
     else if( key_code==VK_OEM_7 ) // Quote '
     {
-        state = virt->last_desktop;
+        key_buf = virt->last_desktop;
+        return 1;
+    }
+    else if( key_code==VK_RETURN ) // Quote '
+    {
+        key_buf = '-';
         return 1;
     }
     return 0;
@@ -144,7 +154,7 @@ int MmKeyExec::execShiftWin(int key_code)
         key_code<='6' )
     {
         int id = key_code-'0';
-        state = id+10;
+        key_buf = id+10;
         return 1;
     }
 

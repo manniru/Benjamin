@@ -17,6 +17,7 @@ public:
 
     void focusOpen(QString shortcut, int desktop_id=-1);
     void openFirefox();
+    void launchCMD();
 
 private:
     MmApplication getApplication(QString shortcut_name, QString win_title);

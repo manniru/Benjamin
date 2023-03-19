@@ -117,14 +117,20 @@ HRESULT mm_ResolveIt(LPCSTR lnk_path, MmApplication *app)
     return hr;
 }
 
-void mm_launchApp(QString app_name, QString arg)
+void mm_launchLnk(QString app_name, QString arg)
 {
     app_name += ".lnk";
     MmApplication app;
     mm_getLinkPath(app_name, &app);
+
+    mm_launchApp(&app, arg);
+}
+
+void mm_launchApp(MmApplication *app, QString arg)
+{
     if( arg.length() )
     {
-        app.exe_path += " " + arg;
+        app->exe_path += " " + arg;
     }
 
     PROCESS_INFORMATION ProcessInfo; //This is what we get as an [out] parameter
@@ -135,18 +141,18 @@ void mm_launchApp(QString app_name, QString arg)
     ZeroMemory( &ProcessInfo, sizeof(ProcessInfo) );
 
     char app_cmd[200];
-    strcpy(app_cmd, app.exe_path.toStdString().c_str());
+    strcpy(app_cmd, app->exe_path.toStdString().c_str());
 
     int ret = CreateProcessA(NULL, app_cmd, NULL,
                              NULL, FALSE, 0, NULL,
-                             app.working_dir.toStdString().c_str(),
+                             app->working_dir.toStdString().c_str(),
                              &StartupInfo, &ProcessInfo);
     if( ret==0 )
     {
         long last_error = GetLastError();
         qDebug() << "Error 26: CreateProcess failed" << last_error
-                 << "path" << app.exe_path
-                 << "dir" << app.working_dir;
+                 << "path" << app->exe_path
+                 << "dir" << app->working_dir;
     }
 }
 

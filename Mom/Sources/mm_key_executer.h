@@ -36,7 +36,8 @@ private:
 
     QTimer *timer;
     MmVirt *virt;
-    int state;
+    //cannot be QString as of the virtual num msg
+    int key_buf;
 
     MmAppLauncher *launcher;
 };
