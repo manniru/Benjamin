@@ -73,6 +73,8 @@ void AbInitWSL::createWSL(QString drive)
     QDir::setCurrent(arch_dir);
     if( !QFile::exists(vhd_path) )
     {
+        qDebug() << "Info: Unregister Any Previous Version";
+        system("wsl --unregister KalB");
         qDebug() << "Info: Installing KalB Virtual Machine";
         system("KalB.exe");
     }

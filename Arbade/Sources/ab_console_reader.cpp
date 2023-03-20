@@ -43,7 +43,7 @@ void AbConsoleReader::processLine(QString line)
     {
         if( state==0 )
         {
-            QString cmd = "KalB.exe run ls\n";
+            QString cmd = "KalB.exe run ./init.sh\n";
 //            QString cmd = "dir\n";
         //    QString cmd = "ls\n";
             state = 1;
