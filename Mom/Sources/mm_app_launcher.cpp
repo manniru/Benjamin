@@ -49,17 +49,41 @@ void MmAppLauncher::focusOpen(QString shortcut, int desktop_id)
 
 void MmAppLauncher::focus(HWND hwnd)
 {
-    DWORD windowThreadProcessId = GetWindowThreadProcessId(GetForegroundWindow(),LPDWORD(0));
-    DWORD currentThreadId = GetCurrentThreadId();
-    DWORD CONST_SW_SHOW = 5;
-    AttachThreadInput(windowThreadProcessId, currentThreadId, true);
-    BringWindowToTop(hwnd);
-    ShowWindow(hwnd, CONST_SW_SHOW);
-    AttachThreadInput(windowThreadProcessId,currentThreadId, false);
+//    DWORD windowThreadProcessId = GetWindowThreadProcessId(hwnd,LPDWORD(0));
+//    DWORD currentThreadId = GetCurrentThreadId();
+//    DWORD CONST_SW_SHOW = 5;
+//    SetForegroundWindow(hwnd);
+//    SetActiveWindow(hwnd);
+//    SetFocus(hwnd);
 
+//    AttachThreadInput(windowThreadProcessId, currentThreadId, true);
+//    BringWindowToTop(hwnd);
+//    ShowWindow(hwnd, CONST_SW_SHOW);
+//    qDebug() << "focus";
+
+//    AttachThreadInput(windowThreadProcessId,currentThreadId, false);
+
+    DWORD dwCurrentThread = GetCurrentThreadId();
+    DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
+    AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
+
+    AllowSetForegroundWindow(ASFW_ANY);
+    LockSetForegroundWindow(LSFW_UNLOCK);
+    BringWindowToTop(hwnd);
     SetForegroundWindow(hwnd);
+//    SetCapture(hWnd);
+//    SetFocus(hWnd);
     SetActiveWindow(hwnd);
-    SetFocus(hwnd);
+//    SetWindowPos(hWnd,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+//    SetWindowPos(hWnd,HWND_NOTOPMOST,0,0,0,0,SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE);
+
+    // If window is minimzed
+    if( IsIconic(hwnd) )
+    {
+        ShowWindow(hwnd, SW_RESTORE);
+    }
+
+    AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
 }
 
 void MmAppLauncher::openFirefox()
@@ -73,7 +97,7 @@ void MmAppLauncher::openFirefox()
     else
     {
         lua->run(); // lua fix ask password bug
-        virt->setDesktop(4);
+        virt->setDesktop(3);
         QThread::msleep(200);
         mm_launchLnk("Firefox", "--remote-debugging-port");
     }

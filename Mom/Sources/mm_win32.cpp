@@ -29,7 +29,6 @@ BOOL CALLBACK EnumWindowsApp(HWND hwnd, LPARAM lParam)
     long pid = mm_getPid(hwnd);
     QString pname = mm_getPName(pid);
     pname = QFileInfo(pname).completeBaseName();
-
     if( pname==app->exe_name )
     {
         qDebug() << "EnumWindowsProc find HWND"
