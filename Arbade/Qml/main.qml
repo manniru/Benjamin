@@ -34,6 +34,7 @@ ApplicationWindow
     property string ab_auto_comp: ""
     property string ab_mean_var: ""
     property string ab_focus_text: ""
+    property string ab_dif_words: ""
     property int ab_focus_word: -1
     property int ab_count: 0
     property int ab_total_count: 100
@@ -59,9 +60,9 @@ ApplicationWindow
     signal setStatus(int st)
     signal setVerifier(int ver)
     signal setFocusWord(int fw)
-    signal saveWordList(string wl)
-    signal setCategory(string cat)
-    signal setDifWords(string dif)
+    signal saveWordList()
+    signal setCategory()
+    signal setDifWords()
 
     Component.onCompleted:
     {
@@ -207,7 +208,7 @@ ApplicationWindow
             if( title===category_title )
             {
                 ab_category = value;
-                setCategory(ab_category);
+                setCategory();
             }
             else if( title===cnt_title )
             {
@@ -313,11 +314,13 @@ ApplicationWindow
 
         onUpdateWordList:
         {
-            saveWordList(word_list);
+            ab_word_list = word_list;
+            saveWordList();
         }
         onUpdateDifWords:
         {
-            setDifWords(dif_words);
+            ab_dif_words = dif_words;
+            setDifWords();
         }
         onEnableButtons:
         {
@@ -365,12 +368,12 @@ ApplicationWindow
     Timer
     {
         id: rest_timer
-        interval: 2000
+        interval: ab_const.ab_REST_PAUSE
         repeat: false
 
         onTriggered:
         {
-            interval = 2000;
+            interval = ab_const.ab_REST_PAUSE;
             rest_timer.stop();
             if( sig_del_file )
             {
@@ -396,14 +399,18 @@ ApplicationWindow
 
     function execKey(key)
     {
-        if( key===Qt.Key_O || key===Qt.Key_J || key===Qt.Key_K ||
-            key===Qt.Key_Up || key===Qt.Key_Down ||
-            key===Qt.Key_Left || key===Qt.Key_Right ||
-            key===Qt.Key_W || key===Qt.Key_T )
+        if( key===Qt.Key_O || key===Qt.Key_W || key===Qt.Key_T )
         {
             sendKey(key);
         }
-
+        else if( key===Qt.Key_Left )
+        {
+            ab_num_words--;
+        }
+        else if( key===Qt.Key_Right )
+        {
+            ab_num_words++;
+        }
         else if( key===Qt.Key_K )
         {
             ab_rec_time += .1;
@@ -506,11 +513,20 @@ ApplicationWindow
                 ab_verifier = 1;
             }
         }
+        else if( key===Qt.Key_R )
+        {
+
+        }
     }
 
     function playkon()
     {
         audioPlayer.play();
+    }
+
+    function incCount()
+    {
+        ab_count++;
     }
 
     function initWsl()

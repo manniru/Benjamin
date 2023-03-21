@@ -8,20 +8,6 @@
 #include "ab_wav_reader.h"
 #include "ab_stat.h"
 
-#define AB_REST_PAUSE 500
-
-typedef struct AbRecParam
-{
-    QString category;
-    QString word_list;
-    QString dif_words;
-    int   focus_word;
-    int   count;
-    int   status;
-    int   num_words;
-    int   verifier;
-}AbRecParam;
-
 class AbManager : public QObject
 {
     Q_OBJECT
@@ -37,8 +23,6 @@ public:
     QString readWordList();
     QString idToWords(int id);
     QString idsToWords(QVector<int> ids);
-
-    AbRecParam params;
 
 signals:
     void startDecoding();

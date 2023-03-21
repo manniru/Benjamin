@@ -48,9 +48,12 @@ void AbManager::readWave(QString filename)
 void AbManager::writeWav()
 {
     int total_count = QQmlProperty::read(root, "ab_total_count").toInt();
-    if( params.count<total_count )
+    int count = QQmlProperty::read(root, "ab_count").toInt();
+    int status = QQmlProperty::read(root, "ab_status").toInt();
+
+    if( count<total_count )
     {
-        if( params.status==AB_STATUS_REQPAUSE )
+        if( status==AB_STATUS_REQPAUSE )
         {
             setStatus(AB_STATUS_PAUSE);
 //            qDebug() << "writeWav:AB_STATUS_PAUSE";
@@ -66,7 +69,7 @@ void AbManager::writeWav()
     {
         setStatus(AB_STATUS_STOP);
 //        qDebug() << "writeWav:AB_STATUS_STOP";
-        params.count = 0;
+        count = 0;
     }
 
     float rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
@@ -75,8 +78,9 @@ void AbManager::writeWav()
     QQmlProperty::write(root, "ab_power", power_dB);
     wav_wr->write(wav_path);
 
-    if( params.count<total_count &&
-        params.status==AB_STATUS_BREAK )
+    status = QQmlProperty::read(root, "ab_status").toInt();
+    if( count<total_count &&
+        status==AB_STATUS_BREAK )
     {
         record();
     }
@@ -84,10 +88,10 @@ void AbManager::writeWav()
 
 void AbManager::record()
 {
-    params.count++;
-    QQmlProperty::write(root, "ab_count", params.count);
-    wav_path = getRandPath(params.category);
-    wav_wr->setCategory(params.category);
+    QMetaObject::invokeMethod(root, "incCount"); // ab_count++
+    QString category = QQmlProperty::read(root, "ab_category").toString();
+    wav_path = getRandPath(category);
+    wav_wr->setCategory(category);
     setStatus(AB_STATUS_BREAK);
 //    qDebug() << "record:AB_STATUS_BREAK";
     QQmlProperty::write(root, "ab_elapsed_time", 0);
@@ -97,7 +101,8 @@ void AbManager::record()
 
 void AbManager::breakTimeout()
 {
-    if( params.status==AB_STATUS_REQPAUSE )
+    int status = QQmlProperty::read(root, "ab_status").toInt();
+    if( status==AB_STATUS_REQPAUSE )
     {
         setStatus(AB_STATUS_PAUSE);
 //        qDebug() << "readDone:AB_STATUS_PAUSE";
@@ -118,8 +123,9 @@ QString AbManager::getRandPath(QString category)
     int lexicon_size = lexicon.length();
     QVector<AbWord> words;
     int fix_word_index = -1;
+    int focus_word = QQmlProperty::read(root, "ab_focus_word").toInt();
 
-    if( params.focus_word>=0 && params.focus_word<lexicon.size() )
+    if( focus_word>=0 && focus_word<lexicon.size() )
     {
         fix_word_index = rand()%AB_WORD_LEN;
     }
@@ -130,7 +136,7 @@ QString AbManager::getRandPath(QString category)
         {
             if( fix_word_index==i )
             {
-                word_id[i] = params.focus_word;
+                word_id[i] = focus_word;
             }
             else
             {
@@ -204,7 +210,8 @@ void AbManager::writeWordList()
     {
         qDebug() << "Error opening" << BT_WORDLIST_PATH;
     }
-    words_file.write(params.word_list.toStdString().c_str());
+    QString word_list = QQmlProperty::read(root, "ab_word_list").toString();
+    words_file.write(word_list.toStdString().c_str());
     words_file.close();
 }
 
@@ -238,7 +245,8 @@ void AbManager::loadWordList()
 
 void AbManager::delWordSamples()
 {
-    QStringList dif_words = params.dif_words.split("\n");
+    QString dif = QQmlProperty::read(root, "ab_dif_words").toString();
+    QStringList dif_words = dif.split("\n");
     int len = dif_words.length();
     QVector<int> del_list;
     for( int i=0 ; i<len ; i++ )
@@ -374,12 +382,12 @@ void AbManager::setStatus(int status)
 {
     if( status==AB_STATUS_STOP )
     {
-        QString stat = ab_getStat(params.category);
+        QString category = QQmlProperty::read(root, "ab_category").toString();
+        QString stat = ab_getStat(category);
         QQmlProperty::write(root, "ab_word_stat", stat);
         QString meanvar = ab_getMeanVar();
         QQmlProperty::write(root, "ab_mean_var", meanvar);
     }
-    params.status = status;
     QQmlProperty::write(root, "ab_status", status);
 }
 
