@@ -5,7 +5,6 @@
         <file>AbStatus.qml</file>
         <file>AbConst.qml</file>
         <file>AbDialog.qml</file>
-        <file>AbStat.qml</file>
         <file>AbQuery.qml</file>
         <file>AbEditor.qml</file>
         <file>AbDiffAccept.qml</file>

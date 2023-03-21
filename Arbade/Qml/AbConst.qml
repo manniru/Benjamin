@@ -9,5 +9,6 @@ Item
     property int ab_STATUS_BREAK:    5
     property int ab_STATUS_PLAY:     6
 
+    property int ab_REST_PAUSE:      2000
     property int ab_WORDEDIT_BOX_SIZE: 21
 }

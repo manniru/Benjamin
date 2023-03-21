@@ -72,42 +72,42 @@ QFileInfoList ab_getAudioDirs()
     return dir_list;
 }
 
-//QString ab_getStat(QString category)
-//{
-//    QString path;
-//    if( category=="unverified" )
-//    {
-//        path = KAL_AU_DIR_WIN + category + "\\";
-//    }
-//    else
-//    {
-//        path = KAL_AU_DIR_WIN"train\\";
-//        path += category + "\\";
-//    }
-//    QStringList files_list = ab_listFiles(path, AB_LIST_NAMES);
-//    if( files_list.length()<=0 )
-//    {
-//        return "";
-//    }
-//    QStringList lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
-//    int len = lexicon.length();
-//    QVector<int> count = ab_countWords(files_list, len);
+/*QString ab_getStat(QString category)
+{
+    QString path;
+    if( category=="unverified" )
+    {
+        path = KAL_AU_DIR_WIN + category + "\\";
+    }
+    else
+    {
+        path = KAL_AU_DIR_WIN"train\\";
+        path += category + "\\";
+    }
+    QStringList files_list = ab_listFiles(path, AB_LIST_NAMES);
+    if( files_list.length()<=0 )
+    {
+        return "";
+    }
+    QStringList lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
+    int len = lexicon.length();
+    QVector<int> count = ab_countWords(files_list, len);
 
-//    cat_mean = ab_meanCount(count);
-//    cat_var = ab_varCount(count, cat_mean);
-//    QString result, data;
+    cat_mean = ab_meanCount(count);
+    cat_var = ab_varCount(count, cat_mean);
+    QString result, data;
 
-//    for( int i=0 ; i<len ; i++ )
-//    {
-//        data = QStringLiteral("%1").arg(i, 3, 10, QLatin1Char('0'));
-//        result += setFont(data, count[i], cat_mean, cat_var);
-//        data = lexicon[i];
-//        result += setFont(data, count[i], cat_mean, cat_var) + " ";
-//        data = QString::number(count[i]);
-//        result += setFont(data, count[i], cat_mean, cat_var) + "!";
-//    }
-//    return result.trimmed();
-//}
+    for( int i=0 ; i<len ; i++ )
+    {
+        data = QStringLiteral("%1").arg(i, 3, 10, QLatin1Char('0'));
+        result += setFont(data, count[i], cat_mean, cat_var);
+        data = lexicon[i];
+        result += setFont(data, count[i], cat_mean, cat_var) + " ";
+        data = QString::number(count[i]);
+        result += setFont(data, count[i], cat_mean, cat_var) + "!";
+    }
+    return result.trimmed();
+}*/
 
 QString ab_getMeanVar()
 {

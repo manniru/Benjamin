@@ -18,6 +18,12 @@ Dialog
 
     signal accept(string result)
 
+    background: Rectangle
+    {
+        anchors.fill: parent
+        color: "#2e2e2e"
+    }
+
     Text
     {
         id: verify_label
@@ -26,6 +32,7 @@ Dialog
         horizontalAlignment: Text.AlignHCenter
         text: dialog_label
         lineHeight: 1.4
+        color: "#b4b4b4"
 
         Keys.onPressed:
         {
