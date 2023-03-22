@@ -22,9 +22,9 @@ private slots:
     void processKey(int key);
     void setStatus(int status);
     void setVerifier(int verifier);
-    void saveWordList(QString word_list);
-    void setCategory(QString cat);
-    void setDifWords(QString difwords);
+    void saveWordList();
+    void setCategory();
+    void setDifWords();
     void setFocusWord(int focus_word);
 
 private:
@@ -37,7 +37,6 @@ private:
 
     QObject* root;//root qml object
     AbManager *man;
-    AbRecParam *rec_params;
     QTimer *break_timer;
     QStringList unverified_list;
     int catmode = 0;

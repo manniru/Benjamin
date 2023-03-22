@@ -19,12 +19,12 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setVerifier(int)));
     connect(root, SIGNAL(setStatus(int)),
             this, SLOT(setStatus(int)));
-    connect(root, SIGNAL(saveWordList(QString)), this,
-            SLOT(saveWordList(QString)));
-    connect(root, SIGNAL(setCategory(QString)),
-            this, SLOT(setCategory(QString)));
-    connect(root, SIGNAL(setDifWords(QString)),
-            this, SLOT(setDifWords(QString)));
+    connect(root, SIGNAL(saveWordList()), this,
+            SLOT(saveWordList()));
+    connect(root, SIGNAL(setCategory()),
+            this, SLOT(setCategory()));
+    connect(root, SIGNAL(setDifWords()),
+            this, SLOT(setDifWords()));
     connect(root, SIGNAL(setFocusWord(int)),
             this, SLOT(setFocusWord(int)));
 
@@ -34,20 +34,16 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 
 void AbScene::readQmlProperties()
 {
-    man->params.status = QQmlProperty::read(root, "ab_status").toInt();
-    man->params.num_words = QQmlProperty::read(root, "ab_num_words").toInt();
-    man->params.count = QQmlProperty::read(root, "ab_count").toInt();
-    man->params.verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    setVerifier(man->params.verifier);
-    man->params.category = QQmlProperty::read(root, "ab_category").toString();
+    setVerifier(QQmlProperty::read(root, "ab_verifier").toInt());
     setFocusWord(QQmlProperty::read(root, "ab_focus_word").toInt());
 }
 
 void AbScene::setStatus(int status)
 {
-    man->params.status = status;
     QQmlProperty::write(root, "ab_status", status);
-    if( status==AB_STATUS_REC && man->params.verifier==0 )
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+
+    if( status==AB_STATUS_REC && verifier==0 )
     {
         man->record();
     }
@@ -55,7 +51,6 @@ void AbScene::setStatus(int status)
 
 void AbScene::setVerifier(int verifier)
 {
-    man->params.verifier = verifier;
     updateStat();
     setCount(0);
 
@@ -69,14 +64,16 @@ void AbScene::setVerifier(int verifier)
 
 void AbScene::loadsrc()
 {
-    if( man->params.verifier==1 )
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier==1 )
     {
         int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
-        if( man->params.count<total_count )
+        int count = QQmlProperty::read(root, "ab_count").toInt();
+        if( count<total_count )
         {
             setStatus(AB_STATUS_BREAK);
             loadAddress();
-            setCount(man->params.count+1);
+            setCount(count+1);
             float pause_time = QQmlProperty::read(root, "ab_pause_time").toFloat();
             break_timer->start(pause_time*1000);
         }
@@ -89,37 +86,37 @@ void AbScene::loadsrc()
 
 void AbScene::setCount(int cnt)
 {
-    man->params.count = cnt;
-    QQmlProperty::write(root, "ab_count", man->params.count);
+    QQmlProperty::write(root, "ab_count", cnt);
 }
 
 void AbScene::loadAddress()
 {
-    QString address = unverified_list[man->params.count];
+    int count = QQmlProperty::read(root, "ab_count").toInt();
+    QString address = unverified_list[count];
     man->readWave(address);
     QQmlProperty::write(root, "ab_address", address);
 }
 
 void AbScene::deleteFile()
 {
-    QFile file(unverified_list[man->params.count-1]);
+    int count = QQmlProperty::read(root, "ab_count").toInt();
+    QFile file(unverified_list[count-1]);
     file.remove();
 }
 
 void AbScene::copyFile()
 {
-    man->copyToOnline(unverified_list[man->params.count-1]);
+    int count = QQmlProperty::read(root, "ab_count").toInt();
+    man->copyToOnline(unverified_list[count-1]);
 }
 
-void AbScene::setCategory(QString cat)
+void AbScene::setCategory()
 {
-    man->params.category = cat;
     updateStat();
 }
 
 void AbScene::setFocusWord(int focus_word)
 {
-    man->params.focus_word = focus_word;
     QString focus_text;
     if( focus_word==-1 )
     {
@@ -138,7 +135,8 @@ void AbScene::updateStat()
     QString stat;
     if( !catmode )
     {
-        stat = ab_getStat(man->params.category);
+        QString category = QQmlProperty::read(root, "ab_category").toString();
+        stat = ab_getStat(category);
     }
     else
     {
@@ -152,19 +150,17 @@ void AbScene::updateStat()
 
 void AbScene::loadWordList()
 {
-    man->params.word_list = man->readWordList();
-    QQmlProperty::write(root, "ab_word_list", man->params.word_list);
+    QString word_list = man->readWordList();
+    QQmlProperty::write(root, "ab_word_list", word_list);
 }
 
-void AbScene::saveWordList(QString word_list)
+void AbScene::saveWordList()
 {
-    man->params.word_list = word_list;
     man->writeWordList();
 }
 
-void AbScene::setDifWords(QString difwords)
+void AbScene::setDifWords()
 {
-    man->params.dif_words = difwords;
     man->delWordSamples();
     updateStat();
 }
@@ -183,26 +179,10 @@ void AbScene::processKey(int key)
         QString path = QDir::currentPath() + "\\";
         path.replace('/', '\\');
         path +=  KAL_AU_DIR_WIN"train\\";
-        path += man->params.category + "\\";
+        QString category = QQmlProperty::read(root, "ab_category").toString();
+        path += category + "\\";
         QString cmd = "explorer.exe " + path;
         system(cmd.toStdString().c_str());
-    }
-
-    else if( key==Qt::Key_Left )
-    {
-        int num_words = QQmlProperty::read(root,
-                            "ab_num_words").toInt();
-        num_words--;
-        man->params.num_words = num_words;
-        QQmlProperty::write(root, "ab_num_words", num_words);
-    }
-    else if( key==Qt::Key_Right )
-    {
-        int num_words = QQmlProperty::read(root,
-                            "ab_num_words").toInt();
-        num_words++;
-        man->params.num_words = num_words;
-        QQmlProperty::write(root, "ab_num_words", num_words);
     }
     else if( key==Qt::Key_W )
     {
