@@ -1,5 +1,5 @@
-#ifndef AB_CONSOLE_READER_H
-#define AB_CONSOLE_READER_H
+#ifndef AB_CONSOLE_CONTROLLER_H
+#define AB_CONSOLE_CONTROLLER_H
 
 #include <QObject>
 #include <windows.h>
@@ -10,12 +10,12 @@
 #define AB_CONSOLE_ERROR 1
 #define AB_CONSOLE_INPUT 2
 
-class AbConsoleReader : public QObject
+class AbConsoleController : public QObject
 {
     Q_OBJECT
 public:
-    explicit AbConsoleReader(int mode, QObject *parent = nullptr);
-    ~AbConsoleReader();
+    explicit AbConsoleController(int mode, QObject *parent = nullptr);
+    ~AbConsoleController();
 
     HANDLE handle = NULL;
 
@@ -29,8 +29,9 @@ signals:
 private:
     void processLine(QString line);
 
-    int state = 0;
+    QStringList commands;
+    int line_number = 0;
     int flag;
 };
 
-#endif // AB_CONSOLE_READER_H
+#endif // AB_CONSOLE_CONTROLLER_H

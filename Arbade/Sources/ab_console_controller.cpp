@@ -1,18 +1,21 @@
-#include "ab_console_reader.h"
+#include "ab_console_controller.h"
 #include <QDebug>
 
-AbConsoleReader::AbConsoleReader(int mode, QObject *parent) : QObject(parent)
+AbConsoleController::AbConsoleController(int mode, QObject *parent) : QObject(parent)
 {
-    state = 0;
+    line_number = 0;
     flag = mode;
+
+    commands << "./init.sh";
+    commands << "./train.sh";
 }
 
-AbConsoleReader::~AbConsoleReader()
+AbConsoleController::~AbConsoleController()
 {
 
 }
 
-void AbConsoleReader::run()
+void AbConsoleController::run()
 {
     DWORD read_len;
     char chBuf[CONSOLE_BUF_SIZE];
@@ -37,16 +40,15 @@ void AbConsoleReader::run()
     }
 }
 
-void AbConsoleReader::processLine(QString line)
+void AbConsoleController::processLine(QString line)
 {
     if( line.contains("Arch>") )
     {
-        if( state==0 )
+        if( line_number<commands.length() )
         {
-            QString cmd = "KalB.exe run ./init.sh\n";
-//            QString cmd = "dir\n";
-        //    QString cmd = "ls\n";
-            state = 1;
+            QString cmd = "KalB.exe run ";
+            cmd += commands[line_number] + "\n";
+            line_number++;
             emit sendCommand(cmd);
         }
     }
