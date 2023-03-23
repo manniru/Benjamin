@@ -2,9 +2,8 @@
 #define AB_INIT_WSL_H
 
 #include <QObject>
-#include <QDir>
 #include <QtNetwork>
-#include <windows.h>
+#include "ab_win_api.h"
 #include "backend.h"
 #include "config.h"
 
@@ -33,12 +32,5 @@ private:
     QNetworkReply* reply;
     QFile rar_file;
 };
-
-QString getLinkPath(QString name);
-QString getLinkPathA(QString name);
-QString getLinkPathB(QString name);
-QString findAppPath(QString path, QString pattern,
-                    QString black_list);
-HRESULT resolveIt(LPCSTR lnk_path, char *target);
 
 #endif // AB_INIT_WSL_H

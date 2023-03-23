@@ -12,7 +12,7 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
     connect(wsl_dialog, SIGNAL(driveEntered(QString)),
             wsl, SLOT(createWSL(QString)));
 
-    con_read = new AbConsoleReader(AB_CONSOLE_NORML);
+    con_read = new AbConsoleController(AB_CONSOLE_NORML);
     con_thread = new QThread();
     con_read->moveToThread(con_thread);
     con_thread->start();
@@ -23,7 +23,7 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
     connect(con_read, SIGNAL(sendCommand(QString)),
             this, SLOT(WriteToPipe(QString)));
 
-    err_read = new AbConsoleReader(AB_CONSOLE_ERROR);
+    err_read = new AbConsoleController(AB_CONSOLE_ERROR);
     err_thread = new QThread();
     err_read->moveToThread(err_thread);
     err_thread->start();

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QThread>
 #include "ab_init_wsl.h"
-#include "ab_console_reader.h"
+#include "ab_console_controller.h"
 
 class AbTrain : public QObject
 {
@@ -37,9 +37,9 @@ private:
     QString    wsl_path;
 
     QThread   *con_thread;
-    AbConsoleReader *con_read;
+    AbConsoleController *con_read;
     QThread         *err_thread;
-    AbConsoleReader *err_read;
+    AbConsoleController *err_read;
 
     HANDLE h_in_read = NULL;
     HANDLE h_in_write = NULL;
