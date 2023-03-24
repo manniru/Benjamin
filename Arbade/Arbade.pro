@@ -6,11 +6,10 @@ QT += multimedia \
 CONFIG += console
 
 INCLUDEPATH += ../PNN
-win32:INCLUDEPATH += ../PNN/lua
 
 linux:LIBS += -pthread -lm -ldl \
-              -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
-win32:LIBS += -L../PNN/libs -lFstWin64 -lPortAudio -lwinmm -llua54 \
+              -LKaldi/Libs -lportaudio -lasound -lrt -ljack
+win32:LIBS += -L../PNN/libs -lPortAudio -lwinmm \
               -lole32 -luuid
 
 DEFINES += HAVE_MKL \
@@ -32,6 +31,7 @@ QMLCACHE_DIR = ./Build
 OTHER_FILES = BaTool.conf
 
 HEADERS += \
+    Sources/ab_audio.h \
     Sources/ab_console_controller.h \
     Sources/ab_init_wsl.h \
     Sources/ab_manager.h \
@@ -48,6 +48,7 @@ HEADERS += \
     Sources/ta_ini.h
 
 SOURCES += \
+    Sources/ab_audio.cpp \
     Sources/ab_console_controller.cpp \
     Sources/ab_init_wsl.cpp \
     Sources/ab_manager.cpp \
@@ -67,11 +68,9 @@ win32:HEADERS +=
 
 win32:SOURCES +=
 
-HEADERS += \
-    Sources/ab_lua.h
+HEADERS +=
 
-SOURCES += \
-    Sources/ab_lua.cpp
+SOURCES +=
 
 RESOURCES += \
              Qml/ui.qrc \
