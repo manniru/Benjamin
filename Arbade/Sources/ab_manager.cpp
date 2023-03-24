@@ -7,195 +7,53 @@ AbManager::AbManager(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
     srand(time(NULL));
-    float rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
-    int sample_count = rec_time*BT_REC_RATE;
-    qDebug() << "sample_count" << sample_count;
-    rec = new AbRecorder(sample_count);
-    wav_wr = new AbWavWriter(rec->cy_buf, sample_count);
-    wav_rd = new AbWavReader(rec->cy_buf, sample_count);
-    connect(rec, SIGNAL(finished()), this, SLOT(writeWav()));
-    connect(rec, SIGNAL(updatePercent(int)),
-            this, SLOT(updateTime(int)));
-    lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
-    loadWordList();
-    read_timer = new QTimer();
-    connect(read_timer, SIGNAL(timeout()),
-            this, SLOT(breakTimeout()));
+
+    audio = new AbAudio(root);
+    connect(audio, SIGNAL(setStatus(int)), this, SLOT(setStatus(int)));
 }
 
-// verification and playing phase
 void AbManager::readWave(QString filename)
 {
-    wav_rd->read(filename);
-    QQmlProperty::write(root, "ab_rec_time", wav_rd->wave_time);
-    QQmlProperty::write(root, "ab_power", wav_rd->power_dB);
-
-    QFileInfo wav_file(filename);
-    filename = wav_file.baseName();
-    QStringList id_strlist = filename.split("_", QString::SkipEmptyParts);
-    int len = id_strlist.size();
-    QVector<int> id_list;
-    for( int i=0 ; i<len ; i++ )
-    {
-        id_list.push_back(id_strlist[i].toInt());
-    }
-    QString words = idsToWords(id_list);
-    QQmlProperty::write(root, "ab_num_words", len);
-    QQmlProperty::write(root, "ab_words", words);
-}
-
-// recording phase
-void AbManager::writeWav()
-{
-    int total_count = QQmlProperty::read(root, "ab_total_count").toInt();
-    int count = QQmlProperty::read(root, "ab_count").toInt();
-    int status = QQmlProperty::read(root, "ab_status").toInt();
-
-    if( count<total_count )
-    {
-        if( status==AB_STATUS_REQPAUSE )
-        {
-            setStatus(AB_STATUS_PAUSE);
-//            qDebug() << "writeWav:AB_STATUS_PAUSE";
-        }
-        else
-        {
-            setStatus(AB_STATUS_BREAK);
-//            qDebug() << "writeWav:AB_STATUS_BREAK";
-            QQmlProperty::write(root, "ab_elapsed_time", 0);
-        }
-    }
-    else
-    {
-        setStatus(AB_STATUS_STOP);
-//        qDebug() << "writeWav:AB_STATUS_STOP";
-        count = 0;
-    }
-
-    float rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
-    double power_dB = calcPower(rec->cy_buf,
-                                rec_time*BT_REC_RATE);
-    QQmlProperty::write(root, "ab_power", power_dB);
-    wav_wr->write(wav_path);
-
-    status = QQmlProperty::read(root, "ab_status").toInt();
-    if( count<total_count &&
-        status==AB_STATUS_BREAK )
-    {
-        record();
-    }
+    audio->readWave(filename);
 }
 
 void AbManager::record()
 {
-    QMetaObject::invokeMethod(root, "incCount"); // ab_count++
-    QString category = QQmlProperty::read(root, "ab_category").toString();
-    wav_path = getRandPath(category);
-    wav_wr->setCategory(category);
-    setStatus(AB_STATUS_BREAK);
-//    qDebug() << "record:AB_STATUS_BREAK";
-    QQmlProperty::write(root, "ab_elapsed_time", 0);
-    float pause_time = QQmlProperty::read(root, "ab_pause_time").toFloat();
-    read_timer->start(pause_time*1000);
-}
-
-void AbManager::breakTimeout()
-{
-    int status = QQmlProperty::read(root, "ab_status").toInt();
-    if( status==AB_STATUS_REQPAUSE )
-    {
-        setStatus(AB_STATUS_PAUSE);
-//        qDebug() << "readDone:AB_STATUS_PAUSE";
-    }
-    else
-    {
-        qDebug() << "start record";
-        setStatus(AB_STATUS_REC);
-//        qDebug() << "readDone:AB_STATUS_REC";
-        rec->reset();
-    }
-    read_timer->stop();
-}
-
-QString AbManager::getRandPath(QString category)
-{
-    int word_id[AB_WORD_LEN];
-    int lexicon_size = lexicon.length();
-    QVector<AbWord> words;
-    int fix_word_index = -1;
-    int focus_word = QQmlProperty::read(root, "ab_focus_word").toInt();
-
-    if( focus_word>=0 && focus_word<lexicon.size() )
-    {
-        fix_word_index = rand()%AB_WORD_LEN;
-    }
-
-    while( true )
-    {
-        for( int i=0 ; i<AB_WORD_LEN ; i++ )
-        {
-            if( fix_word_index==i )
-            {
-                word_id[i] = focus_word;
-            }
-            else
-            {
-                word_id[i] = rand()%lexicon_size;
-            }
-        }
-
-        words.clear();
-        words.resize(AB_WORD_LEN);
-        for( int i=0 ; i<AB_WORD_LEN ; i++ )
-        {
-            words[i].word_id = word_id[i];
-            words[i].word = lexicon[word_id[i]];
-        }
-
-        QString file_name = getFileName(words, category);
-
-        if( QFile::exists(file_name)==0 )
-        {
-            printWords(words);
-            return file_name;
-        }
-    }
-
-    return "";
-}
-
-QString AbManager::getFileName(QVector<AbWord> words,
-                              QString category)
-{
-    // verified base name
-    QString base_name = KAL_AU_DIR"train/";
-    base_name += category + "/";
-    base_name += wordToId(words);
-    QString name = base_name + ".wav";
-
-    return name;
-}
-
-void AbManager::updateTime(int percent)
-{
-    QQmlProperty::write(root, "ab_elapsed_time", percent);
+    audio->record();
 }
 
 void AbManager::copyToOnline(QString filename)
 {
     QFile file(filename);
     QFileInfo unver_file(file);
-    file.copy(KAL_AU_DIR"train/online/" +
-              unver_file.fileName());
+
+    QString online_dir = ab_getAudioPath();
+    online_dir += "train\\online";
+    QDir au_TrainDir(online_dir);
+
+    if( !au_TrainDir.exists() )
+    {
+        qDebug() << "Creating" << online_dir
+                 << " Directory";
+#ifdef WIN32
+        QString cmd = "mkdir " + online_dir;
+        system(cmd.toStdString().c_str());
+#else //OR __linux
+        system("mkdir -p " KAL_AU_DIR "train/online");
+#endif
+    }
+    QString new_path = online_dir + unver_file.fileName();
+    file.copy(new_path);
     file.remove();
 }
 
 QString AbManager::readWordList()
 {
-    QFile words_file(BT_WORDLIST_PATH);
+    QString wl_path = ab_getAudioPath() + "..\\word_list";
+    QFile words_file(wl_path);
     if( !words_file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
-        qDebug() << "Error opening" << BT_WORDLIST_PATH;
+        qDebug() << "Error opening" << wl_path;
         return "";
     }
     QString ret = QString(words_file.readAll());
@@ -205,42 +63,16 @@ QString AbManager::readWordList()
 
 void AbManager::writeWordList()
 {
-    QFile words_file(BT_WORDLIST_PATH);
+    QString wl_path = ab_getAudioPath() + "..\\word_list";
+    QFile words_file(wl_path);
     if( !words_file.open(QIODevice::WriteOnly | QIODevice::Text) )
     {
-        qDebug() << "Error opening" << BT_WORDLIST_PATH;
+        qDebug() << "Error opening" << wl_path;
     }
     QString word_list = QQmlProperty::read(root, "ab_word_list").toString();
     words_file.write(word_list.toStdString().c_str());
     words_file.close();
-}
-
-void AbManager::loadWordList()
-{
-    if( word_list.size() )
-    {
-        return;
-    }
-
-    QFile wl_file(BT_WORDLIST_PATH);
-
-    if( !wl_file.open(QIODevice::ReadOnly | QIODevice::Text) )
-    {
-        qDebug() << "Error opening" << BT_WORDLIST_PATH;
-        return;
-    }
-
-    while ( !wl_file.atEnd() )
-    {
-        QString line = QString(wl_file.readLine());
-        line.remove(QRegExp("\\n")); //remove new line
-        if( line.length() )
-        {
-            word_list.push_back(line);
-        }
-    }
-
-    wl_file.close();
+    audio->parseLexicon();
 }
 
 void AbManager::delWordSamples()
@@ -253,7 +85,7 @@ void AbManager::delWordSamples()
     {
         dif_words[i] = dif_words[i].split(".")[1].split("(")[0].trimmed();
         int result = wordToIndex(dif_words[i]);
-        if( result>=0 && result<lexicon.size() )
+        if( result>=0 && result<audio->lexicon.size() )
         {
             del_list.push_back(result);
         }
@@ -294,10 +126,10 @@ void AbManager::delWordSamples()
 
 int AbManager::wordToIndex(QString word)
 {
-    int len = lexicon.size();
+    int len = audio->lexicon.size();
     for( int i=0 ; i<len ; i++ )
     {
-        if( lexicon[i]==word )
+        if( audio->lexicon[i]==word )
         {
             return i;
         }
@@ -305,73 +137,9 @@ int AbManager::wordToIndex(QString word)
     return -1;
 }
 
-QString AbManager::wordToId(QVector<AbWord> result)
-{
-    QString buf = "";
-
-    if( result.length()==0 )
-    {
-        return buf;
-    }
-
-    for( int i=0 ; i<result.length()-1 ; i++ )
-    {
-        for( int j=0 ; j<word_list.length() ; j++ )
-        {
-            if( result[i].word==word_list[j] )
-            {
-                buf += QString::number(j);
-                buf += "_";
-
-                break;
-            }
-        }
-    }
-
-    QString last_word = result.last().word;
-    for( int j=0 ; j<word_list.length() ; j++ )
-    {
-        if( last_word==word_list[j] )
-        {
-            buf += QString::number(j);
-        }
-    }
-
-    return buf;
-}
-
 QString AbManager::idToWords(int id)
 {
-    return word_list[id];
-}
-
-QString AbManager::idsToWords(QVector<int> ids)
-{
-    int len_id = ids.size();
-    QString ret;
-    for( int i=0 ; i<len_id ; i++ )
-    {
-        ret += "<" + word_list[ids[i]] + "> ";
-    }
-    return ret.trimmed();
-}
-
-void AbManager::printWords(QVector<AbWord> words)
-{
-    QString msg, total_words;
-
-    for( int i=0 ; i<words.size() ; i++ )
-    {
-        msg += words[i].word + "(";
-        msg += QString::number(words[i].word_id) + ") ";
-        total_words += "<" + words[i].word + "> ";
-        if( i%3==2 )
-        {
-            total_words += "\n";
-        }
-    }
-    qDebug() << "Message:" << msg;
-    QQmlProperty::write(root, "ab_words", total_words.trimmed());
+    return audio->lexicon[id];
 }
 
 AbManager::~AbManager()
@@ -389,17 +157,4 @@ void AbManager::setStatus(int status)
         QQmlProperty::write(root, "ab_mean_var", meanvar);
     }
     QQmlProperty::write(root, "ab_status", status);
-}
-
-double calcPower(int16_t *buffer, int len)
-{
-    double sum_sq = 0;
-    for( int i=0 ; i<len ; i++ )
-    {
-        sum_sq += pow(buffer[i],2);
-    }
-    double power = sqrt(sum_sq)/len;
-    double power_dB = 20*log10(power);
-    power_dB += 50; // calibration
-    return power_dB;
 }

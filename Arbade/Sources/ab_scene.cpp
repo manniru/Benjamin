@@ -13,7 +13,6 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     connect(root, SIGNAL(loadsrc()), this, SLOT(loadsrc()));
     connect(root, SIGNAL(delFile()), this, SLOT(deleteFile()));
     connect(root, SIGNAL(copyFile()), this, SLOT(copyFile()));
-    connect(root, SIGNAL(loadWordList()), this, SLOT(loadWordList()));
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
     connect(root, SIGNAL(setVerifier(int)),
             this, SLOT(setVerifier(int)));
@@ -47,6 +46,10 @@ void AbScene::setStatus(int status)
     {
         man->record();
     }
+    else if( status==AB_STATUS_PAUSE && verifier==0 )
+    {
+        updateStat();
+    }
 }
 
 void AbScene::setVerifier(int verifier)
@@ -56,8 +59,9 @@ void AbScene::setVerifier(int verifier)
 
     if( verifier )
     {
-        unverified_list = ab_listFiles(KAL_AU_DIR_WIN"unverified\\",
-                                       AB_LIST_PATHS);
+        QString unverified_dir = ab_getAudioPath();
+        unverified_dir += "unverified\\";
+        unverified_list = ab_listFiles(unverified_dir, AB_LIST_PATHS);
         QQmlProperty::write(root, "ab_total_count_v", unverified_list.size());
     }
 }
@@ -133,10 +137,12 @@ void AbScene::updateStat()
 {
     loadWordList();
     QString stat;
+
     if( !catmode )
     {
         QString category = QQmlProperty::read(root, "ab_category").toString();
         stat = ab_getStat(category);
+//        qDebug() << "updateStat" << category;
     }
     else
     {
@@ -145,6 +151,7 @@ void AbScene::updateStat()
     QQmlProperty::write(root, "ab_word_stat", stat);
     QString meanvar = ab_getMeanVar();
     QQmlProperty::write(root, "ab_mean_var", meanvar);
+//    qDebug() << "updateStat" << meanvar << stat;
     updateCategories();
 }
 
@@ -176,13 +183,8 @@ void AbScene::processKey(int key)
 {
     if( key==Qt::Key_O )
     {
-        QString path = QDir::currentPath() + "\\";
-        path.replace('/', '\\');
-        path +=  KAL_AU_DIR_WIN"train\\";
         QString category = QQmlProperty::read(root, "ab_category").toString();
-        path += category + "\\";
-        QString cmd = "explorer.exe " + path;
-        system(cmd.toStdString().c_str());
+        ab_openCategory(category);
     }
     else if( key==Qt::Key_W )
     {

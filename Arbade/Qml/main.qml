@@ -55,7 +55,6 @@ ApplicationWindow
     signal loadsrc()
     signal delFile()
     signal copyFile()
-    signal loadWordList()
     signal sendKey(int key)
     signal setStatus(int st)
     signal setVerifier(int ver)
