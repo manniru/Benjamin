@@ -24,7 +24,6 @@ private:
     int16_t     *cy_buf;
     int          buf_size;
     QFile       *file;
-    QStringList  exemption_list;
 };
 
 #endif // AB_WAV_WRITER_H

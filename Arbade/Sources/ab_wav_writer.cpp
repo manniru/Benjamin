@@ -5,37 +5,7 @@ AbWavWriter::AbWavWriter(int16_t *buffer, int sample_count)
     cy_buf = buffer;
     buf_size = sample_count;
 
-    QDir au_UnverifiedDir(KAL_AU_DIR"unverified");
-
-    if( !au_UnverifiedDir.exists() )
-    {
-        qDebug() << "Creating" << KAL_AU_DIR"unverified"
-                 << " Directory";
-#ifdef WIN32
-        system("mkdir " KAL_AU_DIR_WIN "unverified");
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "unverified");
-#endif
-    }
-
-    QDir au_TrainDir(KAL_AU_DIR"train/online");
-
-    if( !au_TrainDir.exists() )
-    {
-        qDebug() << "Creating" << KAL_AU_DIR"train/online"
-                 << " Directory";
-#ifdef WIN32
-        system("mkdir " KAL_AU_DIR_WIN "train\\online");
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "train/online");
-#endif
-    }
     file = new QFile;
-
-    exemption_list << "kick";
-    exemption_list << "side";
-    exemption_list << "copy";
-    exemption_list << "paste";
 }
 
 AbWavWriter::~AbWavWriter()
@@ -100,22 +70,4 @@ void AbWavWriter::writeWavHeader(int len)
 void AbWavWriter::setCategory(QString cat)
 {
     category = cat;
-
-    QString base_name = KAL_AU_DIR_WIN"train\\";
-    base_name += category + "\\";
-    QDir au_OnlineDir(base_name);
-
-    if( !au_OnlineDir.exists() )
-    {
-        qDebug() << "Creating" << base_name
-                 << " Directory";
-        QString cmd;
-#ifdef WIN32
-        cmd = "mkdir " + base_name;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        cmd = "mkdir -p " KAL_AU_DIR "online";
-        system(cmd.toStdString().c_str());
-#endif
-    }
 }

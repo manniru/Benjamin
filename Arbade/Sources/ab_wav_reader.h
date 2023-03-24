@@ -4,6 +4,7 @@
 #include "ab_recorder.h"
 #include "ab_mbr_base.h" //For BtWord
 #include "backend.h"
+#include "ab_stat.h"
 
 class AbWavReader
 {
@@ -12,7 +13,6 @@ public:
     ~AbWavReader();
 
     void read(QString filename);
-    void setCategory(QString cat);
 
     QString category;
     double wave_time;
@@ -25,6 +25,5 @@ private:
     int16_t     *cy_buf;
     int          buf_size;
     QFile       *file;
-    QStringList  exemption_list;
 };
 #endif // AB_WAV_READER_H

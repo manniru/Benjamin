@@ -5,38 +5,22 @@ AbWavReader::AbWavReader(int16_t *buffer, int sample_count)
     cy_buf = buffer;
     buf_size = sample_count;
 
-    QDir au_UnverifiedDir(KAL_AU_DIR"unverified");
+    QString unver_path = ab_getAudioPath() + "unverified";
+    QDir au_UnverifiedDir(unver_path);
 
     if( !au_UnverifiedDir.exists() )
     {
-        qDebug() << "Creating" << KAL_AU_DIR"unverified"
+        qDebug() << "Creating" << unver_path
                  << " Directory";
 #ifdef WIN32
-        system("mkdir " KAL_AU_DIR_WIN "unverified");
+        QString cmd = "mkdir " + unver_path;
+        system(cmd.toStdString().c_str());
 #else //OR __linux
         system("mkdir -p " KAL_AU_DIR "unverified");
 #endif
     }
 
-    QDir au_TrainDir(KAL_AU_DIR"train/online");
-
-    if( !au_TrainDir.exists() )
-    {
-        qDebug() << "Creating" << KAL_AU_DIR"train/online"
-                 << " Directory";
-#ifdef WIN32
-        system("mkdir " KAL_AU_DIR_WIN "train\\online");
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "train/online");
-#endif
-    }
-
     file = new QFile;
-
-    exemption_list << "kick";
-    exemption_list << "side";
-    exemption_list << "copy";
-    exemption_list << "paste";
 }
 
 AbWavReader::~AbWavReader()
@@ -139,26 +123,4 @@ void AbWavReader::readWavHeader()
         qDebug() << "Error: subchunk2 is not started with data.";
     }
     file->read((char*)&buf_i, 4);//subchunk2 size(int=sample count)
-}
-
-void AbWavReader::setCategory(QString cat)
-{
-    category = cat;
-
-    QString base_name = KAL_AU_DIR_WIN"unverified\\";
-    QDir au_verDir(base_name);
-
-    if( !au_verDir.exists() )
-    {
-        qDebug() << "Creating" << base_name
-                 << " Directory";
-        QString cmd;
-#ifdef WIN32
-        cmd = "mkdir " + base_name;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        cmd = "mkdir -p " KAL_AU_DIR "unverified";
-        system(cmd.toStdString().c_str());
-#endif
-    }
 }

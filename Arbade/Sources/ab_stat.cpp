@@ -7,7 +7,8 @@ QString ab_getStat(QString category)
     QFileInfoList dir_list;
     if( category.length() )
     {
-        QString path = KAL_AU_DIR_WIN"train\\"+category+"\\";
+        QString path = ab_getAudioPath();
+        path += "train\\"+category+"\\";
         QFileInfo category_dir(path);
         dir_list.append(category_dir);
     }
@@ -21,7 +22,8 @@ QString ab_getStat(QString category)
         return "";
     }
 
-    QStringList lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
+    QString wl_path = ab_getAudioPath() + "..\\word_list";
+    QStringList lexicon = bt_parseLexicon(wl_path);
     int len = lexicon.length();
     QVector<int> tot_count;
     tot_count.resize(len);
@@ -31,6 +33,8 @@ QString ab_getStat(QString category)
     {
         QStringList files_list = ab_listFiles(dir_list[i].absoluteFilePath(),
                                               AB_LIST_NAMES);
+//        qDebug() << ">>dir:" << dir_list[i].absoluteFilePath()
+//                 << "\n" << files_list;
         QVector<int> count = ab_countWords(files_list, len);
         for( int j=0 ; j<len ; j++ )
         {
@@ -50,7 +54,7 @@ QString ab_getStat(QString category)
 
 QFileInfoList ab_getAudioDirs()
 {
-    QString path = KAL_AU_DIR_WIN"train\\";
+    QString path = ab_getAudioPath() + "train\\";
     QDir dir(path);
     if( !dir.exists() )
     {
@@ -59,7 +63,7 @@ QFileInfoList ab_getAudioDirs()
         return QFileInfoList();
     }
     QFileInfoList dir_list = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-    path = KAL_AU_DIR_WIN"unverified\\";
+    path = ab_getAudioPath() + "unverified\\";
     QFileInfo unver(path);
     if( !unver.exists() )
     {
@@ -72,42 +76,29 @@ QFileInfoList ab_getAudioDirs()
     return dir_list;
 }
 
-/*QString ab_getStat(QString category)
+void ab_openCategory(QString category)
 {
-    QString path;
-    if( category=="unverified" )
+    QString path = ab_getAudioPath();
+    if( category!="unverified" )
     {
-        path = KAL_AU_DIR_WIN + category + "\\";
+        path += "train\\";
     }
-    else
-    {
-        path = KAL_AU_DIR_WIN"train\\";
-        path += category + "\\";
-    }
-    QStringList files_list = ab_listFiles(path, AB_LIST_NAMES);
-    if( files_list.length()<=0 )
-    {
-        return "";
-    }
-    QStringList lexicon = bt_parseLexicon(BT_WORDLIST_PATH);
-    int len = lexicon.length();
-    QVector<int> count = ab_countWords(files_list, len);
+    path += category + "\\";
 
-    cat_mean = ab_meanCount(count);
-    cat_var = ab_varCount(count, cat_mean);
-    QString result, data;
+    QString cmd = "explorer.exe " + path;
+    system(cmd.toStdString().c_str());
+}
 
-    for( int i=0 ; i<len ; i++ )
-    {
-        data = QStringLiteral("%1").arg(i, 3, 10, QLatin1Char('0'));
-        result += setFont(data, count[i], cat_mean, cat_var);
-        data = lexicon[i];
-        result += setFont(data, count[i], cat_mean, cat_var) + " ";
-        data = QString::number(count[i]);
-        result += setFont(data, count[i], cat_mean, cat_var) + "!";
-    }
-    return result.trimmed();
-}*/
+QString ab_getAudioPath()
+{
+#ifdef WIN32
+    QString audio_path = ab_getWslPath();
+    audio_path += "\\Benjamin\\Nato\\audio\\";
+    return audio_path;
+#else
+    return KAL_AU_DIR;
+#endif
+}
 
 QString ab_getMeanVar()
 {
@@ -233,3 +224,5 @@ int ab_varCount(QVector<int> count, int mean)
     }
     return sqrt(sum/len);
 }
+
+

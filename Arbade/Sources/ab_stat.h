@@ -9,6 +9,8 @@
 
 QString ab_getStat(QString category=""); // get total stat for wordlist
 QString ab_getMeanVar();
+QString ab_getAudioPath();
+void ab_openCategory(QString category);
 QVector<int> ab_countWords(QStringList file_list, int len);
 QString setFont(QString data, int val, int mean,
                 int var, int font_size=24, int alignment=0);
