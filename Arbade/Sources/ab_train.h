@@ -25,9 +25,9 @@ private slots:
     void WriteToPipe(QString cmd);
 
 private:
-    void createKalB();
+    void initKalB();
 
-    int openApp();
+    int openConsole();
     void CreateChildProcess(QString cmd);
 
     QObject   *root; // root qml object
@@ -44,6 +44,7 @@ private:
     HANDLE h_in_read = NULL;
     HANDLE h_in_write = NULL;
     PROCESS_INFORMATION piProcInfo;
+    int init_flag;
 };
 
 

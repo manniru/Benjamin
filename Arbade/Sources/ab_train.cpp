@@ -6,6 +6,7 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
 {
     wsl = new AbInitWSL();
     root = ui;
+    init_flag = 1;
     wsl_dialog = root->findChild<QObject*>("WslDialog");
     console = root->findChild<QObject*>("Console");
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
@@ -52,7 +53,18 @@ void AbTrain::processKey(int key)
 {
     if( key==Qt::Key_T )
     {
-        initWsl();
+        if( init_flag )
+        {
+            initWsl();
+        }
+        else
+        {
+            initKalB();
+        }
+    }
+    else if( key==Qt::Key_Escape )
+    {
+        ;
     }
     else
     {
@@ -76,16 +88,17 @@ void AbTrain::initWsl()
     }
 
     qDebug() << "createKalB";
-    createKalB();
+    init_flag = 0;
+    initKalB();
 }
 
-void AbTrain::createKalB()
+void AbTrain::initKalB()
 {
     QQmlProperty::write(root, "ab_show_console", 1);
     QString current_dir = QDir::currentPath();
     QDir::setCurrent(wsl_path);
 
-    openApp();
+    openConsole();
 }
 
 void AbTrain::writeConsole(QString line, int flag)
@@ -117,10 +130,19 @@ void AbTrain::writeConsole(QString line, int flag)
     }
 }
 
-int AbTrain::openApp()
+int AbTrain::openConsole()
 {
     SECURITY_ATTRIBUTES saAttr;
-
+    if( init_flag )
+    {
+        con_read->line_number = 0;
+        err_read->line_number = 0;
+    }
+    else
+    {
+        con_read->line_number = 1;
+        err_read->line_number = 1;
+    }
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;
@@ -145,10 +167,8 @@ int AbTrain::openApp()
        qDebug() << "Stdin SetHandleInformation failed";
     }
 
-//    CreateChildProcess("KalB.exe");
     CreateChildProcess("cmd.exe");
 
-    qDebug() << "ghable emit";
     emit readConsole();
     emit readError();
 

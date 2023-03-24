@@ -46,13 +46,13 @@ void AbInitWSL::createWSL(QString drive)
     }
 
     QString rar_path = arch_dir + "\\KalB.rar";
-    if( !QFile::exists(rar_path) )
+    QString tar_path = arch_dir + "\\install.tar";
+    if( !QFile::exists(rar_path) && !QFile::exists(tar_path) )
     {
         qDebug() << "Info: Downloading" << AB_IMAGE_URL;
         downloadImage(rar_path);
     }
 
-    QString tar_path = arch_dir + "\\install.tar";
     if( !QFile::exists(tar_path) )
     {
         qDebug() << "Info: Uncompressing" << tar_path;

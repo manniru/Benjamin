@@ -18,6 +18,7 @@ public:
     ~AbConsoleController();
 
     HANDLE handle = NULL;
+    int line_number = 0;
 
 public slots:
     void run();
@@ -30,7 +31,6 @@ private:
     void processLine(QString line);
 
     QStringList commands;
-    int line_number = 0;
     int flag;
 };
 

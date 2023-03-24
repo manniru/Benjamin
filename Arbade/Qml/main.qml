@@ -403,6 +403,14 @@ ApplicationWindow
         {
             sendKey(key);
         }
+        else if( key===Qt.Key_Escape )
+        {
+            if( console_box.visible )
+            {
+                console_box.visible = false;
+            }
+            sendKey(key);
+        }
         else if( key===Qt.Key_Left )
         {
             ab_num_words--;
