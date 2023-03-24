@@ -74,13 +74,12 @@ void AbTrain::processKey(int key)
 
 void AbTrain::initWsl()
 {
-    qDebug() << "TRAINING STARTED ....";
-    wsl_path = wsl->getWslPath();
+    QString wsl_path = ab_getWslPath();
     if( wsl_path.isEmpty() )
     {
-        QMetaObject::invokeMethod(root, "initWsl");
+        qDebug() << "Error 152: shit has happened";
+        exit(52);
     }
-
     if( !QFile::exists(wsl_path + "\\ext4.vhdx") )
     {
         QString drive = QString(wsl_path[0]);
@@ -88,7 +87,6 @@ void AbTrain::initWsl()
     }
 
     qDebug() << "createKalB";
-    init_flag = 0;
     initKalB();
 }
 
@@ -132,6 +130,7 @@ void AbTrain::writeConsole(QString line, int flag)
 
 int AbTrain::openConsole()
 {
+    qDebug() << "openConsole";
     SECURITY_ATTRIBUTES saAttr;
     if( init_flag )
     {
@@ -171,6 +170,8 @@ int AbTrain::openConsole()
 
     emit readConsole();
     emit readError();
+
+    init_flag = 0;
 
     return 0;
 }

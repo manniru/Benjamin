@@ -12,10 +12,14 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    QObject *mainItem = engine.rootObjects().first();
-    AbScene scene(mainItem);
-    AbTrain train(mainItem);
-    train.initWsl();
+    QObject *root = engine.rootObjects().first();
+    AbScene scene(root);
+    AbTrain train(root);
+    QString wsl_path = ab_getWslPath();
+    if( wsl_path.isEmpty() )
+    {
+        QMetaObject::invokeMethod(root, "initWsl");
+    }
 
     return app.exec();
 }

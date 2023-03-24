@@ -16,8 +16,6 @@ public:
     explicit AbInitWSL(QObject *parent = nullptr);
     ~AbInitWSL();
 
-    QString getWslPath();
-
 public slots:
     void createWSL(QString drive);
 

@@ -15,6 +15,8 @@ public:
 
     void initWsl();
 
+    AbInitWSL *wsl;
+
 signals:
     void readConsole();
     void readError();
@@ -33,7 +35,6 @@ private:
     QObject   *root; // root qml object
     QObject   *wsl_dialog;
     QObject   *console;
-    AbInitWSL *wsl;
     QString    wsl_path;
 
     QThread   *con_thread;

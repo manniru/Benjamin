@@ -6,8 +6,8 @@ AbConsoleController::AbConsoleController(int mode, QObject *parent) : QObject(pa
     line_number = 0;
     flag = mode;
 
-    commands << "./init.sh";
-    commands << "./train.sh";
+    commands << "./wsl_init.sh";
+    commands << "./wsl_train.sh";
 }
 
 AbConsoleController::~AbConsoleController()
@@ -35,7 +35,7 @@ void AbConsoleController::run()
 
         output = chBuf;
         emit readyData(output, flag);
-        qDebug() << flag << output;
+//        qDebug() << flag << output;
         processLine(output);
     }
 }
@@ -49,6 +49,7 @@ void AbConsoleController::processLine(QString line)
             QString cmd = "KalB.exe run ";
             cmd += commands[line_number] + "\n";
             line_number++;
+            qDebug() << "LN:" << line_number << " " << cmd;
             emit sendCommand(cmd);
         }
     }
