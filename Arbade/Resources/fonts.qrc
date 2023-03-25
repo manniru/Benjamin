@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>Roboto-Regular.ttf</file>
+        <file>fa6-brands.ttf</file>
+        <file>fa6-reg.ttf</file>
+        <file>fa6-solid.ttf</file>
     </qresource>
 </RCC>
