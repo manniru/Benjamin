@@ -270,7 +270,7 @@ ApplicationWindow
     {
         id: editor_box
 
-        width: 1300
+        width: 1200
         anchors.top: ab_help.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
@@ -304,10 +304,13 @@ ApplicationWindow
 
     AbRecList
     {
+        height: editor_box.height
         anchors.left: editor_box.right
         anchors.top: ab_help.bottom
+        anchors.topMargin: 20
         anchors.bottom: status_bar.top
         anchors.right: parent.right
+        anchors.rightMargin: 20
     }
 
     AbConsole

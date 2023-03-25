@@ -8,7 +8,6 @@ import QtQuick.Window 2.10
 
 Rectangle
 {
-    id: wordline
     height: 30
     color: "transparent"
 
@@ -42,10 +41,10 @@ Rectangle
     Rectangle
     {
         id: text_bg
-        height: text_area.height
+        height: parent.height
         anchors.top: parent.top
         anchors.left: linenum_bg.right
-        width: wordline.width - 20
+        width: parent.width - 50
         color: "#4e4e4e"
     }
 
@@ -53,30 +52,28 @@ Rectangle
     {
         id: text_area
         Accessible.name: "document"
-        width: wordline.width - 70
-        anchors.left: linenum_lbl.right
-        anchors.leftMargin: 30
+        anchors.left: text_bg.left
+        anchors.leftMargin: 20
         anchors.top: parent.top
-        anchors.topMargin: -2
+        anchors.topMargin: 3
 
         text: "word_text"
         font.pixelSize: 16
-        focus: false
         color: "#c9c9c9"
     }
 
     Label
     {
-        id: stat_lbl
-        anchors.top: parent.top
         anchors.right: text_bg.right
         anchors.rightMargin: 20
+        anchors.top: parent.top
         anchors.topMargin: 3
         horizontalAlignment: Text.AlignHCenter
 
         font.pixelSize: 16
         font.family: font_awesome_label
         text: "\uf04c"
+        color: "#c9c9c9"
     }
 
     function zeroPad(num)

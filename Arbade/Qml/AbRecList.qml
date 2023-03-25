@@ -8,15 +8,15 @@ import QtQuick.Window 2.10
 
 Rectangle
 {
-    height: contentItem.height
-    width: contentItem.width
     visible: true
-    color: "red"
+    color: "transparent"
 
-    MouseArea
+    Component.onCompleted:
     {
-        anchors.fill: parent
-        onClicked: focus_item.forceActiveFocus();
+        for( var i=0 ; i<10 ; i++ )
+        {
+            lm_reclist.append({"ni": 10-i});
+        }
     }
 
     ListModel
@@ -28,99 +28,25 @@ Rectangle
     {
         id: ld_reclist
 
-        AbWordBox
+        AbRecLine
         {
             id: wordbox_id
 
-            width: 200
-            word_list: wl
-            word_stat: ws
-            start_num: sn
-            last_box: lb
-            commit: com
-            set_focus: sf
-
-            onWordBoxChanged:
-            {
-                var split_words = total_words.split("\n");
-                split_words[id] = word;
-                total_words = split_words.join("\n");
-                var verbose = 0;
-                var dif_result = getDiff(verbose);
-                if( dif_result.length )
-                {
-                    enableButtons(1);
-                }
-                else
-                {
-                    enableButtons(0);
-                }
-            }
-
-            onNewBoxRequired:
-            {
-                lm_wordedit.get(box_count-1).lb = 0;
-                lm_wordedit.append({"sn": word_count, "wl": "",
-                                   "ws": "0", "lb": Boolean(true),
-                                   "com": 1, "sf": 0});
-            }
-
-            onNewWord:
-            {
-                word_count++;
-                total_words += "\n";
-            }
-
-            onSetFNum:
-            {
-                focused_line = id;
-            }
-
-            onRemoveBox:
-            {
-
-            }
-
-            onLineRemoved:
-            {
-                word_count--;
-                total_words = total_words.substring(0,total_words.length-1); // removes \n
-                arrowPress(word_count-1, Qt.Key_Up);
-            }
-
-            onArrowPrsd:
-            {
-                arrowPress(id, direction);
-            }
+            width: lv_reclist.parent.width
+            height: 30
+            num_id: ni
         }
     }
 
-    Flickable
+    ListView
     {
-        id: scroller
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        width: parent.width
-        height: lv_wordedit.height
-        contentWidth: lv_wordedit.childrenRect.width + 20
-        clip : true
+        id: lv_reclist
+        anchors.fill: parent
+        contentHeight: 30*count + 20
+        clip: true
+//            contentWidth: childrenRect.width
 
-        property int scroll_speed: 30
-
-        ListView
-        {
-            id: lv_reclist
-            height: childrenRect.height
-            anchors.fill: parent
-            orientation: ListView.Horizontal
-            spacing: 40
-            clip: true
-            contentWidth: childrenRect.width
-
-            model: lm_wordedit
-            delegate: ld_wordedit
-        }
+        model: lm_reclist
+        delegate: ld_reclist
     }
 }

@@ -17,5 +17,6 @@
         <file>AbStatusLabel.qml</file>
         <file>AbButtons.qml</file>
         <file>AbRecList.qml</file>
+        <file>AbRecLine.qml</file>
     </qresource>
 </RCC>
