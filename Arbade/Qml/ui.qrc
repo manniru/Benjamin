@@ -13,5 +13,9 @@
         <file>AbButton.qml</file>
         <file>AbDialogWsl.qml</file>
         <file>AbConsole.qml</file>
+        <file>AbTimeBar.qml</file>
+        <file>AbStatusLabel.qml</file>
+        <file>AbButtons.qml</file>
+        <file>AbRecList.qml</file>
     </qresource>
 </RCC>

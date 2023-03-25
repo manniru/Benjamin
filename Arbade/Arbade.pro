@@ -81,5 +81,10 @@ OTHER_FILES += Qml/*.qml
 QML_IMPORT_PATH += Qml/
 
 DISTFILES += \
+    Qml/AbButtons.qml \
     Qml/AbConsole.qml \
-    Qml/AbDialogWsl.qml
+    Qml/AbDialogWsl.qml \
+    Qml/AbRecLine.qml \
+    Qml/AbRecList.qml \
+    Qml/AbStatusLabel.qml \
+    Qml/AbTimeBar.qml

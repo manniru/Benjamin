@@ -15,7 +15,7 @@ ApplicationWindow
     id: root
 
     width: 1650
-    height: 750
+    height: 900
     minimumHeight: 500
     minimumWidth: 760
 
@@ -103,8 +103,8 @@ ApplicationWindow
 
     onAb_mean_varChanged:
     {
-        ab_sidebar.mean = ab_mean_var.split("!")[0];
-        ab_sidebar.variance = ab_mean_var.split("!")[1];
+        status_bar.mean = ab_mean_var.split("!")[0];
+        status_bar.variance = ab_mean_var.split("!")[1];
     }
 
     Settings
@@ -130,12 +130,11 @@ ApplicationWindow
 
     AbStatus
     {
-        id: ab_sidebar
-        width: 400
-        height: childrenRect.height
-        anchors.top: parent.top
+        id: status_bar
+        height: 120
+        anchors.bottom: parent.bottom
         anchors.left: parent.left
-        anchors.leftMargin: 50
+        anchors.right: parent.right
 
         pause_time: ab_pause_time
         num_words: ab_num_words
@@ -186,7 +185,7 @@ ApplicationWindow
         id: ab_help
 
         height: 120
-        anchors.bottom: parent.bottom
+        anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
     }
@@ -267,48 +266,16 @@ ApplicationWindow
         onClicked: focus_item.forceActiveFocus();
     }
 
-    AbButton
-    {
-        id: save_button
-        text: "Save"
-        width: .7*ab_sidebar.width
-        anchors.horizontalCenter: ab_sidebar.horizontalCenter
-        anchors.top: ab_sidebar.bottom
-        anchors.topMargin: 60
-        enabled: false
-
-        onClick:
-        {
-            editor_box.saveProcess();
-        }
-    }
-
-    AbButton
-    {
-        id: reset_button
-        text: "Reset"
-        width: .7*ab_sidebar.width
-        anchors.horizontalCenter: ab_sidebar.horizontalCenter
-        anchors.top: save_button.bottom
-        anchors.topMargin: 15
-        enabled: false
-
-        onClick:
-        {
-            editor_box.resetProcess();
-        }
-    }
-
     AbEditor
     {
         id: editor_box
 
-        anchors.top: parent.top
-        anchors.topMargin: 40
-        anchors.right: parent.right
-        anchors.rightMargin: 20
-        anchors.left: ab_sidebar.right
-        anchors.bottom: ab_help.top
+        width: 1300
+        anchors.top: ab_help.bottom
+        anchors.topMargin: 20
+        anchors.left: parent.left
+        anchors.leftMargin: 30
+        anchors.bottom: status_bar.top
         anchors.bottomMargin: 65
 
         onUpdateWordList:
@@ -323,9 +290,24 @@ ApplicationWindow
         }
         onEnableButtons:
         {
-            save_button.enabled = enable;
-            reset_button.enabled = enable;
+            buttons_box.btn_enable = enable;
         }
+    }
+
+    AbButtons
+    {
+        id: buttons_box
+        anchors.top: editor_box.bottom
+        anchors.topMargin: -30
+        anchors.horizontalCenter: editor_box.horizontalCenter
+    }
+
+    AbRecList
+    {
+        anchors.left: editor_box.right
+        anchors.top: ab_help.bottom
+        anchors.bottom: status_bar.top
+        anchors.right: parent.right
     }
 
     AbConsole
@@ -394,6 +376,12 @@ ApplicationWindow
     {
         id: fontRobotoRegular
         source: "qrc:/Roboto-Regular.ttf"
+    }
+
+    FontLoader
+    {
+        id: fontAwesomeSolid
+        source: "qrc:/fa6-solid.ttf"
     }
 
     function execKey(key)
