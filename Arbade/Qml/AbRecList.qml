@@ -10,14 +10,9 @@ Rectangle
 {
     visible: true
     color: "transparent"
+    property var word_samples: []
 
-    Component.onCompleted:
-    {
-        for( var i=0 ; i<10 ; i++ )
-        {
-            lm_reclist.append({"ni": 10-i});
-        }
-    }
+    signal delSample(string sample)
 
     ListModel
     {
@@ -31,10 +26,48 @@ Rectangle
         AbRecLine
         {
             id: wordbox_id
-
             width: lv_reclist.parent.width
             height: 30
+
             num_id: ni
+            sample_text: st
+            focused: fc
+
+            onLineClicked:
+            {
+                var len = word_samples.length;
+                lm_reclist.get(len-index).fc = true;
+                for( var i=0 ; i<len ; i++ )
+                {
+                    if( i!==index-1 )
+                    {
+                        lm_reclist.get(len-i-1).fc = false;
+                    }
+                }
+            }
+
+            onArrowClicked:
+            {
+                var len = word_samples.length;
+                if( key===Qt.Key_Down && index>1)
+                {
+                    lm_reclist.get(len-index+1).fc = true;
+                    lm_reclist.get(len-index).fc = false;
+                }
+                else if( key===Qt.Key_Up && index<len )
+                {
+                    lm_reclist.get(len-index-1).fc = true;
+                    lm_reclist.get(len-index).fc = false; // do not factor this line!!
+                }
+            }
+
+            onRemoveClicked:
+            {
+                var len = word_samples.length;
+                delSample(word_samples[len-index]);
+                word_samples.splice(len - index,1); // remove element
+                updateRecList();
+            }
         }
     }
 
@@ -48,5 +81,16 @@ Rectangle
 
         model: lm_reclist
         delegate: ld_reclist
+    }
+
+    function updateRecList()
+    {
+        lm_reclist.clear();
+        var len = word_samples.length;
+        for( var i=0 ; i<len ; i++ )
+        {
+            lm_reclist.append({"ni": len-i, "st": word_samples[i],
+                              "fc": false});
+        }
     }
 }

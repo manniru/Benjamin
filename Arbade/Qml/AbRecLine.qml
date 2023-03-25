@@ -12,8 +12,50 @@ Rectangle
     color: "transparent"
 
     property int num_id: 0
-    property string text: "value"
+    property string sample_text: ""
     property string font_awesome_label:    fontAwesomeSolid.name
+    property string remove_char: "\uf1f8"
+    property string pause_char:  "\uf04c"
+    property string play_char:   "\uf04b"
+    property bool line_hovered: false
+    property bool icon_hovered: false
+    property bool line_clicked: false
+    property bool play_clicked: false
+    property bool focused: false
+
+    signal removeClicked(int index)
+    signal lineClicked(int index)
+    signal arrowClicked(int key, int index)
+
+    Keys.onPressed:
+    {
+        if( line_clicked )
+        {
+            if( event.key===Qt.Key_Delete )
+            {
+                removeClicked(num_id);
+            }
+            else if( event.key===Qt.Key_Up
+                    || event.key===Qt.Key_Down )
+            {
+                arrowClicked(event.key, num_id);
+            }
+        }
+
+    }
+
+    onFocusedChanged:
+    {
+        if( !focused )
+        {
+            line_clicked = false;
+        }
+        else
+        {
+            line_clicked = true;
+            forceActiveFocus();
+        }
+    }
 
     Rectangle
     {
@@ -23,7 +65,21 @@ Rectangle
         anchors.top: parent.top
         anchors.left: parent.left
 
-        color: "#666666"
+        color:
+        {
+            if( line_clicked )
+            {
+                "#4e7084"
+            }
+            else if( line_hovered )
+            {
+                "#808080"
+            }
+            else
+            {
+                "#666666"
+            }
+        }
     }
 
     Label
@@ -42,10 +98,44 @@ Rectangle
     {
         id: text_bg
         height: parent.height
+        width: parent.width - 50
         anchors.top: parent.top
         anchors.left: linenum_bg.right
-        width: parent.width - 50
-        color: "#4e4e4e"
+        color:
+        {
+            if( line_clicked )
+            {
+                "#475a65"
+            }
+            else if( line_hovered )
+            {
+                "#696969"
+            }
+            else
+            {
+                "#4e4e4e"
+            }
+        }
+
+        MouseArea
+        {
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked:
+            {
+                line_clicked = true;
+                parent.parent.forceActiveFocus();
+                lineClicked(num_id);
+            }
+            onEntered:
+            {
+                line_hovered = true;
+            }
+            onExited:
+            {
+                line_hovered = false;
+            }
+        }
     }
 
     Label
@@ -57,23 +147,164 @@ Rectangle
         anchors.top: parent.top
         anchors.topMargin: 3
 
-        text: "word_text"
+        text: sample_text
         font.pixelSize: 16
         color: "#c9c9c9"
+    }
+
+    Rectangle
+    {
+        id: remove_bg
+
+        height: parent.height
+        width: 45
+        anchors.right: text_bg.right
+        anchors.top: parent.top
+        color:
+        {
+            if( line_clicked )
+            {
+                "#315265"
+            }
+            else if( line_hovered )
+            {
+                "#828282"
+            }
+            else
+            {
+                "transparent"
+            }
+        }
+
+        MouseArea
+        {
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked:
+            {
+                removeClicked(num_id);
+            }
+            onEntered:
+            {
+                icon_hovered = true;
+                line_hovered = true;
+            }
+            onExited:
+            {
+                icon_hovered = false;
+                line_hovered = false;
+            }
+        }
     }
 
     Label
     {
         anchors.right: text_bg.right
-        anchors.rightMargin: 20
-        anchors.top: parent.top
-        anchors.topMargin: 3
+        anchors.rightMargin: 15
+        anchors.verticalCenter: text_area.verticalCenter
         horizontalAlignment: Text.AlignHCenter
 
         font.pixelSize: 16
         font.family: font_awesome_label
-        text: "\uf04c"
-        color: "#c9c9c9"
+        text: remove_char
+        color:
+        {
+            if( icon_hovered )
+            {
+                "#d9a74c"
+            }
+            else if( line_clicked || line_hovered )
+            {
+                "#9a9a9a"
+            }
+            else
+            {
+                "transparent"
+            }
+        }
+    }
+
+    Rectangle
+    {
+        height: parent.height
+        width: 45
+        anchors.right: remove_bg.left
+        anchors.top: parent.top
+        color:
+        {
+            if( line_clicked )
+            {
+                "#3e5765"
+            }
+            else if( line_hovered )
+            {
+                "#757575"
+            }
+            else
+            {
+                "transparent"
+            }
+        }
+        MouseArea
+        {
+            anchors.fill: parent
+            hoverEnabled: true
+            onClicked:
+            {
+                play_clicked = !play_clicked;
+            }
+            onEntered:
+            {
+                icon_hovered = true;
+                line_hovered = true;
+            }
+            onExited:
+            {
+                icon_hovered = false;
+                line_hovered = false;
+            }
+        }
+    }
+
+    Label
+    {
+        anchors.right: remove_bg.left
+        anchors.rightMargin: 15
+        anchors.verticalCenter: text_area.verticalCenter
+        horizontalAlignment: Text.AlignHCenter
+
+        font.pixelSize: 16
+        font.family: font_awesome_label
+        text:
+        {
+            if( play_clicked )
+            {
+                pause_char;
+            }
+            else
+            {
+                play_char;
+            }
+        }
+        color:
+        {
+            if( icon_hovered && play_clicked )
+            {
+                "#e1dfe2"
+            }
+            else if( icon_hovered && !play_clicked )
+            {
+                "#a5cca2"
+            }
+            else if( line_clicked || line_hovered )
+            {
+                "#9a9a9a"
+            }
+            else
+            {
+                "transparent"
+            }
+        }
     }
 
     function zeroPad(num)
