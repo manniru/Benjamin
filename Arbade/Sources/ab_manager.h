@@ -27,9 +27,6 @@ signals:
     void categoryChanged(QString category);
 
 private slots:
-    void writeWav();
-    void breakTimeout();
-    void updateTime(int percent);
     void setStatus(int status);
 
 private:

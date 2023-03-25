@@ -20,6 +20,21 @@ AbWavReader::AbWavReader(int16_t *buffer, int sample_count)
 #endif
     }
 
+    QString train_path = ab_getAudioPath() + "train";
+    QDir au_TrainDir(train_path);
+
+    if( !au_TrainDir.exists() )
+    {
+        qDebug() << "Creating" << train_path
+                 << " Directory";
+#ifdef WIN32
+        QString cmd = "mkdir " + train_path;
+        system(cmd.toStdString().c_str());
+#else //OR __linux
+        system("mkdir -p " KAL_AU_DIR "train");
+#endif
+    }
+
     file = new QFile;
 }
 

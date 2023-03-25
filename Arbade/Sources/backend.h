@@ -28,6 +28,6 @@ QString getLDiffTime();
 QStringList bt_parseLexicon(QString filename);
 void bt_addLog(QString log);
 void bt_mkDir(QString path);
-float enn_getDimScale(double p, int len);
+QString ab_getWslPath();
 
 #endif // BACKEND_H

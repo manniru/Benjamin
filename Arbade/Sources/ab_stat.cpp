@@ -58,7 +58,7 @@ QFileInfoList ab_getAudioDirs()
     QDir dir(path);
     if( !dir.exists() )
     {
-        qDebug() << "Warning: Audio Directory doesn't Exist,"
+        qDebug() << "Warning: train directory doesn't Exist,"
                  << "cannot generate statistics.";
         return QFileInfoList();
     }
@@ -67,7 +67,7 @@ QFileInfoList ab_getAudioDirs()
     QFileInfo unver(path);
     if( !unver.exists() )
     {
-        qDebug() << "Warning: unverified Directory doesn't Exist,"
+        qDebug() << "Warning: unverified directory doesn't Exist,"
                  << "cannot generate statistics.";
         return QFileInfoList();
     }

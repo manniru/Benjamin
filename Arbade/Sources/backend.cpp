@@ -142,24 +142,25 @@ void bt_mkDir(QString path)
     }
 }
 
-float enn_getDimScale(double p, int len)
+QString ab_getWslPath()
 {
-    int gf = ENN_GAURD_TIME * 100; // gaurd_frame = 5
-    double gs_step = 1.0/(gf+1); // gaurd scale step
-    double ds = 1; //dim scale
+    QFileInfoList drives = QDir::drives();
+    int len = drives.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        QDir arch_dir(drives[i].filePath());
+        QFileInfoList dir_list = arch_dir.entryInfoList(QDir::Dirs);
+        int dirs_num = dir_list.size();
+        for( int j=0 ; j<dirs_num ; j++ )
+        {
+            if( dir_list[j].fileName()==AB_WSL_ROOT )
+            {
+                QString wsl_path = dir_list[j].filePath();
+                wsl_path.replace("/", "\\");
+                return wsl_path;
+            }
+        }
+    }
 
-    if( p<gf )
-    {
-        ds = (p+1)*gs_step;
-    }
-    else if( p>(len-gf) )
-    {
-        ds = (len-p+1)*gs_step;
-    }
-    if( ds>1 )
-    {
-        ds = 1;
-    }
-
-    return ds;
+    return "";
 }

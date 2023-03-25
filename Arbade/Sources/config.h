@@ -2,36 +2,13 @@
 #define BT_CONFIG_H
 
 #define KAL_NATO_DIR      "../Nato/"
-#define KAL_DECODE_DIR    KAL_NATO_DIR"decode/"
-#define KAL_SD_DIR        KAL_NATO_DIR"scripts/decode/"
-#define KAL_SK_DIR        KAL_NATO_DIR"scripts/kaldi/"
 #define KAL_AU_DIR        KAL_NATO_DIR"audio/"
-#define KAL_RESULT_DIR    KAL_DECODE_DIR"result/"
-#define KAL_WAV_DIR       KAL_DECODE_DIR"wav/"
-#define KAL_MODE          "tri1"
 #define AB_WSL_ROOT       "Arch"
 
-#define KAL_SI_DIR        "Scripts/interpreter/"
-#define KAL_SI_DIR_WIN    "Scripts\\interpreter\\"
-#define KAL_NATO_DIR_WIN  "..\\Nato\\"
-#define KAL_AU_DIR_WIN    KAL_NATO_DIR_WIN"audio\\"
-
-#define MOM_LABEL_DIR    "..\\Mom\\Labels"
-#define MOM_LABEL_STATUS "\\r1_status.lbl"
 // Pipe Named Path follow \\.\pipe\[pipename] format
 // where [pipename] can be change and dot represent
 // server name, dot refer to local computer
 #define BT_PIPE_ADDRESS   "\\\\.\\pipe\\com_binaee_rebound"
-
-#define BT_WORDS_PATH     KAL_NATO_DIR "exp/" KAL_MODE "/graph/words.txt"
-#define BT_OAMDL_PATH     KAL_NATO_DIR "exp/" KAL_MODE "_online/final.oalimdl" //Online Alignment
-#define BT_FST_PATH       KAL_NATO_DIR "exp/" KAL_MODE "/graph/HCLG.fst"
-#define BT_GCMVN_PATH     KAL_NATO_DIR"exp/tri1_online/global_cmvn.stats"
-#define BT_WORDLIST_PATH  KAL_NATO_DIR"word_list"
-#define BT_BAR_RESULT     "bar_result"
-#define BT_BAR_DIR_WS     "..\\Mom\\Labels\\"
-#define BT_BAR_RESULT_WS  "l1_benjamin.lbl"
-#define BT_GRAPH_PATH     "graph"
 
 #define KAL_CONF_TRESHOLD  0.9
 #define KAL_UDET_TRESHOLD  0.7  //Utterance Total Detection

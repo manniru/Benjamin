@@ -26,7 +26,7 @@ ApplicationWindow
     property int sig_del_file: 0
     property real play_pos: 0
 
-    property string ab_category: "online"
+    property string ab_category: "home"
     property string ab_words: "<One> <Roger> <Spotify>"
     property string ab_address: ""
     property string ab_word_list: ""
