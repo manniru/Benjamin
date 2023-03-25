@@ -10,6 +10,8 @@ AbManager::AbManager(QObject *ui, QObject *parent) : QObject(parent)
 
     audio = new AbAudio(root);
     connect(audio, SIGNAL(setStatus(int)), this, SLOT(setStatus(int)));
+    connect(root, SIGNAL(deleteSample(QString)),
+            this, SLOT(deleteSample(QString)));
 }
 
 void AbManager::readWave(QString filename)
@@ -124,6 +126,37 @@ void AbManager::delWordSamples()
     }
 }
 
+void AbManager::deleteSample(QString sample)
+{
+    QString category = QQmlProperty::read(root, "ab_category")
+                                        .toString();
+    QString file_path = ab_getAudioPath() + "train\\";
+    file_path += category + "\\";
+
+    QStringList sample_words = sample.split(" ",
+                                     QString::SkipEmptyParts);
+    int len = sample_words.length();
+    for( int i=0 ; i<len ; i++ )
+    {
+        sample_words[i] = sample_words[i].remove(">").remove("<");
+        file_path += QString::number(wordToIndex(sample_words[i]));
+        file_path += "_";
+    }
+    file_path.chop(1); // removes last '_'
+    file_path += ".wav";
+    deleteFile(file_path);
+}
+
+void AbManager::deleteFile(QString path)
+{
+    QFile removing_file(path);
+    qDebug() << "del" << path;
+    if( removing_file.exists() )
+    {
+        removing_file.remove();
+    }
+}
+
 int AbManager::wordToIndex(QString word)
 {
     int len = audio->lexicon.size();
@@ -137,7 +170,7 @@ int AbManager::wordToIndex(QString word)
     return -1;
 }
 
-QString AbManager::idToWords(int id)
+QString AbManager::idToWord(int id)
 {
     return audio->lexicon[id];
 }

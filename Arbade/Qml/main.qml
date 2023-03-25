@@ -54,6 +54,7 @@ ApplicationWindow
 
     signal loadsrc()
     signal delFile()
+    signal deleteSample(string sample)
     signal copyFile()
     signal sendKey(int key)
     signal setStatus(int st)
@@ -105,6 +106,12 @@ ApplicationWindow
     {
         status_bar.mean = ab_mean_var.split("!")[0];
         status_bar.variance = ab_mean_var.split("!")[1];
+    }
+
+    onAb_wordsChanged:
+    {
+        rec_list.word_samples.unshift(ab_words);
+        rec_list.updateRecList();
     }
 
     Settings
@@ -304,6 +311,8 @@ ApplicationWindow
 
     AbRecList
     {
+        id: rec_list
+
         height: editor_box.height
         anchors.left: editor_box.right
         anchors.top: ab_help.bottom
@@ -311,6 +320,11 @@ ApplicationWindow
         anchors.bottom: status_bar.top
         anchors.right: parent.right
         anchors.rightMargin: 20
+
+        onDelSample:
+        {
+            deleteSample(sample);
+        }
     }
 
     AbConsole

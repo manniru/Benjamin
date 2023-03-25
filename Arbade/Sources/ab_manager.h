@@ -19,7 +19,7 @@ public:
     void readWave(QString filename);
     void copyToOnline(QString filename);
     QString readWordList();
-    QString idToWords(int id);
+    QString idToWord(int id);
 
 signals:
     void startDecoding();
@@ -28,10 +28,12 @@ signals:
 
 private slots:
     void setStatus(int status);
+    void deleteSample(QString sample);
 
 private:
     void loadWordList();
     int wordToIndex(QString word);
+    void deleteFile(QString path);
 
     AbAudio *audio;
     QObject *root;//root qml object

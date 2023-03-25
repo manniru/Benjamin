@@ -128,7 +128,7 @@ void AbScene::setFocusWord(int focus_word)
     }
     else
     {
-        focus_text = man->idToWords(focus_word);
+        focus_text = man->idToWord(focus_word);
     }
     QQmlProperty::write(root, "ab_focus_text", focus_text);
 }
