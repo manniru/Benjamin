@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import QtQuick.Layouts 1.2
 
 Rectangle
 {
@@ -21,25 +22,25 @@ Rectangle
     property string mean
     property string variance
 
-    color: "transparent"
+    color: "#262626"
 
-    Rectangle
+    GridLayout
     {
-        width: 400
-        height: childrenRect.height
-        anchors.top: parent.top
-        anchors.topMargin: 40
+        anchors.fill: parent
+        anchors.leftMargin: 30
+        anchors.topMargin: 10
 
-        color: "transparent"
-//        color: "red"
+        rows: 3
+        columns: 4
+        flow: GridLayout.TopToBottom
+//        columnSpacing: 50
+        rowSpacing: -10
 
         Text
         {
             id: pause_label
 
             text: "Pause Time: " + pause_time.toFixed(1) + " sec"
-            anchors.left: parent.left
-            anchors.top: parent.top
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
@@ -51,8 +52,6 @@ Rectangle
             id: num_words_label
 
             text: "Num of Words: " + num_words.toString()
-            anchors.left: parent.left
-            anchors.top: pause_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
@@ -64,90 +63,15 @@ Rectangle
             id: rec_label
 
             text: "Rec Time: " + rec_time.toFixed(1) + " sec"
-            anchors.left: parent.left
-            anchors.top: num_words_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
             lineHeight: 1.2
         }
 
-        Text
+        AbStatusLabel
         {
-            id: status_label
-
-            text: "Status: "
-            anchors.left: parent.left
-            anchors.top: rec_label.bottom
-            color: color_text
-            font.pixelSize: font_size
-            font.family: font_name_label
-            lineHeight: 1.2
-        }
-
-        Text
-        {
-            id: status_val_label
-
-            text:
-            {
-                if( status===ab_const.ab_STATUS_REC )
-                {
-                    "Rec"
-                }
-                else if( status===ab_const.ab_STATUS_PAUSE )
-                {
-                    "Pause"
-                }
-                else if( status===ab_const.ab_STATUS_STOP )
-                {
-                    "Stop"
-                }
-                else if( status===ab_const.ab_STATUS_REQPAUSE )
-                {
-                    "Req Pause"
-                }
-                else if( status===ab_const.ab_STATUS_BREAK )
-                {
-                    "Break"
-                }
-                else if( status===ab_const.ab_STATUS_PLAY )
-                {
-                    "Play"
-                }
-            }
-            anchors.left: status_label.right
-            anchors.top: rec_label.bottom
-            color:
-            {
-                if( status===ab_const.ab_STATUS_REC )
-                {
-                    "#f00"
-                }
-                else if( status===ab_const.ab_STATUS_PAUSE )
-                {
-                    "#b17400"
-                }
-                else if( status===ab_const.ab_STATUS_STOP )
-                {
-                    "#10b100"
-                }
-                else if( status===ab_const.ab_STATUS_REQPAUSE )
-                {
-                    "#008eca"
-                }
-                else if( status===ab_const.ab_STATUS_BREAK )
-                {
-                    "#00b8d7"
-                }
-                else if( status===ab_const.ab_STATUS_PLAY )
-                {
-                    "#f00"
-                }
-            }
-            font.pixelSize: font_size
-            font.family: font_name_label
-            lineHeight: 1.2
+            status_state: status
         }
 
         Text
@@ -155,8 +79,6 @@ Rectangle
             id: words_label
 
             text: "Word: " + words
-            anchors.left: parent.left
-            anchors.top: status_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
@@ -168,8 +90,6 @@ Rectangle
             id: category_label
 
             text: "Category: \"" + category + "\""
-            anchors.left: parent.left
-            anchors.top: words_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
@@ -182,36 +102,15 @@ Rectangle
 
             text: "Count: [" + count.toString() + "/" +
                   count_total.toString() + "]"
-            anchors.left: parent.left
-            anchors.top: category_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
             lineHeight: 1.2
         }
 
-        Text
+        AbTimeBar
         {
-            id: time_label
-
-            text: "Time: [                               ]"
-            anchors.left: parent.left
-            anchors.top: count_label.bottom
-            color: color_text
-            font.pixelSize: font_size
-            font.family: font_name_label
-            lineHeight: 1.2
-        }
-
-        Rectangle
-        {
-            anchors.left: time_label.left
-            anchors.leftMargin: 76
-            anchors.top: count_label.bottom
-            anchors.topMargin: 2
-            color: color_text
-            width: (elapsed_time/100)*178
-            height: 25
+            time: elapsed_time
         }
 
         Text
@@ -219,8 +118,6 @@ Rectangle
             id: power_label
 
             text: "Power: " + power.toFixed(2).toString() + "dB"
-            anchors.left: parent.left
-            anchors.top: time_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
@@ -232,8 +129,6 @@ Rectangle
             id: focus_label
 
             text: "Focus word: " + focus_word
-            anchors.left: parent.left
-            anchors.top: power_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
@@ -245,8 +140,6 @@ Rectangle
             id: mean_label
 
             text: "Mean: " + mean
-            anchors.left: parent.left
-            anchors.top: focus_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
@@ -258,8 +151,6 @@ Rectangle
             id: var_label
 
             text: "Var: " + variance
-            anchors.left: parent.left
-            anchors.top: mean_label.bottom
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
