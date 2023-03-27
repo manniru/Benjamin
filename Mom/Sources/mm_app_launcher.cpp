@@ -49,20 +49,6 @@ void MmAppLauncher::focusOpen(QString shortcut, int desktop_id)
 
 void MmAppLauncher::focus(HWND hwnd)
 {
-//    DWORD windowThreadProcessId = GetWindowThreadProcessId(hwnd,LPDWORD(0));
-//    DWORD currentThreadId = GetCurrentThreadId();
-//    DWORD CONST_SW_SHOW = 5;
-//    SetForegroundWindow(hwnd);
-//    SetActiveWindow(hwnd);
-//    SetFocus(hwnd);
-
-//    AttachThreadInput(windowThreadProcessId, currentThreadId, true);
-//    BringWindowToTop(hwnd);
-//    ShowWindow(hwnd, CONST_SW_SHOW);
-//    qDebug() << "focus";
-
-//    AttachThreadInput(windowThreadProcessId,currentThreadId, false);
-
     DWORD dwCurrentThread = GetCurrentThreadId();
     DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
     AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
@@ -71,11 +57,7 @@ void MmAppLauncher::focus(HWND hwnd)
     LockSetForegroundWindow(LSFW_UNLOCK);
     BringWindowToTop(hwnd);
     SetForegroundWindow(hwnd);
-//    SetCapture(hWnd);
-//    SetFocus(hWnd);
     SetActiveWindow(hwnd);
-//    SetWindowPos(hWnd,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
-//    SetWindowPos(hWnd,HWND_NOTOPMOST,0,0,0,0,SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE);
 
     // If window is minimzed
     if( IsIconic(hwnd) )

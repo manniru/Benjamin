@@ -74,7 +74,7 @@ void AbTrain::processKey(int key)
 
 void AbTrain::initWsl()
 {
-    QString wsl_path = ab_getWslPath();
+    wsl_path = ab_getWslPath();
     if( wsl_path.isEmpty() )
     {
         qDebug() << "Error 152: shit has happened";

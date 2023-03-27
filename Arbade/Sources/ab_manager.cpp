@@ -172,7 +172,14 @@ int AbManager::wordToIndex(QString word)
 
 QString AbManager::idToWord(int id)
 {
-    return audio->lexicon[id];
+    if( id<audio->lexicon.count() )
+    {
+        return audio->lexicon[id];
+    }
+    else
+    {
+        return "<Unknown>";
+    }
 }
 
 AbManager::~AbManager()

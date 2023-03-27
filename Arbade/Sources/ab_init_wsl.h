@@ -7,7 +7,7 @@
 #include "backend.h"
 #include "config.h"
 
-#define AB_IMAGE_URL "https://github.com/bijanbina/KalB/releases/download/WSL/KalB.rar"
+#define AB_IMAGE_URL "https://github.com/bijanbina/KalB/releases/download/WSL/Kalb_WSL.rar"
 
 class AbInitWSL : public QObject
 {

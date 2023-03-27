@@ -14,6 +14,8 @@ ApplicationWindow
 {
     id: root
 
+    y: 100
+    x: 30
     width: 1650
     height: 900
     minimumHeight: 500
@@ -330,7 +332,11 @@ ApplicationWindow
     AbConsole
     {
         id: console_box
-        anchors.fill: editor_box
+        anchors.top: editor_box.top
+        anchors.left: editor_box.left
+        anchors.right: editor_box.right
+        anchors.bottom: buttons_box.bottom
+        anchors.rightMargin: 20
         visible: ab_show_console
         objectName: "Console"
     }

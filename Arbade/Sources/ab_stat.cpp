@@ -211,7 +211,13 @@ int ab_meanCount(QVector<int> count)
     {
         sum += count[i];
     }
-    return sum/len;
+
+    if( len )
+    {
+        return sum/len;
+    }
+
+    return 0;
 }
 
 int ab_varCount(QVector<int> count, int mean)
@@ -222,7 +228,13 @@ int ab_varCount(QVector<int> count, int mean)
     {
         sum += pow(count[i]-mean, 2);
     }
-    return sqrt(sum/len);
+
+    if( len )
+    {
+        return sqrt(sum/len);
+    }
+
+    return 0;
 }
 
 

@@ -20,6 +20,10 @@ int main(int argc, char *argv[])
     {
         QMetaObject::invokeMethod(root, "initWsl");
     }
+    else if( QDir(wsl_path+"\\Benjamin\\Tools").exists()==0 )
+    {
+        train.initWsl();
+    }
 
     return app.exec();
 }
