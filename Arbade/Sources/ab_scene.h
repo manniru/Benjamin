@@ -39,7 +39,7 @@ private:
     AbManager *man;
     QTimer *break_timer;
     QStringList unverified_list;
-    int catmode = 0;
+    int stat_all = 0;
 };
 
 #endif // ABSCENE_H

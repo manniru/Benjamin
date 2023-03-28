@@ -128,6 +128,20 @@ void KdOnline::writeWav(int len)
 
 bool KdOnline::isSleep()
 {
+#ifdef WIN32
+    QString path = MOM_LABEL_DIR;
+    path += MOM_LABEL_STATUS;
+
+    if( QFile::exists(path) )
+    {
+        QString status = readStatusFile();
+        if( status.contains("Sleep") )
+        {
+            return true;
+        }
+    }
+    return false;
+#else
     QString status_path = getenv("HOME");
     status_path += "/.config/polybar/awesomewm/ben_status";
     if( QFile::exists(status_path) )
@@ -136,13 +150,13 @@ bool KdOnline::isSleep()
         cmd += status_path;
         QString status = getStrCommand(cmd);
 
-        if( status.contains("sleep", Qt::CaseInsensitive) )
+        if( status.contains("Sleep", Qt::CaseInsensitive) )
         {
             return true;
         }
-        return false;
     }
     return false;
+#endif
 }
 
 bool KdOnline::isHalt()

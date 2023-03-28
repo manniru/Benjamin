@@ -110,6 +110,11 @@ int MmKeyboard::procPressKey(int key_code)
         addPressKey(key_code);
         return 1;
     }
+    else if( key_code==VK_APPS )
+    {
+        addPressKey(VK_LWIN);
+        return 1;
+    }
     else if( key_code==VK_LSHIFT   ||
              key_code==VK_RSHIFT   ||
              key_code==VK_LCONTROL ||
@@ -167,6 +172,10 @@ int MmKeyboard::procReleaseKey(int key_code)
 
     if( is_mom==1 ) // a mom shortcut captured
     {
+        if( key_code==VK_APPS )
+        {
+            key_code = VK_LWIN;
+        }
         int is_sup = isSuppressed(key_code);
 
         if( is_sup )
@@ -177,6 +186,10 @@ int MmKeyboard::procReleaseKey(int key_code)
     }
     else if( pk_buf.length() )
     {
+        if( key_code==VK_APPS )
+        {
+            pk_buf[0] = VK_APPS;
+        }
         fakePress();
     }
 

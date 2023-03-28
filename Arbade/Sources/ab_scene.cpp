@@ -138,15 +138,15 @@ void AbScene::updateStat()
     loadWordList();
     QString stat;
 
-    if( !catmode )
+    if( stat_all )
+    {
+        stat = ab_getStat();
+    }
+    else //all category stats
     {
         QString category = QQmlProperty::read(root, "ab_category").toString();
         stat = ab_getStat(category);
-//        qDebug() << "updateStat" << category;
-    }
-    else
-    {
-        stat = ab_getStat();
+    //        qDebug() << "updateStat" << category;
     }
     QQmlProperty::write(root, "ab_word_stat", stat);
     QString meanvar = ab_getMeanVar();
@@ -188,7 +188,7 @@ void AbScene::processKey(int key)
     }
     else if( key==Qt::Key_W )
     {
-        catmode = !catmode;
+        stat_all = !stat_all;
         updateStat();
     }
     else
