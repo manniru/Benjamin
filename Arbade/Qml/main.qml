@@ -71,16 +71,6 @@ ApplicationWindow
         ab_start_now = Date.now();
     }
 
-    onAb_verifierChanged:
-    {
-        setVerifier(ab_verifier);
-    }
-
-    onAb_focus_wordChanged:
-    {
-        setFocusWord(ab_focus_word);
-    }
-
     onAb_statusChanged:
     {
         if( ab_verifier )
@@ -176,13 +166,13 @@ ApplicationWindow
 
         elapsed_time:
         {
-            if( ab_verifier===0 )
+            if( ab_verifier )
             {
-                ab_elapsed_time
+                play_pos
             }
             else
             {
-                play_pos
+                ab_elapsed_time
             }
         }
         power: ab_power
@@ -232,6 +222,7 @@ ApplicationWindow
                 {
                     ab_focus_word = parseInt(value);
                 }
+                setFocusWord(ab_focus_word);
             }
         }
     }
@@ -278,6 +269,7 @@ ApplicationWindow
     AbEditor
     {
         id: editor_box
+        objectName: "WordList"
 
         width: 1200
         anchors.top: ab_help.bottom
@@ -530,6 +522,7 @@ ApplicationWindow
             {
                 ab_verifier = 1;
             }
+            setVerifier(ab_verifier);
         }
         else if( key===Qt.Key_R )
         {

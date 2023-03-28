@@ -1,6 +1,7 @@
 #ifndef AB_STAT_H
 #define AB_STAT_H
 
+#include <QObject>
 #include "config.h"
 #include "backend.h"
 
@@ -19,5 +20,19 @@ int ab_varCount(QVector<int> count, int mean);
 QFileInfoList ab_listFiles(QString path);
 QStringList ab_listFiles(QString path, int mode);
 QFileInfoList ab_getAudioDirs();
+
+class AbStat : public QObject
+{
+    Q_OBJECT
+public:
+    explicit AbStat(QObject *ui, QObject *parent = nullptr);
+
+private slots:
+
+private:
+    QObject* root;//root qml object
+    QObject* editor;//word editor qml object
+};
+
 
 #endif // AB_STAT_H

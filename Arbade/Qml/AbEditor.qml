@@ -318,4 +318,9 @@ Rectangle
                                      ab_const.ab_WORDEDIT_BOX_SIZE);
         lm_wordedit.get(focused_box).sf++;
     }
+
+    function addWord(w_text, w_count, w_color)
+    {
+        console.log("we are", w_text, w_count, w_color);
+    }
 }

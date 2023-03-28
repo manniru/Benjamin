@@ -136,12 +136,13 @@ Rectangle
         }
         else // creation phase
         {
-            var wlc_split = word_stat.split("\n");
+            var stat_split = word_stat.split("\n");
+            var wlc_count = stat_split.length;
 
-            for( var i=0 ; i<wl_count ; i++ )
+            for( var i=0 ; i<wlc_count ; i++ )
             {
                 lm_wordbox.append({wid: zeroPad(i+start_num),
-                                   wt: wl_split[i], wc: wlc_split[i], sf:0});
+                                   wt: wl_split[i], wc: stat_split[i], sf:0});
             }
         }
     }

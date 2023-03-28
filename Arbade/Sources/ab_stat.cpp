@@ -2,6 +2,11 @@
 int cat_mean = 0;
 int cat_var  = 0;
 
+AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
+{
+    root = ui;
+}
+
 QString ab_getStat(QString category)
 {
     QFileInfoList dir_list;
