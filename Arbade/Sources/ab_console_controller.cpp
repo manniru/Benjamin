@@ -35,7 +35,7 @@ void AbConsoleController::run()
 
         output = chBuf;
         emit readyData(output, flag);
-//        qDebug() << flag << output;
+        qDebug() << flag << output;
         processLine(output);
     }
 }

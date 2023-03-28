@@ -1,7 +1,5 @@
 # Installation
 
-Following guide is for Arch Linux, If you are on windows follow [WINDOWS.md](https://github.com/bijanbina/Benjamin/blob/master/WINDOWS.md) to setup a WSL machine.
-
 ## Step 1: Clone Project
 Clone Kaldi and Benjamin in the same folder
 

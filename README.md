@@ -5,7 +5,7 @@ Bijan ASR Engine Based-on KalD Model.
 
 # Installation
 
-1. If this is your first time using Benjamin, You need to train a model from your voice. Please follow [NATO.md](https://github.com/bijanbina/Benjamin/blob/master/NATO.md) to create one.
+1. If this is your first time using Benjamin, You need to train a model from your voice. Please follow [Train_Linux.md](https://github.com/bijanbina/Benjamin/blob/master/Docs/Train_Linux.md) or [Train_Windows.md](https://github.com/bijanbina/Benjamin/blob/master/Docs/Train_Windows.md) to create one.
 2. Build BaTool. Follow [INSTALL.md](https://github.com/bijanbina/Benjamin/blob/master/INSTALL.md) guide
 * Only use release source code or commit that tagged with `stable version`. the main branch is in development and may not work.
 

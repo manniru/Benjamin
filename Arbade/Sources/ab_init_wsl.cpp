@@ -23,7 +23,8 @@ void AbInitWSL::createWSL(QString drive)
         qDebug() << "Info: Directory" << arch_dir << "Created";
     }
 
-    QString rar_path = arch_dir + "\\KalB.rar";
+    QString rar_path = arch_dir + "\\";
+    rar_path += AB_IMAGE_FILENAME;
     QString tar_path = arch_dir + "\\install.tar";
     if( !QFile::exists(rar_path) && !QFile::exists(tar_path) )
     {
@@ -53,7 +54,7 @@ void AbInitWSL::createWSL(QString drive)
         qDebug() << "Info: Unregister Any Previous Version";
         system("wsl --unregister KalB");
         qDebug() << "Info: Installing KalB Virtual Machine";
-        system("KalB.exe");
+        system("KalB.exe install install.tar");
     }
     QDir::setCurrent(current_dir);
 }
