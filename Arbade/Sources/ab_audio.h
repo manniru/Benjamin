@@ -38,6 +38,7 @@ private:
     AbWavWriter *wav_wr;
     AbWavReader *wav_rd;
     QObject *root;//root qml object
+    QObject *editor;//editor qml object
     QTimer *read_timer;
     QString wav_path;
 };

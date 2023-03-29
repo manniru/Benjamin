@@ -4,7 +4,7 @@
 AbAudio::AbAudio(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
-
+    editor = root->findChild<QObject *>("WordList");
     float rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
     int sample_count = rec_time*BT_REC_RATE;
 //    qDebug() << "sample_count" << sample_count;
@@ -24,7 +24,7 @@ AbAudio::AbAudio(QObject *ui, QObject *parent) : QObject(parent)
 void AbAudio::record()
 {
     QMetaObject::invokeMethod(root, "incCount"); // ab_count++
-    QString category = QQmlProperty::read(root, "ab_category").toString();
+    QString category = QQmlProperty::read(editor, "category").toString();
     wav_path = getRandPath(category);
     wav_wr->setCategory(category);
     setStatus(AB_STATUS_BREAK);
@@ -106,7 +106,7 @@ void AbAudio::writeWav()
 
 void AbAudio::checkCategoryExist()
 {
-    QString category = QQmlProperty::read(root, "ab_category").toString();
+    QString category = QQmlProperty::read(editor, "category").toString();
     QString base_name = ab_getAudioPath()+"train\\";
     base_name += category + "\\";
     QDir category_dir(base_name);

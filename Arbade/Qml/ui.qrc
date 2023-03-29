@@ -18,5 +18,6 @@
         <file>AbButtons.qml</file>
         <file>AbRecList.qml</file>
         <file>AbRecLine.qml</file>
+        <file>AbRecPanel.qml</file>
     </qresource>
 </RCC>

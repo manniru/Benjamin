@@ -38,6 +38,7 @@ private:
     AbAudio *audio;
     AbStat  *stat;
     QObject *root;//root qml object
+    QObject *editor;//editor qml object
     int r_counter;
 };
 

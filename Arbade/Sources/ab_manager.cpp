@@ -6,6 +6,7 @@
 AbManager::AbManager(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
+    editor = root->findChild<QObject *>("WordList");
     srand(time(NULL));
 
     audio = new AbAudio(root);
@@ -139,7 +140,7 @@ void AbManager::delWordSamples()
 
 void AbManager::deleteSample(QString sample)
 {
-    QString category = QQmlProperty::read(root, "ab_category")
+    QString category = QQmlProperty::read(editor, "category")
                                         .toString();
     QString file_path = ab_getAudioPath() + "train\\";
     file_path += category + "\\";
@@ -201,7 +202,7 @@ void AbManager::setStatus(int status)
 {
     if( status==AB_STATUS_STOP )
     {
-        QString category = QQmlProperty::read(root, "ab_category").toString();
+        QString category = QQmlProperty::read(editor, "category").toString();
         QString statis = stat->getStat(category);
         QQmlProperty::write(root, "ab_word_stat", statis);
     }

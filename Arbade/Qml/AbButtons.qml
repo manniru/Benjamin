@@ -3,12 +3,32 @@ import QtQuick.Layouts 1.2
 
 Rectangle
 {
-    width: save_button.width + reset_button.width + 20
+    width: 800
     height: save_button.height
     color: "transparent"
 
-    property int btn_width: 200
-    property bool btn_enable: false
+    property string mean
+    property string variance
+    property int    btn_width: 200
+    property bool   btn_enable: false
+    property color  color_text:         "#b2b2b2"
+    property int    font_size:          24
+    property string font_name_label:    fontRobotoRegular.name
+
+    Text
+    {
+        id: mean_label
+
+        text: "Mean: " + mean
+        color: color_text
+        font.pixelSize: font_size
+        font.family: font_name_label
+        lineHeight: 1.2
+
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenterOffset: -350
+    }
 
     AbButton
     {
@@ -17,7 +37,8 @@ Rectangle
         width: btn_width
         enabled: btn_enable
         anchors.top: parent.top
-        anchors.left: parent.left
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenterOffset: -125
 
         onClick:
         {
@@ -31,13 +52,28 @@ Rectangle
         text: "Reset"
         width: btn_width
         enabled: btn_enable
-        anchors.left: save_button.right
-        anchors.leftMargin: 20
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenterOffset: 125
         anchors.top: parent.top
 
         onClick:
         {
             editor_box.resetProcess();
         }
+    }
+
+    Text
+    {
+        id: var_label
+
+        text: "Var: " + variance
+        color: color_text
+        font.pixelSize: font_size
+        font.family: font_name_label
+        lineHeight: 1.2
+
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.horizontalCenterOffset: 350
     }
 }
