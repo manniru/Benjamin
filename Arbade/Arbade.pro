@@ -86,5 +86,6 @@ DISTFILES += \
     Qml/AbDialogWsl.qml \
     Qml/AbRecLine.qml \
     Qml/AbRecList.qml \
+    Qml/AbRecPanel.qml \
     Qml/AbStatusLabel.qml \
     Qml/AbTimeBar.qml
