@@ -1,10 +1,13 @@
 #include "ab_stat.h"
+#include <QQmlProperty>
 int cat_mean = 0;
 int cat_var  = 0;
 
 AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
+    editor = root->findChild<QObject*>("WordList");
+    addWord("test", 2, AB_COLOR_NORM);
 }
 
 QString ab_getStat(QString category)
@@ -242,4 +245,27 @@ int ab_varCount(QVector<int> count, int mean)
     return 0;
 }
 
+void AbStat::addWord(QString word, int count, int color)
+{
+    QVariant word_v(word);
+    QVariant color_v(word);
+    if( color==AB_COLOR_LOW )
+    {
+        color_v = QVariant("#cb6565"); //red
+    }
+    else if( color==AB_COLOR_HIGH )
+    {
+        color_v = QVariant("#80bf73"); //green
+    }
+    else // neutral
+    {
+        color_v = QVariant("#80bf73"); //gray
+    }
 
+    QGenericArgument arg_word  = Q_ARG(QVariant, word_v);
+    QGenericArgument arg_count = Q_ARG(QVariant, count);
+    QGenericArgument arg_color = Q_ARG(QVariant, color_v);
+
+    QMetaObject::invokeMethod(editor, "addWord", arg_word,
+                              arg_count, arg_color);
+}

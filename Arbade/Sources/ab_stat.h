@@ -8,6 +8,10 @@
 #define AB_LIST_NAMES 1
 #define AB_LIST_PATHS 2
 
+#define AB_COLOR_LOW  0
+#define AB_COLOR_HIGH 1
+#define AB_COLOR_NORM 2
+
 QString ab_getStat(QString category=""); // get total stat for wordlist
 QString ab_getMeanVar();
 QString ab_getAudioPath();
@@ -21,7 +25,7 @@ QFileInfoList ab_listFiles(QString path);
 QStringList ab_listFiles(QString path, int mode);
 QFileInfoList ab_getAudioDirs();
 
-class AbStat : public QObject
+class AbStat: public QObject
 {
     Q_OBJECT
 public:
@@ -30,6 +34,8 @@ public:
 private slots:
 
 private:
+    void addWord(QString word, int count, int color);
+
     QObject* root;//root qml object
     QObject* editor;//word editor qml object
 };

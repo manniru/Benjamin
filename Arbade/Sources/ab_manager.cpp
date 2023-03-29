@@ -9,6 +9,8 @@ AbManager::AbManager(QObject *ui, QObject *parent) : QObject(parent)
     srand(time(NULL));
 
     audio = new AbAudio(root);
+    stat  = new AbStat(root);
+
     connect(audio, SIGNAL(setStatus(int)), this, SLOT(setStatus(int)));
     connect(root, SIGNAL(deleteSample(QString)),
             this, SLOT(deleteSample(QString)));

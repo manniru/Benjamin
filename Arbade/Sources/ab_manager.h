@@ -36,6 +36,7 @@ private:
     void deleteFile(QString path);
 
     AbAudio *audio;
+    AbStat  *stat;
     QObject *root;//root qml object
     int r_counter;
 };
