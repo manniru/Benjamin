@@ -122,8 +122,8 @@ Rectangle
         text: word_count
         color:
         {
-            var mean = parseInt(root.ab_mean_var.split("!")[0]);
-            var variance = parseInt(root.ab_mean_var.split("!")[1]);
+            var mean = parseInt(status_bar.mean);
+            var variance = parseInt(status_bar.variance);
             var count = parseInt(word_count.substring(1,word_count.length-1));
             if( count<mean-variance )
             {

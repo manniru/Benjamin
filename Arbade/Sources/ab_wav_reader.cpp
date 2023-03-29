@@ -82,24 +82,30 @@ void AbWavReader::readWavHeader()
     {
         qDebug() << "Error: wav file not started with RIFF";
     }
+
     int len;
     file->read((char*)&len, 4);
     len = len - 44 + 8; // 44=Header Size - chunk size(int=filesize-8)
-    wave_time = (double)len/BT_REC_RATE/4; // 2 channel * 2 byte per sample
+    wave_time = (double)len / BT_REC_RATE / 4; // 2 channel * 2 byte per sample
     read_data = file->read(4); //format="WAVE"
+
     if( read_data!="WAVE" )
     {
         qDebug() << "Error: wav format is not WAVE";
     }
+
     read_data = file->read(4); //subchunk1 id(str="fmt ")
+
     if( read_data!="fmt " )
     {
         qDebug() << "Error: subchunk1 problem, not started with fmt " << read_data;
     }
+
     uint32_t buf_i;
     uint16_t buf_s; //short
-    file->read((char*)&buf_i,4);//subchunk1(fmt) size(int=16)
-    file->read((char*)&buf_s,2);//wav format(int) 1=PCM
+    file->read((char*)&buf_i, 4); //subchunk1(fmt) size(int=16)
+    file->read((char*)&buf_s, 2); //wav format(int) 1=PCM
+
     if( buf_i!=16 || buf_s!=1 )
     {
         qDebug() << "Error: subchunk size problem:"
@@ -108,8 +114,9 @@ void AbWavReader::readWavHeader()
     }
 
     //channel must be stereo for kaldi
-    file->read((char*)&buf_s,2);//Channel Count(int=2)
-    file->read((char*)&buf_i,4);//Sample Rate(int=16K)
+    file->read((char*)&buf_s, 2); //Channel Count(int=2)
+    file->read((char*)&buf_i, 4); //Sample Rate(int=16K)
+
     if( buf_i!=16000 || buf_s!=2 )
     {
         qDebug() << "Error: sample rate problem:"
@@ -117,15 +124,18 @@ void AbWavReader::readWavHeader()
                  << buf_s;
     }
 
-    file->read((char*)&buf_i,4);//Byte per sec(int, 64K=16*4)
-    file->read((char*)&buf_s,2);//Byte Per Block(int, 4=2ch*2)
+    file->read((char*)&buf_i, 4); //Byte per sec(int, 64K=16*4)
+    file->read((char*)&buf_s, 2); //Byte Per Block(int, 4=2ch*2)
+
     if( buf_i!=64000 || buf_s!=4 )
     {
         qDebug() << "Error: Byte per sec problem:"
                  << buf_i << "and Byte Per Block problem:"
                  << buf_s;
     }
-    file->read((char*)&buf_s,2);//Bit Per Sample(int, 16 bit)
+
+    file->read((char*)&buf_s, 2); //Bit Per Sample(int, 16 bit)
+
     if( buf_s!=16 )
     {
         qDebug() << "Error: Bit Per Sample problem:"
@@ -133,9 +143,11 @@ void AbWavReader::readWavHeader()
     }
 
     read_data = file->read(4);//subchunk2 id(str="data")
+
     if( read_data!="data" )
     {
         qDebug() << "Error: subchunk2 is not started with data.";
     }
+
     file->read((char*)&buf_i, 4);//subchunk2 size(int=sample count)
 }

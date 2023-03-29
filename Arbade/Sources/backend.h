@@ -29,5 +29,6 @@ QStringList bt_parseLexicon(QString filename);
 void bt_addLog(QString log);
 void bt_mkDir(QString path);
 QString ab_getWslPath();
+QString ab_getAudioPath();
 
 #endif // BACKEND_H

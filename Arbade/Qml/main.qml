@@ -1,4 +1,4 @@
-﻿import QtQuick 2.2
+import QtQuick 2.2
 import QtGraphicalEffects 1.0
 import QtQuick.Controls 2.3
 import QtQuick.Controls.Styles 1.4
@@ -34,7 +34,6 @@ ApplicationWindow
     property string ab_word_list: ""
     property string ab_word_stat: ""
     property string ab_auto_comp: ""
-    property string ab_mean_var: ""
     property string ab_focus_text: ""
     property string ab_dif_words: ""
     property int ab_focus_word: -1
@@ -51,7 +50,6 @@ ApplicationWindow
     property real ab_power: 0
     property int ab_verifier: 0
     property int ab_show_console: 0
-
     property real ab_start_now: 0
 
     signal loadsrc()
@@ -94,12 +92,6 @@ ApplicationWindow
         editor_box.loadWordBoxes();
     }
 
-    onAb_mean_varChanged:
-    {
-        status_bar.mean = ab_mean_var.split("!")[0];
-        status_bar.variance = ab_mean_var.split("!")[1];
-    }
-
     onAb_wordsChanged:
     {
         rec_list.word_samples.unshift(ab_words);
@@ -130,6 +122,7 @@ ApplicationWindow
     AbStatus
     {
         id: status_bar
+        objectName: "Status"
         height: 120
         anchors.bottom: parent.bottom
         anchors.left: parent.left

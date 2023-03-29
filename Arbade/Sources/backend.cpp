@@ -164,3 +164,14 @@ QString ab_getWslPath()
 
     return "";
 }
+
+QString ab_getAudioPath()
+{
+#ifdef WIN32
+    QString audio_path = ab_getWslPath();
+    audio_path += "\\Benjamin\\Nato\\audio\\";
+    return audio_path;
+#else
+    return KAL_AU_DIR;
+#endif
+}

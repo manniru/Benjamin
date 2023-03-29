@@ -85,36 +85,45 @@ void AbManager::delWordSamples()
     QStringList dif_words = dif.split("\n");
     int len = dif_words.length();
     QVector<int> del_list;
+
     for( int i=0 ; i<len ; i++ )
     {
         dif_words[i] = dif_words[i].split(".")[1].split("(")[0].trimmed();
         int result = wordToIndex(dif_words[i]);
+
         if( result>=0 && result<audio->lexicon.size() )
         {
             del_list.push_back(result);
         }
     }
+
     len = del_list.size();
+
     if( len==0 )
     {
         return;
     }
+
     qDebug() << "delWordSamples" << del_list;
 
-    QFileInfoList dir_list = ab_getAudioDirs();
+    QFileInfoList dir_list = stat->getAudioDirs();
     int len_dir = dir_list.size();
+
     if( len_dir==0 )
     {
         return;
     }
+
     for( int i=0 ; i<len_dir ; i++ )
     {
-        QFileInfoList files_list = ab_listFiles(dir_list[i].
-                                                absoluteFilePath());
+        QFileInfoList files_list = stat->listFiles(dir_list[i].
+                                   absoluteFilePath());
         int len_files = files_list.size();
+
         for( int j=0 ; j<len_files ; j++ )
         {
             QStringList audio_words = files_list[j].baseName().split("_");
+
             for( int k=0 ; k<len ; k++ )
             {
                 if( audio_words.contains(QString::number(del_list[k])) )
@@ -193,10 +202,9 @@ void AbManager::setStatus(int status)
     if( status==AB_STATUS_STOP )
     {
         QString category = QQmlProperty::read(root, "ab_category").toString();
-        QString stat = ab_getStat(category);
-        QQmlProperty::write(root, "ab_word_stat", stat);
-        QString meanvar = ab_getMeanVar();
-        QQmlProperty::write(root, "ab_mean_var", meanvar);
+        QString statis = stat->getStat(category);
+        QQmlProperty::write(root, "ab_word_stat", statis);
     }
+
     QQmlProperty::write(root, "ab_status", status);
 }

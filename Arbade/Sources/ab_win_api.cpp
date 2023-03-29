@@ -43,7 +43,7 @@ QString getLinkPathB(QString name)
 
     QString lnk = getenv("PROGRAMDATA");
     lnk += "\\Microsoft\\Windows\\Start Menu\\Programs\\";
-    lnk = findAppPath(lnk, name,"");
+    lnk = findAppPath(lnk, name, "");
 
     resolveIt(lnk.toStdString().c_str(), target);
 
@@ -64,7 +64,7 @@ QString findAppPath(QString path, QString pattern, QString black_list)
         for( int i=0 ; i<file_list.size() ; i++ )
         {
             if( file_list[i].fileName().toLower().contains(pattern_reg) &&
-                file_list[i].fileName().contains(lnk_reg))
+                    file_list[i].fileName().contains(lnk_reg))
             {
                 QString ret = file_list[i].absoluteFilePath().replace("/", "\\");
                 if( black_list.contains(ret) )
@@ -130,26 +130,26 @@ HRESULT resolveIt(LPCSTR lnk_path, char *target)
             // Load the shortcut.
             hres = ppf->Load(wsz, STGM_READ);
 
-            if (SUCCEEDED(hres))
+            if( SUCCEEDED(hres) )
             {
                 // Resolve the link.
                 HWND hwnd = GetActiveWindow();
                 hres = psl->Resolve(hwnd, 0);
 
-                if (SUCCEEDED(hres))
+                if( SUCCEEDED(hres) )
                 {
                     // Get the path to the link target.
                     hres = psl->GetPath(szGotPath, MAX_PATH, (WIN32_FIND_DATA*)&wfd, SLGP_SHORTPATH);
 
-                    if (SUCCEEDED(hres))
+                    if( SUCCEEDED(hres) )
                     {
                         // Get the description of the target.
                         hres = psl->GetDescription(szDescription, MAX_PATH);
 
-                        if (SUCCEEDED(hres))
+                        if( SUCCEEDED(hres) )
                         {
                             hres = wcstombs(target, szGotPath, wcslen(szGotPath) + 1);
-                            if (SUCCEEDED(hres))
+                            if( SUCCEEDED(hres) )
                             {
                                 // Handle success
                             }

@@ -37,6 +37,7 @@ private:
 
     QObject* root;//root qml object
     AbManager *man;
+    AbStat *ab_stat;
     QTimer *break_timer;
     QStringList unverified_list;
     int stat_all = 0;

@@ -5,6 +5,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
     man = new AbManager(root);
+    ab_stat = new AbStat(root);
     break_timer = new QTimer();
 
     connect(break_timer, SIGNAL(timeout()),
@@ -61,7 +62,7 @@ void AbScene::setVerifier(int verifier)
     {
         QString unverified_dir = ab_getAudioPath();
         unverified_dir += "unverified\\";
-        unverified_list = ab_listFiles(unverified_dir, AB_LIST_PATHS);
+        unverified_list = ab_stat->listFiles(unverified_dir, AB_LIST_PATHS);
         QQmlProperty::write(root, "ab_total_count_v", unverified_list.size());
     }
 }
@@ -69,17 +70,19 @@ void AbScene::setVerifier(int verifier)
 void AbScene::loadsrc()
 {
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+
     if( verifier==1 )
     {
         int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
         int count = QQmlProperty::read(root, "ab_count").toInt();
+
         if( count<total_count )
         {
             setStatus(AB_STATUS_BREAK);
             loadAddress();
-            setCount(count+1);
+            setCount(count + 1);
             float pause_time = QQmlProperty::read(root, "ab_pause_time").toFloat();
-            break_timer->start(pause_time*1000);
+            break_timer->start(pause_time * 1000);
         }
         else // cnt>=total
         {
@@ -140,18 +143,16 @@ void AbScene::updateStat()
 
     if( stat_all )
     {
-        stat = ab_getStat();
+        stat = ab_stat->getStat();
     }
     else //all category stats
     {
         QString category = QQmlProperty::read(root, "ab_category").toString();
-        stat = ab_getStat(category);
-    //        qDebug() << "updateStat" << category;
+        stat = ab_stat->getStat(category);
+        //        qDebug() << "updateStat" << category;
     }
+
     QQmlProperty::write(root, "ab_word_stat", stat);
-    QString meanvar = ab_getMeanVar();
-    QQmlProperty::write(root, "ab_mean_var", meanvar);
-//    qDebug() << "updateStat" << meanvar << stat;
     updateCategories();
 }
 
@@ -184,7 +185,7 @@ void AbScene::processKey(int key)
     if( key==Qt::Key_O )
     {
         QString category = QQmlProperty::read(root, "ab_category").toString();
-        ab_openCategory(category);
+        ab_stat->openCategory(category);
     }
     else if( key==Qt::Key_W )
     {
@@ -199,13 +200,15 @@ void AbScene::processKey(int key)
 
 void AbScene::updateCategories()
 {
-    QFileInfoList dir_list = ab_getAudioDirs();
+    QFileInfoList dir_list = ab_stat->getAudioDirs();
     QStringList categories;
     int len = dir_list.size();
+
     for( int i=0 ; i<len ; i++)
     {
         categories.append(dir_list[i].fileName());
     }
+
     QString cat_str = categories.join("!");
     QQmlProperty::write(root, "ab_auto_comp", cat_str);
 }
