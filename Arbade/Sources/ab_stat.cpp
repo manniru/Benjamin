@@ -8,9 +8,7 @@ AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
     status = root->findChild<QObject *>("Status");
-
     editor = root->findChild<QObject*>("WordList");
-    addWord("test", 2, AB_COLOR_NORM);
 }
 
 QString AbStat::getStat(QString category)

@@ -151,6 +151,7 @@ void AbScene::updateStat()
         stat = ab_stat->getStat(category);
         //        qDebug() << "updateStat" << category;
     }
+    ab_stat->addWord("test", 2, AB_COLOR_NORM);
 
     QQmlProperty::write(root, "ab_word_stat", stat);
     updateCategories();

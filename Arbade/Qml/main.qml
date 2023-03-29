@@ -256,7 +256,7 @@ ApplicationWindow
     {
         anchors.fill: parent
 
-        onClicked: focus_item.forceActiveFocus();
+        onClicked: editor_box.addWord("w", 2, "wd");
     }
 
     AbEditor

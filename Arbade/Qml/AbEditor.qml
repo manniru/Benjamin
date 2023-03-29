@@ -321,6 +321,11 @@ Rectangle
 
     function addWord(w_text, w_count, w_color)
     {
-        console.log("we are", w_text, w_count, w_color);
+        var box_id = lv_wordedit.count-1;
+        var box = lv_wordedit.itemAtIndex(box_id);
+//        var box = lv_wordedit.currentItem;
+//        lv_wordedit.currentItem
+        console.log("we are", w_text, w_count, box_id, box);
+        box.addWordBox(w_text, w_count);
     }
 }

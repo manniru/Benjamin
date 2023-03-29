@@ -147,6 +147,11 @@ Rectangle
         }
     }
 
+    function addWordBox(w_text, w_count)
+    {
+        console.log("box", w_text, w_count);
+    }
+
     function zeroPad(num)
     {
         var zero = 3 - num.toString().length + 1;

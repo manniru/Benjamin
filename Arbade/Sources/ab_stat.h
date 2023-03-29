@@ -12,7 +12,6 @@
 #define AB_COLOR_HIGH 1
 #define AB_COLOR_NORM 2
 
-
 class AbStat: public QObject
 {
     Q_OBJECT
@@ -30,20 +29,13 @@ public:
     QFileInfoList listFiles(QString path);
     QStringList listFiles(QString path, int mode);
     QFileInfoList getAudioDirs();
-
-public slots:
-
-signals:
-
-private slots:
+    void addWord(QString word, int count, int color);
 
 private:
-    void addWord(QString word, int count, int color);
 
     QObject* root;//root qml object
     QObject* editor;//word editor qml object
     QObject *status;//status qml object
 };
-
 
 #endif // AB_STAT_H
