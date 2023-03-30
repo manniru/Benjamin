@@ -35,7 +35,8 @@ private:
     void setCount(int cnt);
     void readQmlProperties();
 
-    QObject* root;//root qml object
+    QObject *root;//root qml object
+    QObject *editor;//editor qml object
     AbManager *man;
     AbStat *ab_stat;
     QTimer *break_timer;

@@ -4,6 +4,7 @@
 AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
+    editor = root->findChild<QObject *>("WordList");
     man = new AbManager(root);
     ab_stat = new AbStat(root);
     break_timer = new QTimer();
@@ -147,7 +148,7 @@ void AbScene::updateStat()
     }
     else //all category stats
     {
-        QString category = QQmlProperty::read(root, "ab_category").toString();
+        QString category = QQmlProperty::read(editor, "category").toString();
         stat = ab_stat->getStat(category);
         //        qDebug() << "updateStat" << category;
     }
@@ -185,7 +186,7 @@ void AbScene::processKey(int key)
 {
     if( key==Qt::Key_O )
     {
-        QString category = QQmlProperty::read(root, "ab_category").toString();
+        QString category = QQmlProperty::read(editor, "category").toString();
         ab_stat->openCategory(category);
     }
     else if( key==Qt::Key_W )

@@ -7,6 +7,7 @@ int cat_var  = 0;
 AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
+    buttons = root->findChild<QObject *>("Buttons");
     status = root->findChild<QObject *>("Status");
     editor = root->findChild<QObject*>("WordList");
 }
@@ -58,8 +59,8 @@ QString AbStat::getStat(QString category)
     cat_mean = meanCount(tot_count);
     cat_var = varCount(tot_count, cat_mean);
 
-    QQmlProperty::write(status, "mean", cat_mean);
-    QQmlProperty::write(status, "variance", cat_var);
+    QQmlProperty::write(buttons, "mean", cat_mean);
+    QQmlProperty::write(buttons, "variance", cat_var);
 
     QString result;
 

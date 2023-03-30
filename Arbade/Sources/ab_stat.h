@@ -33,8 +33,9 @@ public:
 
 private:
 
-    QObject* root;//root qml object
-    QObject* editor;//word editor qml object
+    QObject *root;//root qml object
+    QObject *editor;//word editor qml object
+    QObject *buttons;//buttons qml object
     QObject *status;//status qml object
 };
 

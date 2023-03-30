@@ -15,6 +15,7 @@ Rectangle
 
     property string dif_words: ""
     property string total_words: ""
+    property string category: ""
     property int word_count: 0
     property int box_count: 0
     property int focused_line: -1
@@ -105,11 +106,44 @@ Rectangle
         }
     }
 
+    Rectangle
+    {
+        id: editor_title
+
+        color: "#797979"
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.rightMargin: 20
+
+        height: 25
+
+        Text
+        {
+            text: if( root.ab_verifier===1 )
+                  {
+                      "Word Editor - Category: \"unverified\""
+                  }
+                  else
+                  {
+                      "Word Editor - Category: \"" + category + "\""
+                  }
+
+            color: "#e5e5e5"
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: 15
+            font.pixelSize: 15
+        }
+    }
+
     Flickable
     {
         id: scroller
         anchors.left: parent.left
-        anchors.top: parent.top
+        anchors.top: editor_title.bottom
+        anchors.topMargin: 10
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         width: parent.width

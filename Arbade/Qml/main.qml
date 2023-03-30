@@ -17,7 +17,7 @@ ApplicationWindow
     y: 100
     x: 30
     width: 1650
-    height: 900
+    height: 830
     minimumHeight: 500
     minimumWidth: 760
 
@@ -28,7 +28,6 @@ ApplicationWindow
     property int sig_del_file: 0
     property real play_pos: 0
 
-    property string ab_category: "home"
     property string ab_words: "<One> <Roger> <Spotify>"
     property string ab_address: ""
     property string ab_word_list: ""
@@ -101,7 +100,7 @@ ApplicationWindow
     Settings
     {
         property alias totalcount:      root.ab_total_count
-        property alias category_name:   root.ab_category
+        property alias category_name:   editor_box.category
         property alias rectime:         root.ab_rec_time
         property alias numwords:        root.ab_num_words
         property alias pausetime:       root.ab_pause_time
@@ -123,7 +122,7 @@ ApplicationWindow
     {
         id: status_bar
         objectName: "Status"
-        height: 120
+        height: 50
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
@@ -131,20 +130,6 @@ ApplicationWindow
         pause_time: ab_pause_time
         num_words: ab_num_words
         rec_time: ab_rec_time
-        status: ab_status
-        words: ab_words
-        category:
-        {
-            if( ab_verifier===1 )
-            {
-                "unverified"
-            }
-            else
-            {
-                ab_category
-            }
-        }
-        count: ab_count
         count_total:
         {
             if( ab_verifier )
@@ -156,19 +141,6 @@ ApplicationWindow
                 ab_total_count
             }
         }
-
-        elapsed_time:
-        {
-            if( ab_verifier )
-            {
-                play_pos
-            }
-            else
-            {
-                ab_elapsed_time
-            }
-        }
-        power: ab_power
         focus_word: ab_focus_text
     }
 
@@ -197,7 +169,7 @@ ApplicationWindow
         {
             if( title===category_title )
             {
-                ab_category = value;
+                editor_box.category = value;
                 setCategory();
             }
             else if( title===cnt_title )
@@ -291,8 +263,9 @@ ApplicationWindow
     AbButtons
     {
         id: buttons_box
+        objectName: "Buttons"
         anchors.top: editor_box.bottom
-        anchors.topMargin: -30
+        anchors.topMargin: 10
         anchors.horizontalCenter: editor_box.horizontalCenter
     }
 
@@ -324,6 +297,51 @@ ApplicationWindow
         anchors.rightMargin: 20
         visible: ab_show_console
         objectName: "Console"
+    }
+
+    AbRecPanel
+    {
+        objectName: "RecPanel"
+        anchors.left: editor_box.left
+        anchors.right: editor_box.right
+        anchors.top: editor_box.top
+        anchors.bottom: buttons_box.bottom
+
+        visible: if( ab_status===ab_const.ab_STATUS_STOP )
+                 {
+                     false
+                 }
+                 else
+                 {
+                     true
+                 }
+
+        status: ab_status
+        words: ab_words
+        count: ab_count
+        count_total:
+        {
+            if( ab_verifier )
+            {
+                ab_total_count_v
+            }
+            else
+            {
+                ab_total_count
+            }
+        }
+        elapsed_time:
+        {
+            if( ab_verifier )
+            {
+                play_pos
+            }
+            else
+            {
+                ab_elapsed_time
+            }
+        }
+        power: ab_power
     }
 
     Audio
