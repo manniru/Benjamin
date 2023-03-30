@@ -9,8 +9,6 @@ import QtQuick.Window 2.10
 Rectangle
 {
     height: lv_wordbox.height
-    property string word_list: ""
-    property string word_stat: ""
     property int start_num: 0
     property int last_box: 0
     property int commit: 0
@@ -149,7 +147,19 @@ Rectangle
 
     function addWordBox(w_text, w_count)
     {
+        var i = lm_wordbox.count;
         console.log("box", w_text, w_count);
+        lm_wordbox.append({wid: zeroPad(i+start_num),
+                           wt: w_text, wc: w_count, sf:0});
+    }
+    function isFull()
+    {
+        var count = lm_wordbox.count;
+        if( count>20 )
+        {
+            return true;
+        }
+        return false;
     }
 
     function zeroPad(num)

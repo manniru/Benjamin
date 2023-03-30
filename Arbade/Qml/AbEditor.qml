@@ -44,11 +44,7 @@ Rectangle
             id: wordbox_id
 
             width: 200
-            word_list: wl
-            word_stat: ws
             start_num: sn
-            last_box: lb
-            commit: com
             set_focus: sf
 
             onWordBoxChanged:
@@ -353,13 +349,33 @@ Rectangle
         lm_wordedit.get(focused_box).sf++;
     }
 
-    function addWord(w_text, w_count, w_color)
+    function addWord(w_text, w_count)
     {
         var box_id = lv_wordedit.count-1;
+
+        if( box_id<0 )
+        {
+//            lm_wordedit.append({"sn": 0, "sf": 0});
+
+            var comp = Qt.createComponent("AbWordBox.qml");
+            lv_wordedit.add(comp);
+            box_id = 0;
+        }
+
         var box = lv_wordedit.itemAtIndex(box_id);
+        console.log("we are", w_text, w_count, box_id, box);
+
+        if( box.isFull() )
+        {
+            var start_number = box_id * 21;
+            lm_wordedit.append({"sn": start_number, "sf": 0});
+            box_id++;
+            box = lv_wordedit.itemAtIndex(box_id);
+        }
+
+
 //        var box = lv_wordedit.currentItem;
 //        lv_wordedit.currentItem
-        console.log("we are", w_text, w_count, box_id, box);
         box.addWordBox(w_text, w_count);
     }
 }
