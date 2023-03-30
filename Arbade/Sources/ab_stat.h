@@ -21,7 +21,7 @@ public:
 
     QString getStat(QString category = ""); // get total stat for wordlist
     void openCategory(QString category);
-    QVector<int> countWords(QStringList file_list, int len);
+    QVector<int> getCount(QStringList file_list);
     QString setFont(QString data, int val, int mean,
                     int var, int font_size = 24, int alignment = 0);
     int meanCount(QVector<int> count);
@@ -30,13 +30,17 @@ public:
     QStringList listFiles(QString path, int mode);
     QFileInfoList getAudioDirs();
     void addWord(QString word, int count, int color);
+    void createWordEditor(QString category);
 
 private:
+    QVector<int> getCategoryCount(QString category);
 
     QObject *root;//root qml object
     QObject *editor;//word editor qml object
     QObject *buttons;//buttons qml object
     QObject *status;//status qml object
+
+    QStringList lexicon;
 };
 
 #endif // AB_STAT_H

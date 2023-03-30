@@ -142,17 +142,18 @@ void AbScene::updateStat()
     loadWordList();
     QString stat;
 
-    if( stat_all )
-    {
-        stat = ab_stat->getStat();
-    }
-    else //all category stats
-    {
-        QString category = QQmlProperty::read(editor, "category").toString();
-        stat = ab_stat->getStat(category);
-        //        qDebug() << "updateStat" << category;
-    }
-    ab_stat->addWord("test", 2, AB_COLOR_NORM);
+//    if( stat_all )
+//    {
+//        stat = ab_stat->getStat();
+//    }
+//    else //all category stats
+//    {
+//        QString category = QQmlProperty::read(editor, "category").toString();
+//        stat = ab_stat->getStat(category);
+//        //        qDebug() << "updateStat" << category;
+//    }
+    QString category = QQmlProperty::read(editor, "category").toString();
+    ab_stat->createWordEditor(category);
 
     QQmlProperty::write(root, "ab_word_stat", stat);
     updateCategories();

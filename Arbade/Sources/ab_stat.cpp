@@ -10,6 +10,10 @@ AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
     buttons = root->findChild<QObject *>("Buttons");
     status = root->findChild<QObject *>("Status");
     editor = root->findChild<QObject*>("WordList");
+
+
+    QString wl_path = ab_getAudioPath() + "..\\word_list";
+    lexicon = bt_parseLexicon(wl_path);
 }
 
 QString AbStat::getStat(QString category)
@@ -48,7 +52,7 @@ QString AbStat::getStat(QString category)
                                            AB_LIST_NAMES);
         //        qDebug() << ">>dir:" << dir_list[i].absoluteFilePath()
         //                 << "\n" << files_list;
-        QVector<int> count = countWords(files_list, len);
+        QVector<int> count = getCount(files_list);
 
         for( int j=0 ; j<len ; j++ )
         {
@@ -184,12 +188,13 @@ QString AbStat::setFont(QString data, int val, int mean, int var,
     return result;
 }
 
-QVector<int> AbStat::countWords(QStringList file_list, int len)
+QVector<int> AbStat::getCount(QStringList file_list)
 {
+    int lexicon_len = lexicon.length();
     QString filename;
     QStringList words_index;
     QVector<int> count;
-    count.resize(len);
+    count.resize(lexicon_len);
     count.fill(0);
     int file_num = file_list.size();
 
@@ -207,7 +212,7 @@ QVector<int> AbStat::countWords(QStringList file_list, int len)
         for( int i=0 ; i<words_num ; i++ )
         {
             int index = words_index[i].toInt();
-            if( index>=0 && index<len )
+            if( index>=0 && index<lexicon_len )
             {
                 count[index]++;
             }
@@ -272,8 +277,34 @@ void AbStat::addWord(QString word, int count, int color)
 
     QGenericArgument arg_word  = Q_ARG(QVariant, word_v);
     QGenericArgument arg_count = Q_ARG(QVariant, count);
-    QGenericArgument arg_color = Q_ARG(QVariant, color_v);
 
     QMetaObject::invokeMethod(editor, "addWord", arg_word,
-                              arg_count, arg_color);
+                              arg_count);
+}
+
+QVector<int> AbStat::getCategoryCount(QString category)
+{
+    QString cat_path = ab_getAudioPath();
+    cat_path += "train\\" + category + "\\";
+
+    QStringList samples = listFiles(cat_path, AB_LIST_NAMES);
+    QVector<int> ret = getCount(samples);
+
+    return ret;
+}
+
+void AbStat::createWordEditor(QString category)
+{
+    QVector<int> count = getCategoryCount(category);
+    cat_mean = meanCount(count);
+    cat_var = varCount(count, cat_mean);
+
+    QQmlProperty::write(buttons, "mean", cat_mean);
+    QQmlProperty::write(buttons, "variance", cat_var);
+
+    int lexicon_len = lexicon.length();
+    for( int i=0 ; i<lexicon_len ; i++ )
+    {
+        addWord(lexicon[i], count[i], AB_COLOR_NORM);
+    }
 }
