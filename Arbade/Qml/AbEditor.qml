@@ -33,6 +33,12 @@ Rectangle
     ListModel
     {
         id: lm_wordedit
+
+        ListElement
+        {
+            sn: 0
+            sf: 0
+        }
     }
 
     Component
@@ -149,18 +155,12 @@ Rectangle
 
         property int scroll_speed: 30
 
-        ListView
+        Row
         {
             id: lv_wordedit
-            height: childrenRect.height
-            anchors.fill: parent
-            orientation: ListView.Horizontal
+            anchors.top: parent.top
+            anchors.left: parent.left
             spacing: 40
-            clip: true
-            contentWidth: childrenRect.width
-
-            model: lm_wordedit
-            delegate: ld_wordedit
         }
     }
 
@@ -351,26 +351,28 @@ Rectangle
 
     function addWord(w_text, w_count)
     {
-        var box_id = lv_wordedit.count-1;
+        var box_id = lv_wordedit.children.length-1;
+        var comp;
 
         if( box_id<0 )
         {
 //            lm_wordedit.append({"sn": 0, "sf": 0});
 
-            var comp = Qt.createComponent("AbWordBox.qml");
-            lv_wordedit.add(comp);
+            comp = Qt.createComponent("AbWordBox.qml");
+            comp.createObject(lv_wordedit, {width: 200});
             box_id = 0;
         }
 
-        var box = lv_wordedit.itemAtIndex(box_id);
+        var box = lv_wordedit.children[box_id];
         console.log("we are", w_text, w_count, box_id, box);
 
         if( box.isFull() )
         {
-            var start_number = box_id * 21;
-            lm_wordedit.append({"sn": start_number, "sf": 0});
             box_id++;
-            box = lv_wordedit.itemAtIndex(box_id);
+            var start_number = box_id * 21;
+            comp = Qt.createComponent("AbWordBox.qml");
+            comp.createObject(lv_wordedit, {width: 200, start_num: start_number});
+            console.log("addddd",);
         }
 
 

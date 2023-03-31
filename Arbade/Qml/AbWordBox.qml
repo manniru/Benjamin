@@ -152,10 +152,11 @@ Rectangle
         lm_wordbox.append({wid: zeroPad(i+start_num),
                            wt: w_text, wc: w_count, sf:0});
     }
+
     function isFull()
     {
         var count = lm_wordbox.count;
-        if( count>20 )
+        if( count>19 )
         {
             return true;
         }

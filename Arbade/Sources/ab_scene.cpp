@@ -30,7 +30,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setFocusWord(int)));
 
     readQmlProperties();
-    updateStat();
+//    updateStat();
 }
 
 void AbScene::readQmlProperties()

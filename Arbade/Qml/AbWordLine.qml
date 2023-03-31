@@ -119,12 +119,12 @@ Rectangle
         horizontalAlignment: Text.AlignHCenter
 
         font.pixelSize: 16
-        text: word_count
+        text: "(" + word_count + ")"
         color:
         {
             var mean = parseInt(buttons_box.mean);
             var variance = parseInt(buttons_box.variance);
-            var count = parseInt(word_count.substring(1,word_count.length-1));
+            var count = parseInt(word_count);
             if( count<mean-variance )
             {
                 "#cb6565"; // red
