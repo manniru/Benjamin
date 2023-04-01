@@ -10,7 +10,6 @@ AbManager::AbManager(QObject *ui, QObject *parent) : QObject(parent)
     srand(time(NULL));
 
     audio = new AbAudio(root);
-    stat  = new AbStat(root);
 
     connect(audio, SIGNAL(setStatus(int)), this, SLOT(setStatus(int)));
     connect(root, SIGNAL(deleteSample(QString)),
@@ -107,7 +106,7 @@ void AbManager::delWordSamples()
 
     qDebug() << "delWordSamples" << del_list;
 
-    QFileInfoList dir_list = stat->getAudioDirs();
+    QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
 
     if( len_dir==0 )
@@ -117,7 +116,7 @@ void AbManager::delWordSamples()
 
     for( int i=0 ; i<len_dir ; i++ )
     {
-        QFileInfoList files_list = stat->listFiles(dir_list[i].
+        QFileInfoList files_list = ab_listFiles(dir_list[i].
                                    absoluteFilePath());
         int len_files = files_list.size();
 
@@ -200,12 +199,5 @@ AbManager::~AbManager()
 
 void AbManager::setStatus(int status)
 {
-    if( status==AB_STATUS_STOP )
-    {
-        QString category = QQmlProperty::read(editor, "category").toString();
-        QString statis = stat->getStat(category);
-        QQmlProperty::write(root, "ab_word_stat", statis);
-    }
-
-    QQmlProperty::write(root, "ab_status", status);
+    updateStatus(status);
 }

@@ -25,6 +25,7 @@ signals:
     void startDecoding();
     void pauseChanged(float time);
     void categoryChanged(QString category);
+    void updateStatus(int status);
 
 private slots:
     void setStatus(int status);
@@ -36,7 +37,6 @@ private:
     void deleteFile(QString path);
 
     AbAudio *audio;
-    AbStat  *stat;
     QObject *root;//root qml object
     QObject *editor;//editor qml object
     int r_counter;
