@@ -21,6 +21,9 @@
 #define KD_INFINITY_DB std::numeric_limits<double>::infinity()
 #define KD_INFINITY_FL std::numeric_limits<float>::infinity()
 
+#define AB_LIST_NAMES 1
+#define AB_LIST_PATHS 2
+
 int getIntCommand(char *command);
 QString getStrCommand(QString command);
 QString getDiffTime(clock_t start);
@@ -30,5 +33,9 @@ void bt_addLog(QString log);
 void bt_mkDir(QString path);
 QString ab_getWslPath();
 QString ab_getAudioPath();
+QFileInfoList ab_listFiles(QString path);
+QStringList ab_listFiles(QString path, int mode);
+void ab_openCategory(QString category);
+QFileInfoList ab_getAudioDirs();
 
 #endif // BACKEND_H

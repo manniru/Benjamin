@@ -31,7 +31,6 @@ ApplicationWindow
     property string ab_words: "<One> <Roger> <Spotify>"
     property string ab_address: ""
     property string ab_word_list: ""
-    property string ab_word_stat: ""
     property string ab_auto_comp: ""
     property string ab_focus_text: ""
     property string ab_dif_words: ""
@@ -62,10 +61,12 @@ ApplicationWindow
     signal saveWordList()
     signal setCategory()
     signal setDifWords()
+    signal qmlCompleted()
 
     Component.onCompleted:
     {
         ab_start_now = Date.now();
+        qmlCompleted();
     }
 
     onAb_statusChanged:
@@ -84,11 +85,6 @@ ApplicationWindow
                 audio_timer.stop();
             }
         }
-    }
-
-    onAb_word_statChanged:
-    {
-        editor_box.loadWordBoxes();
     }
 
     onAb_wordsChanged:

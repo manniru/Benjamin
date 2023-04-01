@@ -15,6 +15,9 @@ Rectangle
     property int    font_size:          24
     property string font_name_label:    fontRobotoRegular.name
 
+    signal saveClicked()
+    signal resetClicked()
+
     Text
     {
         id: mean_label
@@ -23,7 +26,6 @@ Rectangle
         color: color_text
         font.pixelSize: font_size
         font.family: font_name_label
-        lineHeight: 1.2
 
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
@@ -37,12 +39,13 @@ Rectangle
         width: btn_width
         enabled: btn_enable
         anchors.top: parent.top
+        anchors.topMargin: -5
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: -125
 
         onClick:
         {
-            editor_box.saveProcess();
+            saveClicked();
         }
     }
 
@@ -52,13 +55,14 @@ Rectangle
         text: "Reset"
         width: btn_width
         enabled: btn_enable
+        anchors.top: parent.top
+        anchors.topMargin: -5
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.horizontalCenterOffset: 125
-        anchors.top: parent.top
 
         onClick:
         {
-            editor_box.resetProcess();
+//            resetClicked();
         }
     }
 
@@ -70,7 +74,6 @@ Rectangle
         color: color_text
         font.pixelSize: font_size
         font.family: font_name_label
-        lineHeight: 1.2
 
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
