@@ -30,7 +30,6 @@ ApplicationWindow
 
     property string ab_words: "<One> <Roger> <Spotify>"
     property string ab_address: ""
-    property string ab_word_list: ""
     property string ab_auto_comp: ""
     property string ab_focus_text: ""
     property string ab_dif_words: ""
@@ -240,15 +239,10 @@ ApplicationWindow
         anchors.bottom: status_bar.top
         anchors.bottomMargin: 65
 
-        onUpdateWordList:
-        {
-            ab_word_list = word_list;
-            saveWordList();
-        }
         onUpdateDifWords:
         {
-            ab_dif_words = dif_words;
-            setDifWords();
+//            ab_dif_words = dif_words;
+//            setDifWords();
         }
         onEnableButtons:
         {

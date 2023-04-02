@@ -5,17 +5,16 @@
 #include "ab_recorder.h"
 #include "ab_wav_writer.h"
 #include "ab_wav_reader.h"
+#include "ab_stat.h"
 
 class AbAudio : public QObject
 {
     Q_OBJECT
 public:
-    explicit AbAudio(QObject *ui, QObject *parent = nullptr);
+    explicit AbAudio(AbStat *st, QObject *ui,
+                     QObject *parent = nullptr);
     void record();
     void readWave(QString filename);
-    void parseLexicon();
-
-    QStringList lexicon;
 
 signals:
     void setStatus(int status);
@@ -37,6 +36,7 @@ private:
     AbRecorder *rec;
     AbWavWriter *wav_wr;
     AbWavReader *wav_rd;
+    AbStat *stat;
     QObject *root;//root qml object
     QObject *editor;//editor qml object
     QTimer *read_timer;

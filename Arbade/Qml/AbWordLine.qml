@@ -12,7 +12,7 @@ Rectangle
     height: text_area.height
     property int word_id: 0
     property string word_text: ""
-    property int word_count: "0"
+    property int word_number: 0
 
     signal wordChanged(int id, string text_w)
     signal arrowPressed(int direction)
@@ -72,6 +72,7 @@ Rectangle
 
         onTextChanged:
         {
+            word_text = text;
             wordChanged(word_id, text);
         }
 
@@ -120,16 +121,16 @@ Rectangle
         horizontalAlignment: Text.AlignHCenter
 
         font.pixelSize: 16
-        text: "(" + word_count + ")"
+        text: "(" + word_number + ")"
         color:
         {
             var mean = parseInt(buttons_box.mean);
             var variance = parseInt(buttons_box.variance);
-            if( word_count<mean-variance )
+            if( word_number<mean-variance )
             {
                 "#cb6565"; // red
             }
-            else if( word_count>mean+variance )
+            else if( word_number>mean+variance )
             {
                 "#80bf73"; // green
             }

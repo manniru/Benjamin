@@ -1,15 +1,15 @@
 #include "ab_audio.h"
 #include <QQmlProperty>
 
-AbAudio::AbAudio(QObject *ui, QObject *parent) : QObject(parent)
+AbAudio::AbAudio(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
+    stat = st;
     editor = root->findChild<QObject *>("WordList");
     float rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
     int sample_count = rec_time*BT_REC_RATE;
 //    qDebug() << "sample_count" << sample_count;
 
-    parseLexicon();
     rec = new AbRecorder(sample_count);
     wav_wr = new AbWavWriter(rec->cy_buf, sample_count);
     wav_rd = new AbWavReader(rec->cy_buf, sample_count);
@@ -150,7 +150,7 @@ QString AbAudio::idsToWords(QVector<int> ids)
     QString ret;
     for( int i=0 ; i<len_id ; i++ )
     {
-        ret += "<" + lexicon[ids[i]] + "> ";
+        ret += "<" + stat->lexicon[ids[i]] + "> ";
     }
     return ret.trimmed();
 }
@@ -158,12 +158,12 @@ QString AbAudio::idsToWords(QVector<int> ids)
 QString AbAudio::getRandPath(QString category)
 {
     int word_id[AB_WORD_LEN];
-    int lexicon_size = lexicon.length();
+    int lexicon_size = stat->lexicon.length();
     QVector<AbWord> words;
     int fix_word_index = -1;
     int focus_word = QQmlProperty::read(root, "ab_focus_word").toInt();
 
-    if( focus_word>=0 && focus_word<lexicon.size() )
+    if( focus_word>=0 && focus_word<stat->lexicon.size() )
     {
         fix_word_index = rand()%AB_WORD_LEN;
     }
@@ -187,7 +187,7 @@ QString AbAudio::getRandPath(QString category)
         for( int i=0 ; i<AB_WORD_LEN ; i++ )
         {
             words[i].word_id = word_id[i];
-            words[i].word = lexicon[word_id[i]];
+            words[i].word = stat->lexicon[word_id[i]];
         }
 
         QString file_name = getFileName(words, category);
@@ -243,9 +243,9 @@ QString AbAudio::wordToId(QVector<AbWord> result)
 
     for( int i=0 ; i<result.length()-1 ; i++ )
     {
-        for( int j=0 ; j<lexicon.length() ; j++ )
+        for( int j=0 ; j<stat->lexicon.length() ; j++ )
         {
-            if( result[i].word==lexicon[j] )
+            if( result[i].word==stat->lexicon[j] )
             {
                 buf += QString::number(j);
                 buf += "_";
@@ -256,9 +256,9 @@ QString AbAudio::wordToId(QVector<AbWord> result)
     }
 
     QString last_word = result.last().word;
-    for( int j=0 ; j<lexicon.length() ; j++ )
+    for( int j=0 ; j<stat->lexicon.length() ; j++ )
     {
-        if( last_word==lexicon[j] )
+        if( last_word==stat->lexicon[j] )
         {
             buf += QString::number(j);
         }
@@ -278,10 +278,4 @@ double AbAudio::calcPower(int16_t *buffer, int len)
     double power_dB = 20*log10(power);
     power_dB += 50; // calibration
     return power_dB;
-}
-
-void AbAudio::parseLexicon()
-{
-    QString wl_path = ab_getAudioPath() + "..\\word_list";
-    lexicon = bt_parseLexicon(wl_path);
 }
