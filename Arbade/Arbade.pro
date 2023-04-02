@@ -35,7 +35,6 @@ HEADERS += \
     Sources/ab_console_controller.h \
     Sources/ab_editor.h \
     Sources/ab_init_wsl.h \
-    Sources/ab_manager.h \
     Sources/ab_mbr_base.h \
     Sources/ab_recorder.h \
     Sources/ab_scene.h \
@@ -53,7 +52,6 @@ SOURCES += \
     Sources/ab_console_controller.cpp \
     Sources/ab_editor.cpp \
     Sources/ab_init_wsl.cpp \
-    Sources/ab_manager.cpp \
     Sources/ab_mbr_base.cpp \
     Sources/ab_recorder.cpp \
     Sources/ab_scene.cpp \

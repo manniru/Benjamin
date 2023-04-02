@@ -14,13 +14,12 @@ Rectangle
     color: "transparent"
 
     property string dif_words: ""
-    property string total_words: ""
     property string category: ""
     property int word_count: 0
     property int box_count: 0
     property int focused_line: -1
 
-    signal updateWordList(string word_list)
+    signal updateWordList()
     signal updateDifWords(string dif_words)
     signal enableButtons(int enable)
     signal wordAdded(int id)
@@ -134,49 +133,9 @@ Rectangle
 
     function accept()
     {
-        updateWordList(total_words);
+        updateWordList();
         updateDifWords(dif_words);
         dif_words = "";
-    }
-
-    function getDiff(verbose)
-    {
-        var words_old = root.ab_word_list.split("\n").filter(i => i);
-        var words_new = total_words.split("\n").filter(i => i);
-        var max_dif = (words_old.length>words_new.length)?
-                        words_old.length:words_new.length
-        var dif = [];
-        var count = 0;
-
-        for( var i=0 ; i<max_dif ; i++ )
-        {
-            if( words_new[i]!==words_old[i] )
-            {
-                count += 1;
-                if( verbose )
-                {
-                    var word_old = words_old[i];
-                    var word_new = words_new[i];
-                    if( word_old===undefined )
-                    {
-                        word_old = "<new>";
-                    }
-                    if( word_new===undefined )
-                    {
-                        word_new = "<deleted>";
-                    }
-
-                    dif.push(count.toString() + ". " + word_old +
-                             "(" + i.toString() + ")" +
-                             " => " + word_new);
-                }
-                else
-                {
-                    dif.push(i.toString());
-                }
-            }
-        }
-        return dif;
     }
 
     function launchDialog(dif_words)
@@ -184,59 +143,6 @@ Rectangle
         wordlist_dialog.dialog_label = "Are you sure" +
                 " to change these words?\n" + dif_words;
         wordlist_dialog.visible = true;
-    }
-
-    function resetProcess()
-    {
-        var all_words = root.ab_word_list.split("\n");
-        total_words = root.ab_word_list;
-        word_count = all_words.length;
-        var all_count = all_words.length;
-        var all_stat = root.ab_word_stat.split("\n");
-        var box_size = ab_const.ab_WORDEDIT_BOX_SIZE;
-        var start_index = 0;
-        box_count = Math.ceil(all_count/box_size);
-        var box_count_old = lm_wordedit.count;
-        lm_wordedit.clear();
-
-        for( var i=0 ; i<box_count ; i++ )
-        {
-            var sliced_wl = all_words.slice(start_index,
-                               start_index+box_size).join("\n")
-            var sliced_ws = all_stat.slice(start_index,
-                               start_index+box_size).join("\n")
-            lm_wordedit.append({"sn": start_index, "wl": sliced_wl,
-                                "ws": sliced_ws, "lb": (i===box_count-1),
-                                "com": 1, "sf": 0});
-
-            start_index += box_size;
-        }
-    }
-
-    function loadWordBoxes()
-    {
-        lm_wordedit.clear();
-        var all_words = root.ab_word_list.split("\n");
-        total_words = root.ab_word_list;
-        word_count = all_words.length;
-        var all_stat = root.ab_word_stat.split("\n");
-        var all_count = all_words.length
-        var box_size = ab_const.ab_WORDEDIT_BOX_SIZE;
-        var start_index = 0;
-        box_count = Math.ceil(all_count/box_size);
-
-        for( var i=0 ; i<box_count ; i++ )
-        {
-            var sliced_wl = all_words.slice(start_index,
-                               start_index+box_size).join("\n")
-            var sliced_ws = all_stat.slice(start_index,
-                               start_index+box_size).join("\n")
-            lm_wordedit.append({"sn": start_index, "wl": sliced_wl,
-                                "ws": sliced_ws, "lb": (i===box_count-1),
-                                "com": 1, "sf": 0});
-
-            start_index += box_size;
-        }
     }
 
     function arrowPress(id, direction)
@@ -280,7 +186,7 @@ Rectangle
         }
 
         var box = wordedit_row.children[box_id];
-        console.log("we are", w_text, w_count, box_id, box);
+//        console.log("we are", w_text, w_count, box_id, box);
 
         if( box.isFull() )
         {
@@ -300,5 +206,6 @@ Rectangle
         {
             wordedit_row.children[i].destroy();
         }
+//        console.log(wordedit_row.children.length)
     }
 }

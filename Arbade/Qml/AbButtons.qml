@@ -62,7 +62,7 @@ Rectangle
 
         onClick:
         {
-//            resetClicked();
+            resetClicked();
         }
     }
 
