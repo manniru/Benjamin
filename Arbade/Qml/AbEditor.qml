@@ -23,89 +23,12 @@ Rectangle
     signal updateWordList(string word_list)
     signal updateDifWords(string dif_words)
     signal enableButtons(int enable)
+    signal wordAdded(int id)
 
     MouseArea
     {
         anchors.fill: parent
         onClicked: focus_item.forceActiveFocus();
-    }
-
-    ListModel
-    {
-        id: lm_wordedit
-
-        ListElement
-        {
-            sn: 0
-            sf: 0
-        }
-    }
-
-    Component
-    {
-        id: ld_wordedit
-
-        AbWordBox
-        {
-            id: wordbox_id
-
-            width: 200
-            start_num: sn
-            set_focus: sf
-
-            onWordBoxChanged:
-            {
-                var split_words = total_words.split("\n");
-                split_words[id] = word;
-                total_words = split_words.join("\n");
-                var verbose = 0;
-                var dif_result = getDiff(verbose);
-                if( dif_result.length )
-                {
-                    enableButtons(1);
-                }
-                else
-                {
-                    enableButtons(0);
-                }
-            }
-
-            onNewBoxRequired:
-            {
-                lm_wordedit.get(box_count-1).lb = 0;
-                lm_wordedit.append({"sn": word_count, "wl": "",
-                                   "ws": "0", "lb": Boolean(true),
-                                   "com": 1, "sf": 0});
-            }
-
-            onNewWord:
-            {
-                word_count++;
-                total_words += "\n";
-            }
-
-            onSetFNum:
-            {
-                focused_line = id;
-            }
-
-            onRemoveBox:
-            {
-
-            }
-
-            onLineRemoved:
-            {
-                word_count--;
-                total_words = total_words.substring(0,total_words.length-1); // removes \n
-                arrowPress(word_count-1, Qt.Key_Up);
-            }
-
-            onArrowPrsd:
-            {
-                arrowPress(id, direction);
-            }
-        }
     }
 
     Rectangle
@@ -117,7 +40,7 @@ Rectangle
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.rightMargin: 20
+        anchors.rightMargin: 10
 
         height: 25
 
@@ -149,15 +72,15 @@ Rectangle
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         width: parent.width
-        height: lv_wordedit.height
-        contentWidth: lv_wordedit.childrenRect.width + 20
+        height: wordedit_row.height
+        contentWidth: wordedit_row.childrenRect.width + 20
         clip : true
 
         property int scroll_speed: 30
 
         Row
         {
-            id: lv_wordedit
+            id: wordedit_row
             anchors.top: parent.top
             anchors.left: parent.left
             spacing: 40
@@ -236,11 +159,11 @@ Rectangle
                     var word_new = words_new[i];
                     if( word_old===undefined )
                     {
-                        word_old = "<new>"
+                        word_old = "<new>";
                     }
                     if( word_new===undefined )
                     {
-                        word_new = "<deleted>"
+                        word_new = "<deleted>";
                     }
 
                     dif.push(count.toString() + ". " + word_old +
@@ -256,17 +179,11 @@ Rectangle
         return dif;
     }
 
-    function saveProcess()
+    function launchDialog(dif_words)
     {
-        var verbose = 1;
-        var dif_result = getDiff(verbose);
-        if( dif_result.length!==0 )
-        {
-            dif_words = dif_result.join("\n");
-            wordlist_dialog.dialog_label = "Are you sure" +
-                    " to change these words?\n" + dif_words;
-            wordlist_dialog.visible = true;
-        }
+        wordlist_dialog.dialog_label = "Are you sure" +
+                " to change these words?\n" + dif_words;
+        wordlist_dialog.visible = true;
     }
 
     function resetProcess()
@@ -344,26 +261,25 @@ Rectangle
             }
             focused_line = id+1;
         }
-        var focused_box = Math.floor(focused_line/
+        var box_id = Math.floor(focused_line/
                                      ab_const.ab_WORDEDIT_BOX_SIZE);
-        lm_wordedit.get(focused_box).sf++;
+        var box = wordedit_row.children[box_id];
+        box.focusLine(focused_line);
     }
 
     function addWord(w_text, w_count)
     {
-        var box_id = lv_wordedit.children.length-1;
+        var box_id = wordedit_row.children.length-1;
         var comp;
 
         if( box_id<0 )
         {
-//            lm_wordedit.append({"sn": 0, "sf": 0});
-
             comp = Qt.createComponent("AbWordBox.qml");
-            comp.createObject(lv_wordedit, {width: 200});
+            comp.createObject(wordedit_row, {width: 200});
             box_id = 0;
         }
 
-        var box = lv_wordedit.children[box_id];
+        var box = wordedit_row.children[box_id];
         console.log("we are", w_text, w_count, box_id, box);
 
         if( box.isFull() )
@@ -371,13 +287,18 @@ Rectangle
             box_id++;
             var start_number = box_id * 21;
             comp = Qt.createComponent("AbWordBox.qml");
-            comp.createObject(lv_wordedit, {width: 200, start_num: start_number});
-            console.log("addddd",);
+            comp.createObject(wordedit_row, {width: 200, start_num: start_number});
         }
 
+        box.addWord(w_text, w_count);
+    }
 
-//        var box = lv_wordedit.currentItem;
-//        lv_wordedit.currentItem
-        box.addWordBox(w_text, w_count);
+    function clearEditor()
+    {
+        var len = wordedit_row.children.length;
+        for( var i=0 ; i<len ; i++ )
+        {
+            wordedit_row.children[i].destroy();
+        }
     }
 }

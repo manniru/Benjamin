@@ -5,7 +5,7 @@
 #include <QQuickItem>
 #include <QQuickWindow>
 #include "ab_manager.h"
-#include "ab_stat.h"
+#include "ab_editor.h"
 
 class AbScene : public QObject
 {
@@ -26,6 +26,7 @@ private slots:
     void setCategory();
     void setDifWords();
     void setFocusWord(int focus_word);
+    void qmlCreated();
 
 private:
     void fillRecParams();
@@ -35,10 +36,10 @@ private:
     void setCount(int cnt);
     void readQmlProperties();
 
-    QObject *root;//root qml object
-    QObject *editor;//editor qml object
+    QObject *root;       // root qml object
+    QObject *qml_editor; // editor qml object
     AbManager *man;
-    AbStat *ab_stat;
+    AbEditor  *editor;
     QTimer *break_timer;
     QStringList unverified_list;
     int stat_all = 0;
