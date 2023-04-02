@@ -10,14 +10,12 @@ Rectangle
 {
     id: wordline
     height: text_area.height
-    property string word_id: ""
+    property int word_id: 0
     property string word_text: ""
-    property string word_count: "0"
-    property int    set_focus: 0
+    property int word_count: "0"
 
-    signal wordChanged(string text_w)
+    signal wordChanged(int id, string text_w)
     signal arrowPressed(int direction)
-    signal setFocusNum(int id)
     signal removeLine()
 
     Rectangle
@@ -39,7 +37,7 @@ Rectangle
         anchors.topMargin: 3
 
         font.pixelSize: 16
-        text: word_id
+        text: zeroPad(word_id)
         color: "#b4b4b4"
     }
 
@@ -74,7 +72,7 @@ Rectangle
 
         onTextChanged:
         {
-            wordChanged(text);
+            wordChanged(word_id, text);
         }
 
         Keys.onEscapePressed:
@@ -86,26 +84,29 @@ Rectangle
         {
             if( event.key===Qt.Key_Backspace && text==="" )
             {
-                var id = parseInt(word_id);
+                var id = word_id;
                 if( id===editor_box.word_count-2 )
                 {
                     removeLine();
                 }
                 else if( id===editor_box.word_count-1 )
                 {
-                    arrowPressed(Qt.Key_Up);
+                    editor_box.arrowPress(word_id, event.key);
                 }
             }
             else if( event.key===Qt.Key_Up ||
                      event.key===Qt.Key_Down )
             {
-                arrowPressed(event.key);
+                editor_box.arrowPress(word_id, event.key);
             }
         }
 
         onFocusChanged:
         {
-            setFocusNum(parseInt(word_id));
+            if( focus )
+            {
+                editor_box.focused_line = word_id;
+            }
         }
     }
 
@@ -124,12 +125,11 @@ Rectangle
         {
             var mean = parseInt(buttons_box.mean);
             var variance = parseInt(buttons_box.variance);
-            var count = parseInt(word_count);
-            if( count<mean-variance )
+            if( word_count<mean-variance )
             {
                 "#cb6565"; // red
             }
-            else if( count>mean+variance )
+            else if( word_count>mean+variance )
             {
                 "#80bf73"; // green
             }
@@ -140,18 +140,20 @@ Rectangle
         }
     }
 
-    onSet_focusChanged:
-    {
-        if( set_focus )
-        {
-            text_area.forceActiveFocus();
-            text_area.cursorPosition = text_area.text.length;
-        }
-    }
-
     onWord_textChanged:
     {
         text_area.text = word_text;
     }
-}
 
+    function applyFocus()
+    {
+        text_area.forceActiveFocus();
+        text_area.cursorPosition = text_area.text.length;
+    }
+
+    function zeroPad(num)
+    {
+        var zero = 3 - num.toString().length + 1;
+        return Array(+(zero > 0 && zero)).join("0") + num;
+    }
+}
