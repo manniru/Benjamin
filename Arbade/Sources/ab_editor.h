@@ -21,9 +21,11 @@ private slots:
     void changeWord(int id, QString text);
     void saveProcess();
     void resetProcess();
+    void writeWordList();
 
 private:
     void enableButtons();
+    QString getUiWordList();
     QString getDif();
 
     QObject *root;    // root qml object

@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QQuickItem>
 #include <QQuickWindow>
-#include "ab_manager.h"
 #include "ab_editor.h"
+#include "ab_audio.h"
 
 class AbScene : public QObject
 {
@@ -18,11 +18,9 @@ private slots:
     void copyFile();
     void deleteFile();
     void breakTimeout();
-    void loadWordList();
     void processKey(int key);
     void setStatus(int status);
     void setVerifier(int verifier);
-    void saveWordList();
     void setCategory();
     void setDifWords();
     void setFocusWord(int focus_word);
@@ -38,7 +36,7 @@ private:
 
     QObject *root;       // root qml object
     QObject *qml_editor; // editor qml object
-    AbManager *man;
+    AbAudio *audio;
     AbEditor  *editor;
     QTimer *break_timer;
     QStringList unverified_list;

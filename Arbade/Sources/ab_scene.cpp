@@ -7,9 +7,13 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     root = ui;
     qml_editor = root->findChild<QObject *>("WordList");
 
-    man = new AbManager(root);
     break_timer = new QTimer();
     editor = new AbEditor(root);
+
+    audio = new AbAudio(editor->stat, root);
+
+    connect(audio, SIGNAL(setStatus(int)),
+            this, SLOT(setStatus(int)));
 
     connect(break_timer, SIGNAL(timeout()),
             this, SLOT(breakTimeout()));
@@ -22,8 +26,6 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setVerifier(int)));
     connect(root, SIGNAL(setStatus(int)),
             this, SLOT(setStatus(int)));
-    connect(root, SIGNAL(saveWordList()), this,
-            SLOT(saveWordList()));
     connect(root, SIGNAL(setCategory()),
             this, SLOT(setCategory()));
     connect(root, SIGNAL(setDifWords()),
@@ -56,7 +58,7 @@ void AbScene::setStatus(int status)
 
     if( status==AB_STATUS_REC && verifier==0 )
     {
-        man->record();
+        audio->record();
     }
     else if( status==AB_STATUS_PAUSE && verifier==0 )
     {
@@ -117,7 +119,7 @@ void AbScene::loadAddress()
 {
     int count = QQmlProperty::read(root, "ab_count").toInt();
     QString address = unverified_list[count];
-    man->readWave(address);
+    audio->readWave(address);
     QQmlProperty::write(root, "ab_address", address);
 }
 
@@ -131,7 +133,7 @@ void AbScene::deleteFile()
 void AbScene::copyFile()
 {
     int count = QQmlProperty::read(root, "ab_count").toInt();
-    man->copyToOnline(unverified_list[count-1]);
+    editor->stat->copyToOnline(unverified_list[count-1]);
 }
 
 void AbScene::setCategory()
@@ -149,15 +151,13 @@ void AbScene::setFocusWord(int focus_word)
     }
     else
     {
-        focus_text = man->idToWord(focus_word);
+        focus_text = editor->stat->idToWord(focus_word);
     }
     QQmlProperty::write(root, "ab_focus_text", focus_text);
 }
 
 void AbScene::updateStat()
 {
-    loadWordList();
-
     if( stat_all )
     {
         editor->statAll();
@@ -168,20 +168,9 @@ void AbScene::updateStat()
     }
 }
 
-void AbScene::loadWordList()
-{
-    QString word_list = man->readWordList();
-    QQmlProperty::write(root, "ab_word_list", word_list);
-}
-
-void AbScene::saveWordList()
-{
-    man->writeWordList();
-}
-
 void AbScene::setDifWords()
 {
-    man->delWordSamples();
+    editor->stat->delWordSamples();
     updateStat();
 }
 

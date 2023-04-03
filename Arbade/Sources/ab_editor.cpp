@@ -10,6 +10,8 @@ AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
     buttons = root->findChild<QObject *>("Buttons");
 
     connect(editor, SIGNAL(wordAdded(int)), this, SLOT(addWord(int)));
+    connect(editor, SIGNAL(updateWordList()),
+            this, SLOT(writeWordList()));
     connect(buttons, SIGNAL(saveClicked()), this, SLOT(saveProcess()));
     connect(buttons, SIGNAL(resetClicked()), this, SLOT(resetProcess()));
 }
@@ -54,19 +56,25 @@ void AbEditor::resetProcess()
 {
     QMetaObject::invokeMethod(editor, "clearEditor");
     QString category = QQmlProperty::read(editor, "category").toString();
-    qDebug() << "chera miay tu in";
-//    stat->createWordEditor(category);
+    stat->createWordEditor(category);
 }
 
 QString AbEditor::getDif()
 {
     QString dif, word_new, word_old;
-    QString ab_word_list = QQmlProperty::read(root, "ab_word_list").toString();
-    QStringList words_old = ab_word_list.split("\n");
-    int count = 0;
+    QStringList words_old = stat->lexicon;
+    int max_len, count = 0;
     int len_words_new = word_lines.size();
     int len_words_old = words_old.length();
-    int max_len = (len_words_new>len_words_old)?len_words_new:len_words_old;
+
+    if( len_words_new>len_words_old )
+    {
+        max_len = len_words_new;
+    }
+    else
+    {
+        max_len = len_words_old;
+    }
 
     for( int i=0 ; i<max_len ; i++ )
     {
@@ -93,9 +101,38 @@ QString AbEditor::getDif()
             dif += QString::number(count) + ". " + word_old;
             dif += "(" + QString::number(i) + ")";
             dif += " => " + word_new;
+            dif += "\n";
         }
     }
-    return dif;
+    return dif.trimmed();
+}
+
+QString AbEditor::getUiWordList()
+{
+    QString ret;
+    int len = word_lines.size();
+    ret.reserve(len);
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        ret += QQmlProperty::read(word_lines[i], "word_text").toString();
+        ret += "\n";
+    }
+    return ret.trimmed();
+}
+
+void AbEditor::writeWordList()
+{
+    QString wl_path = ab_getAudioPath() + "..\\word_list";
+    QFile words_file(wl_path);
+    if( !words_file.open(QIODevice::WriteOnly | QIODevice::Text) )
+    {
+        qDebug() << "Error opening" << wl_path;
+    }
+    QString word_list = getUiWordList();
+    words_file.write(word_list.toStdString().c_str());
+    words_file.close();
+    stat->parseLexicon();
 }
 
 void AbEditor::statAll()
