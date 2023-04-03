@@ -86,13 +86,14 @@ Rectangle
             if( event.key===Qt.Key_Backspace && text==="" )
             {
                 var id = word_id;
-                if( id===editor_box.word_count-2 )
+                var word_count = editor_box.wordCount();
+                if( id===word_count-2 )
                 {
                     removeLine();
                 }
-                else if( id===editor_box.word_count-1 )
+                else if( id===word_count-1 )
                 {
-                    editor_box.arrowPress(word_id, event.key);
+                    editor_box.arrowPress(word_id, Qt.Key_Up);
                 }
             }
             else if( event.key===Qt.Key_Up ||
@@ -139,6 +140,7 @@ Rectangle
                 "#9a9a9a"; // gray
             }
         }
+        visible: word_number!==-1
     }
 
     onWord_textChanged:

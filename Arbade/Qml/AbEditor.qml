@@ -15,8 +15,6 @@ Rectangle
 
     property string dif_words: ""
     property string category: ""
-    property int word_count: 0
-    property int box_count: 0
     property int focused_line: -1
 
     signal updateWordList()
@@ -161,7 +159,7 @@ Rectangle
         }
         else if( direction===Qt.Key_Down )
         {
-            if( id===word_count-1 )
+            if( id===wordCount()-1 )
             {
                 return;
             }
@@ -207,5 +205,27 @@ Rectangle
             wordedit_row.children[i].destroy();
         }
 //        console.log(wordedit_row.children.length)
+    }
+
+    function removeWord()
+    {
+        var len = wordedit_row.children.length;
+        var box = wordedit_row.children[len-1];
+        box.removeLast();
+        var box_lines_count = box.getLineCount();
+        if( box_lines_count===1 )
+        {
+            wordedit_row.children[len-1].destroy();
+        }
+
+    }
+
+    function wordCount()
+    {
+        var box_id = wordedit_row.children.length-1;
+        var word_count = box_id * 21;
+        var box = wordedit_row.children[box_id];
+        word_count += box.getLineCount();
+        return word_count;
     }
 }

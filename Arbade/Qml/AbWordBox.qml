@@ -12,11 +12,6 @@ Rectangle
     color: "transparent"
 
     property int start_num: 0
-    property int last_box: 0
-    property int commit: 0
-    property int wl_count: 0
-    property int set_focus: 0
-    property string total_words: ""
 
     Column
     {
@@ -58,4 +53,14 @@ Rectangle
         wordbox_cl.children[id-start_num].applyFocus();
     }
 
+    function removeLast()
+    {
+        var len = wordbox_cl.children.length;
+        wordbox_cl.children[len-1].destroy();
+    }
+
+    function getLineCount()
+    {
+        return wordbox_cl.children.length;
+    }
 }
