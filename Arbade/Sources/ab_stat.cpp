@@ -217,6 +217,8 @@ void AbStat::createWordEditor(QString category)
     {
         addWord(lexicon[i], count[i], AB_COLOR_NORM);
     }
+//    addEmptyLine
+    addWord("", -1, AB_COLOR_NORM);
 }
 
 void AbStat::updateMeanVar(QVector<int> *count)

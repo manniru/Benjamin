@@ -17,7 +17,7 @@ public:
 signals:
 
 private slots:
-    void addWord(int id);
+    void wordAdded(int id);
     void changeWord(int id, QString text);
     void saveProcess();
     void resetProcess();

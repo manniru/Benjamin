@@ -9,16 +9,16 @@ AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
     editor = root->findChild<QObject *>("WordList");
     buttons = root->findChild<QObject *>("Buttons");
 
-    connect(editor, SIGNAL(wordAdded(int)), this, SLOT(addWord(int)));
+    connect(editor, SIGNAL(wordAdded(int)), this, SLOT(wordAdded(int)));
     connect(editor, SIGNAL(updateWordList()),
             this, SLOT(writeWordList()));
     connect(buttons, SIGNAL(saveClicked()), this, SLOT(saveProcess()));
     connect(buttons, SIGNAL(resetClicked()), this, SLOT(resetProcess()));
 }
 
-void AbEditor::addWord(int id)
+void AbEditor::wordAdded(int id)
 {
-    if( id<word_lines.length()+1 )
+    if( id>=word_lines.length() )
     {
         word_lines.resize(id+1);
     }
@@ -33,6 +33,15 @@ void AbEditor::addWord(int id)
 void AbEditor::changeWord(int id, QString text)
 {
 //    for last add line and last word line add box
+    if( id==word_lines.length()-1 && text.length() )
+    {
+        stat->addWord("", -1, AB_COLOR_NORM);
+    }
+    else if( id==word_lines.length()-2 && text.length()==0 )
+    {
+        QMetaObject::invokeMethod(editor, "removeWord");
+        word_lines.removeLast();
+    }
     enableButtons();
 }
 
@@ -55,6 +64,7 @@ void AbEditor::saveProcess()
 void AbEditor::resetProcess()
 {
     QMetaObject::invokeMethod(editor, "clearEditor");
+    word_lines.clear();
     QString category = QQmlProperty::read(editor, "category").toString();
     stat->createWordEditor(category);
 }
@@ -64,7 +74,7 @@ QString AbEditor::getDif()
     QString dif, word_new, word_old;
     QStringList words_old = stat->lexicon;
     int max_len, count = 0;
-    int len_words_new = word_lines.size();
+    int len_words_new = word_lines.size()-1;
     int len_words_old = words_old.length();
 
     if( len_words_new>len_words_old )
@@ -80,7 +90,7 @@ QString AbEditor::getDif()
     {
         if( i>=len_words_new )
         {
-            word_new = "<new>";
+            word_new = "<deleted>";
         }
         else
         {
@@ -88,7 +98,7 @@ QString AbEditor::getDif()
         }
         if( i>=len_words_old )
         {
-            word_old = "<deleted>";
+            word_old = "<new>";
         }
         else
         {
