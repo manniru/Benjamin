@@ -26,14 +26,24 @@ public:
     void addWord(QString word, int count, int color);
     void createWordEditor(QString category);
     void updateMeanVar(QVector<int> *count);
+    void delWordSamples();
+    void copyToOnline(QString filename);
+    void parseLexicon();
+    QString idToWord(int id);
+
+    QStringList lexicon;
+
+private slots:
+    void deleteSample(QString sample);
 
 private:
+    int wordToIndex(QString word);
+    void deleteFile(QString path);
+
     QObject *root;//root qml object
     QObject *editor;//word editor qml object
     QObject *buttons;//buttons qml object
     QObject *status;//status qml object
-
-    QStringList lexicon;
 };
 
 #endif // AB_STAT_H
