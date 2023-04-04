@@ -88,8 +88,7 @@ ApplicationWindow
 
     onAb_wordsChanged:
     {
-        rec_list.word_samples.unshift(ab_words);
-        rec_list.updateRecList();
+        rec_list.addLine(ab_words);
     }
 
     Settings
@@ -223,7 +222,7 @@ ApplicationWindow
     {
         anchors.fill: parent
 
-        onClicked: editor_box.addWord("w", 2, "wd");
+        onClicked: editor_box.lolo()
     }
 
     AbEditor

@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.0
+import QtQuick.Layouts 1.1
 import QtQml 2.12
 import QtQuick.Extras 1.4
 import QtQuick.Controls 2.3
@@ -14,83 +14,123 @@ Rectangle
 
     signal delSample(string sample)
 
-    ListModel
+    Rectangle
     {
-        id: lm_reclist
-    }
+        id: reclist_title
 
-    Component
-    {
-        id: ld_reclist
+        color: "#797979"
 
-        AbRecLine
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.rightMargin: 0
+
+        height: 25
+
+        Text
         {
-            id: wordbox_id
-            width: lv_reclist.parent.width
-            height: 30
-
-            num_id: ni
-            sample_text: st
-            focused: fc
-
-            onLineClicked:
-            {
-                var len = word_samples.length;
-                lm_reclist.get(len-index).fc = true;
-                for( var i=0 ; i<len ; i++ )
-                {
-                    if( i!==index-1 )
-                    {
-                        lm_reclist.get(len-i-1).fc = false;
-                    }
-                }
-            }
-
-            onArrowClicked:
-            {
-                var len = word_samples.length;
-                if( key===Qt.Key_Down && index>1)
-                {
-                    lm_reclist.get(len-index+1).fc = true;
-                    lm_reclist.get(len-index).fc = false;
-                }
-                else if( key===Qt.Key_Up && index<len )
-                {
-                    lm_reclist.get(len-index-1).fc = true;
-                    lm_reclist.get(len-index).fc = false; // do not factor this line!!
-                }
-            }
-
-            onRemoveClicked:
-            {
-                var len = word_samples.length;
-                delSample(word_samples[len-index]);
-                word_samples.splice(len - index,1); // remove element
-                updateRecList();
-            }
+            text: "Record List History"
+            color: "#e5e5e5"
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: 15
+            font.pixelSize: 15
         }
     }
 
-    ListView
-    {
-        id: lv_reclist
-        anchors.fill: parent
-        contentHeight: 30*count + 20
-        clip: true
-//            contentWidth: childrenRect.width
+//    Component
+//    {
+//        id: ld_reclist
 
-        model: lm_reclist
-        delegate: ld_reclist
-    }
+//        AbRecLine
+//        {
+//            id: wordbox_id
 
-    function updateRecList()
-    {
-        lm_reclist.clear();
-        var len = word_samples.length;
-        for( var i=0 ; i<len ; i++ )
+
+
+//            focused: fc
+
+//            onLineClicked:
+//            {
+//                var len = word_samples.length;
+//                lm_reclist.get(len-index).fc = true;
+//                for( var i=0 ; i<len ; i++ )
+//                {
+//                    if( i!==index-1 )
+//                    {
+//                        lm_reclist.get(len-i-1).fc = false;
+//                    }
+//                }
+//            }
+
+//            onArrowClicked:
+//            {
+//                var len = word_samples.length;
+//                if( key===Qt.Key_Down && index>1)
+//                {
+//                    lm_reclist.get(len-index+1).fc = true;
+//                    lm_reclist.get(len-index).fc = false;
+//                }
+//                else if( key===Qt.Key_Up && index<len )
+//                {
+//                    lm_reclist.get(len-index-1).fc = true;
+//                    lm_reclist.get(len-index).fc = false; // do not factor this line!!
+//                }
+//            }
+
+//            onRemoveClicked:
+//            {
+//                var len = word_samples.length;
+//                delSample(word_samples[len-index]);
+//                word_samples.splice(len - index,1); // remove element
+//                updateRecList();
+//            }
+//        }
+//    }
+
+//    Flickable
+//    {
+//        anchors.left: parent.left
+//        anchors.top: reclist_title.bottom
+//        anchors.topMargin: 10
+//        anchors.right: parent.right
+//        anchors.bottom: parent.bottom
+//        clip: true
+
+        Rectangle
         {
-            lm_reclist.append({"ni": len-i, "st": word_samples[i],
-                              "fc": false});
+            id: reclist_cl
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: childrenRect.height
         }
+//    }
+
+    function addLine(word)
+    {
+        var comp;
+        var len = reclist_cl.children.length;
+        comp = Qt.createComponent("AbRecLine.qml");
+        if( len>0 )
+        {
+            var last_element = reclist_cl.children[len-1];
+            console.log(last_element)
+            var lolo = comp.createObject(reclist_cl, {width: reclist_cl.width,
+                                  height: 30,
+                                  num_id: len,
+                                  sample_text: word});
+            lolo.anchors.bottom = last_element.top;
+
+        }
+        else
+        {
+            var lolo2 = comp.createObject(reclist_cl, {width: reclist_cl.width,
+                                  height: 30,
+                                  num_id: len,
+                                  sample_text: word});
+            lolo2.anchors.bottom = reclist_cl.bottom;
+        }
+
     }
 }
