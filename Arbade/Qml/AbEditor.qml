@@ -68,8 +68,6 @@ Rectangle
         anchors.topMargin: 10
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        width: parent.width
-        height: wordedit_row.height
         contentWidth: wordedit_row.childrenRect.width + 20
         clip : true
 

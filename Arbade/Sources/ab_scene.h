@@ -20,6 +20,7 @@ private slots:
     void breakTimeout();
     void processKey(int key);
     void setStatus(int status);
+    void updateStatus(int status);
     void setVerifier(int verifier);
     void setCategory();
     void setDifWords();

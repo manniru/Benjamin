@@ -1,6 +1,8 @@
 #include "ab_editor.h"
 #include <QQmlProperty>
+//#include <QGuiApplication>
 #include <QDebug>
+#include <QThread>
 
 AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
 {
@@ -8,6 +10,9 @@ AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
     stat = new AbStat(root);
     editor = root->findChild<QObject *>("WordList");
     buttons = root->findChild<QObject *>("Buttons");
+
+    timer = new QTimer();
+    connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
 
     connect(editor, SIGNAL(wordAdded(int)), this, SLOT(wordAdded(int)));
     connect(editor, SIGNAL(updateWordList()),
@@ -65,8 +70,17 @@ void AbEditor::resetProcess()
 {
     QMetaObject::invokeMethod(editor, "clearEditor");
     word_lines.clear();
+    // Qt QML destroy bug forced us to exert a timer
+    // to make sure that the "clearEditor" function
+    // made its clearance
+    timer->start(10);
+}
+
+void AbEditor::timerTimeout()
+{
     QString category = QQmlProperty::read(editor, "category").toString();
     stat->createWordEditor(category);
+    timer->stop();
 }
 
 QString AbEditor::getDif()

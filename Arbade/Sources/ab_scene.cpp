@@ -13,7 +13,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     audio = new AbAudio(editor->stat, root);
 
     connect(audio, SIGNAL(setStatus(int)),
-            this, SLOT(setStatus(int)));
+            this, SLOT(updateStatus(int)));
 
     connect(break_timer, SIGNAL(timeout()),
             this, SLOT(breakTimeout()));
@@ -54,6 +54,7 @@ void AbScene::qmlCreated()
 void AbScene::setStatus(int status)
 {
     QQmlProperty::write(root, "ab_status", status);
+    qDebug() << "setStatus" << status;
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
 
     if( status==AB_STATUS_REC && verifier==0 )
@@ -69,6 +70,21 @@ void AbScene::setStatus(int status)
         editor->updateStat();
     }
 }
+
+void AbScene::updateStatus(int status)
+{
+    QQmlProperty::write(root, "ab_status", status);
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( status==AB_STATUS_PAUSE && verifier==0 )
+    {
+        updateStat();
+    }
+    else if( status==AB_STATUS_STOP )
+    {
+        editor->updateStat();
+    }
+}
+
 
 void AbScene::setVerifier(int verifier)
 {

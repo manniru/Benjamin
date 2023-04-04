@@ -22,12 +22,14 @@ private slots:
     void saveProcess();
     void resetProcess();
     void writeWordList();
+    void timerTimeout();
 
 private:
     void enableButtons();
     QString getUiWordList();
     QString getDif();
 
+    QTimer *timer;
     QObject *root;    // root qml object
     QObject *editor;  // editor qml object
     QObject *buttons; // buttons qml object
