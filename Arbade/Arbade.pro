@@ -84,8 +84,10 @@ DISTFILES += \
     Qml/AbButtons.qml \
     Qml/AbConsole.qml \
     Qml/AbDialogWsl.qml \
+    Qml/AbRecDelete.qml \
     Qml/AbRecLine.qml \
     Qml/AbRecList.qml \
     Qml/AbRecPanel.qml \
+    Qml/AbRecPlay.qml \
     Qml/AbStatusLabel.qml \
     Qml/AbTimeBar.qml
