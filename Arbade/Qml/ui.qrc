@@ -19,5 +19,7 @@
         <file>AbRecList.qml</file>
         <file>AbRecLine.qml</file>
         <file>AbRecPanel.qml</file>
+        <file>AbRecDelete.qml</file>
+        <file>AbRecPlay.qml</file>
     </qresource>
 </RCC>

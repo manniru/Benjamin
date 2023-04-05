@@ -261,12 +261,13 @@ ApplicationWindow
     AbRecList
     {
         id: rec_list
+        objectName: "RecList"
 
         height: editor_box.height
         anchors.left: editor_box.right
         anchors.top: ab_help.bottom
         anchors.topMargin: 20
-        anchors.bottom: status_bar.top
+        anchors.bottom: editor_box.bottom
         anchors.right: parent.right
         anchors.rightMargin: 20
 
