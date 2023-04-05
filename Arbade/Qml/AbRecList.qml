@@ -88,24 +88,25 @@ Rectangle
 //        }
 //    }
 
-//    Flickable
-//    {
-//        anchors.left: parent.left
-//        anchors.top: reclist_title.bottom
-//        anchors.topMargin: 10
-//        anchors.right: parent.right
-//        anchors.bottom: parent.bottom
-//        clip: true
+    Flickable
+    {
+        anchors.left: parent.left
+        anchors.top: reclist_title.bottom
+        anchors.topMargin: 10
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        clip: true
 
         Rectangle
         {
             id: reclist_cl
+//            anchors.top: reclist_title.bottom
             anchors.top: parent.top
+//            anchors.topMargin: 10
             anchors.left: parent.left
             anchors.right: parent.right
-            height: childrenRect.height
         }
-//    }
+    }
 
     function addLine(word)
     {
@@ -131,6 +132,8 @@ Rectangle
                                   sample_text: word});
             lolo2.anchors.bottom = reclist_cl.bottom;
         }
+        reclist_cl.height = (len+1)*30;
+//        parent.update()
 
     }
 }

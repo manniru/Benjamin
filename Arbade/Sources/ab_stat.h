@@ -19,8 +19,6 @@ public:
     QVector<int> getCategoryCount(QString category);
     QVector<int> getAllCount();
     QVector<int> getCount(QStringList file_list);
-    QString setFont(QString data, int val, int mean,
-                    int var, int font_size = 24, int alignment = 0);
     int meanCount(QVector<int> *count);
     int varCount(QVector<int> *count, int mean);
     void addWord(QString word, int count, int color);
@@ -30,6 +28,7 @@ public:
     void copyToOnline(QString filename);
     void parseLexicon();
     QString idToWord(int id);
+    void fillHistory(QString category);
 
     QStringList lexicon;
 

@@ -42,38 +42,6 @@ void AbStat::copyToOnline(QString filename)
     file.remove();
 }
 
-QString AbStat::setFont(QString data, int val, int mean, int var,
-                        int font_size, int alignment)
-{
-    // set font size
-    QString result = "<font style=\"font-size: ";
-    result += QString::number(font_size);
-    result += "px;";
-
-    if( alignment>0 )
-    {
-        result += "vertical-align: middle;";
-    }
-
-    // set font color
-    if( val<(mean-var) )
-    {
-        result += "color: #c4635e;\"> ";
-    }
-    else if( val>(mean+var) )
-    {
-        result += "color: #36b245;\"> ";
-    }
-    else
-    {
-        result += "color: #b3b3b3;\"> ";
-    }
-
-    result += data;
-    result += "</font>";
-    return result;
-}
-
 QVector<int> AbStat::getCount(QStringList file_list)
 {
     int lexicon_len = lexicon.length();
@@ -350,3 +318,7 @@ void AbStat::parseLexicon()
     lexicon = bt_parseLexicon(wl_path);
 }
 
+void AbStat::fillHistory(QString category)
+{
+    ;
+}
