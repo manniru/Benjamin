@@ -187,27 +187,41 @@ QFileInfoList ab_listFiles(QString path)
         return QFileInfoList();
     }
 
-    QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files,
-                             QDir::Time | QDir::Reversed);
+    QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files);
     return dir_list;
 }
 
 QStringList ab_listFiles(QString path, int mode)
 {
     QStringList ret;
-    QFileInfoList dir_list = ab_listFiles(path);
-    int len = dir_list.size();
+    QFileInfoList file_list = ab_listFiles(path);
+    int len = file_list.size();
 
     for( int i=0 ; i<len ; i++ )
     {
         if( mode==AB_LIST_PATHS )
         {
-            ret.push_back(dir_list[i].absoluteFilePath());
+            ret.push_back(file_list[i].absoluteFilePath());
         }
         else
         {
-            ret.push_back(dir_list[i].fileName());
+            ret.push_back(file_list[i].fileName());
         }
+    }
+
+    return ret;
+}
+
+QStringList ab_listFilesSorted(QString path)
+{
+    QStringList ret;
+    QDir cat_dir(path);
+    QFileInfoList file_list = cat_dir.entryInfoList(QDir::Files,
+                             QDir::Time | QDir::Reversed);
+    int len = file_list.length();
+    for( int i=0 ; i<len ; i++ )
+    {
+        ret.push_back(file_list[i].absolutePath());
     }
 
     return ret;

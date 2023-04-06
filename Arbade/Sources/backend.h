@@ -37,5 +37,6 @@ QFileInfoList ab_listFiles(QString path);
 QStringList ab_listFiles(QString path, int mode);
 void ab_openCategory(QString category);
 QFileInfoList ab_getAudioDirs();
+QStringList ab_listFilesSorted(QString path);
 
 #endif // BACKEND_H

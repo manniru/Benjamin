@@ -14,14 +14,12 @@ Rectangle
     property int num_id: 0
     property string sample_text: ""
     property string font_awesome_label:    fontAwesomeSolid.name
-    property string remove_char: "\uf1f8"
-    property string pause_char:  "\uf04c"
-    property string play_char:   "\uf04b"
+    property string path: ""
     property bool line_hovered: false
-    property bool icon_hovered: false
-    property bool line_clicked: false
-    property bool play_clicked: false
-    property bool focused: false
+    property bool line_focused: rec_list.focus_index===num_id
+    property bool play_hovered: false
+    property bool remove_hovered: false
+
 
     signal removeClicked(int index)
     signal lineClicked(int index)
@@ -29,7 +27,7 @@ Rectangle
 
     Keys.onPressed:
     {
-        if( line_clicked )
+        if( rec_list.focus_index===num_id )
         {
             if( event.key===Qt.Key_Delete )
             {
@@ -44,19 +42,6 @@ Rectangle
 
     }
 
-    onFocusedChanged:
-    {
-        if( !focused )
-        {
-            line_clicked = false;
-        }
-        else
-        {
-            line_clicked = true;
-            forceActiveFocus();
-        }
-    }
-
     Rectangle
     {
         id: linenum_bg
@@ -67,7 +52,7 @@ Rectangle
 
         color:
         {
-            if( line_clicked )
+            if( line_focused )
             {
                 "#4e7084"
             }
@@ -103,7 +88,7 @@ Rectangle
         anchors.left: linenum_bg.right
         color:
         {
-            if( line_clicked )
+            if( line_focused )
             {
                 "#475a65"
             }
@@ -121,12 +106,8 @@ Rectangle
         {
             anchors.fill: parent
             hoverEnabled: true
-            onClicked:
-            {
-                line_clicked = true;
-                parent.parent.forceActiveFocus();
-                lineClicked(num_id);
-            }
+
+            onClicked: handleFocus()
             onEntered:
             {
                 line_hovered = true;
@@ -152,7 +133,7 @@ Rectangle
         color: "#c9c9c9"
     }
 
-    Rectangle
+    AbRecDelete
     {
         id: remove_bg
 
@@ -160,157 +141,48 @@ Rectangle
         width: 45
         anchors.right: text_bg.right
         anchors.top: parent.top
-        color:
-        {
-            if( line_clicked )
-            {
-                "#315265"
-            }
-            else if( line_hovered )
-            {
-                "#828282"
-            }
-            else
-            {
-                "transparent"
-            }
-        }
 
-        MouseArea
-        {
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked:
-            {
-                removeClicked(num_id);
-            }
-            onEntered:
-            {
-                icon_hovered = true;
-                line_hovered = true;
-            }
-            onExited:
-            {
-                icon_hovered = false;
-                line_hovered = false;
-            }
-        }
+        line_hvrd: line_hovered
+        line_fcsd: line_focused
+
+        onHoverChange: line_hovered = h
+
+        onClicked: removeClicked(num_id);
     }
 
-    Label
+    AbRecPlay
     {
-        anchors.right: text_bg.right
-        anchors.rightMargin: 15
-        anchors.verticalCenter: text_area.verticalCenter
-        horizontalAlignment: Text.AlignHCenter
+        id: play_bg
 
-        font.pixelSize: 16
-        font.family: font_awesome_label
-        text: remove_char
-        color:
-        {
-            if( icon_hovered )
-            {
-                "#d9a74c"
-            }
-            else if( line_clicked || line_hovered )
-            {
-                "#9a9a9a"
-            }
-            else
-            {
-                "transparent"
-            }
-        }
-    }
-
-    Rectangle
-    {
         height: parent.height
         width: 45
         anchors.right: remove_bg.left
         anchors.top: parent.top
-        color:
-        {
-            if( line_clicked )
-            {
-                "#3e5765"
-            }
-            else if( line_hovered )
-            {
-                "#757575"
-            }
-            else
-            {
-                "transparent"
-            }
-        }
-        MouseArea
-        {
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked:
-            {
-                play_clicked = !play_clicked;
-            }
-            onEntered:
-            {
-                icon_hovered = true;
-                line_hovered = true;
-            }
-            onExited:
-            {
-                icon_hovered = false;
-                line_hovered = false;
-            }
-        }
+
+        line_hvrd: line_hovered
+        line_fcsd: line_focused
+
+        onHoverChange: line_hovered = h
     }
 
-    Label
-    {
-        anchors.right: remove_bg.left
-        anchors.rightMargin: 15
-        anchors.verticalCenter: text_area.verticalCenter
-        horizontalAlignment: Text.AlignHCenter
 
-        font.pixelSize: 16
-        font.family: font_awesome_label
-        text:
-        {
-            if( play_clicked )
-            {
-                pause_char;
-            }
-            else
-            {
-                play_char;
-            }
-        }
-        color:
-        {
-            if( icon_hovered && play_clicked )
-            {
-                "#e1dfe2"
-            }
-            else if( icon_hovered && !play_clicked )
-            {
-                "#a5cca2"
-            }
-            else if( line_clicked || line_hovered )
-            {
-                "#9a9a9a"
-            }
-            else
-            {
-                "transparent"
-            }
-        }
-    }
 
     function zeroPad(num)
     {
         var zero = 3 - num.toString().length + 1;
         return Array(+(zero > 0 && zero)).join("0") + num;
+    }
+
+    function handleFocus()
+    {
+        if( rec_list.focus_index===num_id )
+        {
+            rec_list.focus_index = -1;
+        }
+        else
+        {
+            rec_list.focus_index = num_id;
+        }
     }
 }
 
