@@ -22,13 +22,14 @@ public:
     int meanCount(QVector<int> *count);
     int varCount(QVector<int> *count, int mean);
     void addWord(QString word, int count, int color);
+    void addRecList(QString word, QString path);
     void createWordEditor(QString category);
+    void createRecList(QString category);
     void updateMeanVar(QVector<int> *count);
     void delWordSamples();
     void copyToOnline(QString filename);
     void parseLexicon();
     QString idToWord(int id);
-    void fillHistory(QString category);
 
     QStringList lexicon;
 
@@ -41,6 +42,7 @@ private:
 
     QObject *root;//root qml object
     QObject *editor;//word editor qml object
+    QObject *rec_list;//rec list qml object
     QObject *buttons;//buttons qml object
     QObject *status;//status qml object
 };

@@ -49,6 +49,7 @@ void AbScene::qmlCreated()
 {
     QString category = QQmlProperty::read(qml_editor, "category").toString();
     editor->stat->createWordEditor(category);
+    editor->stat->createRecList(category);
 }
 
 void AbScene::setStatus(int status)
@@ -91,13 +92,21 @@ void AbScene::setVerifier(int verifier)
     QGuiApplication::processEvents();
     QString category = QQmlProperty::read(qml_editor, "category").toString();
     editor->stat->createWordEditor(category);
+    editor->stat->createRecList(category);
     setCount(0);
 
     if( verifier )
     {
         QString unverified_dir = ab_getAudioPath();
         unverified_dir += "unverified\\";
-        unverified_list = ab_listFiles(unverified_dir, AB_LIST_PATHS);
+        QDir cat_dir(unverified_dir);
+        QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files,
+                                 QDir::Time | QDir::Reversed);
+        int len = dir_list.length();
+        for( int i=0 ; i<len ; i++ )
+        {
+            unverified_list.push_back(dir_list[i].absolutePath());
+        }
         QQmlProperty::write(root, "ab_total_count_v", unverified_list.size());
     }
 }

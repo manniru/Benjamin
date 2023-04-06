@@ -2,13 +2,15 @@
 #include <time.h>
 #include <stdlib.h>
 #include <QQmlProperty>
+#include <QVariant>
 
 AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
     buttons = root->findChild<QObject *>("Buttons");
     status = root->findChild<QObject *>("Status");
-    editor = root->findChild<QObject*>("WordList");
+    editor = root->findChild<QObject *>("WordList");
+    rec_list = root->findChild<QObject *>("RecList");
 
     connect(root, SIGNAL(deleteSample(QString)),
             this, SLOT(deleteSample(QString)));
@@ -136,6 +138,18 @@ void AbStat::addWord(QString word, int count, int color)
                               arg_count);
 }
 
+void AbStat::addRecList(QString word, QString path)
+{
+    QVariant word_v(word);
+    QVariant path_v(path);
+
+    QGenericArgument arg_word = Q_ARG(QVariant, word_v);
+    QGenericArgument arg_path = Q_ARG(QVariant, path_v);
+
+    QMetaObject::invokeMethod(rec_list, "addLine", arg_word,
+                              arg_path);
+}
+
 QVector<int> AbStat::getCategoryCount(QString category)
 {
     QString cat_path = ab_getAudioPath();
@@ -187,6 +201,33 @@ void AbStat::createWordEditor(QString category)
     }
 //    addEmptyLine
     addWord("", -1, AB_COLOR_NORM);
+}
+
+void AbStat::createRecList(QString category)
+{
+    QString cat_path = ab_getAudioPath();
+    cat_path += "train\\";
+    cat_path += category;
+    cat_path += "\\";
+    qDebug() << "cat_path = " << cat_path;
+    QDir cat_dir(cat_path);
+    QFileInfoList samples_file = cat_dir.entryInfoList(QDir::Files,
+                             QDir::Time | QDir::Reversed);
+    qDebug() << "sm = " << samples_file.length();
+    int samples_len = samples_file.length();
+    for( int i=0 ; i<samples_len ; i++ )
+    {
+        QString file_name = samples_file[i].baseName();
+        QStringList word_list = file_name.split('_');
+        int world_list_len = word_list.length();
+        QString word;
+        for( int j=0 ; j<world_list_len ; j++)
+        {
+            int num = word_list[j].toInt();
+            word += lexicon[num] + " ";
+        }
+        addRecList(word, samples_file[i].absolutePath());
+    }
 }
 
 void AbStat::updateMeanVar(QVector<int> *count)
@@ -316,9 +357,4 @@ void AbStat::parseLexicon()
 {
     QString wl_path = ab_getAudioPath() + "..\\word_list";
     lexicon = bt_parseLexicon(wl_path);
-}
-
-void AbStat::fillHistory(QString category)
-{
-    ;
 }
