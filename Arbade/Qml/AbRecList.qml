@@ -10,8 +10,7 @@ Rectangle
 {
     visible: true
     color: "transparent"
-    property var word_samples: []
-
+    property int focus_index: -1
     signal delSample(string sample)
 
     Rectangle
@@ -95,45 +94,44 @@ Rectangle
         anchors.topMargin: 10
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+
+        contentHeight: reclist_cl.height
         clip: true
 
         Rectangle
         {
             id: reclist_cl
-//            anchors.top: reclist_title.bottom
             anchors.top: parent.top
-//            anchors.topMargin: 10
             anchors.left: parent.left
             anchors.right: parent.right
         }
     }
 
-    function addLine(word)
+    function addLine(word, path_in)
     {
-        var comp;
         var len = reclist_cl.children.length;
-        comp = Qt.createComponent("AbRecLine.qml");
+        var comp = Qt.createComponent("AbRecLine.qml");
+        var rec_line;
         if( len>0 )
         {
             var last_element = reclist_cl.children[len-1];
-            console.log(last_element)
-            var lolo = comp.createObject(reclist_cl, {width: reclist_cl.width,
+            rec_line = comp.createObject(reclist_cl, {width: reclist_cl.width,
                                   height: 30,
                                   num_id: len,
-                                  sample_text: word});
-            lolo.anchors.bottom = last_element.top;
+                                  sample_text: word,
+                                  path: path_in});
+            rec_line.anchors.bottom = last_element.top;
 
         }
         else
         {
-            var lolo2 = comp.createObject(reclist_cl, {width: reclist_cl.width,
+            rec_line = comp.createObject(reclist_cl, {width: reclist_cl.width,
                                   height: 30,
                                   num_id: len,
-                                  sample_text: word});
-            lolo2.anchors.bottom = reclist_cl.bottom;
+                                  sample_text: word,
+                                  path: path_in});
+            rec_line.anchors.bottom = reclist_cl.bottom;
         }
         reclist_cl.height = (len+1)*30;
-//        parent.update()
-
     }
 }
