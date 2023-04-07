@@ -5,6 +5,7 @@ import QtQml 2.12
 import QtQuick.Extras 1.4
 import QtQuick.Controls 2.3
 import QtQuick.Window 2.10
+import QtMultimedia 5.5
 
 Rectangle
 {
@@ -135,7 +136,7 @@ Rectangle
 
     AbRecDelete
     {
-        id: remove_bg
+        id: delete_button
 
         height: parent.height
         width: 45
@@ -146,26 +147,35 @@ Rectangle
         line_fcsd: line_focused
 
         onHoverChange: line_hovered = h
-
-        onClicked: removeClicked(num_id);
+        onClick: removeClicked(num_id);
     }
 
     AbRecPlay
     {
-        id: play_bg
+        id: play_button
 
         height: parent.height
         width: 45
-        anchors.right: remove_bg.left
+        anchors.right: delete_button.left
         anchors.top: parent.top
 
         line_hvrd: line_hovered
         line_fcsd: line_focused
 
         onHoverChange: line_hovered = h
+        onClick: playAudio()
     }
 
+    Audio
+    {
+        id: rec_player
+        source: path
 
+        onStopped:
+        {
+            play_button.playing = false;
+        }
+    }
 
     function zeroPad(num)
     {
@@ -183,6 +193,11 @@ Rectangle
         {
             rec_list.focus_index = num_id;
         }
+    }
+
+    function playAudio()
+    {
+        rec_player.play();
     }
 }
 

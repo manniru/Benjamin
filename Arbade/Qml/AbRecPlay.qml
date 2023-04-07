@@ -14,7 +14,7 @@ Rectangle
     property bool playing: false
 
     signal hoverChange(int h)
-    signal clicked()
+    signal click()
 
     color:
     {
@@ -50,6 +50,7 @@ Rectangle
         onClicked:
         {
             playing = !playing;
+            click();
         }
         onEntered:
         {

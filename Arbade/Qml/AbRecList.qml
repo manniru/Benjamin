@@ -8,6 +8,7 @@ import QtQuick.Window 2.10
 
 Rectangle
 {
+    width: 390
     visible: true
     color: "transparent"
     property int focus_index: -1
@@ -111,6 +112,7 @@ Rectangle
     {
         var len = reclist_cl.children.length;
         var comp = Qt.createComponent("AbRecLine.qml");
+        console.log(path_in);
         var rec_line;
         if( len>0 )
         {

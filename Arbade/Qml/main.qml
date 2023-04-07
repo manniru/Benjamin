@@ -18,7 +18,7 @@ ApplicationWindow
     x: 30
     width: 1650
     height: 830
-    minimumHeight: 500
+    minimumHeight: 820
     minimumWidth: 760
 
     color: "#2e2e2e"
@@ -236,13 +236,12 @@ ApplicationWindow
         id: editor_box
         objectName: "WordList"
 
-        width: 1200
         anchors.top: ab_help.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 30
-        anchors.bottom: status_bar.top
-        anchors.bottomMargin: 65
+        anchors.right: rec_list.left
+        anchors.rightMargin: 10
 
         onUpdateDifWords:
         {
@@ -259,8 +258,8 @@ ApplicationWindow
     {
         id: buttons_box
         objectName: "Buttons"
-        anchors.top: editor_box.bottom
-        anchors.topMargin: 10
+        anchors.bottom: status_bar.top
+        anchors.bottomMargin: 10
         anchors.horizontalCenter: editor_box.horizontalCenter
     }
 
@@ -270,10 +269,10 @@ ApplicationWindow
         objectName: "RecList"
 
         height: editor_box.height
-        anchors.left: editor_box.right
         anchors.top: ab_help.bottom
         anchors.topMargin: 20
-        anchors.bottom: editor_box.bottom
+        anchors.bottom: buttons_box.top
+        anchors.bottomMargin: 30
         anchors.right: parent.right
         anchors.rightMargin: 20
 

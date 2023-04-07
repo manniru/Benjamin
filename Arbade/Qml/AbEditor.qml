@@ -8,8 +8,7 @@ import QtQuick.Window 2.10
 
 Rectangle
 {
-    height: contentItem.height
-    width: contentItem.width
+    height: 575
     visible: true
     color: "transparent"
 

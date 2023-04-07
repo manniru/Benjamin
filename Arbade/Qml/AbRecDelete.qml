@@ -13,7 +13,7 @@ Rectangle
     property bool line_fcsd
 
     signal hoverChange(int h)
-    signal clicked()
+    signal click()
 
     color:
     {
@@ -48,7 +48,7 @@ Rectangle
         hoverEnabled: true
         onClicked:
         {
-            clicked();
+            click();
         }
         onEntered:
         {

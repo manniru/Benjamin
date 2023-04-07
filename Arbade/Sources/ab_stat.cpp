@@ -231,7 +231,7 @@ void AbStat::createRecList(QString category)
             int num = word_list[j].toInt();
             word += lexicon[num] + " ";
         }
-        addRecList(word, samples_file[i].absolutePath());
+        addRecList(word, samples_file[i].absoluteFilePath());
     }
 }
 
