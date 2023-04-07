@@ -18,7 +18,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     connect(break_timer, SIGNAL(timeout()),
             this, SLOT(breakTimeout()));
 
-    connect(root, SIGNAL(loadsrc()), this, SLOT(loadsrc()));
+    connect(root, SIGNAL(startPauseV()), this, SLOT(startPauseV()));
     connect(root, SIGNAL(delFile()), this, SLOT(deleteFile()));
     connect(root, SIGNAL(copyFile()), this, SLOT(copyFile()));
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
@@ -105,27 +105,24 @@ void AbScene::setVerifier(int verifier)
     }
 }
 
-void AbScene::loadsrc()
+// start pause timer before playing out sample
+// only runs in verification mode
+void AbScene::startPauseV()
 {
-    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
+    int count = QQmlProperty::read(root, "ab_count").toInt();
 
-    if( verifier==1 )
+    if( count<total_count )
     {
-        int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
-        int count = QQmlProperty::read(root, "ab_count").toInt();
-
-        if( count<total_count )
-        {
-            setStatus(AB_STATUS_BREAK);
-            loadAddress();
-            setCount(count + 1);
-            float pause_time = QQmlProperty::read(root, "ab_pause_time").toFloat();
-            break_timer->start(pause_time * 1000);
-        }
-        else // cnt>=total
-        {
-            setStatus(AB_STATUS_STOP);
-        }
+        setStatus(AB_STATUS_BREAK);
+        loadAddress();
+        setCount(count + 1);
+        float pause_time = QQmlProperty::read(root, "ab_verify_pause").toFloat();
+        break_timer->start(pause_time * 1000);
+    }
+    else // cnt>=total
+    {
+        setStatus(AB_STATUS_STOP);
     }
 }
 
@@ -138,7 +135,7 @@ void AbScene::loadAddress()
 {
     int count = QQmlProperty::read(root, "ab_count").toInt();
     QString address = unverified_list[count];
-    audio->readWave(address);
+    audio->updateAudioParam(address);
     QQmlProperty::write(root, "ab_address", address);
 }
 

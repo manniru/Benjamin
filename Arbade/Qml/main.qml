@@ -26,7 +26,7 @@ ApplicationWindow
     visible: true
 
     property int sig_del_file: 0
-    property real play_pos: 0
+    property real played_time: 0
 
     property string ab_words: "<One> <Roger> <Spotify>"
     property string ab_address: ""
@@ -43,13 +43,14 @@ ApplicationWindow
     property real ab_rec_time_v: 3
     property int ab_num_words: 3
     property int ab_num_words_v: 3
-    property real ab_pause_time: 1.0
+    property real ab_rec_pause: 1.0
+    property real ab_verify_pause: 0.5
     property real ab_power: 0
     property int ab_verifier: 0
     property int ab_show_console: 0
     property real ab_start_now: 0
 
-    signal loadsrc()
+    signal startPauseV()
     signal delFile()
     signal deleteSample(string sample)
     signal copyFile()
@@ -72,8 +73,7 @@ ApplicationWindow
     {
         if( ab_verifier )
         {
-            if( ( ab_status===ab_const.ab_STATUS_PLAY ||
-                  ab_status===ab_const.ab_STATUS_BREAK) &&
+            if( ( ab_status===ab_const.ab_STATUS_PLAY ) &&
                 !audio_timer.running )
             {
                 audio_timer.start();
@@ -97,7 +97,8 @@ ApplicationWindow
         property alias category_name:   editor_box.category
         property alias rectime:         root.ab_rec_time
         property alias numwords:        root.ab_num_words
-        property alias pausetime:       root.ab_pause_time
+        property alias pausetime:       root.ab_rec_pause
+        property alias verifypause:     root.ab_verify_pause
         property alias focusword:       root.ab_focus_word
         property alias verifier:        root.ab_verifier
     }
@@ -121,20 +122,24 @@ ApplicationWindow
         anchors.left: parent.left
         anchors.right: parent.right
 
-        pause_time: ab_pause_time
+        pause_time: if( ab_verifier )
+                    {
+                        ab_verify_pause
+                    }
+                    else
+                    {
+                        ab_rec_pause
+                    }
         num_words: ab_num_words
         rec_time: ab_rec_time
-        count_total:
-        {
-            if( ab_verifier )
-            {
-                ab_total_count_v
-            }
-            else
-            {
-                ab_total_count
-            }
-        }
+        count_total: if( ab_verifier )
+                     {
+                         ab_total_count_v
+                     }
+                     else
+                     {
+                         ab_total_count
+                     }
         focus_word: ab_focus_text
     }
 
@@ -206,14 +211,14 @@ ApplicationWindow
             {
                 sig_del_file = 0;
             }
-            rest_timer.interval = 1;
+            decide_timer.interval = 1;
             if( audioPlayer.playbackState===Audio.PausedState )
             {
                 audioPlayer.stop();
             }
             else if( audioPlayer.playbackState===Audio.StoppedState )
             {
-                rest_timer.start();
+                decide_timer.start();
             }
         }
     }
@@ -222,7 +227,7 @@ ApplicationWindow
     {
         anchors.fill: parent
 
-        onClicked: editor_box.lolo()
+        onClicked: focus_item.forceActiveFocus();
     }
 
     AbEditor
@@ -324,7 +329,7 @@ ApplicationWindow
         {
             if( ab_verifier )
             {
-                play_pos
+                played_time
             }
             else
             {
@@ -341,7 +346,7 @@ ApplicationWindow
 
         onStopped:
         {
-            rest_timer.start();
+            decide_timer.start();
         }
     }
 
@@ -352,26 +357,26 @@ ApplicationWindow
         repeat: true
 
         onTriggered:
-        {// (*100.0 -> 0-100 %) (/1000 -> ms->sec)
-            play_pos += 50.0*100.0/1000.0/
-                    (ab_rec_time+ab_pause_time)
-            if( play_pos>100 )
+        {
+            played_time = audioPlayer.position/audioPlayer.duration
+            played_time *= 100;
+            if( played_time>100 )
             {
-                play_pos=100
+                played_time = 100
             }
         }
     }
 
     Timer
     {
-        id: rest_timer
-        interval: ab_const.ab_REST_PAUSE
+        id: decide_timer
+        interval: ab_const.ab_DECIDE_PAUSE
         repeat: false
 
         onTriggered:
         {
-            interval = ab_const.ab_REST_PAUSE;
-            rest_timer.stop();
+            interval = ab_const.ab_DECIDE_PAUSE;
+            decide_timer.stop();
             if( sig_del_file )
             {
                 sig_del_file = 0;
@@ -382,8 +387,8 @@ ApplicationWindow
                 copyFile();
             }
 
-            loadsrc();
-            play_pos = 0;
+            startPauseV();
+            played_time = 0;
         }
     }
 
@@ -432,11 +437,25 @@ ApplicationWindow
         }
         else if( key===Qt.Key_Up )
         {
-            ab_pause_time += .1;
+            if( ab_verifier )
+            {
+                ab_verify_pause += .1;
+            }
+            else
+            {
+                ab_rec_pause += .1;
+            }
         }
         else if( key===Qt.Key_Down )
         {
-            ab_pause_time -= .1;
+            if( ab_verifier )
+            {
+                ab_verify_pause -= .1;
+            }
+            else
+            {
+                ab_rec_pause -= .1;
+            }
         }
         else if( key===Qt.Key_Space )
         {
@@ -444,7 +463,7 @@ ApplicationWindow
             {
                 if( ab_status===ab_const.ab_STATUS_STOP )
                 {
-                    loadsrc();
+                    startPauseV();
                 }
                 else if( ab_status===ab_const.ab_STATUS_BREAK )
                 {
@@ -458,7 +477,7 @@ ApplicationWindow
                     }
                     ab_status = ab_const.ab_STATUS_PAUSE;
                     setStatus(ab_status);
-                    rest_timer.stop();
+                    decide_timer.stop();
                     verify_dialog.dialog_label = "Are you sure "+
                                          "you want to delete?\n"+
                                          "( Yes:space / No:q )"

@@ -14,7 +14,7 @@ public:
     explicit AbScene(QObject *ui, QObject *parent = nullptr);
 
 private slots:
-    void loadsrc();
+    void startPauseV();
     void copyFile();
     void deleteFile();
     void breakTimeout();
