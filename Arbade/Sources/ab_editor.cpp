@@ -10,11 +10,13 @@ AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
     stat = new AbStat(root);
     editor = root->findChild<QObject *>("WordList");
     buttons = root->findChild<QObject *>("Buttons");
+    rec_list = root->findChild<QObject *>("RecList");
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
 
     connect(editor, SIGNAL(wordAdded(int)), this, SLOT(wordAdded(int)));
+    connect(rec_list, SIGNAL(wordAdded(int)), this, SLOT(wordAddedRec(int)));
     connect(editor, SIGNAL(updateWordList()),
             this, SLOT(writeWordList()));
     connect(buttons, SIGNAL(saveClicked()), this, SLOT(saveProcess()));
@@ -23,29 +25,60 @@ AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
 
 void AbEditor::wordAdded(int id)
 {
-    if( id>=word_lines.length() )
+    if( id>=editor_lines.length() )
     {
-        word_lines.resize(id+1);
+        editor_lines.resize(id+1);
     }
 
     QString object_name = "WordLine" + QString::number(id);
-    word_lines[id] = editor->findChild<QObject *>(object_name);
+    editor_lines[id] = editor->findChild<QObject *>(object_name);
 
-    connect(word_lines[id], SIGNAL(wordChanged(int,QString)),
+    connect(editor_lines[id], SIGNAL(wordChanged(int,QString)),
             this, SLOT(changeWord(int,QString)));
+}
+
+void AbEditor::wordAddedRec(int id)
+{
+    if( id>=rec_lines.length() )
+    {
+        rec_lines.resize(id+1);
+    }
+
+    QString object_name = "RecLine" + QString::number(id);
+    rec_lines[id] = rec_list->findChild<QObject *>(object_name);
+
+    connect(rec_lines[id], SIGNAL(removeClicked(int)),
+            this, SLOT(recRemove(int)));
+}
+
+void AbEditor::recRemove(int id)
+{
+    QString path = QQmlProperty::read(rec_lines[id], "path").toString();
+    qDebug() << "ID = , path = " << id << path;
+
+    QVariant id_v(id);
+    QGenericArgument arg_id  = Q_ARG(QVariant, id_v);
+    QMetaObject::invokeMethod(rec_list, "removeLine", arg_id);
+
+    rec_lines.remove(id);
+//    QFile removing_file(path);
+//    if( removing_file.exists() )
+//    {
+//        removing_file.remove();
+//    }
 }
 
 void AbEditor::changeWord(int id, QString text)
 {
 //    for last add line and last word line add box
-    if( id==word_lines.length()-1 && text.length() )
+    if( id==editor_lines.length()-1 && text.length() )
     {
         stat->addWord("", -1, AB_COLOR_NORM);
     }
-    else if( id==word_lines.length()-2 && text.length()==0 )
+    else if( id==editor_lines.length()-2 && text.length()==0 )
     {
         QMetaObject::invokeMethod(editor, "removeWord");
-        word_lines.removeLast();
+        editor_lines.removeLast();
     }
     enableButtons();
 }
@@ -69,7 +102,7 @@ void AbEditor::saveProcess()
 void AbEditor::resetProcess()
 {
     QMetaObject::invokeMethod(editor, "clearEditor");
-    word_lines.clear();
+    editor_lines.clear();
     // Qt QML destroy bug forced us to exert a timer
     // to make sure that the "clearEditor" function
     // made its clearance
@@ -88,7 +121,7 @@ QString AbEditor::getDif()
     QString dif, word_new, word_old;
     QStringList words_old = stat->lexicon;
     int max_len, count = 0;
-    int len_words_new = word_lines.size()-1;
+    int len_words_new = editor_lines.size()-1;
     int len_words_old = words_old.length();
 
     if( len_words_new>len_words_old )
@@ -108,7 +141,7 @@ QString AbEditor::getDif()
         }
         else
         {
-            word_new = QQmlProperty::read(word_lines[i], "word_text").toString();
+            word_new = QQmlProperty::read(editor_lines[i], "word_text").toString();
         }
         if( i>=len_words_old )
         {
@@ -134,12 +167,12 @@ QString AbEditor::getDif()
 QString AbEditor::getUiWordList()
 {
     QString ret;
-    int len = word_lines.size();
+    int len = editor_lines.size();
     ret.reserve(len);
 
     for( int i=0 ; i<len ; i++ )
     {
-        ret += QQmlProperty::read(word_lines[i], "word_text").toString();
+        ret += QQmlProperty::read(editor_lines[i], "word_text").toString();
         ret += "\n";
     }
     return ret.trimmed();
@@ -163,12 +196,12 @@ void AbEditor::statAll()
 {
     QVector<int> word_count = stat->getAllCount();
     int len_stat = word_count.length();
-    int len_lines = word_lines.length();
+    int len_lines = editor_lines.length();
     for( int i=0 ; i<len_stat ; i++ )
     {
         if( i<len_lines )
         {
-            QQmlProperty::write(word_lines[i],
+            QQmlProperty::write(editor_lines[i],
                                 "word_count", word_count[i]);
         }
     }
@@ -180,12 +213,12 @@ void AbEditor::updateStat()
     QString category = QQmlProperty::read(editor, "category").toString();
     QVector<int> word_count = stat->getCategoryCount(category);
     int len_stat = word_count.length();
-    int len_lines = word_lines.length();
+    int len_lines = editor_lines.length();
     for( int i=0 ; i<len_stat ; i++ )
     {
         if( i<len_lines )
         {
-            QQmlProperty::write(word_lines[i],
+            QQmlProperty::write(editor_lines[i],
                                 "word_count", word_count[i]);
         }
     }
