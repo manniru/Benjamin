@@ -29,7 +29,7 @@ private:
     QString getRandPath(QString category);
     QString getFileName(QVector<AbWord> words, QString category);
     QString wordToId(QVector<AbWord> result);
-    void printWords(QVector<AbWord> words);
+    void showWords(QVector<AbWord> words);
     void checkCategoryExist();
     QString idsToWords(QVector<int> ids);
 

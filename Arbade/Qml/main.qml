@@ -28,7 +28,7 @@ ApplicationWindow
     property int sig_del_file: 0
     property real played_time: 0
 
-    property string ab_words: "<One> <Roger> <Spotify>"
+    property string ab_words: ""
     property string ab_address: ""
     property string ab_auto_comp: ""
     property string ab_focus_text: ""
@@ -218,6 +218,7 @@ ApplicationWindow
             }
             else if( audioPlayer.playbackState===Audio.StoppedState )
             {
+                ab_status = ab_const.ab_STATUS_DECPAUESE;
                 decide_timer.start();
             }
         }
@@ -346,6 +347,7 @@ ApplicationWindow
 
         onStopped:
         {
+            ab_status = ab_const.ab_STATUS_DECPAUESE;
             decide_timer.start();
         }
     }
@@ -375,6 +377,7 @@ ApplicationWindow
 
         onTriggered:
         {
+            console.log(ab_const.ab_DECIDE_PAUSE);
             interval = ab_const.ab_DECIDE_PAUSE;
             decide_timer.stop();
             if( sig_del_file )

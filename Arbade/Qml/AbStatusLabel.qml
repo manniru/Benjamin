@@ -55,6 +55,10 @@ Rectangle
             {
                 "Play"
             }
+            else if( status_state===ab_const.ab_STATUS_DECPAUESE )
+            {
+                "Decide Pause"
+            }
         }
         anchors.left: status_label.right
         anchors.top: parent.top
@@ -83,6 +87,10 @@ Rectangle
             else if( status_state===ab_const.ab_STATUS_PLAY )
             {
                 "#f00"
+            }
+            else if( status_state===ab_const.ab_STATUS_DECPAUESE )
+            {
+                "#b17400"
             }
         }
         font.pixelSize: font_size

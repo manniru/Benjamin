@@ -52,7 +52,7 @@ void AbAudio::updateAudioParam(QString filename)
     }
     QString words = idsToWords(id_list);
     QQmlProperty::write(root, "ab_num_words", len);
-    qDebug() << "words" << words;
+    qDebug() << "ab_words" << words;
     QQmlProperty::write(root, "ab_words", words);
 }
 
@@ -195,7 +195,7 @@ QString AbAudio::getRandPath(QString category)
 
         if( QFile::exists(file_name)==0 )
         {
-            printWords(words);
+            showWords(words);
             return file_name;
         }
     }
@@ -203,7 +203,7 @@ QString AbAudio::getRandPath(QString category)
     return "";
 }
 
-void AbAudio::printWords(QVector<AbWord> words)
+void AbAudio::showWords(QVector<AbWord> words)
 {
     QString msg, total_words;
 
