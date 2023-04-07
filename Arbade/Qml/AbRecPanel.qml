@@ -60,7 +60,14 @@ Rectangle
         {
             id: category_label
 
-            text: "Category: \"" + editor_box.category + "\""
+            text: if( root.ab_verifier===1 )
+                  {
+                      "Category: \"unverified\""
+                  }
+                  else
+                  {
+                      "Category: \"" + editor_box.category + "\""
+                  }
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label

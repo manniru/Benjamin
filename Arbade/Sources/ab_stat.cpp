@@ -215,6 +215,11 @@ void AbStat::createRecList(QString category)
                              QDir::Time | QDir::Reversed);
     qDebug() << "sm = " << samples_file.length();
     int samples_len = samples_file.length();
+
+    if( samples_len>200 )
+    {
+        samples_len = 200;
+    }
     for( int i=0 ; i<samples_len ; i++ )
     {
         QString file_name = samples_file[i].baseName();

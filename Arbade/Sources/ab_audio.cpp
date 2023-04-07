@@ -30,12 +30,12 @@ void AbAudio::record()
     setStatus(AB_STATUS_BREAK);
 //    qDebug() << "record:AB_STATUS_BREAK";
     QQmlProperty::write(root, "ab_elapsed_time", 0);
-    float pause_time = QQmlProperty::read(root, "ab_pause_time").toFloat();
+    float pause_time = QQmlProperty::read(root, "ab_rec_pause").toFloat();
     read_timer->start(pause_time*1000);
 }
 
 // verification and playing phase
-void AbAudio::readWave(QString filename)
+void AbAudio::updateAudioParam(QString filename)
 {
     wav_rd->read(filename);
     QQmlProperty::write(root, "ab_rec_time", wav_rd->wave_time);
@@ -52,6 +52,7 @@ void AbAudio::readWave(QString filename)
     }
     QString words = idsToWords(id_list);
     QQmlProperty::write(root, "ab_num_words", len);
+    qDebug() << "words" << words;
     QQmlProperty::write(root, "ab_words", words);
 }
 

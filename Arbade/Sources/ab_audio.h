@@ -14,7 +14,7 @@ public:
     explicit AbAudio(AbStat *st, QObject *ui,
                      QObject *parent = nullptr);
     void record();
-    void readWave(QString filename);
+    void updateAudioParam(QString filename);
 
 signals:
     void setStatus(int status);

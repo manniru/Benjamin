@@ -75,17 +75,11 @@ void AbScene::setStatus(int status)
 void AbScene::updateStatus(int status)
 {
     QQmlProperty::write(root, "ab_status", status);
-    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    if( status==AB_STATUS_PAUSE && verifier==0 )
+    if( status==AB_STATUS_STOP )
     {
         updateStat();
     }
-    else if( status==AB_STATUS_STOP )
-    {
-        editor->updateStat();
-    }
 }
-
 
 void AbScene::setVerifier(int verifier)
 {
@@ -105,7 +99,7 @@ void AbScene::setVerifier(int verifier)
         int len = dir_list.length();
         for( int i=0 ; i<len ; i++ )
         {
-            unverified_list.push_back(dir_list[i].absolutePath());
+            unverified_list.push_back(dir_list[i].absoluteFilePath());
         }
         QQmlProperty::write(root, "ab_total_count_v", unverified_list.size());
     }
