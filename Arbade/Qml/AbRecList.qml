@@ -38,56 +38,6 @@ Rectangle
         }
     }
 
-//    Component
-//    {
-//        id: ld_reclist
-
-//        AbRecLine
-//        {
-//            id: wordbox_id
-
-
-
-//            focused: fc
-
-//            onLineClicked:
-//            {
-//                var len = word_samples.length;
-//                lm_reclist.get(len-index).fc = true;
-//                for( var i=0 ; i<len ; i++ )
-//                {
-//                    if( i!==index-1 )
-//                    {
-//                        lm_reclist.get(len-i-1).fc = false;
-//                    }
-//                }
-//            }
-
-//            onArrowClicked:
-//            {
-//                var len = word_samples.length;
-//                if( key===Qt.Key_Down && index>1)
-//                {
-//                    lm_reclist.get(len-index+1).fc = true;
-//                    lm_reclist.get(len-index).fc = false;
-//                }
-//                else if( key===Qt.Key_Up && index<len )
-//                {
-//                    lm_reclist.get(len-index-1).fc = true;
-//                    lm_reclist.get(len-index).fc = false; // do not factor this line!!
-//                }
-//            }
-
-//            onRemoveClicked:
-//            {
-//                var len = word_samples.length;
-//                delSample(word_samples[len-index]);
-//                word_samples.splice(len - index,1); // remove element
-//                updateRecList();
-//            }
-//        }
-//    }
-
     Flickable
     {
         anchors.left: parent.left

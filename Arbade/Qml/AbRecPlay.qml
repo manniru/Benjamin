@@ -47,11 +47,8 @@ Rectangle
     {
         anchors.fill: parent
         hoverEnabled: true
-        onClicked:
-        {
-            playing = !playing;
-            click();
-        }
+
+        onClicked: click();
         onEntered:
         {
             hovered = true;

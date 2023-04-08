@@ -275,11 +275,6 @@ ApplicationWindow
         anchors.bottomMargin: 30
         anchors.right: parent.right
         anchors.rightMargin: 20
-
-        onDelSample:
-        {
-            deleteSample(sample);
-        }
     }
 
     AbConsole

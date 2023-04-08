@@ -18,11 +18,13 @@ signals:
 
 private slots:
     void wordAdded(int id);
+    void wordAddedRec(int id);
     void changeWord(int id, QString text);
     void saveProcess();
     void resetProcess();
     void writeWordList();
     void timerTimeout();
+    void recRemove(int id);
 
 private:
     void enableButtons();
@@ -33,7 +35,9 @@ private:
     QObject *root;    // root qml object
     QObject *editor;  // editor qml object
     QObject *buttons; // buttons qml object
-    QVector<QObject *> word_lines;
+    QObject *rec_list; // rec list qml object
+    QVector<QObject *> editor_lines;
+    QVector<QObject *> rec_lines;
 };
 
 #endif // ABEDITOR_H
