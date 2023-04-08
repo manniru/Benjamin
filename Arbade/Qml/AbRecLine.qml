@@ -18,26 +18,36 @@ Rectangle
     property string path: ""
     property bool line_hovered: false
     property bool line_focused: rec_list.focus_index===num_id
-    property bool play_hovered: false
-    property bool remove_hovered: false
 
-
-    signal removeClicked(int index)
-    signal lineClicked(int index)
-    signal arrowClicked(int key, int index)
+    signal removeClicked(int id)
 
     Keys.onPressed:
     {
         if( rec_list.focus_index===num_id )
-        {
+        { 
             if( event.key===Qt.Key_Delete )
             {
                 removeClicked(num_id);
             }
-            else if( event.key===Qt.Key_Up
-                    || event.key===Qt.Key_Down )
+            else if( event.key===Qt.Key_Up )
             {
-                arrowClicked(event.key, num_id);
+                var count = rec_list.getChildLen() - 1;
+
+                if( rec_list.focus_index<count )
+                {
+                    rec_list.focus_index++;
+                }
+            }
+            else if( event.key===Qt.Key_Down )
+            {
+                if( rec_list.focus_index>0 )
+                {
+                    rec_list.focus_index--;
+                }
+            }
+            else if( event.key===Qt.Key_Space )
+            {
+                playAudio();
             }
         }
 
@@ -120,6 +130,16 @@ Rectangle
         }
     }
 
+    Rectangle
+    {
+        id: audio_bg
+        height: parent.height
+        width: (parent.width - 50) * (rec_player.position/rec_player.duration)
+        anchors.top: parent.top
+        anchors.left: linenum_bg.right
+        color: "#406e78"
+    }
+
     Label
     {
         id: text_area
@@ -174,6 +194,7 @@ Rectangle
         onStopped:
         {
             play_button.playing = false;
+            audio_bg.visible = false;
         }
     }
 
@@ -197,6 +218,9 @@ Rectangle
 
     function playAudio()
     {
+        audio_bg.visible = true;
+        rec_list.focus_index = num_id;
+        play_button.playing = true;
         rec_player.play();
     }
 }
