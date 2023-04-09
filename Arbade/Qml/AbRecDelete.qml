@@ -46,6 +46,7 @@ Rectangle
     {
         anchors.fill: parent
         hoverEnabled: true
+
         onClicked:
         {
             click();

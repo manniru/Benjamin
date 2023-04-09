@@ -23,7 +23,7 @@ Rectangle
         height: childrenRect.height
     }
 
-    function addWord(w_text, w_count)
+    function addWord(w_text, w_count, w_phoneme)
     {
         var i = wordbox_cl.children.length;
 
@@ -33,7 +33,8 @@ Rectangle
         comp.createObject(wordbox_cl, {width:wordbox_cl.width,
                           word_id: word_i,
                           word_text: w_text,
-                          word_count: w_count,
+                          word_phoneme: w_phoneme,
+                          word_number: w_count,
                           objectName: comp_name});
         editor_box.wordAdded(word_i);
     }

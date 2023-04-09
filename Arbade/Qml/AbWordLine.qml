@@ -10,9 +10,12 @@ Rectangle
 {
     id: wordline
     height: text_area.height
-    property int word_id: 0
+    property int    word_id: 0
     property string word_text: ""
-    property int word_count: 0
+    property string word_phoneme: ""
+    property int    word_number: 0
+    property bool   line_hovered: false
+    property bool   wrong_phoneme: false
 
     signal wordChanged(int id, string text_w)
     signal arrowPressed(int direction)
@@ -26,7 +29,33 @@ Rectangle
         anchors.top: parent.top
         anchors.left: parent.left
 
-        color: "#666666"
+        color: if( wrong_phoneme )
+               {
+                   "#844e59"
+               }
+               else if( line_hovered )
+               {
+                   "#4e7084"
+               }
+               else
+               {
+                   "#666666"
+               }
+
+        MouseArea
+        {
+            anchors.fill: parent
+            hoverEnabled: true
+
+            onEntered:
+            {
+                line_hovered = true;
+            }
+            onExited:
+            {
+                line_hovered = false;
+            }
+        }
     }
 
     Label
@@ -48,7 +77,18 @@ Rectangle
         anchors.top: parent.top
         anchors.left: linenum_bg.right
         width: wordline.width - 20
-        color: "#4e4e4e"
+        color: if( wrong_phoneme )
+               {
+                   "#65474d"
+               }
+               else if( line_hovered )
+               {
+                   "#475a65"
+               }
+               else
+               {
+                   "#4e4e4e"
+               }
     }
 
     TextArea
@@ -69,6 +109,7 @@ Rectangle
         color: "#c9c9c9"
         selectedTextColor: "#333"
         selectionColor: "#ccc"
+        visible: !line_hovered
 
         onTextChanged:
         {
@@ -114,6 +155,20 @@ Rectangle
 
     Label
     {
+        id: phoneme_lbl
+        anchors.left: linenum_lbl.right
+        anchors.leftMargin: 36
+        anchors.top: parent.top
+        anchors.topMargin: 0
+
+        text: word_phoneme.toLowerCase()
+        font.pixelSize: 16
+        color: "#c9c9c9"
+        visible: line_hovered
+    }
+
+    Label
+    {
         id: stat_lbl
         anchors.top: parent.top
         anchors.right: text_bg.right
@@ -140,7 +195,8 @@ Rectangle
                 "#9a9a9a"; // gray
             }
         }
-        visible: word_count!==-1
+        visible: word_number!==-1 &&
+                 line_hovered===false
     }
 
     onWord_textChanged:

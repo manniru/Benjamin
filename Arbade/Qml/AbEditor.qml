@@ -168,7 +168,7 @@ Rectangle
         box.focusLine(focused_line);
     }
 
-    function addWord(w_text, w_count)
+    function addWord(w_text, w_count, w_phoneme)
     {
         var box_id = wordedit_row.children.length-1;
         var comp;
@@ -191,7 +191,7 @@ Rectangle
             comp.createObject(wordedit_row, {width: 200, start_num: start_number});
         }
 
-        box.addWord(w_text, w_count);
+        box.addWord(w_text, w_count, w_phoneme);
     }
 
     function clearEditor()
