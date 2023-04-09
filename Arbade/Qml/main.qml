@@ -61,12 +61,10 @@ ApplicationWindow
     signal saveWordList()
     signal setCategory()
     signal setDifWords()
-    signal qmlCompleted()
 
     Component.onCompleted:
     {
         ab_start_now = Date.now();
-        qmlCompleted();
     }
 
     onAb_statusChanged:

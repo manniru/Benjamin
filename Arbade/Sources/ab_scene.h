@@ -25,7 +25,7 @@ private slots:
     void setCategory();
     void setDifWords();
     void setFocusWord(int focus_word);
-    void qmlCreated();
+    void createEditor();
 
 private:
     void fillRecParams();

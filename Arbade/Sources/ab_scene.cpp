@@ -32,12 +32,10 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setDifWords()));
     connect(root, SIGNAL(setFocusWord(int)),
             this, SLOT(setFocusWord(int)));
-    connect(root, SIGNAL(qmlCompleted()),
-            this, SLOT(qmlCreated()));
 
     readQmlProperties();
     updateCategories();
-    qmlCreated();
+    createEditor();
 }
 
 void AbScene::readQmlProperties()
@@ -46,9 +44,8 @@ void AbScene::readQmlProperties()
     setFocusWord(QQmlProperty::read(root, "ab_focus_word").toInt());
 }
 
-void AbScene::qmlCreated()
+void AbScene::createEditor()
 {
-    qDebug() << "test";
     QString category = QQmlProperty::read(qml_editor, "category").toString();
     editor->stat->createWordEditor(category);
     editor->stat->createRecList(category);

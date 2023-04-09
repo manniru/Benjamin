@@ -12,6 +12,7 @@ public:
 
     void updateStat();
     void updateStatAll();
+
     AbStat *stat;
 
 signals:

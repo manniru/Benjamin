@@ -73,12 +73,26 @@ void AbEditor::changeWord(int id, QString text)
 //    for last add line and last word line add box
     if( id==editor_lines.length()-1 && text.length() )
     {
-        stat->addWord("", -1, AB_COLOR_NORM);
+        stat->addWord("", -1, "");
     }
     else if( id==editor_lines.length()-2 && text.length()==0 )
     {
         QMetaObject::invokeMethod(editor, "removeWord");
         editor_lines.removeLast();
+    }
+    else if( text.length() )
+    {
+        QString word = QQmlProperty::read(editor_lines[id], "word_text").toString();
+        QString phoneme = stat->phoneme->getPhoneme(word);
+        QQmlProperty::write(editor_lines[id], "word_phoneme", phoneme);
+        if( phoneme=="" )
+        {
+            QQmlProperty::write(editor_lines[id], "wrong_phoneme", true);
+        }
+        else
+        {
+            QQmlProperty::write(editor_lines[id], "wrong_phoneme", false);
+        }
     }
     enableButtons();
 }
@@ -189,7 +203,7 @@ void AbEditor::writeWordList()
     QString word_list = getUiWordList();
     words_file.write(word_list.toStdString().c_str());
     words_file.close();
-    stat->parseLexicon();
+    stat->lexicon = bt_parseLexicon();
 }
 
 void AbEditor::updateStatAll()
