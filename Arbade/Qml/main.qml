@@ -56,7 +56,7 @@ ApplicationWindow
     signal copyFile()
     signal sendKey(int key)
     signal setStatus(int st)
-    signal setVerifier(int ver)
+    signal verifierChanged()
     signal setFocusWord(int fw)
     signal saveWordList()
     signal setCategory()
@@ -539,7 +539,8 @@ ApplicationWindow
             {
                 ab_verifier = 1;
             }
-            setVerifier(ab_verifier);
+            ab_count = 0
+            verifierChanged();
         }
         else if( key===Qt.Key_R )
         {

@@ -22,8 +22,8 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     connect(root, SIGNAL(delFile()), this, SLOT(deleteFile()));
     connect(root, SIGNAL(copyFile()), this, SLOT(copyFile()));
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
-    connect(root, SIGNAL(setVerifier(int)),
-            this, SLOT(setVerifier(int)));
+    connect(root, SIGNAL(verifierChanged()),
+            this, SLOT(verifierChanged()));
     connect(root, SIGNAL(setStatus(int)),
             this, SLOT(setStatus(int)));
     connect(root, SIGNAL(setCategory()),
@@ -37,16 +37,18 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 
     readQmlProperties();
     updateCategories();
+    qmlCreated();
 }
 
 void AbScene::readQmlProperties()
 {
-    setVerifier(QQmlProperty::read(root, "ab_verifier").toInt());
+    verifierChanged();
     setFocusWord(QQmlProperty::read(root, "ab_focus_word").toInt());
 }
 
 void AbScene::qmlCreated()
 {
+    qDebug() << "test";
     QString category = QQmlProperty::read(qml_editor, "category").toString();
     editor->stat->createWordEditor(category);
     editor->stat->createRecList(category);
@@ -81,14 +83,10 @@ void AbScene::updateStatus(int status)
     }
 }
 
-void AbScene::setVerifier(int verifier)
+void AbScene::verifierChanged()
 {
-    QGuiApplication::processEvents();
-    QString category = QQmlProperty::read(qml_editor, "category").toString();
-    editor->stat->createWordEditor(category);
-    editor->stat->createRecList(category);
-    setCount(0);
-
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    updateStat();
     if( verifier )
     {
         QString unverified_dir = ab_getAudioPath();
@@ -174,7 +172,8 @@ void AbScene::setFocusWord(int focus_word)
 
 void AbScene::updateStat()
 {
-    if( stat_all )
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( stat_all && verifier==0 )
     {
         editor->statAll();
     }

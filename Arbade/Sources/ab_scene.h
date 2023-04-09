@@ -21,7 +21,7 @@ private slots:
     void processKey(int key);
     void setStatus(int status);
     void updateStatus(int status);
-    void setVerifier(int verifier);
+    void verifierChanged();
     void setCategory();
     void setDifWords();
     void setFocusWord(int focus_word);

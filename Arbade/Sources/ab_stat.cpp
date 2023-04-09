@@ -153,7 +153,15 @@ void AbStat::addRecList(QString word, QString path)
 QVector<int> AbStat::getCategoryCount(QString category)
 {
     QString cat_path = ab_getAudioPath();
-    cat_path += "train\\" + category + "\\";
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier )
+    {
+        cat_path += "unverified\\";
+    }
+    else
+    {
+        cat_path += "train\\" + category + "\\";
+    }
 
     QStringList samples = ab_listFiles(cat_path, AB_LIST_NAMES);
     QVector<int> ret = getCount(samples);
