@@ -184,8 +184,9 @@ QVector<int> AbStat::getAllCount()
     ret.fill(0);
     for( int i=0 ; i<len_dir ; i++ )
     {
-        QStringList files_list = ab_listFiles(dir_list[i].absoluteFilePath(),
+        QString cat_path = dir_list[i].absoluteFilePath();
                                            AB_LIST_NAMES);
+        QStringList files_list = ab_listFiles(cat_path, AB_LIST_NAMES);
         QVector<int> count = getCount(files_list);
 
         for( int j=0 ; j<lex_len ; j++ )

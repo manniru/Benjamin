@@ -11,7 +11,7 @@ public:
     explicit AbEditor(QObject *ui, QObject *parent = nullptr);
 
     void updateStat();
-    void statAll();
+    void updateStatAll();
     AbStat *stat;
 
 signals:

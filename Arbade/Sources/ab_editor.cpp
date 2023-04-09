@@ -192,7 +192,7 @@ void AbEditor::writeWordList()
     stat->parseLexicon();
 }
 
-void AbEditor::statAll()
+void AbEditor::updateStatAll()
 {
     QVector<int> word_count = stat->getAllCount();
     int len_stat = word_count.length();

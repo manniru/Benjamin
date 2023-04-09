@@ -175,7 +175,7 @@ void AbScene::updateStat()
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( stat_all && verifier==0 )
     {
-        editor->statAll();
+        editor->updateStatAll();
     }
     else //all category stats
     {
