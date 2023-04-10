@@ -84,8 +84,9 @@ QString getLDiffTime()
     return  ret;
 }
 
-QStringList bt_parseLexicon(QString filename)
+QStringList bt_parseLexicon()
 {
+    QString filename = ab_getAudioPath() + "..\\word_list";
     QFile words_file(filename);
     QStringList lexicon;
 

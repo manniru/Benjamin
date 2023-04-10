@@ -28,7 +28,7 @@ int getIntCommand(char *command);
 QString getStrCommand(QString command);
 QString getDiffTime(clock_t start);
 QString getLDiffTime();
-QStringList bt_parseLexicon(QString filename);
+QStringList bt_parseLexicon();
 void bt_addLog(QString log);
 void bt_mkDir(QString path);
 QString ab_getWslPath();

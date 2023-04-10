@@ -7,6 +7,7 @@
 AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
+    phoneme = new AbPhoneme();
     buttons = root->findChild<QObject *>("Buttons");
     status = root->findChild<QObject *>("Status");
     editor = root->findChild<QObject *>("WordList");
@@ -15,7 +16,7 @@ AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
     connect(root, SIGNAL(deleteSample(QString)),
             this, SLOT(deleteSample(QString)));
 
-    parseLexicon();
+    lexicon = bt_parseLexicon();
     srand(time(NULL));
 }
 
@@ -114,28 +115,17 @@ int AbStat::varCount(QVector<int> *count, int mean)
     return 0;
 }
 
-void AbStat::addWord(QString word, int count, int color)
+void AbStat::addWord(QString word, int count, QString phoneme)
 {
     QVariant word_v(word);
-    QVariant color_v(word);
-    if( color==AB_COLOR_LOW )
-    {
-        color_v = QVariant("#cb6565"); //red
-    }
-    else if( color==AB_COLOR_HIGH )
-    {
-        color_v = QVariant("#80bf73"); //green
-    }
-    else // neutral
-    {
-        color_v = QVariant("#80bf73"); //gray
-    }
+    QVariant phoneme_v(phoneme);
 
-    QGenericArgument arg_word  = Q_ARG(QVariant, word_v);
-    QGenericArgument arg_count = Q_ARG(QVariant, count);
+    QGenericArgument arg_word    = Q_ARG(QVariant, word_v);
+    QGenericArgument arg_count   = Q_ARG(QVariant, count);
+    QGenericArgument arg_phoneme = Q_ARG(QVariant, phoneme_v);
 
     QMetaObject::invokeMethod(editor, "addWord", arg_word,
-                              arg_count);
+                              arg_count, arg_phoneme);
 }
 
 void AbStat::addRecList(QString word, QString path)
@@ -206,10 +196,11 @@ void AbStat::createWordEditor(QString category)
     int lexicon_len = lexicon.length();
     for( int i=0 ; i<lexicon_len ; i++ )
     {
-        addWord(lexicon[i], count[i], AB_COLOR_NORM);
+        QString phon = phoneme->getPhoneme(lexicon[i]);
+        addWord(lexicon[i], count[i], phon);
     }
 //    addEmptyLine
-    addWord("", -1, AB_COLOR_NORM);
+    addWord("", -1, "");
 }
 
 void AbStat::createRecList(QString category)
@@ -367,8 +358,3 @@ QString AbStat::idToWord(int id)
     }
 }
 
-void AbStat::parseLexicon()
-{
-    QString wl_path = ab_getAudioPath() + "..\\word_list";
-    lexicon = bt_parseLexicon(wl_path);
-}

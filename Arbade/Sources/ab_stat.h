@@ -4,6 +4,7 @@
 #include <QObject>
 #include "config.h"
 #include "backend.h"
+#include "ab_phoneme.h"
 
 #define AB_COLOR_LOW  0
 #define AB_COLOR_HIGH 1
@@ -21,17 +22,17 @@ public:
     QVector<int> getCount(QStringList file_list);
     int meanCount(QVector<int> *count);
     int varCount(QVector<int> *count, int mean);
-    void addWord(QString word, int count, int color);
+    void addWord(QString word, int count, QString phoneme);
     void addRecList(QString word, QString path);
     void createWordEditor(QString category);
     void createRecList(QString category);
     void updateMeanVar(QVector<int> *count);
     void delWordSamples();
     void copyToOnline(QString filename);
-    void parseLexicon();
     QString idToWord(int id);
 
     QStringList lexicon;
+    AbPhoneme *phoneme;
 
 private slots:
     void deleteSample(QString sample);
