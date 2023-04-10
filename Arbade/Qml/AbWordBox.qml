@@ -34,7 +34,7 @@ Rectangle
                           word_id: word_i,
                           word_text: w_text,
                           word_phoneme: w_phoneme,
-                          word_number: w_count,
+                          word_count: w_count,
                           objectName: comp_name});
         editor_box.wordAdded(word_i);
     }

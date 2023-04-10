@@ -92,7 +92,7 @@ void AbTrain::initWsl()
 
 void AbTrain::initKalB()
 {
-    QQmlProperty::write(root, "ab_show_console", 1);
+    QQmlProperty::write(console, "visible", true);
     QString current_dir = QDir::currentPath();
     QDir::setCurrent(wsl_path);
 

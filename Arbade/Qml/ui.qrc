@@ -21,5 +21,6 @@
         <file>AbRecPanel.qml</file>
         <file>AbRecDelete.qml</file>
         <file>AbRecPlay.qml</file>
+        <file>AbMessage.qml</file>
     </qresource>
 </RCC>

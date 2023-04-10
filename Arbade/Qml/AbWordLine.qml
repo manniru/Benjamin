@@ -13,7 +13,7 @@ Rectangle
     property int    word_id: 0
     property string word_text: ""
     property string word_phoneme: ""
-    property int    word_number: 0
+    property int    word_count: 0
     property bool   line_hovered: false
     property bool   wrong_phoneme: false
 
@@ -195,7 +195,7 @@ Rectangle
                 "#9a9a9a"; // gray
             }
         }
-        visible: word_number!==-1 &&
+        visible: word_count!==-1 &&
                  line_hovered===false
     }
 

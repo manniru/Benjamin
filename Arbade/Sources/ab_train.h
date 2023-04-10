@@ -32,9 +32,9 @@ private:
     int openConsole();
     void CreateChildProcess(QString cmd);
 
-    QObject   *root; // root qml object
+    QObject   *root;    // root qml object
     QObject   *wsl_dialog;
-    QObject   *console;
+    QObject   *console; // console qml object
     QString    wsl_path;
 
     QThread   *con_thread;
