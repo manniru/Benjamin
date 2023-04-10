@@ -11,6 +11,7 @@ AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
     editor = root->findChild<QObject *>("WordList");
     buttons = root->findChild<QObject *>("Buttons");
     rec_list = root->findChild<QObject *>("RecList");
+    message = root->findChild<QObject *>("Message");
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
@@ -104,6 +105,22 @@ void AbEditor::enableButtons()
 
 void AbEditor::saveProcess()
 {
+//    int is_valid = 1; //is true if all words are in CMU Dict
+    int len = editor_lines.length() - 1;
+    for( int i=0 ; i<len ; i++ )
+    {
+        QString word = QQmlProperty::read(editor_lines[i], "word_text").toString();
+        QString phon = QQmlProperty::read(editor_lines[i], "word_phoneme").toString();
+        if( phon.isEmpty() )
+        {
+            QString msg = "Some words phoneme are not available, ";
+            msg += "The unavailable words are highlighted in red.\n";
+            msg += "Please either change the words or add phonemes to CMU Dict.";
+            QQmlProperty::write(message, "message", msg);
+            return;
+        }
+    }
+
     QString dif = getDif();
     if( dif.length() )
     {

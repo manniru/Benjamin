@@ -14,7 +14,7 @@ Rectangle
                              "C:Change Count Number","F:Focus Word",
                              "J:Decrease Rec Time", "K:Increase Rec Time",
                              "O:Open Category Directory", "T: Train",
-                             "V:Verify Mode", "W:All Word Stat","Q:Close Window"]
+                             "V:Verify Mode"]
 
     color: "#262626"
 //    color: "yellow"
@@ -37,6 +37,29 @@ Rectangle
                 font.pixelSize: font_size
                 font.family: font_name_label
             }
+        }
+
+        Text
+        {
+            text: "W:All Word Stat"
+            color: if( root.ab_all_stat )
+                   {
+                       "#cd8968"
+                   }
+                   else
+                   {
+                       color_text
+                   }
+            font.pixelSize: font_size
+            font.family: font_name_label
+        }
+
+        Text
+        {
+            text: "Q:Close Window"
+            color: color_text
+            font.pixelSize: font_size
+            font.family: font_name_label
         }
     }
 }

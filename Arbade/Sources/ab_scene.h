@@ -37,11 +37,11 @@ private:
 
     QObject *root;       // root qml object
     QObject *qml_editor; // editor qml object
+    QObject *message; // message qml object
     AbAudio *audio;
     AbEditor  *editor;
     QTimer *break_timer;
     QStringList unverified_list;
-    int stat_all = 0;
 };
 
 #endif // ABSCENE_H

@@ -37,6 +37,7 @@ ApplicationWindow
     property int ab_count: 0
     property int ab_total_count: 100
     property int ab_total_count_v: 100
+    property int ab_all_stat: 0
     property real ab_elapsed_time: 0
     property int ab_status: ab_const.ab_STATUS_STOP
     property real ab_rec_time: 3
@@ -47,7 +48,6 @@ ApplicationWindow
     property real ab_verify_pause: 0.5
     property real ab_power: 0
     property int ab_verifier: 0
-    property int ab_show_console: 0
     property real ab_start_now: 0
 
     signal startPauseV()
@@ -99,6 +99,7 @@ ApplicationWindow
         property alias verifypause:     root.ab_verify_pause
         property alias focusword:       root.ab_focus_word
         property alias verifier:        root.ab_verifier
+        property alias allstat:         root.ab_all_stat
     }
 
     Item
@@ -226,7 +227,15 @@ ApplicationWindow
     {
         anchors.fill: parent
 
-        onClicked: focus_item.forceActiveFocus();
+        onClicked:
+        {
+            focus_item.forceActiveFocus();
+
+            if( console_box.visible )
+            {
+                console_box.visible = false;
+            }
+        }
     }
 
     AbEditor
@@ -275,16 +284,25 @@ ApplicationWindow
         anchors.rightMargin: 20
     }
 
+    AbMessage
+    {
+        id: ab_message
+        objectName: "Message"
+
+        anchors.centerIn: parent
+    }
+
     AbConsole
     {
         id: console_box
+        objectName: "Console"
+
         anchors.top: editor_box.top
         anchors.left: editor_box.left
         anchors.right: editor_box.right
         anchors.bottom: buttons_box.bottom
-        anchors.rightMargin: 20
-        visible: ab_show_console
-        objectName: "Console"
+
+        visible: false
     }
 
     AbRecPanel
@@ -404,6 +422,11 @@ ApplicationWindow
     {
         if( key===Qt.Key_O || key===Qt.Key_W || key===Qt.Key_T )
         {
+            if( key===Qt.Key_W )
+            {
+                ab_all_stat = !ab_all_stat;
+            }
+
             sendKey(key);
         }
         else if( key===Qt.Key_Escape )

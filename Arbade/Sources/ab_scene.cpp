@@ -6,6 +6,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
     qml_editor = root->findChild<QObject *>("WordList");
+    message = root->findChild<QObject *>("Message");
 
     break_timer = new QTimer();
     editor = new AbEditor(root);
@@ -105,6 +106,13 @@ void AbScene::verifierChanged()
 void AbScene::startPauseV()
 {
     int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
+
+    if( total_count==0 )
+    {
+        QString msg = "There is no sample in the unverified directory";
+        QQmlProperty::write(message, "message", msg);
+    }
+
     int count = QQmlProperty::read(root, "ab_count").toInt();
 
     if( count<total_count )
@@ -170,6 +178,7 @@ void AbScene::setFocusWord(int focus_word)
 void AbScene::updateStat()
 {
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    int stat_all = QQmlProperty::read(root, "ab_all_stat").toInt();
     if( stat_all && verifier==0 )
     {
         editor->updateStatAll();
@@ -202,7 +211,6 @@ void AbScene::processKey(int key)
     }
     else if( key==Qt::Key_W )
     {
-        stat_all = !stat_all;
         updateStat();
     }
     else

@@ -33,10 +33,11 @@ private:
     QString getDif();
 
     QTimer *timer;
-    QObject *root;    // root qml object
-    QObject *editor;  // editor qml object
-    QObject *buttons; // buttons qml object
+    QObject *root;     // root qml object
+    QObject *editor;   // editor qml object
+    QObject *buttons;  // buttons qml object
     QObject *rec_list; // rec list qml object
+    QObject *message;  // messege qml object
     QVector<QObject *> editor_lines;
     QVector<QObject *> rec_lines;
 };

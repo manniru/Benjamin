@@ -175,7 +175,6 @@ QVector<int> AbStat::getAllCount()
     for( int i=0 ; i<len_dir ; i++ )
     {
         QString cat_path = dir_list[i].absoluteFilePath();
-                                           AB_LIST_NAMES);
         QStringList files_list = ab_listFiles(cat_path, AB_LIST_NAMES);
         QVector<int> count = getCount(files_list);
 
@@ -206,14 +205,20 @@ void AbStat::createWordEditor(QString category)
 void AbStat::createRecList(QString category)
 {
     QString cat_path = ab_getAudioPath();
-    cat_path += "train\\";
-    cat_path += category;
-    cat_path += "\\";
-    qDebug() << "cat_path = " << cat_path;
+
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier )
+    {
+        cat_path += "unverified\\";
+    }
+    else
+    {
+        cat_path += "train\\" + category + "\\";
+    }
+
     QDir cat_dir(cat_path);
     QFileInfoList samples_file = cat_dir.entryInfoList(QDir::Files,
                              QDir::Time | QDir::Reversed);
-    qDebug() << "sm = " << samples_file.length();
     int samples_len = samples_file.length();
 
     if( samples_len>200 )
