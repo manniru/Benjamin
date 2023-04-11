@@ -36,6 +36,8 @@ public:
 
 private slots:
     void deleteSample(QString sample);
+    void create(QString catagorys);
+    void update();
 
 private:
     int wordToIndex(QString word);

@@ -34,7 +34,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     connect(root, SIGNAL(setFocusWord(int)),
             this, SLOT(setFocusWord(int)));
 
-    readQmlProperties();
+//    readQmlProperties();
     updateCategories();
     createEditor();
 }
@@ -47,9 +47,7 @@ void AbScene::readQmlProperties()
 
 void AbScene::createEditor()
 {
-    QString category = QQmlProperty::read(qml_editor, "category").toString();
-    editor->stat->createWordEditor(category);
-    editor->stat->createRecList(category);
+    editor->createList();
 }
 
 void AbScene::setStatus(int status)
@@ -64,7 +62,7 @@ void AbScene::setStatus(int status)
     }
     else if( status==AB_STATUS_PAUSE && verifier==0 )
     {
-        updateStat();
+        editor->updateStat();
     }
     else if( status==AB_STATUS_STOP )
     {
@@ -77,14 +75,14 @@ void AbScene::updateStatus(int status)
     QQmlProperty::write(root, "ab_status", status);
     if( status==AB_STATUS_STOP )
     {
-        updateStat();
+        editor->updateStat();
     }
 }
 
 void AbScene::verifierChanged()
 {
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    updateStat();
+    editor->updateStat();
     if( verifier )
     {
         QString unverified_dir = ab_getAudioPath();
@@ -93,9 +91,10 @@ void AbScene::verifierChanged()
         QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files,
                                  QDir::Time | QDir::Reversed);
         int len = dir_list.length();
+        unverified_list.resize(len);
         for( int i=0 ; i<len ; i++ )
         {
-            unverified_list.push_back(dir_list[i].absoluteFilePath());
+            unverified_list[i] = dir_list[i].absoluteFilePath();
         }
         QQmlProperty::write(root, "ab_total_count_v", unverified_list.size());
     }
@@ -157,7 +156,7 @@ void AbScene::copyFile()
 
 void AbScene::setCategory()
 {
-    updateStat();
+    editor->updateStat();
     updateCategories();
 }
 
@@ -175,24 +174,10 @@ void AbScene::setFocusWord(int focus_word)
     QQmlProperty::write(root, "ab_focus_text", focus_text);
 }
 
-void AbScene::updateStat()
-{
-    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    int stat_all = QQmlProperty::read(root, "ab_all_stat").toInt();
-    if( stat_all && verifier==0 )
-    {
-        editor->updateStatAll();
-    }
-    else //all category stats
-    {
-        editor->updateStat();
-    }
-}
-
 void AbScene::setDifWords()
 {
     editor->stat->delWordSamples();
-    updateStat();
+    editor->updateStat();
 }
 
 void AbScene::breakTimeout()
@@ -211,7 +196,7 @@ void AbScene::processKey(int key)
     }
     else if( key==Qt::Key_W )
     {
-        updateStat();
+        editor->updateStat();
     }
     else
     {

@@ -7,7 +7,12 @@
 AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
+
     stat = new AbStat(root);
+    stat_thread = new QThread;
+    stat->moveToThread(stat_thread);
+    stat_thread->start();
+
     editor = root->findChild<QObject *>("WordList");
     buttons = root->findChild<QObject *>("Buttons");
     rec_list = root->findChild<QObject *>("RecList");
@@ -22,6 +27,7 @@ AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(writeWordList()));
     connect(buttons, SIGNAL(saveClicked()), this, SLOT(saveProcess()));
     connect(buttons, SIGNAL(resetClicked()), this, SLOT(resetProcess()));
+    connect(this, SIGNAL(create(QString)), stat, SLOT(create(QString)));
 }
 
 void AbEditor::wordAdded(int id)
@@ -225,9 +231,33 @@ void AbEditor::writeWordList()
 
 void AbEditor::updateStatAll()
 {
+    int len_lines = editor_lines.length();
     QVector<int> word_count = stat->getAllCount();
     int len_stat = word_count.length();
+    for( int i=0 ; i<len_stat ; i++ )
+    {
+        if( i<len_lines )
+        {
+            QQmlProperty::write(editor_lines[i],
+                                "word_count", word_count[i]);
+        }
+    }
+    stat->updateMeanVar(&word_count);
+}
+
+void AbEditor::createList()
+{
+    QString category = QQmlProperty::read(editor, "category").toString();
+    emit create(category);
+
+}
+
+void AbEditor::updateStatCat()
+{
     int len_lines = editor_lines.length();
+    QString category = QQmlProperty::read(editor, "category").toString();
+    QVector<int> word_count = stat->getCategoryCount(category);
+    int len_stat = word_count.length();
     for( int i=0 ; i<len_stat ; i++ )
     {
         if( i<len_lines )
@@ -241,17 +271,23 @@ void AbEditor::updateStatAll()
 
 void AbEditor::updateStat()
 {
-    QString category = QQmlProperty::read(editor, "category").toString();
-    QVector<int> word_count = stat->getCategoryCount(category);
-    int len_stat = word_count.length();
     int len_lines = editor_lines.length();
-    for( int i=0 ; i<len_stat ; i++ )
+    qDebug() << "update skip" << len_lines;
+    if( len_lines==0 )
     {
-        if( i<len_lines )
-        {
-            QQmlProperty::write(editor_lines[i],
-                                "word_count", word_count[i]);
-        }
+        qDebug() << "update skip";
+        //skip update before create on startup
+        return;
     }
-    stat->updateMeanVar(&word_count);
+
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    int stat_all = QQmlProperty::read(root, "ab_all_stat").toInt();
+    if( stat_all && verifier==0 )
+    {
+        updateStatAll();
+    }
+    else //all category stats
+    {
+        updateStatCat();
+    }
 }

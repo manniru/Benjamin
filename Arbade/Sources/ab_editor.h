@@ -11,11 +11,13 @@ public:
     explicit AbEditor(QObject *ui, QObject *parent = nullptr);
 
     void updateStat();
-    void updateStatAll();
+    void createList();
 
-    AbStat *stat;
+    AbStat  *stat;
+    QThread *stat_thread;
 
 signals:
+    void create(QString category);
 
 private slots:
     void wordAdded(int id);
@@ -28,6 +30,8 @@ private slots:
     void recRemove(int id);
 
 private:
+    void updateStatAll();
+    void updateStatCat();
     void enableButtons();
     QString getUiWordList();
     QString getDif();

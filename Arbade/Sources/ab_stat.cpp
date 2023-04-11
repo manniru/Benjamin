@@ -7,7 +7,6 @@
 AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
-    phoneme = new AbPhoneme();
     buttons = root->findChild<QObject *>("Buttons");
     status = root->findChild<QObject *>("Status");
     editor = root->findChild<QObject *>("WordList");
@@ -16,8 +15,6 @@ AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
     connect(root, SIGNAL(deleteSample(QString)),
             this, SLOT(deleteSample(QString)));
 
-    lexicon = bt_parseLexicon();
-    srand(time(NULL));
 }
 
 void AbStat::copyToOnline(QString filename)
@@ -305,6 +302,20 @@ void AbStat::delWordSamples()
             }
         }
     }
+}
+
+void AbStat::create(QString category)
+{
+    phoneme = new AbPhoneme();
+    lexicon = bt_parseLexicon();
+    srand(time(NULL));
+
+    createWordEditor(category);
+    createRecList(category);
+}
+
+void AbStat::update()
+{
 }
 
 void AbStat::deleteSample(QString sample)

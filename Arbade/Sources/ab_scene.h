@@ -30,7 +30,6 @@ private slots:
 private:
     void fillRecParams();
     void updateCategories();
-    void updateStat();
     void loadAddress();
     void setCount(int cnt);
     void readQmlProperties();
@@ -41,7 +40,7 @@ private:
     AbAudio *audio;
     AbEditor  *editor;
     QTimer *break_timer;
-    QStringList unverified_list;
+    QVector<QString> unverified_list;
 };
 
 #endif // ABSCENE_H
