@@ -6,9 +6,7 @@
 #include "backend.h"
 #include "ab_phoneme.h"
 
-#define AB_COLOR_LOW  0
-#define AB_COLOR_HIGH 1
-#define AB_COLOR_NORM 2
+#define AB_MAX_CAT    100
 
 class AbStat: public QObject
 {
@@ -19,7 +17,7 @@ public:
 
     QVector<int> getCategoryCount(QString category);
     QVector<int> getAllCount();
-    QVector<int> getCount(QStringList file_list);
+    QVector<int> getCount(QVector<QString> *file_list);
     int meanCount(QVector<int> *count);
     int varCount(QVector<int> *count, int mean);
     void addWord(QString word, int count, QString phoneme);
@@ -32,7 +30,12 @@ public:
     QString idToWord(int id);
 
     QStringList lexicon;
+    QVector<QString> cache_files[AB_MAX_CAT];
+    QVector<int> cache_count[AB_MAX_CAT];
     AbPhoneme *phoneme;
+
+signals:
+    void cacheCreated();
 
 private slots:
     void deleteSample(QString sample);
@@ -42,12 +45,14 @@ private slots:
 private:
     int wordToIndex(QString word);
     void deleteFile(QString path);
+    void createCache();
 
     QObject *root;//root qml object
     QObject *editor;//word editor qml object
     QObject *rec_list;//rec list qml object
     QObject *buttons;//buttons qml object
     QObject *status;//status qml object
+
 };
 
 #endif // AB_STAT_H

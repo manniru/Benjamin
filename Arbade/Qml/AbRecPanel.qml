@@ -7,18 +7,18 @@ import QtQuick.Controls 2.3
 import QtQuick.Window 2.10
 
 Rectangle
-{   
+{
     color: "#2e2e2e"
 
     property int    status
     property string words
-    property int    count
-    property int    count_total
     property real   elapsed_time
     property real   power
     property color  color_text:         "#b2b2b2"
     property int    font_size:          24
     property string font_name_label:    fontRobotoRegular.name
+
+    onWordsChanged: console.log("word change" + words)
 
     GridLayout
     {
@@ -37,8 +37,17 @@ Rectangle
         {
             id: count_label
 
-            text: "Count: [" + count.toString() + "/" +
-                  count_total.toString() + "]"
+            text: if( root.ab_verifier===1 )
+                  {
+                      "Count: [" + root.ab_count.toString() + "/" +
+                        root.ab_total_count_v.toString() + "]"
+                  }
+                  else
+                  {
+                      "Count: [" + root.ab_count.toString() + "/" +
+                        root.ab_total_count.toString() + "]"
+                  }
+
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
@@ -83,6 +92,9 @@ Rectangle
             font.pixelSize: font_size
             font.family: font_name_label
             lineHeight: 1.2
+            textFormat: Text.PlainText
+
+            onTextChanged: console.log("text changed: " + text)
         }
 
         AbStatusLabel

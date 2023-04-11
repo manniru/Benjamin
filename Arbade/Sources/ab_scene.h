@@ -15,7 +15,7 @@ public:
 
 private slots:
     void startPauseV();
-    void copyFile();
+    void copyUnverifyFile();
     void deleteFile();
     void breakTimeout();
     void processKey(int key);
@@ -26,10 +26,11 @@ private slots:
     void setDifWords();
     void setFocusWord(int focus_word);
     void createEditor();
+    void cacheCreated();
 
 private:
     void fillRecParams();
-    void updateCategories();
+    void updateAutoCpmplete();
     void loadAddress();
     void setCount(int cnt);
     void readQmlProperties();
@@ -40,7 +41,6 @@ private:
     AbAudio *audio;
     AbEditor  *editor;
     QTimer *break_timer;
-    QVector<QString> unverified_list;
 };
 
 #endif // ABSCENE_H

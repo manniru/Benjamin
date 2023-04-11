@@ -143,13 +143,14 @@ Rectangle
     Label
     {
         id: text_area
-        Accessible.name: "document"
+
         anchors.left: text_bg.left
         anchors.leftMargin: 20
         anchors.top: parent.top
         anchors.topMargin: 3
 
         text: sample_text
+        textFormat: Text.PlainText
         font.pixelSize: 16
         color: "#c9c9c9"
     }

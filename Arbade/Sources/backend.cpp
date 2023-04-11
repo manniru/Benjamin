@@ -177,37 +177,25 @@ QString ab_getAudioPath()
 #endif
 }
 
-QFileInfoList ab_listFiles(QString path)
+QVector<QString> ab_listFiles(QString path)
 {
+    QVector<QString> ret;
     QDir cat_dir(path);
 
     if( !cat_dir.exists() )
     {
         qDebug() << "Warning: Directory doesn't Exist,"
                  << "cannot generate statistics.";
-        return QFileInfoList();
+        return ret;
     }
 
-    QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files);
-    return dir_list;
-}
+    QFileInfoList file_list = cat_dir.entryInfoList(QDir::Files);
 
-QStringList ab_listFiles(QString path, int mode)
-{
-    QStringList ret;
-    QFileInfoList file_list = ab_listFiles(path);
     int len = file_list.size();
 
     for( int i=0 ; i<len ; i++ )
     {
-        if( mode==AB_LIST_PATHS )
-        {
-            ret.push_back(file_list[i].absoluteFilePath());
-        }
-        else
-        {
-            ret.push_back(file_list[i].fileName());
-        }
+        ret.push_back(file_list[i].absoluteFilePath());
     }
 
     return ret;
@@ -245,18 +233,8 @@ void ab_openCategory(QString category)
 
 QFileInfoList ab_getAudioDirs()
 {
-    QString path = ab_getAudioPath() + "train\\";
-    QDir dir(path);
-
-    if( !dir.exists() )
-    {
-        qDebug() << "Warning: train directory doesn't Exist,"
-                 << "cannot generate statistics.";
-        return QFileInfoList();
-    }
-
-    QFileInfoList dir_list = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-    path = ab_getAudioPath() + "unverified\\";
+    QFileInfoList dir_list;
+    QString path = ab_getAudioPath() + "unverified";
     QFileInfo unver(path);
 
     if( !unver.exists() )
@@ -267,6 +245,18 @@ QFileInfoList ab_getAudioDirs()
     }
 
     dir_list.append(unver); // add unverified dir to list of train category dirs
+
+    path = ab_getAudioPath() + "train\\";
+    QDir dir(path);
+
+    if( !dir.exists() )
+    {
+        qDebug() << "Warning: train directory doesn't Exist,"
+                 << "cannot generate statistics.";
+        return QFileInfoList();
+    }
+
+    dir_list += dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
 
     return dir_list;
 }

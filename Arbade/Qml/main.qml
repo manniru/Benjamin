@@ -53,7 +53,7 @@ ApplicationWindow
     signal startPauseV()
     signal delFile()
     signal deleteSample(string sample)
-    signal copyFile()
+    signal copyUnverifyFile()
     signal sendKey(int key)
     signal setStatus(int st)
     signal verifierChanged()
@@ -324,18 +324,6 @@ ApplicationWindow
 
         status: ab_status
         words: ab_words
-        count: ab_count
-        count_total:
-        {
-            if( ab_verifier )
-            {
-                ab_total_count_v
-            }
-            else
-            {
-                ab_total_count
-            }
-        }
         elapsed_time:
         {
             if( ab_verifier )
@@ -397,7 +385,7 @@ ApplicationWindow
             }
             else
             {
-                copyFile();
+                copyUnverifyFile();
             }
 
             startPauseV();
