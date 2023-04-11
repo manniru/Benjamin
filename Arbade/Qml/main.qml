@@ -14,11 +14,11 @@ ApplicationWindow
 {
     id: root
 
-    y: 100
-    x: 30
+    y: 150
+    x: 100
     width: 1650
-    height: 830
-    minimumHeight: 820
+    height: 790
+    minimumHeight: 780
     minimumWidth: 760
 
     color: "#2e2e2e"
@@ -146,7 +146,7 @@ ApplicationWindow
     {
         id: ab_help
 
-        height: 120
+        height: 80
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -439,19 +439,19 @@ ApplicationWindow
         }
         else if( key===Qt.Key_Left )
         {
-            ab_num_words--;
+            ab_rec_time -= .1;
         }
         else if( key===Qt.Key_Right )
         {
-            ab_num_words++;
+            ab_rec_time += .1;
         }
         else if( key===Qt.Key_K )
         {
-            ab_rec_time += .1;
+            ab_num_words--;
         }
         else if( key===Qt.Key_J )
         {
-            ab_rec_time -= .1;
+            ab_num_words++;
         }
         else if( key===Qt.Key_Up )
         {

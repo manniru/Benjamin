@@ -51,7 +51,6 @@ void AbAudio::updateAudioParam(QString filename)
         id_list.push_back(id_strlist[i].toInt());
     }
     QString words = idsToWords(id_list);
-    QQmlProperty::write(root, "ab_num_words", len);
     qDebug() << "ab_words" << words;
     QQmlProperty::write(root, "ab_words", words);
 }

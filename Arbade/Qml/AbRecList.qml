@@ -53,6 +53,12 @@ Rectangle
         contentHeight: reclist_cl.height
         clip: true
 
+        ScrollBar.vertical: ScrollBar
+        {
+                width: 10
+                anchors.right: parent.right // adjust the anchor as suggested by derM
+            }
+
         Rectangle
         {
             id: reclist_cl
