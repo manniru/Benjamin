@@ -16,6 +16,9 @@ public:
     AbStat  *stat;
     QThread *stat_thread;
 
+public slots:
+    void recRemove(int id);
+
 signals:
     void create(QString category);
 
@@ -27,7 +30,6 @@ private slots:
     void resetProcess();
     void writeWordList();
     void timerTimeout();
-    void recRemove(int id);
 
 private:
     void updateStatAll();

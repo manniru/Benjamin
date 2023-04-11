@@ -16,7 +16,7 @@ public:
 private slots:
     void startPauseV();
     void copyUnverifyFile();
-    void deleteFile();
+    void deleteVerifyFile();
     void breakTimeout();
     void processKey(int key);
     void setStatus(int status);
@@ -31,8 +31,7 @@ private slots:
 private:
     void fillRecParams();
     void updateAutoCpmplete();
-    void loadAddress();
-    void setCount(int cnt);
+    void loadVerifyFile(int id);
     void readQmlProperties();
 
     QObject *root;       // root qml object

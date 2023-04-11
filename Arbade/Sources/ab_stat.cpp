@@ -144,10 +144,6 @@ QVector<int> AbStat::getCategoryCount(QString category)
     QVector<int> ret;
     QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
-    if( len_dir==0 )
-    {
-        return ret;
-    }
 
     for( int i=1 ; i<len_dir ; i++ )
     {
@@ -217,21 +213,29 @@ void AbStat::createWordEditor(QString category)
 void AbStat::createRecList(QString category)
 {
     QString cat_path = ab_getAudioPath();
+    QVector<QString> *files;
 
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier )
     {
-        cat_path += "unverified\\";
+        files = &cache_files[0];
     }
     else
     {
-        cat_path += "train\\" + category + "\\";
+        QFileInfoList dir_list = ab_getAudioDirs();
+        int len_dir = dir_list.size();
+        for( int i=1 ; i<len_dir ; i++ )
+        {
+            QString dir_name = dir_list[i].baseName();
+            if( dir_name==category )
+            {
+                files = &cache_files[i];
+            }
+        }
     }
 
     QDir cat_dir(cat_path);
-    QFileInfoList samples_file = cat_dir.entryInfoList(QDir::Files,
-                             QDir::Time | QDir::Reversed);
-    int samples_len = samples_file.length();
+    int samples_len = files->length();
 
     if( samples_len>200 )
     {
@@ -239,7 +243,8 @@ void AbStat::createRecList(QString category)
     }
     for( int i=0 ; i<samples_len ; i++ )
     {
-        QString file_name = samples_file[i].baseName();
+        QFileInfo info(files->at(i));
+        QString file_name = info.baseName();
         QStringList word_list = file_name.split('_');
         int world_list_len = word_list.length();
         QString word;
@@ -248,7 +253,7 @@ void AbStat::createRecList(QString category)
             int num = word_list[j].toInt();
             word += lexicon[num] + " ";
         }
-        addRecList(word, samples_file[i].absoluteFilePath());
+        addRecList(word, info.absoluteFilePath());
     }
 }
 
@@ -394,3 +399,18 @@ QString AbStat::idToWord(int id)
     }
 }
 
+void AbStat::moveToOnline()
+{
+    QFileInfoList dir_list = ab_getAudioDirs();
+    int len_dir = dir_list.size();
+
+    for( int i=1 ; i<len_dir ; i++ )
+    {
+        QString dir_name = dir_list[i].baseName();
+        if( dir_name=="online" )
+        {
+            cache_files[i] << cache_files[0].last();
+            cache_files[0].removeLast();
+        }
+    }
+}

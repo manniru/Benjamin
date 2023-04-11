@@ -35,7 +35,7 @@ void AbAudio::record()
 }
 
 // verification and playing phase
-void AbAudio::updateAudioParam(QString filename)
+void AbAudio::updateVerifyParam(QString filename)
 {
     wav_rd->read(filename);
     QQmlProperty::write(root, "ab_rec_time", wav_rd->wave_time);
@@ -95,6 +95,8 @@ void AbAudio::writeWav()
     checkCategoryExist();
 
     wav_wr->write(wav_path);
+    QString wav_wpath = wav_path.replace("\\", "/");
+    stat->addRecList(total_words, wav_wpath);
 
     status = QQmlProperty::read(root, "ab_status").toInt();
     if( count<total_count &&
@@ -204,20 +206,15 @@ QString AbAudio::getRandPath(QString category)
 
 void AbAudio::showWords(QVector<AbWord> words)
 {
-    QString msg, total_words;
+    total_words = "";
 
     for( int i=0 ; i<words.size() ; i++ )
     {
-        msg += words[i].word + "(";
-        msg += QString::number(words[i].word_id) + ") ";
         total_words += "<" + words[i].word + "> ";
-        if( i%3==2 )
-        {
-            total_words += "\n";
-        }
     }
-    qDebug() << "Message:" << msg;
-    QQmlProperty::write(root, "ab_words", total_words.trimmed());
+    total_words = total_words.trimmed();
+    qDebug() << "total_words:" << total_words;
+    QQmlProperty::write(root, "ab_words", total_words);
 }
 
 QString AbAudio::getFileName(QVector<AbWord> words,

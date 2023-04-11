@@ -18,8 +18,6 @@ Rectangle
     property int    font_size:          24
     property string font_name_label:    fontRobotoRegular.name
 
-    onWordsChanged: console.log("word change" + words)
-
     GridLayout
     {
         anchors.centerIn: parent
@@ -93,8 +91,6 @@ Rectangle
             font.family: font_name_label
             lineHeight: 1.2
             textFormat: Text.PlainText
-
-            onTextChanged: console.log("text changed: " + text)
         }
 
         AbStatusLabel

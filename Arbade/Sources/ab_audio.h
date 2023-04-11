@@ -14,7 +14,7 @@ public:
     explicit AbAudio(AbStat *st, QObject *ui,
                      QObject *parent = nullptr);
     void record();
-    void updateAudioParam(QString filename);
+    void updateVerifyParam(QString filename);
 
 signals:
     void setStatus(int status);
@@ -41,6 +41,7 @@ private:
     QObject *editor;//editor qml object
     QTimer *read_timer;
     QString wav_path;
+    QString total_words;
 };
 
 #endif // ABAUDIO_H

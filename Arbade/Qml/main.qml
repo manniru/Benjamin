@@ -51,7 +51,7 @@ ApplicationWindow
     property real ab_start_now: 0
 
     signal startPauseV()
-    signal delFile()
+    signal delVerifyFile()
     signal deleteSample(string sample)
     signal copyUnverifyFile()
     signal sendKey(int key)
@@ -82,11 +82,6 @@ ApplicationWindow
                 audio_timer.stop();
             }
         }
-    }
-
-    onAb_wordsChanged:
-    {
-        rec_list.addLine(ab_words);
     }
 
     Settings
@@ -381,7 +376,7 @@ ApplicationWindow
             if( sig_del_file )
             {
                 sig_del_file = 0;
-                delFile();
+                delVerifyFile();
             }
             else
             {
@@ -469,6 +464,7 @@ ApplicationWindow
             {
                 if( ab_status===ab_const.ab_STATUS_STOP )
                 {
+                    ab_count = 0;
                     startPauseV();
                 }
                 else if( ab_status===ab_const.ab_STATUS_BREAK )

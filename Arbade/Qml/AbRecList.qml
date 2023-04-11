@@ -129,7 +129,7 @@ Rectangle
             next_elem.anchors.bottom = prev_elem.top;
             next_elem.forceActiveFocus();
         }
-        else if ( id===0 )
+        else if ( id===0 && len>1 )
         {
             next_elem = reclist_cl.children[1];
             next_elem.anchors.bottom = reclist_cl.bottom;
