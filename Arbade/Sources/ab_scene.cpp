@@ -21,7 +21,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 
     connect(root, SIGNAL(startPauseV()), this, SLOT(startPauseV()));
     connect(root, SIGNAL(delFile()), this, SLOT(deleteFile()));
-    connect(root, SIGNAL(copyFile()), this, SLOT(copyFile()));
+    connect(root, SIGNAL(copyUnverifyFile()), this, SLOT(copyUnverifyFile()));
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
     connect(root, SIGNAL(verifierChanged()),
             this, SLOT(verifierChanged()));
@@ -33,9 +33,10 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setDifWords()));
     connect(root, SIGNAL(setFocusWord(int)),
             this, SLOT(setFocusWord(int)));
+    connect(editor->stat, SIGNAL(cacheCreated()),
+            this, SLOT(cacheCreated()));
 
-//    readQmlProperties();
-    updateCategories();
+    updateAutoCpmplete();
     createEditor();
 }
 
@@ -85,18 +86,8 @@ void AbScene::verifierChanged()
     editor->updateStat();
     if( verifier )
     {
-        QString unverified_dir = ab_getAudioPath();
-        unverified_dir += "unverified\\";
-        QDir cat_dir(unverified_dir);
-        QFileInfoList dir_list = cat_dir.entryInfoList(QDir::Files,
-                                 QDir::Time | QDir::Reversed);
-        int len = dir_list.length();
-        unverified_list.resize(len);
-        for( int i=0 ; i<len ; i++ )
-        {
-            unverified_list[i] = dir_list[i].absoluteFilePath();
-        }
-        QQmlProperty::write(root, "ab_total_count_v", unverified_list.size());
+        int count = editor->stat->cache_files[0].size();
+        QQmlProperty::write(root, "ab_total_count_v", count);
     }
 }
 
@@ -136,7 +127,8 @@ void AbScene::setCount(int cnt)
 void AbScene::loadAddress()
 {
     int count = QQmlProperty::read(root, "ab_count").toInt();
-    QString address = unverified_list[count];
+    QString address = editor->stat->cache_files[0][count];
+    qDebug() << "address = " << address;
     audio->updateAudioParam(address);
     QQmlProperty::write(root, "ab_address", address);
 }
@@ -144,20 +136,21 @@ void AbScene::loadAddress()
 void AbScene::deleteFile()
 {
     int count = QQmlProperty::read(root, "ab_count").toInt();
-    QFile file(unverified_list[count-1]);
+    QFile file(editor->stat->cache_files[0][count-1]);
     file.remove();
+    editor->stat->cache_files[0].remove(count-1);
 }
 
-void AbScene::copyFile()
+void AbScene::copyUnverifyFile()
 {
-    int count = QQmlProperty::read(root, "ab_count").toInt();
-    editor->stat->copyToOnline(unverified_list[count-1]);
+//    int count = QQmlProperty::read(root, "ab_count").toInt();
+//    editor->stat->copyToOnline(editor->stat->cache_files[0][count-1]);
 }
 
 void AbScene::setCategory()
 {
     editor->updateStat();
-    updateCategories();
+    updateAutoCpmplete();
 }
 
 void AbScene::setFocusWord(int focus_word)
@@ -204,7 +197,7 @@ void AbScene::processKey(int key)
     }
 }
 
-void AbScene::updateCategories()
+void AbScene::updateAutoCpmplete()
 {
     QFileInfoList dir_list = ab_getAudioDirs();
     QStringList categories;
@@ -217,4 +210,9 @@ void AbScene::updateCategories()
 
     QString cat_str = categories.join("!");
     QQmlProperty::write(root, "ab_auto_comp", cat_str);
+}
+
+void AbScene::cacheCreated()
+{
+    readQmlProperties();
 }

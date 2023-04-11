@@ -42,7 +42,7 @@ void AbStat::copyToOnline(QString filename)
     file.remove();
 }
 
-QVector<int> AbStat::getCount(QStringList file_list)
+QVector<int> AbStat::getCount(QVector<QString> *file_list)
 {
     int lexicon_len = lexicon.length();
     QString filename;
@@ -50,17 +50,13 @@ QVector<int> AbStat::getCount(QStringList file_list)
     QVector<int> count;
     count.resize(lexicon_len);
     count.fill(0);
-    int file_num = file_list.size();
+    int file_num = file_list->size();
 
     for( int j=0 ; j<file_num ; j++ )
     {
-        filename = file_list[j];
-        filename.remove(".wav");
-        int dot_index = filename.indexOf(".");
-        if( dot_index>=0 )
-        {
-            filename.truncate(dot_index);
-        }
+        QFileInfo info(file_list->at(j));
+        filename = info.baseName();
+
         words_index = filename.split("_", QString::SkipEmptyParts);
         int words_num = words_index.length();
         for( int i=0 ; i<words_num ; i++ )
@@ -139,20 +135,28 @@ void AbStat::addRecList(QString word, QString path)
 
 QVector<int> AbStat::getCategoryCount(QString category)
 {
-    QString cat_path = ab_getAudioPath();
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier )
     {
-        cat_path += "unverified\\";
+        return cache_count[0];
     }
-    else
+
+    QVector<int> ret;
+    QFileInfoList dir_list = ab_getAudioDirs();
+    int len_dir = dir_list.size();
+    if( len_dir==0 )
     {
-        cat_path += "train\\" + category + "\\";
+        return ret;
     }
 
-    QStringList samples = ab_listFiles(cat_path, AB_LIST_NAMES);
-    QVector<int> ret = getCount(samples);
-
+    for( int i=1 ; i<len_dir ; i++ )
+    {
+        QString dir_name = dir_list[i].baseName();
+        if( dir_name==category )
+        {
+            return cache_count[i];
+        }
+    }
     return ret;
 }
 
@@ -171,17 +175,28 @@ QVector<int> AbStat::getAllCount()
     ret.fill(0);
     for( int i=0 ; i<len_dir ; i++ )
     {
-        QString cat_path = dir_list[i].absoluteFilePath();
-        QStringList files_list = ab_listFiles(cat_path, AB_LIST_NAMES);
-        QVector<int> count = getCount(files_list);
-
         for( int j=0 ; j<lex_len ; j++ )
         {
-            ret[j] += count[j];
+            ret[j] += cache_count[i][j];
         }
     }
 
     return ret;
+}
+
+void AbStat::createCache()
+{
+    QFileInfoList dir_list = ab_getAudioDirs();
+    int len_dir = dir_list.size();
+
+    for( int i=0 ; i<len_dir ; i++ )
+    {
+        QString cat_path = dir_list[i].absoluteFilePath();
+        cache_files[i] = ab_listFiles(cat_path);
+        cache_count[i] = getCount(&cache_files[i]);
+    }
+
+    emit cacheCreated();
 }
 
 void AbStat::createWordEditor(QString category)
@@ -283,21 +298,25 @@ void AbStat::delWordSamples()
 
     for( int i=0 ; i<len_dir ; i++ )
     {
-        QFileInfoList files_list = ab_listFiles(dir_list[i].
-                                   absoluteFilePath());
-        int len_files = files_list.size();
+        int len_files = cache_files[i].size();
 
         for( int j=0 ; j<len_files ; j++ )
         {
-            QStringList audio_words = files_list[j].baseName().split("_");
+            QString sample_path = cache_files[i][j];
+            QFileInfo sample_info(sample_path);
+            QStringList audio_words = sample_info.baseName().split("_");
 
             for( int k=0 ; k<len ; k++ )
             {
                 if( audio_words.contains(QString::number(del_list[k])) )
                 {
-                    QFile removing_file(files_list[j].absoluteFilePath());
-                    qDebug() << "del" << files_list[j].absoluteFilePath();
+                    QFile removing_file(sample_info.absoluteFilePath());
+                    qDebug() << "del" << sample_info.absoluteFilePath();
                     removing_file.remove();
+                    cache_files[i].remove(j);
+                    len_files--;
+                    j--;
+                    break;
                 }
             }
         }
@@ -310,6 +329,7 @@ void AbStat::create(QString category)
     lexicon = bt_parseLexicon();
     srand(time(NULL));
 
+    createCache();
     createWordEditor(category);
     createRecList(category);
 }
