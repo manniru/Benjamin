@@ -40,12 +40,6 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     createEditor();
 }
 
-void AbScene::readQmlProperties()
-{
-    verifierChanged();
-    setFocusWord(QQmlProperty::read(root, "ab_focus_word").toInt());
-}
-
 void AbScene::createEditor()
 {
     editor->createList();
@@ -54,18 +48,19 @@ void AbScene::createEditor()
 void AbScene::setStatus(int status)
 {
     QQmlProperty::write(root, "ab_status", status);
-    qDebug() << "setStatus" << status;
+    qDebug() << "setStatus" << getStatusStr(status);
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
 
     if( status==AB_STATUS_REC && verifier==0 )
     {
         audio->record();
     }
-    else if( status==AB_STATUS_PAUSE && verifier==0 )
+    else if( status==AB_STATUS_STOP && verifier==0 )
     {
-        editor->updateStat();
+        audio->stop();
     }
-    else if( status==AB_STATUS_STOP )
+    else if( (status==AB_STATUS_PAUSE && verifier==0) ||
+             status==AB_STATUS_STOP )
     {
         editor->updateStat();
     }
@@ -74,6 +69,7 @@ void AbScene::setStatus(int status)
 // This function is called only from QML
 void AbScene::updateStatus(int status)
 {
+    QQmlProperty::write(root, "ab_status", status);
     if( status==AB_STATUS_STOP )
     {
         QQmlProperty::write(root, "ab_count", 0);
@@ -83,13 +79,17 @@ void AbScene::updateStatus(int status)
 
 void AbScene::verifierChanged()
 {
+    qDebug() << "verifierChanged";
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+
     editor->updateStat();
     if( verifier )
     {
         int count = editor->stat->cache_files[0].size();
         QQmlProperty::write(root, "ab_total_count_v", count);
     }
+
+    editor->clearRecList();
 }
 
 // start pause timer before playing out sample
@@ -124,7 +124,6 @@ void AbScene::startPauseV()
 void AbScene::loadVerifyFile(int id)
 {
     QString address = editor->stat->cache_files[0][id];
-    qDebug() << "address = " << address;
     audio->updateVerifyParam(address);
     QQmlProperty::write(root, "ab_address", address);
 }
@@ -137,7 +136,7 @@ void AbScene::deleteVerifyFile()
     QFile file(editor->stat->cache_files[0][id]);
 //    file.remove();
     editor->stat->cache_files[0].remove(id);
-    editor->recRemove(id);
+    editor->recRemove(id, 0);
 }
 
 void AbScene::copyUnverifyFile()
@@ -145,10 +144,9 @@ void AbScene::copyUnverifyFile()
     int count = QQmlProperty::read(root, "ab_count").toInt();
     int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
     int id = total_count - count;
-    qDebug() << "id =" << id;
     editor->stat->moveToOnline();
 //    editor->stat->copyToOnline(editor->stat->cache_files[0][id]);
-    editor->recRemove(id);
+    editor->recRemove(id, 0);
 }
 
 void AbScene::setCategory()
@@ -179,9 +177,13 @@ void AbScene::setDifWords()
 
 void AbScene::breakTimeout()
 {
-    setStatus(AB_STATUS_PLAY);
-    QMetaObject::invokeMethod(root, "playkon");
-    break_timer->stop();
+    int status = QQmlProperty::read(root, "ab_status").toInt();
+    if( status==AB_STATUS_BREAK )
+    {
+        setStatus(AB_STATUS_PLAY);
+        QMetaObject::invokeMethod(root, "playkon");
+        break_timer->stop();
+    }
 }
 
 void AbScene::processKey(int key)
@@ -218,5 +220,12 @@ void AbScene::updateAutoCpmplete()
 
 void AbScene::cacheCreated()
 {
-    readQmlProperties();
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier )
+    {
+        int count = editor->stat->cache_files[0].size();
+        QQmlProperty::write(root, "ab_total_count_v", count);
+    }
+    int focus_id = QQmlProperty::read(root, "ab_focus_word").toInt();
+    setFocusWord(focus_id);
 }
