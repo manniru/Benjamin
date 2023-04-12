@@ -37,5 +37,6 @@ QVector<QString> ab_listFiles(QString path);
 void ab_openCategory(QString category);
 QFileInfoList ab_getAudioDirs();
 QStringList ab_listFilesSorted(QString path);
+QString getStatusStr(int status);
 
 #endif // BACKEND_H

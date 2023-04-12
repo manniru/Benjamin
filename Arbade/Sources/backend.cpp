@@ -261,3 +261,32 @@ QFileInfoList ab_getAudioDirs()
 
     return dir_list;
 }
+
+QString getStatusStr(int status)
+{
+    if( status==AB_STATUS_REC )
+    {
+        return "Record";
+    }
+    else if( status==AB_STATUS_PAUSE )
+    {
+        return "Pause";
+    }
+    else if( status==AB_STATUS_STOP )
+    {
+        return "Stop";
+    }
+    else if( status==AB_STATUS_REQPAUSE )
+    {
+        return "Req Pause";
+    }
+    else if( status==AB_STATUS_BREAK )
+    {
+        return "Break";
+    }
+    else if( status==AB_STATUS_PLAY )
+    {
+        return "Play";
+    }
+    return "";
+}

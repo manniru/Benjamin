@@ -7,6 +7,7 @@
 #include "ab_phoneme.h"
 
 #define AB_MAX_CAT    100
+#define AB_UNVER_DIR  0
 
 class AbStat: public QObject
 {
@@ -27,6 +28,7 @@ public:
     void updateMeanVar(QVector<int> *count);
     void delWordSamples();
     void copyToOnline(QString filename);
+    void moveToOnline();
     QString idToWord(int id);
 
     QStringList lexicon;
@@ -43,8 +45,9 @@ private slots:
     void update();
 
 private:
+    QVector<QString>* loadCacheFiles(QString category);
+    QVector<int> makeDelList();
     int wordToIndex(QString word);
-    void deleteFile(QString path);
     void createCache();
 
     QObject *root;//root qml object

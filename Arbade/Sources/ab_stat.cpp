@@ -138,7 +138,7 @@ QVector<int> AbStat::getCategoryCount(QString category)
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier )
     {
-        return cache_count[0];
+        return cache_count[AB_UNVER_DIR];
     }
 
     QVector<int> ret;
@@ -212,8 +212,44 @@ void AbStat::createWordEditor(QString category)
 
 void AbStat::createRecList(QString category)
 {
-    QString cat_path = ab_getAudioPath();
-    QVector<QString> *files;
+    QVector<QString> *files = loadCacheFiles(category);
+    if( files==NULL )
+    {
+        qDebug() << "Error 85: category not found";
+        return;
+    }
+
+    int samples_len = files->length();
+    if( samples_len>200 )
+    {
+        samples_len = 200;
+    }
+    for( int i=0 ; i<samples_len ; i++ )
+    {
+        QFileInfo info(files->at(i));
+        QString file_name = info.fileName();
+        file_name = file_name.remove(".wav");
+        QStringList name_extended = file_name.split(".");
+        file_name = info.baseName();
+        QStringList word_list = file_name.split('_');
+        int world_list_len = word_list.length();
+        QString word;
+        for( int j=0 ; j<world_list_len ; j++)
+        {
+            int num = word_list[j].toInt();
+            word += lexicon[num] + " ";
+        }
+        if( name_extended.size()>1 )
+        {
+            word += "(" + name_extended[1] + ")";
+        }
+        addRecList(word, info.absoluteFilePath());
+    }
+}
+
+QVector<QString>* AbStat::loadCacheFiles(QString category)
+{
+    QVector<QString> *files = NULL;
 
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier )
@@ -233,28 +269,7 @@ void AbStat::createRecList(QString category)
             }
         }
     }
-
-    QDir cat_dir(cat_path);
-    int samples_len = files->length();
-
-    if( samples_len>200 )
-    {
-        samples_len = 200;
-    }
-    for( int i=0 ; i<samples_len ; i++ )
-    {
-        QFileInfo info(files->at(i));
-        QString file_name = info.baseName();
-        QStringList word_list = file_name.split('_');
-        int world_list_len = word_list.length();
-        QString word;
-        for( int j=0 ; j<world_list_len ; j++)
-        {
-            int num = word_list[j].toInt();
-            word += lexicon[num] + " ";
-        }
-        addRecList(word, info.absoluteFilePath());
-    }
+    return files;
 }
 
 void AbStat::updateMeanVar(QVector<int> *count)
@@ -268,24 +283,8 @@ void AbStat::updateMeanVar(QVector<int> *count)
 
 void AbStat::delWordSamples()
 {
-    QString dif = QQmlProperty::read(root, "ab_dif_words").toString();
-    QStringList dif_words = dif.split("\n");
-    int len = dif_words.length();
-    QVector<int> del_list;
-
-    for( int i=0 ; i<len ; i++ )
-    {
-        dif_words[i] = dif_words[i].split(".")[1].split("(")[0].trimmed();
-        int result = wordToIndex(dif_words[i]);
-
-        if( result>=0 && result<lexicon.size() )
-        {
-            del_list.push_back(result);
-        }
-    }
-
-    len = del_list.size();
-
+    QVector<int> del_list = makeDelList();
+    int len = del_list.size();
     if( len==0 )
     {
         return;
@@ -295,7 +294,6 @@ void AbStat::delWordSamples()
 
     QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
-
     if( len_dir==0 )
     {
         return;
@@ -326,6 +324,26 @@ void AbStat::delWordSamples()
             }
         }
     }
+}
+
+QVector<int> AbStat::makeDelList()
+{
+    QString dif = QQmlProperty::read(root, "ab_dif_words").toString();
+    QStringList dif_words = dif.split("\n");
+    int len = dif_words.length();
+    QVector<int> del_list;
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        dif_words[i] = dif_words[i].split(".")[1].split("(")[0].trimmed();
+        int result = wordToIndex(dif_words[i]);
+
+        if( result>=0 && result<lexicon.size() )
+        {
+            del_list.push_back(result);
+        }
+    }
+    return del_list;
 }
 
 void AbStat::create(QString category)
@@ -361,13 +379,8 @@ void AbStat::deleteSample(QString sample)
     }
     file_path.chop(1); // removes last '_'
     file_path += ".wav";
-    deleteFile(file_path);
-}
-
-void AbStat::deleteFile(QString path)
-{
-    QFile removing_file(path);
-    qDebug() << "del" << path;
+    QFile removing_file(file_path);
+    qDebug() << "del" << file_path;
     if( removing_file.exists() )
     {
         removing_file.remove();
