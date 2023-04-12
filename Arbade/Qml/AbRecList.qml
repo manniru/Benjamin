@@ -55,9 +55,9 @@ Rectangle
 
         ScrollBar.vertical: ScrollBar
         {
-                width: 10
-                anchors.right: parent.right // adjust the anchor as suggested by derM
-            }
+            width: 10
+            anchors.right: parent.right // adjust the anchor as suggested by derM
+        }
 
         Rectangle
         {
@@ -112,9 +112,28 @@ Rectangle
             var elem = reclist_cl.children[focus_index];
             elem.forceActiveFocus();
         }
+        else
+        {
+            focus_item.forceActiveFocus();
+        }
     }
 
-    function removeLine(id)
+    function clearRecList()
+    {
+        var len = reclist_cl.children.length;
+        for( var i=0 ; i<len ; i++ )
+        {
+            reclist_cl.children[i].destroy();
+        }
+        reclist_cl.height = 0;
+    }
+
+    function unfocus()
+    {
+        focus_index = -1;
+    }
+
+    function removeLine(id, f_focus)
     {
         var len = reclist_cl.children.length;
         var elem = reclist_cl.children[id];
@@ -127,19 +146,31 @@ Rectangle
             prev_elem = reclist_cl.children[id-1];
             next_elem = reclist_cl.children[id+1];
             next_elem.anchors.bottom = prev_elem.top;
-            next_elem.forceActiveFocus();
+            if( f_focus )
+            {
+                next_elem.forceActiveFocus();
+            }
         }
         else if ( id===0 && len>1 )
         {
             next_elem = reclist_cl.children[1];
             next_elem.anchors.bottom = reclist_cl.bottom;
-            next_elem.forceActiveFocus();
+            if( f_focus )
+            {
+                next_elem.forceActiveFocus();
+            }
         }
         if( id===(len-1) )
         {
-            focus_index = len-2;
+            if( focus_index>=0 )
+            {
+                focus_index = len-2;
+            }
             prev_elem = reclist_cl.children[id-1];
-            prev_elem.forceActiveFocus();
+            if( f_focus )
+            {
+                prev_elem.forceActiveFocus();
+            }
         }
 
         reclist_cl.height -= 30;

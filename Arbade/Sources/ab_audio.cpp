@@ -34,11 +34,15 @@ void AbAudio::record()
     read_timer->start(pause_time*1000);
 }
 
+void AbAudio::stop()
+{
+    QQmlProperty::write(root, "ab_elapsed_time", 0);
+    read_timer->stop();
+
 // verification and playing phase
 void AbAudio::updateVerifyParam(QString filename)
 {
     wav_rd->read(filename);
-    QQmlProperty::write(root, "ab_rec_time", wav_rd->wave_time);
     QQmlProperty::write(root, "ab_power", wav_rd->power_dB);
 
     QFileInfo wav_file(filename);
@@ -62,9 +66,13 @@ void AbAudio::updateTime(int percent)
 
 void AbAudio::writeWav()
 {
+    int status = QQmlProperty::read(root, "ab_status").toInt();
+    if( status==AB_STATUS_STOP )
+    {
+        return;
+    }
     int total_count = QQmlProperty::read(root, "ab_total_count").toInt();
     int count = QQmlProperty::read(root, "ab_count").toInt();
-    int status = QQmlProperty::read(root, "ab_status").toInt();
 
     if( count<total_count )
     {
