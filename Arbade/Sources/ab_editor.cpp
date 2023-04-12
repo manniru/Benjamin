@@ -18,8 +18,10 @@ AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
     rec_list = root->findChild<QObject *>("RecList");
     message = root->findChild<QObject *>("Message");
 
-    timer = new QTimer();
-    connect(timer, SIGNAL(timeout()), this, SLOT(timerTimeout()));
+    timer_editor = new QTimer();
+    connect(timer_editor, SIGNAL(timeout()), this, SLOT(timerEdTimeout()));
+    timer_rec = new QTimer();
+    connect(timer_rec, SIGNAL(timeout()), this, SLOT(timerRecTimeout()));
 
     connect(editor, SIGNAL(wordAdded(int)), this, SLOT(wordAdded(int)));
     connect(rec_list, SIGNAL(wordAdded(int)), this, SLOT(wordAddedRec(int)));
@@ -58,14 +60,15 @@ void AbEditor::wordAddedRec(int id)
             this, SLOT(recRemove(int)));
 }
 
-void AbEditor::recRemove(int id)
+void AbEditor::recRemove(int id, int f_focus)
 {
     QString path = QQmlProperty::read(rec_lines[id], "path").toString();
-    qDebug() << "ID = , path = " << id << path;
 
     QVariant id_v(id);
     QGenericArgument arg_id  = Q_ARG(QVariant, id_v);
-    QMetaObject::invokeMethod(rec_list, "removeLine", arg_id);
+    QVariant focus_v(f_focus);
+    QGenericArgument arg_focus  = Q_ARG(QVariant, focus_v);
+    QMetaObject::invokeMethod(rec_list, "removeLine", arg_id, arg_focus);
 
     rec_lines.remove(id);
 //    QFile removing_file(path);
@@ -143,14 +146,31 @@ void AbEditor::resetProcess()
     // Qt QML destroy bug forced us to exert a timer
     // to make sure that the "clearEditor" function
     // made its clearance
-    timer->start(10);
+    timer_editor->start(10);
 }
 
-void AbEditor::timerTimeout()
+void AbEditor::timerEdTimeout()
 {
     QString category = QQmlProperty::read(editor, "category").toString();
     stat->createWordEditor(category);
-    timer->stop();
+    timer_editor->stop();
+}
+
+void AbEditor::timerRecTimeout()
+{
+    QString category = QQmlProperty::read(editor, "category").toString();
+    stat->createRecList(category);
+    timer_rec->stop();
+}
+
+void AbEditor::clearRecList()
+{
+    QMetaObject::invokeMethod(rec_list, "clearRecList");
+    rec_lines.clear();
+    // Qt QML destroy bug forced us to exert a timer
+    // to make sure that the "clearEditor" function
+    // made its clearance
+    timer_rec->start(10);
 }
 
 QString AbEditor::getDif()
@@ -249,7 +269,6 @@ void AbEditor::createList()
 {
     QString category = QQmlProperty::read(editor, "category").toString();
     emit create(category);
-
 }
 
 void AbEditor::updateStatCat()
@@ -272,10 +291,8 @@ void AbEditor::updateStatCat()
 void AbEditor::updateStat()
 {
     int len_lines = editor_lines.length();
-    qDebug() << "update skip" << len_lines;
     if( len_lines==0 )
     {
-        qDebug() << "update skip";
         //skip update before create on startup
         return;
     }

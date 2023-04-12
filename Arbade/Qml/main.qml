@@ -25,7 +25,10 @@ ApplicationWindow
     title: "ArBade"
     visible: true
 
+    property int flag_kesafat_kari: 0
+
     property int sig_del_file: 0
+    property int default_func_v: 0 // 0:copy as default | 1:delete as default
     property real played_time: 0
 
     property string ab_words: ""
@@ -41,7 +44,6 @@ ApplicationWindow
     property real ab_elapsed_time: 0
     property int ab_status: ab_const.ab_STATUS_STOP
     property real ab_rec_time: 3
-    property real ab_rec_time_v: 3
     property int ab_num_words: 3
     property int ab_num_words_v: 3
     property real ab_rec_pause: 1.0
@@ -197,11 +199,13 @@ ApplicationWindow
 
         onAccept:
         {
-            if( result==="Y" )
+            if( (result==="Y" && default_func_v===0) ||
+                (result==="N" && default_func_v) )
             {
                 sig_del_file = 1;
             }
-            else if( result==="N" )
+            else if( (result==="Y" && default_func_v) ||
+                     (result==="N" && default_func_v===0) )
             {
                 sig_del_file = 0;
             }
@@ -225,6 +229,7 @@ ApplicationWindow
         onClicked:
         {
             focus_item.forceActiveFocus();
+            rec_list.unfocus();
 
             if( console_box.visible )
             {
@@ -244,6 +249,8 @@ ApplicationWindow
         anchors.leftMargin: 30
         anchors.right: rec_list.left
         anchors.rightMargin: 10
+        anchors.bottom: buttons_box.top
+        anchors.bottomMargin: 30
 
         onUpdateDifWords:
         {
@@ -370,16 +377,22 @@ ApplicationWindow
 
         onTriggered:
         {
-            console.log(ab_const.ab_DECIDE_PAUSE);
             interval = ab_const.ab_DECIDE_PAUSE;
             decide_timer.stop();
             if( sig_del_file )
             {
-                sig_del_file = 0;
+                if( default_func_v===0 ) // copy as default
+                {
+                    sig_del_file = 0;
+                }
                 delVerifyFile();
             }
             else
             {
+                if( default_func_v ) // delete as default
+                {
+                    sig_del_file = 1;
+                }
                 copyUnverifyFile();
             }
 
@@ -418,6 +431,15 @@ ApplicationWindow
             {
                 console_box.visible = false;
             }
+            if( ab_status!==ab_const.ab_STATUS_STOP )
+            {
+                audioPlayer.pause();
+                audioPlayer.seek(0);
+                decide_timer.stop();
+                ab_status = ab_const.ab_STATUS_STOP;
+                setStatus(ab_status);
+            }
+
             sendKey(key);
         }
         else if( key===Qt.Key_Left )
@@ -467,24 +489,29 @@ ApplicationWindow
                     ab_count = 0;
                     startPauseV();
                 }
-                else if( ab_status===ab_const.ab_STATUS_BREAK )
+                else if( ab_status===ab_const.ab_STATUS_PAUSE )
                 {
-                    return;
+                    audioPlayer.play();
+                    ab_status = ab_const.ab_STATUS_PLAY;
+                    setStatus(ab_status);
+                    decide_timer.stop(); /// IS IT NECCESSARY?
                 }
                 else
                 {
+                    decide_timer.stop();
                     if( audioPlayer.playbackState===Audio.PlayingState )
                     {
                         audioPlayer.pause();
+                        audioPlayer.seek(0);
+                        played_time = 0;
                     }
+                    else if( audioPlayer.playbackState===Audio.StoppedState )
+                    {
+                        played_time = 0;
+                    }
+
                     ab_status = ab_const.ab_STATUS_PAUSE;
                     setStatus(ab_status);
-                    decide_timer.stop();
-                    verify_dialog.dialog_label = "Are you sure "+
-                                         "you want to delete?\n"+
-                                         "( Yes:space / No:q )"
-                    verify_dialog.open();
-                    verify_dialog.forceActiveFocus();
                 }
             }
             else
@@ -547,9 +574,24 @@ ApplicationWindow
             ab_count = 0
             verifierChanged();
         }
+        else if( key===Qt.Key_Z )
+        {
+            if( ab_verifier )
+            {
+                if( audioPlayer.playbackState===Audio.PlayingState )
+                {
+                    audioPlayer.pause();
+                }
+                ab_status = ab_const.ab_STATUS_PAUSE;
+                setStatus(ab_status);
+                decide_timer.stop();
+                verify_dialog.generateWrongComb(ab_words);
+                verify_dialog.visible = true;
+            }
+        }
         else if( key===Qt.Key_R )
         {
-
+            default_func_v = !default_func_v;
         }
     }
 
