@@ -8,24 +8,18 @@ import QtQuick.Window 2.10
 
 Rectangle
 {
-    height: 575
     visible: true
     color: "transparent"
 
     property string dif_words: ""
     property string category: ""
+    property int ed_height: height
     property int focused_line: -1
 
     signal updateWordList()
     signal updateDifWords(string dif_words)
     signal enableButtons(int enable)
     signal wordAdded(int id)
-
-    MouseArea
-    {
-        anchors.fill: parent
-        onClicked: focus_item.forceActiveFocus();
-    }
 
     Rectangle
     {
@@ -67,17 +61,24 @@ Rectangle
         anchors.topMargin: 10
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        contentWidth: wordedit_row.childrenRect.width + 20
+        contentWidth: wordedit_grid.childrenRect.width + 20
         clip : true
+        ScrollBar.horizontal: ScrollBar
+        {
+            height: 10
+            anchors.bottom: parent.bottom
+        }
 
         property int scroll_speed: 30
 
-        Row
+        Grid
         {
-            id: wordedit_row
+            id: wordedit_grid
+            rows: Math.floor(ed_height/26)
             anchors.top: parent.top
             anchors.left: parent.left
-            spacing: 40
+            columnSpacing: 40
+            flow: GridLayout.TopToBottom
         }
     }
 
@@ -162,67 +163,41 @@ Rectangle
             }
             focused_line = id+1;
         }
-        var box_id = Math.floor(focused_line/
-                                     ab_const.ab_WORDEDIT_BOX_SIZE);
-        var box = wordedit_row.children[box_id];
-        box.focusLine(focused_line);
+        wordedit_grid.children[focused_line].applyFocus();
     }
 
     function addWord(w_text, w_count, w_phoneme)
     {
-        var box_id = wordedit_row.children.length-1;
-        var comp;
-
-        if( box_id<0 )
-        {
-            comp = Qt.createComponent("AbWordBox.qml");
-            comp.createObject(wordedit_row, {width: 200});
-            box_id = 0;
-        }
-
-        var box = wordedit_row.children[box_id];
-//        console.log("we are", w_text, w_count, box_id, box);
-
-        if( box.isFull() )
-        {
-            box_id++;
-            var start_number = box_id * 21;
-            comp = Qt.createComponent("AbWordBox.qml");
-            comp.createObject(wordedit_row, {width: 200, start_num: start_number});
-        }
-
-        box.addWord(w_text, w_count, w_phoneme);
+        var word_i = wordedit_grid.children.length;
+        var comp_name = "WordLine" + word_i;
+        var comp = Qt.createComponent("AbWordLine.qml");
+        comp.createObject(wordedit_grid, {width: 200,
+                          word_id: word_i,
+                          word_text: w_text,
+                          word_phoneme: w_phoneme,
+                          word_count: w_count,
+                          objectName: comp_name});
+        wordAdded(word_i);
     }
 
     function clearEditor()
     {
-        var len = wordedit_row.children.length;
+        var len = wordedit_grid.children.length;
         for( var i=0 ; i<len ; i++ )
         {
-            wordedit_row.children[i].destroy();
+            wordedit_grid.children[i].destroy();
         }
-//        console.log(wordedit_row.children.length)
     }
 
     function removeWord()
     {
-        var len = wordedit_row.children.length;
-        var box = wordedit_row.children[len-1];
-        box.removeLast();
-        var box_lines_count = box.getLineCount();
-        if( box_lines_count===1 )
-        {
-            wordedit_row.children[len-1].destroy();
-        }
-
+        var len = wordedit_grid.children.length;
+        wordedit_grid.children[len-1].destroy();
     }
 
     function wordCount()
     {
-        var box_id = wordedit_row.children.length-1;
-        var word_count = box_id * 21;
-        var box = wordedit_row.children[box_id];
-        word_count += box.getLineCount();
+        var word_count = wordedit_grid.children.length;
         return word_count;
     }
 }

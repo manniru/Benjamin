@@ -32,7 +32,6 @@ private:
     void fillRecParams();
     void updateAutoCpmplete();
     void loadVerifyFile(int id);
-    void readQmlProperties();
 
     QObject *root;       // root qml object
     QObject *qml_editor; // editor qml object

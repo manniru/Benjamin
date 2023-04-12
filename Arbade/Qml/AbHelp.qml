@@ -70,5 +70,33 @@ Rectangle
             font.pixelSize: font_size
             font.family: font_name_label
         }
+
+        Text
+        {
+            text:
+            {
+                if( root.default_func_v )
+                {
+                    "R:Delete Mode"
+                }
+                else
+                {
+                    "R:Copy Mode"
+                }
+            }
+            color:
+            {
+                if( root.default_func_v )
+                {
+                    "#cd8968"
+                }
+                else
+                {
+                    color_text
+                }
+            }
+            font.pixelSize: font_size
+            font.family: font_name_label
+        }
     }
 }

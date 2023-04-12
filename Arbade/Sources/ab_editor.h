@@ -12,12 +12,13 @@ public:
 
     void updateStat();
     void createList();
+    void clearRecList();
 
     AbStat  *stat;
     QThread *stat_thread;
 
 public slots:
-    void recRemove(int id);
+    void recRemove(int id, int f_focus=1);
 
 signals:
     void create(QString category);
@@ -29,7 +30,8 @@ private slots:
     void saveProcess();
     void resetProcess();
     void writeWordList();
-    void timerTimeout();
+    void timerEdTimeout();
+    void timerRecTimeout();
 
 private:
     void updateStatAll();
@@ -38,7 +40,8 @@ private:
     QString getUiWordList();
     QString getDif();
 
-    QTimer *timer;
+    QTimer *timer_editor;
+    QTimer *timer_rec;
     QObject *root;     // root qml object
     QObject *editor;   // editor qml object
     QObject *buttons;  // buttons qml object

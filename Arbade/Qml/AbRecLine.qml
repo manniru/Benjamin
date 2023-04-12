@@ -45,12 +45,15 @@ Rectangle
                     rec_list.focus_index--;
                 }
             }
+            else if( event.key===Qt.Key_Escape )
+            {
+                rec_list.focus_index = -1;
+            }
             else if( event.key===Qt.Key_Space )
             {
                 playAudio();
             }
         }
-
     }
 
     Rectangle

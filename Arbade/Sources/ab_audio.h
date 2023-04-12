@@ -14,6 +14,7 @@ public:
     explicit AbAudio(AbStat *st, QObject *ui,
                      QObject *parent = nullptr);
     void record();
+    void stop();
     void updateVerifyParam(QString filename);
 
 signals:

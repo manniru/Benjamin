@@ -8,7 +8,6 @@
         <file>AbQuery.qml</file>
         <file>AbEditor.qml</file>
         <file>AbDiffAccept.qml</file>
-        <file>AbWordBox.qml</file>
         <file>AbWordLine.qml</file>
         <file>AbButton.qml</file>
         <file>AbDialogWsl.qml</file>

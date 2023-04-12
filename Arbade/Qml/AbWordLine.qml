@@ -18,8 +18,6 @@ Rectangle
     property bool   wrong_phoneme: false
 
     signal wordChanged(int id, string text_w)
-    signal arrowPressed(int direction)
-    signal removeLine()
 
     Rectangle
     {
@@ -128,11 +126,7 @@ Rectangle
             {
                 var id = word_id;
                 var word_count = editor_box.wordCount();
-                if( id===word_count-2 )
-                {
-                    removeLine();
-                }
-                else if( id===word_count-1 )
+                if( id===word_count-1 )
                 {
                     editor_box.arrowPress(word_id, Qt.Key_Up);
                 }

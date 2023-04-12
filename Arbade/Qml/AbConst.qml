@@ -11,5 +11,4 @@ Item
     property int ab_STATUS_DECPAUESE: 7 // Decide Pause
 
     property int ab_DECIDE_PAUSE:      root.ab_verify_pause*1000*3
-    property int ab_WORDEDIT_BOX_SIZE: 21
 }

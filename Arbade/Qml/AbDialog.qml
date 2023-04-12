@@ -191,6 +191,7 @@ Window
         if( visible )
         {
             get_value_input.text = "";
+            get_value_input.forceActiveFocus();
         }
     }
 }
