@@ -16,6 +16,8 @@ public:
 
     AbStat  *stat;
     QThread *stat_thread;
+    QVector<QObject *> editor_lines;
+    QVector<QObject *> rec_lines;
 
 public slots:
     void recRemove(int id, int f_focus=1);
@@ -47,8 +49,6 @@ private:
     QObject *buttons;  // buttons qml object
     QObject *rec_list; // rec list qml object
     QObject *message;  // messege qml object
-    QVector<QObject *> editor_lines;
-    QVector<QObject *> rec_lines;
 };
 
 #endif // ABEDITOR_H

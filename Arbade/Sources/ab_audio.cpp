@@ -38,6 +38,7 @@ void AbAudio::stop()
 {
     QQmlProperty::write(root, "ab_elapsed_time", 0);
     read_timer->stop();
+}
 
 // verification and playing phase
 void AbAudio::updateVerifyParam(QString filename)

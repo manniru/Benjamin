@@ -20,7 +20,7 @@ private slots:
     void breakTimeout();
     void processKey(int key);
     void setStatus(int status);
-    void updateStatus(int status);
+    void setStatusAudio(int status);
     void verifierChanged();
     void setCategory();
     void setDifWords();
@@ -31,7 +31,7 @@ private slots:
 private:
     void fillRecParams();
     void updateAutoCpmplete();
-    void loadVerifyFile(int id);
+    void loadVerifyFile();
 
     QObject *root;       // root qml object
     QObject *qml_editor; // editor qml object

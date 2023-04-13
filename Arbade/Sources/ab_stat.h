@@ -6,8 +6,9 @@
 #include "backend.h"
 #include "ab_phoneme.h"
 
-#define AB_MAX_CAT    100
-#define AB_UNVER_DIR  0
+#define AB_MAX_CAT     100
+#define AB_MAX_RECLIST 200
+#define AB_UNVER_DIR   0
 
 class AbStat: public QObject
 {

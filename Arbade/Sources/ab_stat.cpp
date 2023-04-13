@@ -220,11 +220,12 @@ void AbStat::createRecList(QString category)
     }
 
     int samples_len = files->length();
-    if( samples_len>200 )
+    int start_i = 0;
+    if( samples_len>AB_MAX_RECLIST )
     {
-        samples_len = 200;
+        start_i = samples_len-AB_MAX_RECLIST;
     }
-    for( int i=0 ; i<samples_len ; i++ )
+    for( int i=start_i ; i<samples_len ; i++ )
     {
         QFileInfo info(files->at(i));
         QString file_name = info.fileName();
