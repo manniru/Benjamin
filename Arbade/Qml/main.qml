@@ -196,6 +196,7 @@ ApplicationWindow
     AbQuery
     {
         id: verify_dialog
+        objectName: "Query"
 
         onAccept:
         {
@@ -585,7 +586,6 @@ ApplicationWindow
                 ab_status = ab_const.ab_STATUS_PAUSE;
                 setStatus(ab_status);
                 decide_timer.stop();
-                verify_dialog.generateWrongComb(ab_words);
                 verify_dialog.visible = true;
             }
         }
