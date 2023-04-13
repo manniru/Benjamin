@@ -44,6 +44,7 @@ HEADERS += \
     Sources/ab_wav_reader.h \
     Sources/ab_wav_writer.h \
     Sources/ab_win_api.h \
+    Sources/ab_wrong.h \
     Sources/backend.h \
     Sources/config.h \
     Sources/ta_ini.h
@@ -62,6 +63,7 @@ SOURCES += \
     Sources/ab_wav_reader.cpp \
     Sources/ab_wav_writer.cpp \
     Sources/ab_win_api.cpp \
+    Sources/ab_wrong.cpp \
     Sources/backend.cpp \
     Sources/main.cpp \
     Sources/ta_ini.cpp
@@ -87,6 +89,7 @@ DISTFILES += \
     Qml/AbConsole.qml \
     Qml/AbDialogWsl.qml \
     Qml/AbMessage.qml \
+    Qml/AbQueryLine.qml \
     Qml/AbRecDelete.qml \
     Qml/AbRecLine.qml \
     Qml/AbRecList.qml \
