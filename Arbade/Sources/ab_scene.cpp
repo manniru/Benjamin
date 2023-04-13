@@ -12,6 +12,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     editor = new AbEditor(root);
 
     audio = new AbAudio(editor->stat, root);
+    wrong = new AbWrong(editor->stat, root);
 
     connect(audio, SIGNAL(setStatus(int)),
             this, SLOT(setStatusAudio(int)));

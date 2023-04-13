@@ -1,11 +1,12 @@
-#ifndef ABSCENE_H
-#define ABSCENE_H
+#ifndef AB_SCENE_H
+#define AB_SCENE_H
 
 #include <QObject>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include "ab_editor.h"
 #include "ab_audio.h"
+#include "ab_wrong.h"
 
 class AbScene : public QObject
 {
@@ -37,8 +38,9 @@ private:
     QObject *qml_editor; // editor qml object
     QObject *message; // message qml object
     AbAudio *audio;
+    AbWrong *wrong;
     AbEditor  *editor;
     QTimer *break_timer;
 };
 
-#endif // ABSCENE_H
+#endif // AB_SCENE_H
