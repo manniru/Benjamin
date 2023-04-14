@@ -10,5 +10,10 @@ Item
     property int ab_STATUS_PLAY:      6
     property int ab_STATUS_DECPAUESE: 7 // Decide Pause
 
+    // verify modes
+    property int ab_VMODE_COPY:     0
+    property int ab_VMODE_TRASH:    1
+    property int ab_VMODE_WRONG:   2
+
     property int ab_DECIDE_PAUSE:      root.ab_verify_pause*1000*3
 }
