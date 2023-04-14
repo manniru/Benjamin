@@ -46,17 +46,16 @@ Window
         {
             keyPress(event.key);
 
-            if( event.key===Qt.Key_Z ||
-                event.key===Qt.Key_Y )
+            if( event.key===Qt.Key_Escape )
             {
-                accept("Y");
-                close();
+                accept("N");
             }
             else
             {
-                accept("N");
-                close();
+                accept("Y");
             }
+            close();
+            clearAll();
         }
     }
 
@@ -98,6 +97,15 @@ Window
     function addCompleted()
     {
         console.log(Screen.width, width)
+    }
+
+    function clearAll()
+    {
+        var len = wrong_grid.children.length;
+        for( var i=0 ; i<len ; i++ )
+        {
+            wrong_grid.children[i].destroy();
+        }
     }
 
     onWidthChanged: x = Screen.width / 2 - width / 2

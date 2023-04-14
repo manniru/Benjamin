@@ -75,24 +75,32 @@ Rectangle
         {
             text:
             {
-                if( root.default_func_v )
+                if( root.default_func_v===ab_const.ab_VMODE_WRONG )
                 {
-                    "R:Delete Mode"
+                    "R:Wrong Mode"
+                }
+                else if( root.default_func_v===ab_const.ab_VMODE_COPY )
+                {
+                    "R:Copy Mode"
                 }
                 else
                 {
-                    "R:Copy Mode"
+                    "R:Trash Mode"
                 }
             }
             color:
             {
-                if( root.default_func_v )
+                if( root.default_func_v===ab_const.ab_VMODE_WRONG )
                 {
                     "#cd8968"
                 }
-                else
+                else if( root.default_func_v===ab_const.ab_VMODE_COPY )
                 {
                     color_text
+                }
+                else // verify trash mode
+                {
+                    "#cd68cb"
                 }
             }
             font.pixelSize: font_size

@@ -6,9 +6,9 @@ AbWavReader::AbWavReader(int16_t *buffer, int sample_count)
     buf_size = sample_count;
 
     QString unver_path = ab_getAudioPath() + "unverified";
-    QDir au_UnverifiedDir(unver_path);
+    QDir unverified_dir(unver_path);
 
-    if( !au_UnverifiedDir.exists() )
+    if( !unverified_dir.exists() )
     {
         qDebug() << "Creating" << unver_path
                  << " Directory";

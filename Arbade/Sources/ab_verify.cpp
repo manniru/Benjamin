@@ -1,47 +1,71 @@
-#include "ab_wrong.h"
+#include "ab_verify.h"
 #include <QQmlProperty>
 #include <QGuiApplication>
 
-AbWrong::AbWrong(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
+AbVerify::AbVerify(AbEditor *ed, QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
-    stat = st;
+    editor = ed;
 
     query = root->findChild<QObject *>("Query");
 
     connect(query, SIGNAL(generate()),
             this, SLOT(generateWrongForms()));
     connect(query, SIGNAL(keyPress(int)),
-            this, SLOT(processKey(int)));
+            this, SLOT(execWrongKey(int)));
+
+    connect(root, SIGNAL(delVerifyFile()), this, SLOT(deleteFile()));
+    connect(root, SIGNAL(copyUnverifyFile()), this, SLOT(moveToOnline()));
+    connect(root, SIGNAL(trashVerifyFile()), this, SLOT(trashFile()));
+
+    QString wrong_path = ab_getAudioPath() + "wrong";
+    QDir wrong_dir(wrong_path);
+
+    if( !wrong_dir.exists() )
+    {
+        qDebug() << "Creating" << wrong_path
+                 << " Directory";
+#ifdef WIN32
+        QString cmd = "mkdir " + wrong_path;
+        system(cmd.toStdString().c_str());
+#else //OR __linux
+        system("mkdir -p " KAL_AU_DIR "wrong");
+#endif
+    }
 }
 
-void AbWrong::generateWrongForms()
+void AbVerify::generateWrongForms()
 {
     w_shortcut.clear();
     w_word.clear();
     w_path.clear();
 
-    QString file_path = stat->cache_files[0].last();
+    QString file_path = editor->stat->cache_files[0].last();
     QFileInfo info(file_path);
     QString filename = info.fileName();
     filename = filename.remove(".wav");
     QStringList name_extended = filename.split(".");
     filename = info.baseName();
 
-    w_path = createList(filename);
+    w_path = createWrongList(filename);
     w_path.removeLast();
     std::sort(w_path.begin(), w_path.end());
 
+    QString wrong_path = ab_getAudioPath() + "wrong\\";
     int len = w_path.length();
     for( int i=0 ; i<len; i++ )
     {
         if( name_extended.size()>1 )
         {
             w_word << idToWord(w_path[i], name_extended[1]);
+            w_path[i] = wrong_path + w_path[i];
+            w_path[i] += "." + name_extended[1] + ".wav";
         }
         else
         {
             w_word << idToWord(w_path[i], "");
+            w_path[i] = wrong_path + w_path[i];
+            w_path[i] += ".wav";
         }
 
         if( i<10 )
@@ -53,13 +77,13 @@ void AbWrong::generateWrongForms()
             w_shortcut << QString('a' + (i-10));
         }
 
-        addForm(w_word[i], w_path[i], w_shortcut[i]);
+        addWrongForm(w_word[i], w_path[i], w_shortcut[i]);
     }
 
     QMetaObject::invokeMethod(query, "addCompleted");
 }
 
-void AbWrong::addForm(QString w_word, QString w_path, QString shortcut)
+void AbVerify::addWrongForm(QString w_word, QString w_path, QString shortcut)
 {
     QVariant word_v(w_word);
     QVariant path_v(w_path);
@@ -72,7 +96,7 @@ void AbWrong::addForm(QString w_word, QString w_path, QString shortcut)
     QMetaObject::invokeMethod(query, "addForm", arg_word, arg_path, arg_shortcut);
 }
 
-QVector<QString> AbWrong::createList(QString in)
+QVector<QString> AbVerify::createWrongList(QString in)
 {
     QStringList words = in.split("_");
     int len = words.length();
@@ -96,7 +120,7 @@ QVector<QString> AbWrong::createList(QString in)
             }
         }
 
-        QVector<QString> rest_wrong = createList(rest);
+        QVector<QString> rest_wrong = createWrongList(rest);
         int rest_len = rest_wrong.length();
         for( int i=0 ; i< rest_len ; i++ )
         {
@@ -110,7 +134,7 @@ QVector<QString> AbWrong::createList(QString in)
     }
 }
 
-QString AbWrong::idToWord(QString filename, QString id)
+QString AbVerify::idToWord(QString filename, QString id)
 {
     QStringList words = filename.split('_');
     int words_len = words.length();
@@ -125,7 +149,7 @@ QString AbWrong::idToWord(QString filename, QString id)
         {
             int num = words[j].toInt();
             ret += "<";
-            ret += stat->lexicon[num] + "> ";
+            ret += editor->stat->lexicon[num] + "> ";
         }
     }
     ret = ret.trimmed();
@@ -139,7 +163,7 @@ QString AbWrong::idToWord(QString filename, QString id)
     return ret;
 }
 
-void AbWrong::processKey(int key)
+void AbVerify::execWrongKey(int key)
 {
     int id = -1;
 
@@ -153,8 +177,107 @@ void AbWrong::processKey(int key)
     }
     else if( key==Qt::Key_Z )
     {
-        qDebug() << "Key_Z";
+        moveToOnline();
+        recRemove();
+        return;
     }
 
-    qDebug() << "event.key =" << id;
+    if( id>=w_path.size() )
+    {
+        return;
+    }
+
+    QString old_path = editor->stat->cache_files[0].last();
+    QString new_path = w_path[id];
+    QFile file(old_path);
+    file.copy(new_path);
+//    file.remove();
+    editor->stat->cache_files[0].removeLast();
+    recRemove();
+}
+
+QString AbVerify::wrongAll(QString file_path)
+{
+    QFileInfo info(file_path);
+    QString filename = info.fileName();
+    filename = filename.remove(".wav");
+    QStringList name_extended = filename.split(".");
+    filename = name_extended[0];
+
+    QStringList words = filename.split("_");
+    int len = words.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        words[i] = "-" + words[i];
+    }
+    filename = words.join("_");
+    if( name_extended.size()>1 )
+    {
+        filename += "." + name_extended[1];
+    }
+    filename += ".wav";
+    QString dir_path = ab_getAudioPath() + "wrong\\";
+    return dir_path + filename;
+}
+
+void AbVerify::moveToOnline()
+{
+    checkOnlineExist();
+
+    QString file_path = editor->stat->cache_files[0].last();
+    QString online_path = ab_getAudioPath() + "train\\online\\";
+    QFile file(file_path);
+    online_path += file.fileName();
+    file.copy(online_path);
+//    file.remove();
+    editor->stat->moveToOnline();
+
+    recRemove();
+}
+
+void AbVerify::deleteFile()
+{
+    QString file_path = editor->stat->cache_files[0].last();
+    QFile file(file_path);
+    QString new_path = wrongAll(file_path);
+    file.copy(new_path);
+//    file.remove();
+    editor->stat->cache_files[0].removeLast();
+    recRemove();
+}
+
+void AbVerify::trashFile()
+{
+    QString file_path = editor->stat->cache_files[0].last();
+    QFile file(file_path);
+//    file.remove();
+    editor->stat->cache_files[0].removeLast();
+    recRemove();
+}
+
+void AbVerify::checkOnlineExist()
+{
+    QString online_dir = ab_getAudioPath();
+    online_dir += "train\\online";
+    QDir au_TrainDir(online_dir);
+
+    if( !au_TrainDir.exists() )
+    {
+        qDebug() << "Creating" << online_dir
+                 << " Directory";
+#ifdef WIN32
+        QString cmd = "mkdir " + online_dir;
+        system(cmd.toStdString().c_str());
+#else //OR __linux
+        system("mkdir -p " KAL_AU_DIR "train/online");
+#endif
+    }
+}
+
+void AbVerify::recRemove()
+{
+    int count = QQmlProperty::read(root, "ab_count").toInt();
+    int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
+    int rec_id  = total_count-count;
+    editor->recRemove(rec_id, 0);
 }

@@ -26,8 +26,8 @@ ApplicationWindow
     property int flag_kesafat_kari: 0
 
     property int sig_del_file: 0
-    property int default_func_v: 0 // 0:copy as default | 1:delete as default
-    property real played_time: 0
+    property int default_func_v: ab_const.ab_VMODE_COPY
+    property real played_time
 
     property string ab_words: ""
     property string ab_address: ""
@@ -52,8 +52,9 @@ ApplicationWindow
 
     signal startPauseV()
     signal delVerifyFile()
-    signal deleteSample(string sample)
     signal copyUnverifyFile()
+    signal trashVerifyFile()
+    signal deleteSample(string sample)
     signal sendKey(int key)
     signal setStatus(int st)
     signal verifierChanged()
@@ -97,6 +98,7 @@ ApplicationWindow
         property alias focusword:       root.ab_focus_word
         property alias verifier:        root.ab_verifier
         property alias allstat:         root.ab_all_stat
+        property alias function_v:      root.default_func_v
     }
 
     Item
@@ -200,25 +202,15 @@ ApplicationWindow
 
         onAccept:
         {
-            if( (result==="Y" && default_func_v===0) ||
-                (result==="N" && default_func_v) )
+            if( result==="Y" )
             {
-                sig_del_file = 1;
+                startPauseV();
             }
-            else if( (result==="Y" && default_func_v) ||
-                     (result==="N" && default_func_v===0) )
+            else if( result==="N" )
             {
-                sig_del_file = 0;
-            }
-            decide_timer.interval = 1;
-            if( audioPlayer.playbackState===Audio.PausedState )
-            {
-                audioPlayer.stop();
-            }
-            else if( audioPlayer.playbackState===Audio.StoppedState )
-            {
-                ab_status = ab_const.ab_STATUS_DECPAUESE;
-                decide_timer.start();
+                audioPlayer.play();
+                ab_status = ab_const.ab_STATUS_PLAY;
+                setStatus(ab_status);
             }
         }
     }
@@ -348,8 +340,16 @@ ApplicationWindow
 
         onStopped:
         {
-            ab_status = ab_const.ab_STATUS_DECPAUESE;
-            decide_timer.start();
+            console.log("FKK", flag_kesafat_kari)
+            if( flag_kesafat_kari==0 )
+            {
+                ab_status = ab_const.ab_STATUS_DECPAUESE;
+                decide_timer.start();
+            }
+            else
+            {
+                flag_kesafat_kari = 0;
+            }
         }
     }
 
@@ -380,25 +380,20 @@ ApplicationWindow
         {
             interval = ab_const.ab_DECIDE_PAUSE;
             decide_timer.stop();
-            if( sig_del_file )
+            if( default_func_v===ab_const.ab_VMODE_COPY )
             {
-                if( default_func_v===0 ) // copy as default
-                {
-                    sig_del_file = 0;
-                }
+                copyUnverifyFile();
+            }
+            else if( default_func_v===ab_const.ab_VMODE_WRONG )
+            {
                 delVerifyFile();
             }
             else
             {
-                if( default_func_v ) // delete as default
-                {
-                    sig_del_file = 1;
-                }
-                copyUnverifyFile();
+                trashVerifyFile();
             }
 
             startPauseV();
-            played_time = 0;
         }
     }
 
@@ -504,11 +499,6 @@ ApplicationWindow
                     {
                         audioPlayer.pause();
                         audioPlayer.seek(0);
-                        played_time = 0;
-                    }
-                    else if( audioPlayer.playbackState===Audio.StoppedState )
-                    {
-                        played_time = 0;
                     }
 
                     ab_status = ab_const.ab_STATUS_PAUSE;
@@ -579,10 +569,7 @@ ApplicationWindow
         {
             if( ab_verifier )
             {
-                if( audioPlayer.playbackState===Audio.PlayingState )
-                {
-                    audioPlayer.pause();
-                }
+                cleanStop();
                 ab_status = ab_const.ab_STATUS_PAUSE;
                 setStatus(ab_status);
                 decide_timer.stop();
@@ -591,7 +578,18 @@ ApplicationWindow
         }
         else if( key===Qt.Key_R )
         {
-            default_func_v = !default_func_v;
+            if( default_func_v===ab_const.ab_VMODE_COPY )
+            {
+                default_func_v = ab_const.ab_VMODE_TRASH;
+            }
+            else if( default_func_v===ab_const.ab_VMODE_TRASH )
+            {
+                default_func_v = ab_const.ab_VMODE_WRONG;
+            }
+            else // ab_VMODE_WRONG
+            {
+                default_func_v = ab_const.ab_VMODE_COPY;
+            }
         }
     }
 
@@ -603,6 +601,12 @@ ApplicationWindow
     function incCount()
     {
         ab_count++;
+    }
+
+    function cleanStop()
+    {
+        flag_kesafat_kari = 1;
+        audioPlayer.stop();
     }
 
     function initWsl()
