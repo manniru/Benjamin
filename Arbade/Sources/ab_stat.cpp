@@ -17,31 +17,6 @@ AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 
 }
 
-void AbStat::copyToOnline(QString filename)
-{
-    QFile file(filename);
-    QFileInfo unver_file(file);
-
-    QString online_dir = ab_getAudioPath();
-    online_dir += "train\\online";
-    QDir au_TrainDir(online_dir);
-
-    if( !au_TrainDir.exists() )
-    {
-        qDebug() << "Creating" << online_dir
-                 << " Directory";
-#ifdef WIN32
-        QString cmd = "mkdir " + online_dir;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "train/online");
-#endif
-    }
-    QString new_path = online_dir + unver_file.fileName();
-    file.copy(new_path);
-    file.remove();
-}
-
 QVector<int> AbStat::getCount(QVector<QString> *file_list)
 {
     int lexicon_len = lexicon.length();

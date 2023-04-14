@@ -1,5 +1,5 @@
-#ifndef AB_WRONG_H
-#define AB_WRONG_H
+#ifndef AB_VERIFY_H
+#define AB_VERIFY_H
 
 #include <QObject>
 #include <QQuickItem>
@@ -7,21 +7,27 @@
 #include "ab_editor.h"
 #include "ab_audio.h"
 
-class AbWrong : public QObject
+class AbVerify : public QObject
 {
     Q_OBJECT
 public:
-    explicit AbWrong(AbStat *st, QObject *ui,
+    explicit AbVerify(AbEditor *ed, QObject *ui,
                      QObject *parent = nullptr);
+    QString wrongAll(QString file_path);
 
 private slots:
+    void moveToOnline();
     void generateWrongForms();
-    void processKey(int key);
+    void execWrongKey(int key);
+    void deleteFile();
+    void trashFile();
 
 private:
-    void addForm(QString w_word, QString w_path, QString shortcut);
-    QVector<QString> createList(QString in);
+    void checkOnlineExist();
+    void addWrongForm(QString w_word, QString w_path, QString shortcut);
+    QVector<QString> createWrongList(QString in);
     QString idToWord(QString filename, QString id);
+    void recRemove();
 
     QVector<QString> w_shortcut;
     QVector<QString> w_word;
@@ -29,7 +35,7 @@ private:
 
     QObject *root;       // root qml object
     QObject *query; // query qml object
-    AbStat *stat;
+    AbEditor *editor;
 };
 
-#endif // AB_WRONG_H
+#endif // AB_VERIFY_H

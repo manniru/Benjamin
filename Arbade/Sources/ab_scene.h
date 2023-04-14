@@ -6,7 +6,7 @@
 #include <QQuickWindow>
 #include "ab_editor.h"
 #include "ab_audio.h"
-#include "ab_wrong.h"
+#include "ab_verify.h"
 
 class AbScene : public QObject
 {
@@ -16,8 +16,6 @@ public:
 
 private slots:
     void startPauseV();
-    void copyUnverifyFile();
-    void deleteVerifyFile();
     void breakTimeout();
     void processKey(int key);
     void setStatus(int status);
@@ -38,7 +36,7 @@ private:
     QObject *qml_editor; // editor qml object
     QObject *message; // message qml object
     AbAudio *audio;
-    AbWrong *wrong;
+    AbVerify *verify;
     AbEditor  *editor;
     QTimer *break_timer;
 };

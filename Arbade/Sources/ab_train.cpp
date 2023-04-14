@@ -38,10 +38,9 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
 
 AbTrain::~AbTrain()
 {
-    qDebug() << "Closing handles";
     if ( !CloseHandle(h_in_write) )
     {
-        qDebug() << "StdInWr CloseHandle failed";
+//        qDebug() << "StdInWr CloseHandle failed";
     }
     CloseHandle(piProcInfo.hProcess);
     CloseHandle(piProcInfo.hThread);

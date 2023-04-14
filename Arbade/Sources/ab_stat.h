@@ -28,7 +28,6 @@ public:
     void createRecList(QString category);
     void updateMeanVar(QVector<int> *count);
     void delWordSamples();
-    void copyToOnline(QString filename);
     void moveToOnline();
     QString idToWord(int id);
 

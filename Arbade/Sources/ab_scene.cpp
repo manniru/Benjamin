@@ -12,7 +12,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
     editor = new AbEditor(root);
 
     audio = new AbAudio(editor->stat, root);
-    wrong = new AbWrong(editor->stat, root);
+    verify = new AbVerify(editor, root);
 
     connect(audio, SIGNAL(setStatus(int)),
             this, SLOT(setStatusAudio(int)));
@@ -21,8 +21,6 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(breakTimeout()));
 
     connect(root, SIGNAL(startPauseV()), this, SLOT(startPauseV()));
-    connect(root, SIGNAL(delVerifyFile()), this, SLOT(deleteVerifyFile()));
-    connect(root, SIGNAL(copyUnverifyFile()), this, SLOT(copyUnverifyFile()));
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
     connect(root, SIGNAL(verifierChanged()),
             this, SLOT(verifierChanged()));
@@ -64,11 +62,6 @@ void AbScene::setStatus(int status)
     else if( status==AB_STATUS_STOP && verifier==1 )
     {
         editor->clearRecList();
-        editor->updateStat();
-    }
-    else if( (status==AB_STATUS_PAUSE && verifier==0) ||
-             status==AB_STATUS_STOP )
-    {
         editor->updateStat();
     }
 }
@@ -136,30 +129,6 @@ void AbScene::loadVerifyFile()
     QString file_path = editor->stat->cache_files[0].last();
     audio->updateVerifyParam(file_path);
     QQmlProperty::write(root, "ab_address", file_path);
-}
-
-void AbScene::deleteVerifyFile()
-{
-    int count = QQmlProperty::read(root, "ab_count").toInt();
-    int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
-    int rec_id  = total_count-count;
-    QString file_path = editor->stat->cache_files[0].last();
-    QFile file(file_path);
-//    file.remove();
-    editor->stat->cache_files[0].removeLast();
-    editor->recRemove(rec_id, 0);
-}
-
-void AbScene::copyUnverifyFile()
-{
-    int count = QQmlProperty::read(root, "ab_count").toInt();
-    int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
-    int files_count = editor->stat->cache_files[0].size();
-    int rec_id  = total_count-count;
-    int file_id = files_count-1;
-    editor->stat->moveToOnline();
-//    editor->stat->copyToOnline(editor->stat->cache_files[0][file_id]);
-    editor->recRemove(rec_id, 0);
 }
 
 void AbScene::setCategory()
