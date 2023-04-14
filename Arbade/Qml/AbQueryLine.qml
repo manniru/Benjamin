@@ -52,7 +52,7 @@ Rectangle
         anchors.left: linenum_lbl.right
         anchors.leftMargin: 36
         anchors.top: parent.top
-        anchors.topMargin: 0
+        anchors.topMargin: 2
 
         text: word_text
         font.pixelSize: 16

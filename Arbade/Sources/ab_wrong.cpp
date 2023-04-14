@@ -55,6 +55,8 @@ void AbWrong::generateWrongForms()
 
         addForm(w_word[i], w_path[i], w_shortcut[i]);
     }
+
+    QMetaObject::invokeMethod(query, "addCompleted");
 }
 
 void AbWrong::addForm(QString w_word, QString w_path, QString shortcut)
@@ -117,12 +119,13 @@ QString AbWrong::idToWord(QString filename, QString id)
     {
         if( words[j].front()==QChar('-') )
         {
-            ret += "wrong ";
+            ret += "<wrong> ";
         }
         else
         {
             int num = words[j].toInt();
-            ret += stat->lexicon[num] + " ";
+            ret += "<";
+            ret += stat->lexicon[num] + "> ";
         }
     }
     ret = ret.trimmed();
@@ -138,5 +141,20 @@ QString AbWrong::idToWord(QString filename, QString id)
 
 void AbWrong::processKey(int key)
 {
-    qDebug() << "event.key =" << key;
+    int id = -1;
+
+    if( Qt::Key_0<=key && key<=Qt::Key_9 )
+    {
+        id = key - Qt::Key_0;
+    }
+    else if( Qt::Key_A<=key && key<Qt::Key_Z )
+    {
+        id = key - Qt::Key_A + 10;
+    }
+    else if( key==Qt::Key_Z )
+    {
+        qDebug() << "Key_Z";
+    }
+
+    qDebug() << "event.key =" << id;
 }

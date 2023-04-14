@@ -14,8 +14,6 @@ ApplicationWindow
 {
     id: root
 
-    y: 150
-    x: 100
     width: 1650
     height: 790
     minimumHeight: 780
@@ -67,6 +65,8 @@ ApplicationWindow
     Component.onCompleted:
     {
         ab_start_now = Date.now();
+        x = Screen.width / 2 - width / 2
+        y = Screen.height / 2 - height / 2
     }
 
     onAb_statusChanged:

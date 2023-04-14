@@ -71,11 +71,14 @@ void AbEditor::recRemove(int id, int f_focus)
     QMetaObject::invokeMethod(rec_list, "removeLine", arg_id, arg_focus);
 
     rec_lines.remove(id);
-//    QFile removing_file(path);
-//    if( removing_file.exists() )
-//    {
-//        removing_file.remove();
-//    }
+    if( f_focus )
+    {
+        QFile removing_file(path);
+        if( removing_file.exists() )
+        {
+            removing_file.remove();
+        }
+    }
 }
 
 void AbEditor::changeWord(int id, QString text)

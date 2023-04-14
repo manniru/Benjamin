@@ -4,8 +4,9 @@ import QtQuick.Layouts 1.0
 import QtQml 2.12
 import QtQuick.Extras 1.4
 import QtQuick.Controls 2.3
+import QtQuick.Window 2.12
 
-ApplicationWindow
+Window
 {
     title: "Wrong Selection Dialog"
     width: wrong_grid.width + 80
@@ -66,8 +67,8 @@ ApplicationWindow
         anchors.top: verify_label.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
-        anchors.leftMargin: 20
-        columnSpacing: 40
+        anchors.leftMargin: 25
+        columnSpacing: 55
         flow: GridLayout.TopToBottom
     }
 
@@ -83,17 +84,22 @@ ApplicationWindow
 
     function addForm(w_word, w_path, shortcut)
     {
-        console.log("word = ", w_word, "w_path =", w_path,
-                    "shortcut = ", shortcut);
-
         var word_i = wrong_grid.children.length;
         var comp_name = "QueryLine" + word_i;
         var comp = Qt.createComponent("AbQueryLine.qml");
-        comp.createObject(wrong_grid, {width: 200,
+        comp.createObject(wrong_grid, {width: 300,
                           word_shortcut: shortcut,
                           word_text: w_word,
                           word_path: w_path,
                           objectName: comp_name});
 //        wordAdded(word_i);
     }
+
+    function addCompleted()
+    {
+        console.log(Screen.width, width)
+    }
+
+    onWidthChanged: x = Screen.width / 2 - width / 2
+    onHeightChanged: y = Screen.height / 2 - height / 2
 }
