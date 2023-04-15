@@ -14,7 +14,8 @@ AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 
     connect(root, SIGNAL(deleteSample(QString)),
             this, SLOT(deleteSample(QString)));
-
+    connect(editor, SIGNAL(updateDifWords()),
+            this, SLOT(delWordSamples()));
 }
 
 QVector<int> AbStat::getCount(QVector<QString> *file_list)
@@ -266,8 +267,6 @@ void AbStat::delWordSamples()
         return;
     }
 
-    qDebug() << "delWordSamples" << del_list;
-
     QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
     if( len_dir==0 )
@@ -304,8 +303,7 @@ void AbStat::delWordSamples()
 
 QVector<int> AbStat::makeDelList()
 {
-    QString dif = QQmlProperty::read(root, "ab_dif_words").toString();
-    QStringList dif_words = dif.split("\n");
+    QStringList dif_words = dif_editor.split("\n");
     int len = dif_words.length();
     QVector<int> del_list;
 

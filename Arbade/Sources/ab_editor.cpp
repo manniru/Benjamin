@@ -134,6 +134,7 @@ void AbEditor::saveProcess()
     }
 
     QString dif = getDif();
+    stat->dif_editor = dif;
     if( dif.length() )
     {
         QVariant dif_v(dif);

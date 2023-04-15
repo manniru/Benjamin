@@ -22,7 +22,6 @@ private slots:
     void setStatusAudio(int status);
     void verifierChanged();
     void setCategory();
-    void setDifWords();
     void setFocusWord(int focus_word);
     void createEditor();
     void cacheCreated();

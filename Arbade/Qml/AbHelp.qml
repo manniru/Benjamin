@@ -11,7 +11,8 @@ Rectangle
     property var help_text: ["Space: Pause Recording","S: Set Category",
                              "Up/Down: Change Pause",
                              "Right/Left: Change Rec Time",
-                             "C: Change Count","F: Focus Word",
+                             "B: Find Bad", "C: Change Count",
+                             "F: Focus Word",
                              "J: Decrease Word", "K: Increase Word",
                              "O:Open Category", "T: Train",
                              "V:Verify Mode"]

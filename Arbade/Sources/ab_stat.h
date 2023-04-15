@@ -27,10 +27,10 @@ public:
     void createWordEditor(QString category);
     void createRecList(QString category);
     void updateMeanVar(QVector<int> *count);
-    void delWordSamples();
     void moveToOnline();
     QString idToWord(int id);
 
+    QString dif_editor;
     QStringList lexicon;
     QVector<QString> cache_files[AB_MAX_CAT];
     QVector<int> cache_count[AB_MAX_CAT];
@@ -40,6 +40,7 @@ signals:
     void cacheCreated();
 
 private slots:
+    void delWordSamples();
     void deleteSample(QString sample);
     void create(QString catagorys);
     void update();
@@ -55,7 +56,6 @@ private:
     QObject *rec_list;//rec list qml object
     QObject *buttons;//buttons qml object
     QObject *status;//status qml object
-
 };
 
 #endif // AB_STAT_H

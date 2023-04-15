@@ -28,8 +28,6 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setStatus(int)));
     connect(root, SIGNAL(setCategory()),
             this, SLOT(setCategory()));
-    connect(root, SIGNAL(setDifWords()),
-            this, SLOT(setDifWords()));
     connect(root, SIGNAL(setFocusWord(int)),
             this, SLOT(setFocusWord(int)));
     connect(editor->stat, SIGNAL(cacheCreated()),
@@ -149,12 +147,6 @@ void AbScene::setFocusWord(int focus_word)
         focus_text = editor->stat->idToWord(focus_word);
     }
     QQmlProperty::write(root, "ab_focus_text", focus_text);
-}
-
-void AbScene::setDifWords()
-{
-    editor->stat->delWordSamples();
-    editor->updateStat();
 }
 
 void AbScene::breakTimeout()

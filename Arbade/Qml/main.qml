@@ -33,7 +33,6 @@ ApplicationWindow
     property string ab_address: ""
     property string ab_auto_comp: ""
     property string ab_focus_text: ""
-    property string ab_dif_words: ""
     property int ab_focus_word: -1
     property int ab_count: 0
     property int ab_total_count: 100
@@ -61,7 +60,6 @@ ApplicationWindow
     signal setFocusWord(int fw)
     signal saveWordList()
     signal setCategory()
-    signal setDifWords()
 
     Component.onCompleted:
     {
@@ -166,7 +164,7 @@ ApplicationWindow
         {
             if( title===category_title )
             {
-                editor_box.category = value;
+                editor_box.category = value.toLowerCase();
                 setCategory();
             }
             else if( title===cnt_title )
@@ -245,11 +243,6 @@ ApplicationWindow
         anchors.bottom: buttons_box.top
         anchors.bottomMargin: 30
 
-        onUpdateDifWords:
-        {
-//            ab_dif_words = dif_words;
-//            setDifWords();
-        }
         onEnableButtons:
         {
             buttons_box.btn_enable = enable;
@@ -412,7 +405,8 @@ ApplicationWindow
 
     function execKey(key)
     {
-        if( key===Qt.Key_O || key===Qt.Key_W || key===Qt.Key_T )
+        if( key===Qt.Key_O || key===Qt.Key_W || key===Qt.Key_T ||
+            key===Qt.Key_B )
         {
             if( key===Qt.Key_W )
             {

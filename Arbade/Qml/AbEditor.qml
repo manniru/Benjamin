@@ -11,13 +11,12 @@ Rectangle
     visible: true
     color: "transparent"
 
-    property string dif_words: ""
     property string category: ""
     property int ed_height: height
     property int focused_line: -1
 
     signal updateWordList()
-    signal updateDifWords(string dif_words)
+    signal updateDifWords()
     signal enableButtons(int enable)
     signal wordAdded(int id)
 
@@ -121,17 +120,16 @@ Rectangle
         {
             if( dialog_result==="Y" )
             {
-                editor_box.accept();
+                acceptSave();
             }
             dialog_result = "";
         }
     }
 
-    function accept()
+    function acceptSave()
     {
+        updateDifWords();
         updateWordList();
-        updateDifWords(dif_words);
-        dif_words = "";
     }
 
     function launchDialog(dif_words)
