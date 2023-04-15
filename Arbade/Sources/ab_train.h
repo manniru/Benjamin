@@ -25,9 +25,11 @@ signals:
 private slots:
     void processKey(int key);
     void writeToQml(QString line, int flag=0);
+    void trainFinished();
 
 private:
     void initKalB();
+    void checkModelExist();
 
     QObject   *root;    // root qml object
     QObject   *wsl_dialog;

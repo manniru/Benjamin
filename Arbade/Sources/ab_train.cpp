@@ -21,6 +21,7 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(writeToQml(QString,int)));
     connect(this, SIGNAL(startConsole(QString)),
             console, SLOT(startConsole(QString)));
+    connect(console, SIGNAL(finished()), this, SLOT(trainFinished()));
 }
 
 AbTrain::~AbTrain()
@@ -49,6 +50,20 @@ void AbTrain::processKey(int key)
     {
         return;
     }
+}
+
+void AbTrain::trainFinished()
+{
+    qDebug() << QDir::currentPath();
+    checkModelExist();
+    QFile file(wsl_path + "\\Benjamin\\Tools\\Model\\HCLG.fst");
+    file.copy("..\\Tools\\Model\\HCLG.fst");
+    file.setFileName(wsl_path + "\\Benjamin\\Tools\\Model\\words.txt");
+    file.copy("..\\Tools\\Model\\words.txt");
+    file.setFileName(wsl_path + "\\Benjamin\\Tools\\Model\\final.oalimdl");
+    file.copy("..\\Tools\\Model\\final.oalimdl");
+    file.setFileName(wsl_path + "\\Benjamin\\Tools\\Model\\global_cmvn.stats");
+    file.copy("..\\Tools\\Model\\global_cmvn.stats");
 }
 
 void AbTrain::initWsl()
@@ -103,5 +118,23 @@ void AbTrain::writeToQml(QString line, int flag)
         QQmlProperty::write(console_qml, "line_buf", line_fmt);
 //        qDebug() << i << "line_fmt" << line_fmt;
         QMetaObject::invokeMethod(console_qml, "addLine");
+    }
+}
+
+void AbTrain::checkModelExist()
+{
+    QString model_path = "..\\Tools\\Model";
+    QDir model_dir(model_path);
+
+    if( !model_dir.exists() )
+    {
+        qDebug() << "Creating" << model_path
+                 << " Directory";
+#ifdef WIN32
+        QString cmd = "mkdir " + model_path;
+        system(cmd.toStdString().c_str());
+#else //OR __linux
+        system("mkdir -p ../Tools/Model");
+#endif
     }
 }

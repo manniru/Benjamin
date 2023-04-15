@@ -28,6 +28,7 @@ public slots:
 
 signals:
     void readyData(QString data, int mode);
+    void finished();
 
 private:
     void processLine(QString line);

@@ -127,6 +127,7 @@ void AbConsole::processLine(QString line)
         else
         {
             is_ready = 1;
+            emit finished();
         }
     }
 }
