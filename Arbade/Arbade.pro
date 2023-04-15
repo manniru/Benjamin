@@ -32,7 +32,7 @@ OTHER_FILES = BaTool.conf
 
 HEADERS += \
     Sources/ab_audio.h \
-    Sources/ab_console_controller.h \
+    Sources/ab_console.h \
     Sources/ab_editor.h \
     Sources/ab_init_wsl.h \
     Sources/ab_mbr_base.h \
@@ -51,7 +51,7 @@ HEADERS += \
 
 SOURCES += \
     Sources/ab_audio.cpp \
-    Sources/ab_console_controller.cpp \
+    Sources/ab_console.cpp \
     Sources/ab_editor.cpp \
     Sources/ab_init_wsl.cpp \
     Sources/ab_mbr_base.cpp \
