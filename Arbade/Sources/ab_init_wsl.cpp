@@ -57,6 +57,8 @@ void AbInitWSL::createWSL(QString drive)
         system("KalB.exe install install.tar");
     }
     QDir::setCurrent(current_dir);
+
+    emit WslCreated();
 }
 
 void AbInitWSL::downloadImage(QString path)

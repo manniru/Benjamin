@@ -26,9 +26,10 @@ BtEnn::BtEnn(QString dir_name, BtState *state,
 
     bt_mkDir(KAL_AU_DIR"enn/");
 
-    QString cmd = "find " KAL_AU_DIR "enn/ -type f";
     wav_w = new BtWavWriter(cy_buf, st);
-    exist_list = getStrCommand(cmd).split("\n");
+
+    QDir enn(KAL_AU_DIR "enn/");
+    exist_list = enn.entryList(QDir::Files);
 }
 
 BtEnn::~BtEnn()
@@ -69,7 +70,7 @@ void BtEnn::startDecode()
 
     //    int len = 50;
     int len = file_list.size();
-    //    qDebug() << file_list.size() << cat_dir;
+    qDebug() << file_list.size() << cat_dir;
     for( int i=0 ; i<len ; i++ )
     {
         if( checkExist(file_list[i]) )

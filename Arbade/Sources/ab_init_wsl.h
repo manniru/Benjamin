@@ -20,7 +20,8 @@ public:
 public slots:
     void createWSL(QString drive);
 
-private slots:
+signals:
+    void WslCreated();
 
 private:
     void downloadImage(QString path);

@@ -23,6 +23,8 @@ void AbConsole::startConsole(QString wsl_path)
 {
     QString current_dir = QDir::currentPath();
     QDir::setCurrent(wsl_path);
+    QDir dir_info(wsl_path);
+    prompt = dir_info.dirName() + ">";
 
     SECURITY_ATTRIBUTES saAttr;
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -114,7 +116,7 @@ void AbConsole::CreateCmdProcess()
 
 void AbConsole::processLine(QString line)
 {
-    if( line.contains("Arch>") )
+    if( line.contains(prompt) )
     {
         if( commands.length() )
         {
@@ -132,23 +134,27 @@ void AbConsole::processLine(QString line)
     }
 }
 
+void AbConsole::wsl_run(QString cmd)
+{
+    QString wsl_cmd = "KalB.exe run " + cmd;
+    run(wsl_cmd);
+}
+
 void AbConsole::run(QString cmd)
 {
     DWORD dwWritten;
-
-    QString wsl_cmd = "KalB.exe run ";
-    wsl_cmd += cmd + "\n";
+    cmd += "\n";
 
     if( is_ready )
     {
         qDebug() << "Write" << cmd;
-        WriteFile(h_in_write, wsl_cmd.toStdString().c_str(),
-                  wsl_cmd.length(), &dwWritten, NULL);
+        WriteFile(h_in_write, cmd.toStdString().c_str(),
+                  cmd.length(), &dwWritten, NULL);
         is_ready = 0;
     }
     else
     {
         qDebug() << "Busy" << cmd;
-        commands << wsl_cmd;
+        commands << cmd;
     }
 }

@@ -17,6 +17,7 @@ public:
     explicit AbConsole(QObject *parent = nullptr);
     ~AbConsole();
 
+    void wsl_run(QString cmd);
     void run(QString cmd);
 
     HANDLE handle = NULL;
@@ -39,6 +40,7 @@ private:
     PROCESS_INFORMATION piProcInfo;
 
     int is_ready;
+    QString prompt;
     QVector<QString> commands;
 };
 
