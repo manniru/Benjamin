@@ -1,8 +1,14 @@
 #include <QGuiApplication>
 #include "enn_chapar.h"
+#include "../PNN/aj_dllgen.h"
 
 int main(int argc, char *argv[])
 {
+    QGuiApplication app(argc, argv);
+#ifdef WIN32
+    aj_dllGen();
+#endif
+
     float learning_rate = ENN_LEARN_RATE;
     int   mode = ENN_LEARN_MODE;
     if( argc>1 )
@@ -13,7 +19,7 @@ int main(int argc, char *argv[])
         {
             mode = ENN_TEST_MODE;
         }
-        else if( arg1=="tf" )
+        else if( arg1=="tf" ) // test full mode
         {
             mode = ENN_TF_MODE;
         }

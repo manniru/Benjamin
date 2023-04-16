@@ -162,3 +162,15 @@ Tools/bar_result
 Arbade/Makefile
 
 Arbade/Build/
+
+*.dll
+
+*.qm
+
+*.fst
+
+*.oalimdl
+
+*dll_gen.bat
+
+*words.txt

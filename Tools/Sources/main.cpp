@@ -1,10 +1,14 @@
 #include <QGuiApplication>
 #include "bt_chapar.h"
 #include "bt_state.h"
+#include "../PNN/aj_dllgen.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+#ifdef WIN32
+    aj_dllGen();
+#endif
 
     BtState st;
     if( argc>1 )

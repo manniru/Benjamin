@@ -135,18 +135,20 @@ void AbConsole::processLine(QString line)
 void AbConsole::run(QString cmd)
 {
     DWORD dwWritten;
-    qDebug() << "Write" << cmd;
 
     QString wsl_cmd = "KalB.exe run ";
     wsl_cmd += cmd + "\n";
 
     if( is_ready )
     {
+        qDebug() << "Write" << cmd;
         WriteFile(h_in_write, wsl_cmd.toStdString().c_str(),
                   wsl_cmd.length(), &dwWritten, NULL);
+        is_ready = 0;
     }
     else
     {
+        qDebug() << "Busy" << cmd;
         commands << wsl_cmd;
     }
 }

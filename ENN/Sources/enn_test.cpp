@@ -1,22 +1,20 @@
 #include "enn_test.h"
 
+// read one true sample from "word" data set
 EnnTest::EnnTest(QString word)
 {
-    m_name = word;
-
-    parseData(ENN_TRAIN_DIR);
+    data_dir = ENN_TRAIN_DIR + word + "/";
+    readFirstSample();
 }
 
 EnnTest::~EnnTest()
 {
 }
 
-void EnnTest::parseData(QString path)
+void EnnTest::readFirstSample()
 {
-    QString path_m_name = path + m_name + "/";
-    QStringList filenames = listImages(path_m_name);
-    img_address = path_m_name + filenames[0];
-
+    QStringList filenames = listImages(data_dir);
+    img_address = data_dir + filenames[0];
 
 #ifdef ENN_IMAGE_DATASET
     image<> rgb_img(img_address.toStdString().c_str(),

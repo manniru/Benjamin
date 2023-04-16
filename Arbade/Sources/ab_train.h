@@ -6,6 +6,8 @@
 #include "ab_init_wsl.h"
 #include "ab_console.h"
 
+#define AB_MODEL_DIR "..\\Tools\\Model2"
+
 class AbTrain : public QObject
 {
     Q_OBJECT

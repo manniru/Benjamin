@@ -10,6 +10,7 @@ win32:INCLUDEPATH += ../PNN/lua
 linux:LIBS += -pthread -lm -ldl \
               -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
 win32:LIBS += -L../PNN/libs -lFstWin64 -lPortAudio -lwinmm -llua54
+win32:LIBS += -lole32 -luuid #for dll gen
 
 DEFINES += HAVE_MKL \
            HAVE_CXXABI_H \
@@ -129,4 +130,5 @@ SOURCES += \
 
 win32:HEADERS += Sources/bt_lua.h
 
-win32:SOURCES += Sources/bt_lua.cpp
+win32:SOURCES += Sources/bt_lua.cpp \
+                 ../PNN/aj_dllgen.cpp

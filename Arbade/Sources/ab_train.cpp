@@ -56,14 +56,24 @@ void AbTrain::trainFinished()
 {
     qDebug() << QDir::currentPath();
     checkModelExist();
-    QFile file(wsl_path + "\\Benjamin\\Tools\\Model\\HCLG.fst");
-    file.copy("..\\Tools\\Model\\HCLG.fst");
-    file.setFileName(wsl_path + "\\Benjamin\\Tools\\Model\\words.txt");
-    file.copy("..\\Tools\\Model\\words.txt");
-    file.setFileName(wsl_path + "\\Benjamin\\Tools\\Model\\final.oalimdl");
-    file.copy("..\\Tools\\Model\\final.oalimdl");
-    file.setFileName(wsl_path + "\\Benjamin\\Tools\\Model\\global_cmvn.stats");
-    file.copy("..\\Tools\\Model\\global_cmvn.stats");
+
+    QVector<QString> files;
+
+    files << "HCLG.fst";
+    files << "words.txt";
+    files << "final.oalimdl";
+    files << "global_cmvn.stats";
+
+    int len = files.length();
+    for( int i=0 ; i<len ; i++ )
+    {
+        QString old_path = wsl_path + "\\Benjamin\\Tools\\Model\\";
+        old_path += files[i];
+        QString new_path = AB_MODEL_DIR;
+        new_path +=  "\\" + files[i];
+        QFile file(old_path);
+        file.copy(new_path);
+    }
 }
 
 void AbTrain::initWsl()
@@ -123,7 +133,7 @@ void AbTrain::writeToQml(QString line, int flag)
 
 void AbTrain::checkModelExist()
 {
-    QString model_path = "..\\Tools\\Model";
+    QString model_path = AB_MODEL_DIR;
     QDir model_dir(model_path);
 
     if( !model_dir.exists() )

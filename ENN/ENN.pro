@@ -5,6 +5,7 @@ CONFIG += console
 INCLUDEPATH += ./Sources
 
 #linux:LIBS += -lgio-2.0
+win32:LIBS += -lole32 -luuid
 
 DEFINES += DNN_USE_IMAGE_API \
            CNN_USE_SSE \
@@ -40,3 +41,4 @@ SOURCES += \
     Sources/enn_test.cpp \
     Sources/main.cpp
 
+win32:SOURCES += ../PNN/aj_dllgen.cpp \
