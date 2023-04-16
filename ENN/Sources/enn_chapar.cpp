@@ -75,7 +75,9 @@ void EnnChapar::testMode()
     qDebug() << "Load:" << in.img_address;
     qDebug() << "Test Mode on Model:" << model_name
              << "Input:" << input_name
-             << out[0] << out[1];
+             << "O0" << out[0]
+             << "O1" << out[1];
+
     net.benchmark();
 }
 
@@ -110,7 +112,6 @@ void EnnChapar::testFullMode()
                loss, wrong, test_len);
     }
 }
-
 
 void EnnChapar::fileMode()
 {

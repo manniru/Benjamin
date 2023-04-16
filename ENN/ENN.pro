@@ -41,4 +41,4 @@ SOURCES += \
     Sources/enn_test.cpp \
     Sources/main.cpp
 
-win32:SOURCES += ../PNN/aj_dllgen.cpp \
+win32:SOURCES += ../PNN/aj_dllgen.cpp

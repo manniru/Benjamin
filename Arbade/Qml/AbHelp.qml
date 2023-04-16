@@ -5,15 +5,15 @@ Rectangle
 {
     property string font_name_label:    fontRobotoRegular.name
 
-    property int    font_size:          22
+    property int    font_size:          20
     property color  color_text:         "#9a9a9a"
 
-    property var help_text: ["Space: Pause Recording","S: Set Category",
-                             "Up/Down: Change Pause",
-                             "Right/Left: Change Rec Time",
+    property var help_text: ["Space: Rec/Pause","S: Set Category",
+                             "Up/Down: Pause Time",
+                             "Right/Left: Rec Time",
                              "B: Find Bad", "C: Change Count",
-                             "F: Focus Word",
-                             "J: Decrease Word", "K: Increase Word",
+                             "D: Gen E-Sample", "E: Train ENN",
+                             "J/K: Word Num",
                              "O:Open Category", "T: Train",
                              "V:Verify Mode"]
 
@@ -43,7 +43,7 @@ Rectangle
 
         Text
         {
-            text: "W:All Word Stat"
+            text: "W:All Stat"
             color: if( root.ab_all_stat )
                    {
                        "#cd8968"

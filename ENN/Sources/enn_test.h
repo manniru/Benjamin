@@ -20,10 +20,10 @@ public:
 
     vec_t   image;
 
-    QString m_name; //model name
+    QString data_dir; //model name
     QString img_address;
 private:
-    void parseData(QString path);
+    void readFirstSample();
 
     QStringList listImages(QString path, int num=-1);
 };

@@ -405,15 +405,10 @@ ApplicationWindow
 
     function execKey(key)
     {
-        if( key===Qt.Key_O || key===Qt.Key_W || key===Qt.Key_T ||
-            key===Qt.Key_B )
+        sendKey(key);
+        if( key===Qt.Key_W )
         {
-            if( key===Qt.Key_W )
-            {
-                ab_all_stat = !ab_all_stat;
-            }
-
-            sendKey(key);
+            ab_all_stat = !ab_all_stat;
         }
         else if( key===Qt.Key_Escape )
         {

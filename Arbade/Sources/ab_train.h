@@ -17,20 +17,22 @@ public:
 
     void initWsl();
 
-    AbInitWSL *wsl;
-
 signals:
     void readConsole();
     void readError();
     void startConsole(QString wsl_path);
+    void startEnnConsole(QString wsl_path);
+    void createWSL(QString drive);
 
 private slots:
     void processKey(int key);
     void writeToQml(QString line, int flag=0);
     void trainFinished();
+    void WslCreated();
 
 private:
-    void initKalB();
+    void train();
+    void createENN();
     void checkModelExist();
 
     QObject   *root;    // root qml object
@@ -38,12 +40,13 @@ private:
     QObject   *console_qml; // console qml object
     QString    wsl_path;
 
+    QThread   *wsl_thread;
+    AbInitWSL *wsl;
+
     QThread   *con_thread;
     AbConsole *console;
-    QThread   *err_thread;
-    AbConsole *err_read;
-
-    int init_flag;
+    QThread   *enn_thread;
+    AbConsole *enn_console;
 };
 
 

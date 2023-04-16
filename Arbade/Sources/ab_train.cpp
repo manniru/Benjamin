@@ -5,8 +5,11 @@
 AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
 {
     wsl = new AbInitWSL();
+    wsl_thread = new QThread();
+    wsl->moveToThread(wsl_thread);
+
+    wsl_thread->start();
     root = ui;
-    init_flag = 1;
     wsl_dialog = root->findChild<QObject*>("WslDialog");
     console_qml = root->findChild<QObject*>("Console");
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
@@ -17,11 +20,31 @@ AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
     con_thread = new QThread();
     console->moveToThread(con_thread);
     con_thread->start();
+
     connect(console, SIGNAL(readyData(QString,int)),
             this, SLOT(writeToQml(QString,int)));
     connect(this, SIGNAL(startConsole(QString)),
             console, SLOT(startConsole(QString)));
     connect(console, SIGNAL(finished()), this, SLOT(trainFinished()));
+
+    connect(this, SIGNAL(createWSL(QString)),
+            wsl, SLOT(createWSL(QString)));
+    connect(wsl, SIGNAL(WslCreated()),
+            this, SLOT(WslCreated()));
+
+    enn_console = new AbConsole(AB_CONSOLE_NORML);
+    enn_thread = new QThread();
+    enn_console->moveToThread(enn_thread);
+    enn_thread->start();
+    connect(enn_console, SIGNAL(readyData(QString,int)),
+            this, SLOT(writeToQml(QString,int)));
+    connect(this, SIGNAL(startEnnConsole(QString)),
+            enn_console, SLOT(startConsole(QString)));
+
+    QString current_dir = QDir::currentPath();
+    emit startEnnConsole(current_dir);
+
+    initWsl();
 }
 
 AbTrain::~AbTrain()
@@ -30,26 +53,28 @@ AbTrain::~AbTrain()
 
 void AbTrain::processKey(int key)
 {
+    qDebug() << "k" << key;
     if( key==Qt::Key_T )
     {
-        if( init_flag )
-        {
-            initWsl();
-        }
-        initKalB();
+        train();
     }
     else if( key==Qt::Key_Escape )
     {
         ;
     }
+    else if( key==Qt::Key_D )
+    {
+        createENN();
+    }
     else if( key==Qt::Key_B )
     {
 
     }
-    else
-    {
-        return;
-    }
+}
+
+void AbTrain::WslCreated()
+{
+    emit startConsole(wsl_path);
 }
 
 void AbTrain::trainFinished()
@@ -87,19 +112,28 @@ void AbTrain::initWsl()
     if( !QFile::exists(wsl_path + "\\ext4.vhdx") )
     {
         QString drive = QString(wsl_path[0]);
-        wsl->createWSL(drive);
+        emit createWSL(drive);
     }
-    emit startConsole(wsl_path);
-
-    init_flag = 0;
+    else
+    {
+        emit startConsole(wsl_path);
+    }
 }
 
-void AbTrain::initKalB()
+void AbTrain::train()
 {
-    qDebug() << "createKalB";
+    qDebug() << "train KalB";
     QQmlProperty::write(console_qml, "visible", true);
-    console->run("./wsl_init.sh");
-    console->run("./wsl_train.sh");
+    console->wsl_run("./wsl_init.sh");
+    console->wsl_run("./wsl_train.sh");
+}
+
+void AbTrain::createENN()
+{
+    qDebug() << "createENN";
+    QQmlProperty::write(console_qml, "visible", true);
+    enn_console->run("dir ..\\Tools\\release\\");
+    enn_console->run("..\\Tools\\release\\BaTool.exe e 2>&1");
 }
 
 void AbTrain::writeToQml(QString line, int flag)
