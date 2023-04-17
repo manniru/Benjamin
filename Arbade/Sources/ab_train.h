@@ -5,6 +5,7 @@
 #include <QThread>
 #include "ab_init_wsl.h"
 #include "ab_console.h"
+#include "ab_stat.h"
 
 #define AB_MODEL_DIR "..\\Tools\\Model2"
 
@@ -12,7 +13,8 @@ class AbTrain : public QObject
 {
     Q_OBJECT
 public:
-    explicit AbTrain(QObject *ui, QObject *parent = nullptr);
+    explicit AbTrain(AbStat *st, QObject *ui,
+                     QObject *parent = nullptr);
     ~AbTrain();
 
     void initWsl();
@@ -34,6 +36,10 @@ private:
     void train();
     void createENN();
     void checkModelExist();
+    void addTestSample(int count);
+    int  needTestCount();
+    int  getTestCount();
+    int  getTrainCount();
 
     QObject   *root;    // root qml object
     QObject   *wsl_dialog;
@@ -47,6 +53,7 @@ private:
     AbConsole *console;
     QThread   *enn_thread;
     AbConsole *enn_console;
+    AbStat    *stat;
 };
 
 

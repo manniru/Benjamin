@@ -2,8 +2,9 @@
 #include <QDebug>
 #include <QQmlProperty>
 
-AbTrain::AbTrain(QObject *ui, QObject *parent) : QObject(parent)
+AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
 {
+    stat = st;
     wsl = new AbInitWSL();
     wsl_thread = new QThread();
     wsl->moveToThread(wsl_thread);
@@ -124,6 +125,12 @@ void AbTrain::train()
 {
     qDebug() << "train KalB";
     QQmlProperty::write(console_qml, "visible", true);
+
+    int test_count = needTestCount();
+    if( test_count )
+    {
+        addTestSample(test_count);
+    }
     console->wsl_run("./wsl_init.sh");
     console->wsl_run("./wsl_train.sh");
 }
@@ -181,4 +188,96 @@ void AbTrain::checkModelExist()
         system("mkdir -p ../Tools/Model");
 #endif
     }
+}
+
+int AbTrain::needTestCount()
+{
+    int sample_count = 0;
+    int test_need_count;
+    int test_curr_count;
+    int ret;
+
+    sample_count = getTrainCount();
+    test_need_count = sample_count/10;
+    test_curr_count = getTestCount();
+    ret = test_need_count-test_curr_count ;
+
+    if( ret>0 )
+    {
+        return ret;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void AbTrain::addTestSample(int count)
+{
+    QString  train_path = ab_getAudioPath() + "train\\";
+    QDir dir(train_path);
+    QFileInfoList dir_list = dir.entryInfoList(QDir::Dirs
+                                               | QDir::NoDotAndDotDot);
+    QString test_path = ab_getAudioPath();
+    test_path += "test\\";
+
+    int cat_count = dir_list.size();
+
+    for( int i=0 ; i<count ; i++ )
+    {
+        int cat_id = 1+rand()%cat_count;
+        int cat_len = stat->cache_files[cat_id].size();
+        int sample_id = rand()%cat_len;
+        QString sample_path = stat->cache_files[cat_id][sample_id];
+
+        QFile file(sample_path);
+        QFileInfo info(sample_path);
+        QString new_path = test_path+info.fileName();
+        file.copy(new_path);
+//        file.remove();
+        stat->cache_files[cat_id].remove(sample_id);
+    }
+}
+
+int AbTrain::getTestCount()
+{
+    QString test_path = ab_getAudioPath();
+    test_path += "test\\";
+    QDir dir_test(test_path);
+    if( !dir_test.exists() )
+    {
+#ifdef WIN32
+        QString cmd = "mkdir " + test_path;
+        system(cmd.toStdString().c_str());
+#else //OR __linux
+        system("mkdir -p " KAL_AU_DIR "test");
+#endif
+        qDebug() << "Info: Directory" << test_path << "Created";
+    }
+
+    QVector<QString> test_files = ab_listFiles(test_path);
+    int count = test_files.count();
+
+    return count;
+}
+
+int AbTrain::getTrainCount()
+{
+    QString  path = ab_getAudioPath() + "train\\";
+    QDir dir(path);
+    int ret = 0;
+    QFileInfoList dir_list = dir.entryInfoList(QDir::Dirs
+                                               | QDir::NoDotAndDotDot);
+    int len_dir = dir_list.size();
+    if( len_dir==0 )
+    {
+        return 0;
+    }
+
+    for( int i=0 ; i<len_dir ; i++ )
+    {
+        ret += stat->cache_files[i+1].size();
+    }
+
+    return ret;
 }

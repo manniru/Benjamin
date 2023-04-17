@@ -14,6 +14,8 @@ class AbScene : public QObject
 public:
     explicit AbScene(QObject *ui, QObject *parent = nullptr);
 
+    AbEditor  *editor;
+
 private slots:
     void startPauseV();
     void breakTimeout();
@@ -36,7 +38,6 @@ private:
     QObject *message; // message qml object
     AbAudio *audio;
     AbVerify *verify;
-    AbEditor  *editor;
     QTimer *break_timer;
 };
 

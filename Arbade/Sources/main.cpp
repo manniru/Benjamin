@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     QObject *root = engine.rootObjects().first();
     AbScene scene(root);
-    AbTrain train(root);
+    AbTrain train(scene.editor->stat, root);
     QString wsl_path = ab_getWslPath();
     if( wsl_path.isEmpty() )
     {
