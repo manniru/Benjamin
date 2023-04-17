@@ -50,6 +50,7 @@ private:
     QStringList       file_list;
     QStringList       exist_list;
     QString           cat_dir; // category directory
+    QString           enn_dir; // enn sample directory
     BtState           *st;
 
     double max_delta[3];

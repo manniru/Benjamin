@@ -24,11 +24,13 @@ BtEnn::BtEnn(QString dir_name, BtState *state,
         min_delta[i] = 10000;
     }
 
-    bt_mkDir(KAL_AU_DIR"enn/");
+    enn_dir = ab_getAudioPath();
+    enn_dir += "enn/";
+    bt_mkDir(enn_dir);
 
     wav_w = new BtWavWriter(cy_buf, st);
 
-    QDir enn(KAL_AU_DIR "enn/");
+    QDir enn(enn_dir);
     exist_list = enn.entryList(QDir::Files);
 }
 
@@ -225,7 +227,7 @@ void BtEnn::saveFeature(QString filename, BtCFB *cfb)
 
     for( int i=0 ; i<last_r.size() ; i++ )
     {
-        QString path = KAL_AU_DIR"enn/";
+        QString path = enn_dir;
         path += last_r[i].word;
         bt_mkDir(path);
         path += "/" + cat_dir;
@@ -389,7 +391,7 @@ void BtEnn::saveWave(QString filename)
 
     for( int i=0 ; i<last_r.size() ; i++ )
     {
-        QString path = KAL_AU_DIR"enn/";
+        QString path = enn_dir;
         path += last_r[i].word;
         bt_mkDir(path);
         path += "/" + cat_dir;

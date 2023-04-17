@@ -30,6 +30,8 @@ private:
     BtCyclic    *cy_buf;
     QFile       *file;
     BtState     *st;
+    QString      au_online_path;
+    QString      au_unver_path;
     QStringList  word_list;
     QStringList  exemption_list;
 };

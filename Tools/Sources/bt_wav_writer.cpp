@@ -5,44 +5,57 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
 {
     cy_buf = buffer;
     st     = state;
-    QDir au_OnlineDir(KAL_AU_DIR"online");
+    au_online_path  = ab_getAudioPath();
+    au_online_path += "online";
+    QDir au_online_dir(au_online_path);
 
-    if( !au_OnlineDir.exists() )
+    if( !au_online_dir.exists() )
     {
-        qDebug() << "Creating" << KAL_AU_DIR"online"
+        qDebug() << "Creating" << au_online_path
                  << " Directory";
 #ifdef WIN32
-        system("mkdir " KAL_AU_DIR_WIN "online");
+        QString cmd = "mkdir ";
+        cmd += au_online_path;
+        system(cmd.toStdString().c_str());
 #else //OR __linux
         system("mkdir -p " KAL_AU_DIR "online");
 #endif
     }
 
-    QDir au_UnverifiedDir(KAL_AU_DIR"unverified");
+    au_unver_path  = ab_getAudioPath();
+    au_unver_path += "unverified";
+    QDir au_unverified_dir(au_unver_path);
 
-    if( !au_UnverifiedDir.exists() )
+    if( !au_unverified_dir.exists() )
     {
-        qDebug() << "Creating" << KAL_AU_DIR"unverified"
+        qDebug() << "Creating" << au_unver_path
                  << " Directory";
 #ifdef WIN32
-        system("mkdir " KAL_AU_DIR_WIN "unverified");
+        QString cmd = "mkdir ";
+        cmd += au_unver_path;
+        system(cmd.toStdString().c_str());
 #else //OR __linux
         system("mkdir -p " KAL_AU_DIR "unverified");
 #endif
     }
 
-    QDir au_TrainDir(KAL_AU_DIR"train/online");
+    au_tonline_path  = ab_getAudioPath();
+    au_tonline_path += "train/online";
+    QDir au_train_dir(au_tonline_path);
 
-    if( !au_TrainDir.exists() )
+    if( !au_train_dir.exists() )
     {
-        qDebug() << "Creating" << KAL_AU_DIR"train/online"
+        qDebug() << "Creating" << au_tonline_path
                  << " Directory";
 #ifdef WIN32
-        system("mkdir " KAL_AU_DIR_WIN "train\\online");
+        QString cmd = "mkdir ";
+        cmd += au_tonline_path;
+        system(cmd.toStdString().c_str());
 #else //OR __linux
         system("mkdir -p " KAL_AU_DIR "train/online");
 #endif
     }
+
     file = new QFile;
 
     readWordList();
@@ -59,7 +72,7 @@ BtWavWriter::~BtWavWriter()
 
 void BtWavWriter::write(QVector<BtWord> result, int len, int dbg_id)
 {
-    QString filename = KAL_AU_DIR"online/";
+    QString filename = au_online_path;
     filename += QString::number(dbg_id);
     filename += ".wav";
     file->setFileName(filename);
@@ -185,8 +198,8 @@ void BtWavWriter::writeWavHeader(int len)
 void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
 {
     // verified base name
-    QString v_base_name = KAL_AU_DIR"train/online/";
-    QString u_base_name = KAL_AU_DIR"unverified/";
+    QString v_base_name = au_tonline_path;
+    QString u_base_name = au_online_path;
     v_base_name += wordToId(result);
     u_base_name += wordToId(result);
     QString v_name = v_base_name + ".wav";

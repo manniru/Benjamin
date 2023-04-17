@@ -11,7 +11,9 @@ BtChapar::BtChapar(BtState *st, QObject *parent) : QObject(parent)
     else if( st->state==BT_ENN_MODE )
     {
 //    enn = new BtEnn(KAL_AU_DIR"train/online/");
-        createEnn(KAL_AU_DIR"train/", st);
+        QString train_dir = ab_getAudioPath();
+        train_dir += "train/";
+        createEnn(train_dir, st);
     }
     else
     {

@@ -59,6 +59,7 @@
 #define ENN_GAURD_TIME   0.05 // in second(generally 50ms) that added as a
                               // gaurd time to ensure word is inside region
 
+#define AB_WSL_ROOT       "Arch"
 
 #endif // BT_CONFIG_H
 
