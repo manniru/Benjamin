@@ -10,9 +10,12 @@ BtChapar::BtChapar(BtState *st, QObject *parent) : QObject(parent)
     }
     else if( st->state==BT_ENN_MODE )
     {
-//    enn = new BtEnn(KAL_AU_DIR"train/online/");
         QString train_dir = ab_getAudioPath();
+#ifdef WIN32
+        train_dir += "train\\";
+#else
         train_dir += "train/";
+#endif
         createEnn(train_dir, st);
     }
     else
@@ -38,7 +41,11 @@ void BtChapar::createEnn(QString dir, BtState *st)
 
     for( int i=0 ; i<dir_list.size() ; i++ )
     {
+#ifdef WIN32
+        BtEnn enn(dir + dir_list[i] + "\\", st);
+#else
         BtEnn enn(dir + dir_list[i] + "/", st);
+#endif
         enn.init(dir_list[i]);
     }
     exit(0);

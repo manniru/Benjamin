@@ -25,7 +25,11 @@ BtEnn::BtEnn(QString dir_name, BtState *state,
     }
 
     enn_dir = ab_getAudioPath();
-    enn_dir += "enn/";
+#ifdef WIN32
+        enn_dir += "enn\\";
+#else
+        enn_dir += "enn/";
+#endif
     bt_mkDir(enn_dir);
 
     wav_w = new BtWavWriter(cy_buf, st);

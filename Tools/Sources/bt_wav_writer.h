@@ -32,6 +32,7 @@ private:
     BtState     *st;
     QString      au_online_path;
     QString      au_unver_path;
+    QString      au_tonline_path;
     QStringList  word_list;
     QStringList  exemption_list;
 };
