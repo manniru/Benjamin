@@ -97,7 +97,12 @@ void AbTrain::trainFinished()
         old_path += files[i];
         QString new_path = AB_MODEL_DIR;
         new_path +=  "\\" + files[i];
+
         QFile file(old_path);
+        if( QFile::exists(new_path) )
+        {
+            QFile::remove(new_path);
+        }
         file.copy(new_path);
     }
 }
@@ -234,7 +239,7 @@ void AbTrain::addTestSample(int count)
         QFileInfo info(sample_path);
         QString new_path = test_path+info.fileName();
         file.copy(new_path);
-//        file.remove();
+        file.remove();
         stat->cache_files[cat_id].remove(sample_id);
     }
 }
