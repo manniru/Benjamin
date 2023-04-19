@@ -2,46 +2,49 @@
 #define AB_CONSOLE_H
 
 #include <QObject>
+#include <QThread>
 #include <windows.h>
-
-#define CONSOLE_BUF_SIZE 4096
-
-#define AB_CONSOLE_NORML 0
-#define AB_CONSOLE_ERROR 1
-#define AB_CONSOLE_INPUT 2
+#include "ab_console_handle.h"
 
 class AbConsole : public QObject
 {
     Q_OBJECT
 public:
-    explicit AbConsole(QObject *parent = nullptr);
+    explicit AbConsole(QObject *ui, QObject *parent = nullptr);
     ~AbConsole();
 
     void wsl_run(QString cmd);
     void run(QString cmd);
 
-    HANDLE handle = NULL;
-    HANDLE handle_err = NULL; // implement error in future
-
 public slots:
-    void readData();
     void startConsole(QString wsl_path);
+    void readyData(QString data, int mode);
 
 signals:
-    void readyData(QString data, int mode);
+    void startRead();
     void finished();
 
 private:
     void processLine(QString line);
     void CreateCmdProcess();
 
-    HANDLE h_in_read = NULL;
-    HANDLE h_in_write = NULL;
+    HANDLE proc_in_h  = NULL;
+    HANDLE proc_out_h = NULL;
+    HANDLE proc_err_h = NULL;
+    HANDLE handle_in  = NULL;
     PROCESS_INFORMATION piProcInfo;
+
+    AbConsoleHandle *std_err;
+    QThread *err_thread;
+    AbConsoleHandle *std_out;
+    QThread *out_thread;
 
     int is_ready;
     QString prompt;
     QVector<QString> commands;
+
+    QObject   *root;    // root qml object
+    QObject   *console_qml; // console qml object
 };
 
 #endif // AB_CONSOLE_H

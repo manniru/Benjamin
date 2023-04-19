@@ -2,21 +2,40 @@
 #include <QDebug>
 #include <QDir>
 #include <QThread>
+#include <QQmlProperty>
 
-AbConsole::AbConsole(QObject *parent) : QObject(parent)
+AbConsole::AbConsole(QObject *ui, QObject *parent) : QObject(parent)
 {
     is_ready = 0;
+    root = ui;
+    console_qml = root->findChild<QObject*>("Console");
+
+    std_out = new AbConsoleHandle(AB_CONSOLE_NORML);
+    out_thread = new QThread;
+    std_out->moveToThread(out_thread);
+    out_thread->start();
+    std_err = new AbConsoleHandle(AB_CONSOLE_ERROR);
+    err_thread = new QThread;
+    std_err->moveToThread(err_thread);
+    err_thread->start();
+
+    connect(this, SIGNAL(startRead()),
+            std_err, SLOT(readData()));
+    connect(std_err, SIGNAL(readyData(QString,int)),
+            this, SLOT(readyData(QString,int)));
+    connect(this, SIGNAL(startRead()),
+            std_out, SLOT(readData()));
+    connect(std_out, SIGNAL(readyData(QString,int)),
+            this, SLOT(readyData(QString,int)));
 }
 
 AbConsole::~AbConsole()
 {
-    if ( !CloseHandle(h_in_write) )
-    {
-//        qDebug() << "StdInWr CloseHandle failed";
-    }
+    TerminateProcess(piProcInfo.hProcess, 255);
     CloseHandle(piProcInfo.hProcess);
     CloseHandle(piProcInfo.hThread);
-    CloseHandle(h_in_read);
+    CloseHandle(proc_in_h);
+    CloseHandle(handle_in);
 }
 
 void AbConsole::startConsole(QString wsl_path)
@@ -32,83 +51,70 @@ void AbConsole::startConsole(QString wsl_path)
     saAttr.lpSecurityDescriptor = NULL;
 
     // stdout
-    if( !CreatePipe(&handle, &handle_err, &saAttr, 0) )
+    if( !CreatePipe(&(std_out->handle), &proc_out_h, &saAttr, 0) )
     {
        qDebug() << "StdoutRd CreatePipe failed";
     }
-    if( !SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0) )
+    if( !SetHandleInformation(std_out->handle, HANDLE_FLAG_INHERIT, 0) )
     {
        qDebug() << "Stdout SetHandleInformation failed";
     }
 
     // stdin
-    if( !CreatePipe(&h_in_read, &h_in_write, &saAttr, 0) )
+    if( !CreatePipe(&proc_in_h, &handle_in, &saAttr, 0) )
     {
        qDebug() << "Stdin CreatePipe failed";
     }
-    if( !SetHandleInformation(h_in_write, HANDLE_FLAG_INHERIT, 0) )
+    if( !SetHandleInformation(handle_in, HANDLE_FLAG_INHERIT, 0) )
     {
        qDebug() << "Stdin SetHandleInformation failed";
+    }
+
+    // stderr
+    if( !CreatePipe(&std_err->handle, &proc_err_h, &saAttr, 0) )
+    {
+       qDebug() << "Stderr CreatePipe failed";
+    }
+    if( !SetHandleInformation(std_err->handle, HANDLE_FLAG_INHERIT, 0) )
+    {
+       qDebug() << "Stderr SetHandleInformation failed";
     }
 
     CreateCmdProcess();
     QDir::setCurrent(current_dir);
 
-    readData();
-}
-
-void AbConsole::readData()
-{
-    DWORD read_len;
-    char chBuf[CONSOLE_BUF_SIZE];
-    BOOL ok;
-    QString output;
-
-    while( true )
-    {
-        ok = ReadFile(handle, chBuf,
-                      CONSOLE_BUF_SIZE, &read_len, NULL);
-        if( !ok || read_len==0 )
-        {
-            qDebug() << "ERROR" << ok << read_len;
-            break;
-        }
-        chBuf[read_len] = 0;
-
-        output = chBuf;
-        emit readyData(output, 0);
-        qDebug() << output;
-        processLine(output);
-    }
+    qDebug() << "console" << current_dir;
+    emit startRead();
 }
 
 void AbConsole::CreateCmdProcess()
 {
-   BOOL bSuccess = FALSE;
-
+   BOOL ret;
    ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
 
-   STARTUPINFOA siStartInfo;
+   STARTUPINFO siStartInfo;
    ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
    siStartInfo.cb = sizeof(STARTUPINFO);
-   siStartInfo.hStdError = handle_err;
-   siStartInfo.hStdOutput = handle_err;
-   siStartInfo.hStdInput = h_in_read;
-   siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+   siStartInfo.hStdError  = proc_err_h;
+   siStartInfo.hStdOutput = proc_out_h;
+   siStartInfo.hStdInput  = proc_in_h;
+   // STARTF_USESHOWWINDOW prevent from showing cmd window
+   siStartInfo.dwFlags   |= STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
 
-   char cmd_a[100] = "cmd.exe";
-   bSuccess = CreateProcessA(NULL,
-      cmd_a,         // command line
-      NULL,          // process security attributes
-      NULL,          // primary thread security attributes
-      TRUE,          // handles are inherited
-      0,             // creation flags
-      NULL,          // use parent's environment
-      NULL,          // use parent's current directory
-      &siStartInfo,  // STARTUPINFO pointer
-      &piProcInfo);  // receives PROCESS_INFORMATION
+   // CREATE_NEW_CONSOLE prevent weired no output on some application
+   wchar_t cmd_a[100] = L"cmd.exe";
+   ret = CreateProcess(NULL,
+      cmd_a,              // command line
+      NULL,               // process security attributes
+      NULL,               // primary thread security attributes
+      TRUE,               // handles are inherited
+      CREATE_NEW_CONSOLE, // creation flags
+      NULL,               // use parent's environment
+      NULL,               // use parent's current directory
+      &siStartInfo,       // STARTUPINFO pointer
+      &piProcInfo);       // receives PROCESS_INFORMATION
 
-   if ( !bSuccess )
+   if ( ret==0 )
    {
        qDebug() << "CreateProcess failed";
    }
@@ -123,7 +129,7 @@ void AbConsole::processLine(QString line)
             QString cmd = commands.first();
             commands.removeFirst();
             DWORD dwWritten;
-            WriteFile(h_in_write, cmd.toStdString().c_str(),
+            WriteFile(handle_in, cmd.toStdString().c_str(),
                       cmd.length(), &dwWritten, NULL);
         }
         else
@@ -148,7 +154,7 @@ void AbConsole::run(QString cmd)
     if( is_ready )
     {
         qDebug() << "Write" << cmd;
-        WriteFile(h_in_write, cmd.toStdString().c_str(),
+        WriteFile(handle_in, cmd.toStdString().c_str(),
                   cmd.length(), &dwWritten, NULL);
         is_ready = 0;
     }
@@ -156,5 +162,35 @@ void AbConsole::run(QString cmd)
     {
         qDebug() << "Busy" << cmd;
         commands << cmd;
+    }
+}
+
+void AbConsole::readyData(QString line, int flag)
+{
+    processLine(line);
+
+    QString color = "#ccc";
+    QStringList lines = line.split("\n");
+    int count = lines.count();
+    for( int i=0; i<count ; i++)
+    {
+        QString line_fmt;
+        if( flag==AB_CONSOLE_ERROR )
+        {
+            color = "#e66";
+        }
+        line_fmt = "<font style=\"color: ";
+        line_fmt += color;
+        line_fmt += ";\">";
+        line_fmt += lines[i];
+        line_fmt += "</font>";
+
+        if( i<count-1 )
+        {
+            line_fmt += "<br>";
+        }
+        QQmlProperty::write(console_qml, "line_buf", line_fmt);
+//        qDebug() << i << "line_fmt" << line_fmt;
+        QMetaObject::invokeMethod(console_qml, "addLine");
     }
 }
