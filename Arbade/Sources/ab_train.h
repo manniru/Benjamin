@@ -22,13 +22,10 @@ public:
 signals:
     void readConsole();
     void readError();
-    void startConsole(QString wsl_path);
-    void startEnnConsole(QString wsl_path);
     void createWSL(QString drive);
 
 private slots:
     void processKey(int key);
-    void writeToQml(QString line, int flag=0);
     void trainFinished();
     void WslCreated();
 

@@ -17,15 +17,9 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
     connect(wsl_dialog, SIGNAL(driveEntered(QString)),
             wsl, SLOT(createWSL(QString)));
 
-    console = new AbConsole(AB_CONSOLE_NORML);
-    con_thread = new QThread();
-    console->moveToThread(con_thread);
-    con_thread->start();
+    console = new AbConsole(root);
+    enn_console = new AbConsole(root);
 
-    connect(console, SIGNAL(readyData(QString,int)),
-            this, SLOT(writeToQml(QString,int)));
-    connect(this, SIGNAL(startConsole(QString)),
-            console, SLOT(startConsole(QString)));
     connect(console, SIGNAL(finished()), this, SLOT(trainFinished()));
 
     connect(this, SIGNAL(createWSL(QString)),
@@ -33,28 +27,24 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
     connect(wsl, SIGNAL(WslCreated()),
             this, SLOT(WslCreated()));
 
-    enn_console = new AbConsole(AB_CONSOLE_NORML);
-    enn_thread = new QThread();
-    enn_console->moveToThread(enn_thread);
-    enn_thread->start();
-    connect(enn_console, SIGNAL(readyData(QString,int)),
-            this, SLOT(writeToQml(QString,int)));
-    connect(this, SIGNAL(startEnnConsole(QString)),
-            enn_console, SLOT(startConsole(QString)));
-
-    QString current_dir = QDir::currentPath();
-    emit startEnnConsole(current_dir);
-
-    initWsl();
+    QString batool_dir = QDir::currentPath();
+    batool_dir += "/../Tools";
+    qDebug() << "batool_dir" << batool_dir;
+    enn_console->startConsole(batool_dir);
 }
 
 AbTrain::~AbTrain()
 {
+    delete enn_console;
+    delete console;
+    enn_thread->exit();
+    delete enn_thread;
+    con_thread->exit();
+    delete con_thread;
 }
 
 void AbTrain::processKey(int key)
 {
-    qDebug() << "k" << key;
     if( key==Qt::Key_T )
     {
         train();
@@ -75,7 +65,7 @@ void AbTrain::processKey(int key)
 
 void AbTrain::WslCreated()
 {
-    emit startConsole(wsl_path);
+    console->startConsole(wsl_path);
 }
 
 void AbTrain::trainFinished()
@@ -107,6 +97,7 @@ void AbTrain::trainFinished()
     }
 }
 
+// called from main
 void AbTrain::initWsl()
 {
     wsl_path = ab_getWslPath();
@@ -122,7 +113,7 @@ void AbTrain::initWsl()
     }
     else
     {
-        emit startConsole(wsl_path);
+        console->startConsole(wsl_path);
     }
 }
 
@@ -144,37 +135,9 @@ void AbTrain::createENN()
 {
     qDebug() << "createENN";
     QQmlProperty::write(console_qml, "visible", true);
-    enn_console->run("dir ..\\Tools\\release\\");
-    enn_console->run("..\\Tools\\release\\BaTool.exe e 2>&1");
-}
-
-void AbTrain::writeToQml(QString line, int flag)
-{
-    QString color = "#ffffff";
-    QStringList lines = line.split("\n");
-    int count = lines.count();
-    for( int i=0; i<count ; i++)
-    {
-        QString line_fmt;
-        line_fmt += lines[i];
-        if( flag==AB_CONSOLE_ERROR )
-        {
-            QString line_fmt = "<font style=\"color: ";
-            color = "#00f";
-            line_fmt += color;
-            line_fmt += ";\">";
-            line_fmt += line;
-            line_fmt += "</font>";
-        }
-
-        if( i<count-1 )
-        {
-            line_fmt += "<br>";
-        }
-        QQmlProperty::write(console_qml, "line_buf", line_fmt);
-//        qDebug() << i << "line_fmt" << line_fmt;
-        QMetaObject::invokeMethod(console_qml, "addLine");
-    }
+//    enn_console->run("dir");
+    enn_console->run("release\\BaTool.exe e");
+    enn_console->run("fuck");
 }
 
 void AbTrain::checkModelExist()
