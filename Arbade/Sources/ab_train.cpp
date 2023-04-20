@@ -135,9 +135,7 @@ void AbTrain::createENN()
 {
     qDebug() << "createENN";
     QQmlProperty::write(console_qml, "visible", true);
-//    enn_console->run("dir");
     enn_console->run("release\\BaTool.exe e");
-    enn_console->run("fuck");
 }
 
 void AbTrain::checkModelExist()

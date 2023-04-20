@@ -34,8 +34,7 @@ BtEnn::BtEnn(QString dir_name, BtState *state,
 
     wav_w = new BtWavWriter(cy_buf, st);
 
-    QDir enn(enn_dir);
-    exist_list = enn.entryList(QDir::Files);
+    fillExist();
 }
 
 BtEnn::~BtEnn()
@@ -130,9 +129,9 @@ void BtEnn::openWave(QString filename)
     }
 
     wav_file.setFileName(filename);
-    if( !wav_file.open(QIODevice::ReadWrite) )
+    if( !wav_file.open(QIODevice::ReadOnly) )
     {
-        qDebug() << "Failed To Open" << filename;
+        qDebug() << "(openWave) Failed To Open" << filename;
         exit(1);
     }
     //    qDebug() << ">>>>" << QFileInfo(filename).fileName();
@@ -469,4 +468,20 @@ void BtEnn::calcStat(QVector<BtFrameBuf *> data)
     scale_delta = var;
     //    qDebug() << "min_delta" << min_delta[0] << max_delta[0] << var << mean;
     //    exit(0);
+}
+
+void BtEnn::fillExist()
+{
+    QDir enn(enn_dir);
+    QStringList words = enn.entryList(QDir::Dirs);
+
+    int len = words.length();
+    for( int i=0 ; i<len ; i++ )
+    {
+        QString path = enn_dir + words[i];
+        qDebug() << path;
+        exist_list += QDir(path).entryList(QDir::Files);
+    }
+
+    qDebug() << exist_list;
 }

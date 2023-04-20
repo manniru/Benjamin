@@ -32,6 +32,8 @@ void AbConsoleHandle::readData()
         chBuf[read_len] = 0;
 
         output = chBuf;
+        // to support clink
+        output = output.replace("\b", "");
         emit readyData(output, flag);
         qDebug() << flag << output;
     }

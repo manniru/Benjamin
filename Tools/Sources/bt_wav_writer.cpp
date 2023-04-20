@@ -6,7 +6,7 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     cy_buf = buffer;
     st     = state;
     au_online_path  = ab_getAudioPath();
-    au_online_path += "online";
+    au_online_path += "online\\";
     QDir au_online_dir(au_online_path);
 
     if( !au_online_dir.exists() )
@@ -23,7 +23,7 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     }
 
     au_unver_path  = ab_getAudioPath();
-    au_unver_path += "unverified";
+    au_unver_path += "unverified\\";
     QDir au_unverified_dir(au_unver_path);
 
     if( !au_unverified_dir.exists() )
@@ -199,7 +199,7 @@ void BtWavWriter::copyToUnverified(QVector<BtWord> result, QString filename)
 {
     // verified base name
     QString v_base_name = au_tonline_path;
-    QString u_base_name = au_online_path;
+    QString u_base_name = au_unver_path;
     v_base_name += wordToId(result);
     u_base_name += wordToId(result);
     QString v_name = v_base_name + ".wav";

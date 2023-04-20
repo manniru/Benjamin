@@ -26,6 +26,7 @@ public:
     void   init(QString dir);
 
 private:
+    void fillExist();
     void startDecode();
     void openWave(QString filename);
     void readWav(BtCyclic *out);
