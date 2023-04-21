@@ -31,6 +31,7 @@ private slots:
 
 private:
     void train();
+    void trainENN();
     void createENN();
     void checkModelExist();
     void addTestSample(int count);

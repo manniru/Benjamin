@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.2
+import QtQuick.Controls 2.3
 
 Rectangle
 {
@@ -12,8 +13,14 @@ Rectangle
         anchors.fill: parent
 
         contentHeight: console_text.height+200
-        contentWidth: childrenRect.width
+        contentWidth: parent.width
         clip: true
+
+        ScrollBar.vertical: ScrollBar
+        {
+            width: 10
+            anchors.right: parent.right // adjust the anchor as suggested by derM
+        }
 
         Text
         {
@@ -36,7 +43,7 @@ Rectangle
     {
         console_text.text += line_buf;
 
-        var pos_y = console_text.height - parent.height + 250
+        var pos_y = console_text.height - parent.height + 200
 
         if( pos_y<0 )
         {

@@ -15,6 +15,7 @@ public:
 
     void wsl_run(QString cmd);
     void run(QString cmd);
+    QString prompt;
 
 public slots:
     void startConsole(QString wsl_path);
@@ -40,7 +41,6 @@ private:
     QThread *out_thread;
 
     int is_ready;
-    QString prompt;
     QVector<QString> commands;
 
     QObject   *root;    // root qml object

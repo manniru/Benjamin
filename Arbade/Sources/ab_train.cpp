@@ -57,6 +57,10 @@ void AbTrain::processKey(int key)
     {
         createENN();
     }
+    else if( key==Qt::Key_E )
+    {
+        trainENN();
+    }
     else if( key==Qt::Key_B )
     {
 
@@ -135,7 +139,18 @@ void AbTrain::createENN()
 {
     qDebug() << "createENN";
     QQmlProperty::write(console_qml, "visible", true);
+    enn_console->prompt = "Tool>";
+    enn_console->run("cd ..\\Tool");
     enn_console->run("release\\BaTool.exe e");
+}
+
+void AbTrain::trainENN()
+{
+    qDebug() << "createENN";
+    QQmlProperty::write(console_qml, "visible", true);
+    enn_console->prompt = "ENN>";
+    enn_console->run("cd ..\\ENN");
+    enn_console->run("release\\ENN.exe");
 }
 
 void AbTrain::checkModelExist()

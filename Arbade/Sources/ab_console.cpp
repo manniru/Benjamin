@@ -177,7 +177,7 @@ void AbConsole::readyData(QString line, int flag)
         QString line_fmt;
         if( flag==AB_CONSOLE_ERROR )
         {
-            color = "#e66";
+            color = "#dcc2a9";
         }
         line_fmt = "<font style=\"color: ";
         line_fmt += color;

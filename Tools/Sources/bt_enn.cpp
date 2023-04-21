@@ -91,8 +91,8 @@ void BtEnn::startDecode()
         if( !sanityCheck(file_list[i]) )
         {
             shit_counter++;
-            qDebug() << "shit [" << shit_counter << "]"
-                     << file_list[i] << last_r.size();
+            qDebug("shit[%d] %s %d", shit_counter,
+                   file_list[i].toStdString().c_str(), last_r.size());
             bt_printResult(last_r);
             o_decoder->wav_id++;
             o_decoder->resetODecoder();
@@ -479,9 +479,6 @@ void BtEnn::fillExist()
     for( int i=0 ; i<len ; i++ )
     {
         QString path = enn_dir + words[i];
-        qDebug() << path;
         exist_list += QDir(path).entryList(QDir::Files);
     }
-
-    qDebug() << exist_list;
 }
