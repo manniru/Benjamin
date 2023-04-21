@@ -15,7 +15,6 @@ public:
                      QObject *parent = nullptr);
     void record();
     void stop();
-    void updateVerifyParam(QString filename);
 
 signals:
     void setStatus(int status);
@@ -32,11 +31,9 @@ private:
     QString wordToId(QVector<AbWord> result);
     void showWords(QVector<AbWord> words);
     void checkCategoryExist();
-    QString idsToWords(QVector<int> ids);
 
     AbRecorder *rec;
     AbWavWriter *wav_wr;
-    AbWavReader *wav_rd;
     AbStat *stat;
     QObject *root;//root qml object
     QObject *editor;//editor qml object

@@ -9,21 +9,18 @@
 class AbWavReader
 {
 public:
-    AbWavReader(int16_t *buffer, int sample_count);
+    AbWavReader();
     ~AbWavReader();
 
-    void read(QString filename);
+    double getPower(QString filename);
 
     QString category;
     double wave_time;
-    double power_dB;
 
 private:
-    void readWav();
-    void readWavHeader();
+    double calcPower();
+    void readHeader();
 
-    int16_t     *cy_buf;
-    int          buf_size;
-    QFile       *file;
+    QFile       *wav_file;
 };
 #endif // AB_WAV_READER_H

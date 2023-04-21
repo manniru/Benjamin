@@ -2,10 +2,11 @@
 #include <QQmlProperty>
 #include <QGuiApplication>
 
-AbVerify::AbVerify(AbEditor *ed, QObject *ui, QObject *parent) : QObject(parent)
+AbVerify::AbVerify(AbEditor *ed, QObject *ui, QObject *parent): QObject(parent)
 {
     root = ui;
     editor = ed;
+    wav_rd = new AbWavReader;
 
     query = root->findChild<QObject *>("Query");
 
@@ -280,4 +281,35 @@ void AbVerify::recRemove()
     int total_count = QQmlProperty::read(root, "ab_total_count_v").toInt();
     int rec_id  = total_count-count;
     editor->recRemove(rec_id, 0);
+}
+
+// verification and playing phase
+void AbVerify::updateVerifyParam(QString filename)
+{
+    double power = wav_rd->getPower(filename);
+    QQmlProperty::write(root, "ab_power", power);
+
+    QFileInfo wav_file(filename);
+    filename = wav_file.baseName();
+    QStringList id_strlist = filename.split("_", QString::SkipEmptyParts);
+    int len = id_strlist.size();
+    QVector<int> id_list;
+    for( int i=0 ; i<len ; i++ )
+    {
+        id_list.push_back(id_strlist[i].toInt());
+    }
+    QString words = idsToWords(id_list);
+    qDebug() << "ab_words" << words;
+    QQmlProperty::write(root, "ab_words", words);
+}
+
+QString AbVerify::idsToWords(QVector<int> ids)
+{
+    int len_id = ids.size();
+    QString ret;
+    for( int i=0 ; i<len_id ; i++ )
+    {
+        ret += "<" + editor->stat->lexicon[ids[i]] + "> ";
+    }
+    return ret.trimmed();
 }

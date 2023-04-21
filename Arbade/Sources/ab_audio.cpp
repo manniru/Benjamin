@@ -12,7 +12,6 @@ AbAudio::AbAudio(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
 
     rec = new AbRecorder(sample_count);
     wav_wr = new AbWavWriter(rec->cy_buf, sample_count);
-    wav_rd = new AbWavReader(rec->cy_buf, sample_count);
     read_timer = new QTimer();
     connect(rec, SIGNAL(updatePercent(int)),
             this, SLOT(updateTime(int)));
@@ -38,26 +37,6 @@ void AbAudio::stop()
 {
     QQmlProperty::write(root, "ab_elapsed_time", 0);
     read_timer->stop();
-}
-
-// verification and playing phase
-void AbAudio::updateVerifyParam(QString filename)
-{
-    wav_rd->read(filename);
-    QQmlProperty::write(root, "ab_power", wav_rd->power_dB);
-
-    QFileInfo wav_file(filename);
-    filename = wav_file.baseName();
-    QStringList id_strlist = filename.split("_", QString::SkipEmptyParts);
-    int len = id_strlist.size();
-    QVector<int> id_list;
-    for( int i=0 ; i<len ; i++ )
-    {
-        id_list.push_back(id_strlist[i].toInt());
-    }
-    QString words = idsToWords(id_list);
-    qDebug() << "ab_words" << words;
-    QQmlProperty::write(root, "ab_words", words);
 }
 
 void AbAudio::updateTime(int percent)
@@ -153,17 +132,6 @@ void AbAudio::breakTimeout()
         rec->reset();
     }
     read_timer->stop();
-}
-
-QString AbAudio::idsToWords(QVector<int> ids)
-{
-    int len_id = ids.size();
-    QString ret;
-    for( int i=0 ; i<len_id ; i++ )
-    {
-        ret += "<" + stat->lexicon[ids[i]] + "> ";
-    }
-    return ret.trimmed();
 }
 
 QString AbAudio::getRandPath(QString category)
