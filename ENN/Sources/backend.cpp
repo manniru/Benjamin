@@ -3,6 +3,7 @@
 #include <QDataStream>
 
 clock_t bt_last_clock;
+QString wsl_path = "";
 
 int getIntCommand(char *command)
 {
@@ -161,4 +162,42 @@ QStringList bt_parseLexicon(QString filename)
 
     words_file.close();
     return lexicon;
+}
+
+QString ab_getWslPath()
+{
+    QFileInfoList drives = QDir::drives();
+    int len = drives.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        QDir arch_dir(drives[i].filePath());
+        QFileInfoList dir_list = arch_dir.entryInfoList(QDir::Dirs);
+        int dirs_num = dir_list.size();
+        for( int j=0 ; j<dirs_num ; j++ )
+        {
+            if( dir_list[j].fileName()==AB_WSL_ROOT )
+            {
+                QString wsl_path = dir_list[j].filePath();
+                wsl_path.replace("/", "\\");
+                return wsl_path;
+            }
+        }
+    }
+
+    return "";
+}
+
+QString ab_getAudioPath()
+{
+#ifdef WIN32
+    QString audio_path = wsl_path;
+    if( audio_path.isEmpty() )
+    {
+        audio_path = ab_getWslPath();
+    }
+    audio_path += "\\Benjamin\\Nato\\audio\\";
+    return audio_path;
+#else
+    return KAL_AU_DIR;
+#endif
 }

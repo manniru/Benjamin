@@ -3,7 +3,8 @@
 // read one true sample from "word" data set
 EnnTest::EnnTest(QString word)
 {
-    data_dir = ENN_TRAIN_DIR + word + "/";
+    data_dir = ab_getAudioPath() + "enn";
+    data_dir += QDir::separator() + word + QDir::separator();
     readFirstSample();
 }
 

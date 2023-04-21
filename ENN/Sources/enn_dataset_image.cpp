@@ -6,15 +6,17 @@
 EnnDataset::EnnDataset(QString word, int test)
 {
     m_name = word;
+    QString enn_dir = ab_getAudioPath() + "enn";
+    enn_dir += QDir::separator();
 
     if( test )
     {
-        testFile(ENN_TRAIN_DIR);
+        testFile(enn_dir);
     }
     else
     {
-        parseImagesT(ENN_TRAIN_DIR);
-        parseImagesF(ENN_TRAIN_DIR);
+        parseImagesT(enn_dir);
+        parseImagesF(enn_dir);
     }
 
     shuffleData();

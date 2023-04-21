@@ -7,15 +7,18 @@ EnnDataset::EnnDataset(QString word, int id, int test)
     m_name = word;
     model_id = id;
 
+    QString enn_dir = ab_getAudioPath() + "enn";
+    enn_dir += QDir::separator();
+
     if( test )
     {
-        testFile(ENN_TRAIN_DIR);
+        testFile(enn_dir);
     }
     else
     {
         true_counter = 0;
-        parseTrues(ENN_TRAIN_DIR);
-        parseFalses(ENN_TRAIN_DIR);
+        parseTrues(enn_dir);
+        parseFalses(enn_dir);
     }
 
     shuffleData();
@@ -27,7 +30,8 @@ EnnDataset::~EnnDataset()
 
 void EnnDataset::parseTrues(QString path)
 {
-    QString path_m_name = path + m_name + "/";
+    QString path_m_name = path + m_name;
+    path_m_name += QDir::separator();
     QStringList filenames = enn_listDatas(path_m_name);
     int len = filenames.size();
 //    int len = 10;
@@ -42,7 +46,7 @@ void EnnDataset::parseTrues(QString path)
 
 void EnnDataset::parseFalses(QString path)
 {
-    QStringList false_dirs = enn_listDirs(path + "/");
+    QStringList false_dirs = enn_listDirs(path + QDir::separator());
 
     //remove true word dir
     int t_index = false_dirs.indexOf(m_name);
@@ -61,7 +65,8 @@ void EnnDataset::parseFalses(QString path)
         {
             if( isSuperFalse(filenames[j]) )
             {
-                QString img_address = path + false_dirs[i] + "/" + filenames[j];
+                QString img_address = path + false_dirs[i];
+                img_address += QDir::separator() + filenames[j];
                 addDataF(img_address, i, j);
             }
             else
@@ -143,7 +148,8 @@ void EnnDataset::shuffleData()
 
 void EnnDataset::testFile(QString path)
 {
-    QString path_m_name = path + m_name + "/";
+    QString path_m_name = path + m_name;
+    path_m_name += QDir::separator();
     QStringList data_filenames = enn_listDatas(path_m_name);
     int len = data_filenames.size();
 

@@ -29,7 +29,7 @@ EnnChapar::~EnnChapar()
 void EnnChapar::learnMode(float l_rate)
 {
     QStringList word_list = bt_parseLexicon(BT_WORDS_PATH);
-    while (1) // until all model reached target loss
+    while( 1 ) // until all model reached target loss
     {
         int learned_count = 0;
 
@@ -84,7 +84,10 @@ void EnnChapar::testMode()
 void EnnChapar::testFullMode()
 {
     setbuf(stdout,NULL);
-    QStringList word_list = enn_listDirs(ENN_TRAIN_DIR);
+
+    QString enn_dir = ab_getAudioPath() + "enn";
+    enn_dir += QDir::separator();
+    QStringList word_list = enn_listDirs(enn_dir);
 
     int len = word_list.size();
     for( int i=0 ; i<len ; i++ )
