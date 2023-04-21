@@ -28,8 +28,8 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setStatus(int)));
     connect(root, SIGNAL(setCategory()),
             this, SLOT(setCategory()));
-    connect(root, SIGNAL(setFocusWord(int)),
-            this, SLOT(setFocusWord(int)));
+    connect(root, SIGNAL(focusWordChanged()),
+            this, SLOT(focusWordChanged()));
     connect(editor->stat, SIGNAL(cacheCreated()),
             this, SLOT(cacheCreated()));
 
@@ -76,7 +76,6 @@ void AbScene::setStatusAudio(int status)
 
 void AbScene::verifierChanged()
 {
-    qDebug() << "verifierChanged";
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
 
     editor->updateStat();
@@ -91,6 +90,7 @@ void AbScene::verifierChanged()
     }
 
     editor->clearRecList();
+    focusWordChanged();
 }
 
 // start pause timer before playing out sample
@@ -135,9 +135,20 @@ void AbScene::setCategory()
     updateAutoCpmplete();
 }
 
-void AbScene::setFocusWord(int focus_word)
+void AbScene::focusWordChanged()
 {
     QString focus_text;
+    int focus_word;
+
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier )
+    {
+        focus_word = QQmlProperty::read(root, "ab_focus_word_v").toInt();
+    }
+    else
+    {
+        focus_word = QQmlProperty::read(root, "ab_focus_word").toInt();
+    }
     if( focus_word==-1 )
     {
         focus_text = "<empty>";
@@ -146,7 +157,14 @@ void AbScene::setFocusWord(int focus_word)
     {
         focus_text = editor->stat->idToWord(focus_word);
     }
-    QQmlProperty::write(root, "ab_focus_text", focus_text);
+    if( verifier )
+    {
+        QQmlProperty::write(root, "ab_focus_text_v", focus_text);
+    }
+    else
+    {
+        QQmlProperty::write(root, "ab_focus_text", focus_text);
+    }
 }
 
 void AbScene::breakTimeout()
@@ -169,6 +187,9 @@ void AbScene::processKey(int key)
     }
     else if( key==Qt::Key_W )
     {
+        // toggle all stat
+        int stat = QQmlProperty::read(root, "ab_all_stat").toInt();
+        QQmlProperty::write(root, "ab_all_stat", !stat);
         editor->updateStat();
     }
     else
@@ -204,6 +225,5 @@ void AbScene::cacheCreated()
         }
         QQmlProperty::write(root, "ab_total_count_v", count);
     }
-    int focus_id = QQmlProperty::read(root, "ab_focus_word").toInt();
-    setFocusWord(focus_id);
+    focusWordChanged();
 }

@@ -29,18 +29,15 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
 
     QString batool_dir = QDir::currentPath();
     batool_dir += "/../Tools";
-    qDebug() << "batool_dir" << batool_dir;
     enn_console->startConsole(batool_dir);
 }
 
 AbTrain::~AbTrain()
 {
+    enn_thread->exit();
+    con_thread->exit();
     delete enn_console;
     delete console;
-    enn_thread->exit();
-    delete enn_thread;
-    con_thread->exit();
-    delete con_thread;
 }
 
 void AbTrain::processKey(int key)
@@ -139,8 +136,8 @@ void AbTrain::createENN()
 {
     qDebug() << "createENN";
     QQmlProperty::write(console_qml, "visible", true);
-    enn_console->prompt = "Tool>";
-    enn_console->run("cd ..\\Tool");
+    enn_console->prompt = "Tools>";
+    enn_console->run("cd ..\\Tools");
     enn_console->run("release\\BaTool.exe e");
 }
 

@@ -33,7 +33,9 @@ ApplicationWindow
     property string ab_address: ""
     property string ab_auto_comp: ""
     property string ab_focus_text: ""
+    property string ab_focus_text_v: ""
     property int ab_focus_word: -1
+    property int ab_focus_word_v: -1
     property int ab_count: 0
     property int ab_total_count: 100
     property int ab_total_count_v: 100
@@ -57,7 +59,7 @@ ApplicationWindow
     signal sendKey(int key)
     signal setStatus(int st)
     signal verifierChanged()
-    signal setFocusWord(int fw)
+    signal focusWordChanged()
     signal saveWordList()
     signal setCategory()
 
@@ -94,6 +96,7 @@ ApplicationWindow
         property alias pausetime:       root.ab_rec_pause
         property alias verifypause:     root.ab_verify_pause
         property alias focusword:       root.ab_focus_word
+        property alias focusword_v:     root.ab_focus_word_v
         property alias verifier:        root.ab_verifier
         property alias allstat:         root.ab_all_stat
         property alias function_v:      root.default_func_v
@@ -136,7 +139,14 @@ ApplicationWindow
                      {
                          ab_total_count
                      }
-        focus_word: ab_focus_text
+        focus_word: if( ab_verifier )
+                    {
+                        ab_focus_text_v
+                    }
+                    else
+                    {
+                        ab_focus_text
+                    }
     }
 
     AbHelp
@@ -176,13 +186,27 @@ ApplicationWindow
             {
                 if( value==="" )
                 {
-                    ab_focus_word = -1;
+                    if( ab_verifier )
+                    {
+                        ab_focus_word_v = -1;
+                    }
+                    else
+                    {
+                        ab_focus_word = -1;
+                    }
                 }
                 else
                 {
-                    ab_focus_word = parseInt(value);
+                    if( ab_verifier )
+                    {
+                        ab_focus_word_v = parseInt(value);
+                    }
+                    else
+                    {
+                        ab_focus_word = parseInt(value);
+                    }
                 }
-                setFocusWord(ab_focus_word);
+                focusWordChanged();
             }
         }
     }
@@ -406,11 +430,7 @@ ApplicationWindow
     function execKey(key)
     {
         sendKey(key);
-        if( key===Qt.Key_W )
-        {
-            ab_all_stat = !ab_all_stat;
-        }
-        else if( key===Qt.Key_Escape )
+        if( key===Qt.Key_Escape )
         {
             if( console_box.visible )
             {

@@ -190,4 +190,3 @@ void BtNetwork::saveWave(int start, int len, QString word)
 
 //    wav_w->writeEnn(path, word_len);
 }
-

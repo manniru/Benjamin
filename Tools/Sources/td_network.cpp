@@ -37,12 +37,12 @@ TdNetwork::~TdNetwork()
 {
 }
 
-
 vec_t TdNetwork::predict(float *data, int len)
 {
     layers.front()->set_in_data(data, len);
 
-    for( int i=0 ; i<layers.size() ; i++ )
+    int l_len = layers.size();
+    for( int i=0 ; i<l_len ; i++ )
     {
         layers[i]->forward();
     }
@@ -55,10 +55,11 @@ vec_t TdNetwork::predict(float *data, int len)
 
 void TdNetwork::load_connections()
 {
-    for( size_t i = 0; i < layers.size() - 1; i++)
+    int len = layers.size()-1;
+    for( int i=0; i<len ; i++ )
     {
-        auto head = layers[i];
-        auto tail = layers[i + 1];
+        tiny_dnn::layer *head = layers[i];
+        tiny_dnn::layer *tail = layers[i + 1];
         tiny_dnn::connect(head, tail, 0, 0);
     }
 }
