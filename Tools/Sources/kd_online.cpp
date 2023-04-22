@@ -61,6 +61,7 @@ void KdOnline::startDecode()
         c_result = o_decoder->getResult(&out_fst);
         processResult(c_result);
 
+        //if finished
         if( o_decoder->status.state!=KD_STATE_NORMAL )
         {
             cap->flush();

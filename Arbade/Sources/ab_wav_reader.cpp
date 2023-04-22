@@ -61,7 +61,7 @@ double AbWavReader::calcPower()
 {
     readHeader();
 
-    double power_dB;
+    double power_dB = 0;
     int16_t dummy = 0;
     int16_t  value;
     double sum_sq = 0;

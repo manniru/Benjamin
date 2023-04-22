@@ -125,7 +125,7 @@ void AbScene::startPauseV()
 void AbScene::loadVerifyFile()
 {
     QString file_path = editor->stat->cache_files[0].last();
-    verify->updateVerifyParam(file_path);
+    verify->updateParam(file_path);
     QQmlProperty::write(root, "ab_address", file_path);
 }
 

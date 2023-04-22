@@ -213,7 +213,7 @@ void AbTrain::addTestSample(int count)
         QString new_path = test_path+info.fileName();
         file.copy(new_path);
         file.remove();
-        stat->cache_files[cat_id].remove(sample_id);
+        stat->deleteCache(cat_id, sample_id);
     }
 }
 

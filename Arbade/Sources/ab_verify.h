@@ -15,7 +15,7 @@ public:
                      QObject *parent = nullptr);
 
     QString wrongAll(QString file_path);
-    void updateVerifyParam(QString filename);
+    void updateParam(QString filename);
 
 private slots:
     void moveToOnline();

@@ -155,14 +155,26 @@ void AbEditor::resetProcess()
 
 void AbEditor::timerEdTimeout()
 {
-    QString category = QQmlProperty::read(editor, "category").toString();
+    QString category = AB_UNVER;
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier==0 )
+    {
+        category = QQmlProperty::read(editor, "category").toString();
+    }
+
     stat->createWordEditor(category);
     timer_editor->stop();
 }
 
 void AbEditor::timerRecTimeout()
 {
-    QString category = QQmlProperty::read(editor, "category").toString();
+    QString category = AB_UNVER;
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier==0 )
+    {
+        category = QQmlProperty::read(editor, "category").toString();
+    }
+
     stat->createRecList(category);
     timer_rec->stop();
 }
@@ -271,25 +283,35 @@ void AbEditor::updateStatAll()
 
 void AbEditor::createList()
 {
-    QString category = QQmlProperty::read(editor, "category").toString();
+    QString category = AB_UNVER;
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier==0 )
+    {
+        category = QQmlProperty::read(editor, "category").toString();
+    }
     emit create(category);
 }
 
 void AbEditor::updateStatCat()
 {
     int len_lines = editor_lines.length();
-    QString category = QQmlProperty::read(editor, "category").toString();
-    QVector<int> word_count = stat->getCategoryCount(category);
-    int len_stat = word_count.length();
+    QString category = AB_UNVER;
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier==0 )
+    {
+        category = QQmlProperty::read(editor, "category").toString();
+    }
+    QVector<int> *word_count = stat->getCategoryCount(category);
+    int len_stat = word_count->length();
     for( int i=0 ; i<len_stat ; i++ )
     {
         if( i<len_lines )
         {
             QQmlProperty::write(editor_lines[i],
-                                "word_count", word_count[i]);
+                                "word_count", word_count->at(i));
         }
     }
-    stat->updateMeanVar(&word_count);
+    stat->updateMeanVar(word_count);
 }
 
 void AbEditor::updateStat()

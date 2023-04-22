@@ -284,7 +284,7 @@ void AbVerify::recRemove()
 }
 
 // verification and playing phase
-void AbVerify::updateVerifyParam(QString filename)
+void AbVerify::updateParam(QString filename)
 {
     double power = wav_rd->getPower(filename);
     QQmlProperty::write(root, "ab_power", power);
