@@ -26,6 +26,7 @@ SOURCES += Sources/main.cpp \
            Sources/mm_nt_user.cpp \
            Sources/mm_parser.cpp \
            Sources/mm_sound.cpp \
+           Sources/mm_usage.cpp \
            Sources/mm_virt.cpp \
            Sources/mm_watcher.cpp \
            Sources/mm_win32.cpp \
@@ -35,7 +36,7 @@ win32:LIBS += -L../PNN/libs \
              -lKernel32 -lUser32 -lole32 \
              -luuid -loleaut32 -loleacc \
              -lDwmapi -lPsapi -lSetupapi \
-             -lPowrProf -llua54
+             -lPowrProf -llua54 -lPdh
 
 win32:INCLUDEPATH += ../PNN/lua
 
@@ -62,6 +63,7 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_nt_user.h \
            Sources/mm_parser.h \
            Sources/mm_sound.h \
+           Sources/mm_usage.h \
            Sources/mm_virt.h \
            Sources/mm_watcher.h \
            Sources/mm_win32.h \

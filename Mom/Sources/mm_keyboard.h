@@ -45,7 +45,7 @@ private slots:
 private:
     void SetSide();
     void goToSleep();
-    void fakePress();
+    void fakePress(int exec_start);
     void fakeRelease(int key_code);
     //return true if the key_code is inside the captured key
     int  isSuppressed(int key_code);

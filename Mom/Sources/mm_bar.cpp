@@ -6,6 +6,7 @@ MmBar::MmBar(QObject *root, MmVirt *vi,
 {
     parser = new MmParser;
     sound  = new MmSound;
+    usage  = new MmUsage;
     virt   = vi;
     // List ui
     left_bar  = root->findChild<QObject*>("LeftBar");
@@ -60,7 +61,7 @@ void MmBar::loadLabels()
 
     //add soundbar widget
     side  = right_bar;
-    r_id += addSound();
+    r_id += addRWidget();
 
     for( int i=0 ; i<file_list.length() ; i++ )
     {
@@ -112,20 +113,34 @@ int MmBar::addWorkID()
     return len;
 }
 
-int MmBar::addSound()
+int MmBar::addRWidget()
 {
-    MmLabel sound_lbl;
-    QString lbl_val = sound->getLabel();
-    QVector<MmLabel> out;
-    parser->parse(lbl_val, &out);
+    int ret;
+    MmLabel usage_lbl;
+    QString usage_val = usage->getLabel();
+    QVector<MmLabel> out_usage;
+    parser->parse(usage_val, &out_usage);
 
-    int len = out.length();
+    int len = out_usage.length();
     for(int i=0 ; i<len ; i++ )
     {
-        updateLabel(i, &(out[i]));
+        updateLabel(i, &(out_usage[i]));
     }
+    ret = len;
 
-    return len;
+    MmLabel sound_lbl;
+    QString sound_val = sound->getLabel();
+    QVector<MmLabel> out_sound;
+    parser->parse(sound_val, &out_sound);
+
+    len = out_sound.length();
+    for(int i=0 ; i<len ; i++ )
+    {
+        updateLabel(i+ret, &(out_sound[i]));
+    }
+    ret += len;
+
+    return ret;
 }
 
 QString MmBar::getWorkStr(int index)

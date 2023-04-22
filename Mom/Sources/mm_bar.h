@@ -5,6 +5,7 @@
 #include "mm_config.h"
 #include "mm_parser.h"
 #include "mm_sound.h"
+#include "mm_usage.h"
 #include "mm_virt.h"
 
 class MmBar : public QObject
@@ -21,7 +22,7 @@ private slots:
 private:
     void    parseProps(QString raw, MmProperty *properties);
     int addWorkID(); // add workspace ID
-    int addSound();  // add sound widget
+    int addRWidget();  // add sound widget
     QString getWorkStr(int index);
     void    addLabel(MmLabel *label);
     void    updateUI(int id, MmLabel *label);
@@ -40,6 +41,7 @@ private:
     MmParser *parser;
     MmVirt   *virt;
     MmSound  *sound;
+    MmUsage  *usage;
 
     // These are buffers to help reduce number of updates
     // requests need

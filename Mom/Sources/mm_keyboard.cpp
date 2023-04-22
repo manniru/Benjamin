@@ -140,7 +140,7 @@ int MmKeyboard::procPressKey(int key_code)
             else
             { // press all captured keys
                 qDebug() << "fakePress";
-                fakePress();
+                fakePress(0);
             }
             return ret;
         }
@@ -190,7 +190,13 @@ int MmKeyboard::procReleaseKey(int key_code)
         {
             pk_buf[0] = VK_APPS;
         }
-        fakePress();
+        int exec_start = 0;
+        if( key_code==VK_LWIN ||
+            key_code==VK_RWIN  )
+        {
+            exec_start = 1;
+        }
+        fakePress(exec_start);
     }
 
     return 0;
@@ -202,7 +208,7 @@ void MmKeyboard::SetSide()
 
 }
 
-void MmKeyboard::fakePress()
+void MmKeyboard::fakePress(int exec_start)
 {
     emul_mode = 1;
 
@@ -211,6 +217,11 @@ void MmKeyboard::fakePress()
     {
         int key = pk_buf[i];
         e_key->pressKey(key);
+    }
+
+    if( len==1 && exec_start )
+    {
+        e_key->releaseKey(pk_buf[0]);
     }
 
     pk_buf.clear();
