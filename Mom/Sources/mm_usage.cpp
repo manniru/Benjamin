@@ -18,7 +18,7 @@ MmUsage::MmUsage(QObject *parent) : QObject(parent)
     {
         cpu_history[i] = 0;
     }
-    timer->start(100);
+    timer->start(200);
 }
 
 MmUsage::~MmUsage()

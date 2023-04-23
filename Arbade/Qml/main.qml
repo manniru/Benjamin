@@ -45,10 +45,11 @@ ApplicationWindow
     property real ab_rec_time: 3
     property int ab_num_words: 3
     property int ab_num_words_v: 3
+    property int ab_verifier: 0
+    property int ab_verify_id: 0
     property real ab_rec_pause: 1.0
     property real ab_verify_pause: 0.5
     property real ab_power: 0
-    property int ab_verifier: 0
     property real ab_start_now: 0
 
     signal startPauseV()
@@ -357,7 +358,6 @@ ApplicationWindow
 
         onStopped:
         {
-            console.log("FKK", flag_kesafat_kari)
             if( flag_kesafat_kari==0 )
             {
                 ab_status = ab_const.ab_STATUS_DECPAUESE;

@@ -357,7 +357,7 @@ QString AbStat::idToWord(int id)
     }
 }
 
-void AbStat::moveToOnline()
+void AbStat::moveToOnline(int id)
 {
     QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
@@ -367,8 +367,8 @@ void AbStat::moveToOnline()
         QString dir_name = dir_list[i].baseName();
         if( dir_name=="online" )
         {
-            cache_files[i] << cache_files[0].last();
-            deleteCache(AB_UNVER_ID, cache_files[0].length()-1);
+            cache_files[i] << cache_files[0][id];
+            deleteCache(AB_UNVER_ID, id);
         }
     }
 }
@@ -408,10 +408,4 @@ void AbStat::deleteCache(int cat_id, int i)
 {
     cache_files[cat_id].remove(i);
     // cache_count[i] = getCount(&cache_files[i]);
-}
-
-void AbStat::deleteCacheLast(int cat_id)
-{
-    int last_id = cache_files[cat_id].length()-1;
-    deleteCache(cat_id, last_id);
 }

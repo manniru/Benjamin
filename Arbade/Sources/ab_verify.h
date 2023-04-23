@@ -16,7 +16,6 @@ public:
 
     QString wrongAll(QString file_path);
     void loadNext();
-    void deleteCacheLast(int cat_id);
 
 private slots:
     void moveToOnline();
@@ -31,6 +30,8 @@ private:
     QVector<QString> createWrongList(QString in);
     QString idToWord(QString filename, QString id);
     void    recRemove();
+    int     getId();
+    QString getNext();
     QString idsToWords(QVector<int> ids);
 
     QVector<QString> w_shortcut;

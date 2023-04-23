@@ -25,11 +25,10 @@ public:
     void createWordEditor(QString category);
     void createRecList(QString category);
     void updateMeanVar(QVector<int> *count);
-    void moveToOnline();
+    void moveToOnline(int id);
     QString idToWord(int id);
     void deleteCache(QString category, int i);
     void deleteCache(int cat_id, int i);
-    void deleteCacheLast(int cat_id);
 
     QString dif_editor;
     QStringList lexicon;

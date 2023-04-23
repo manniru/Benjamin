@@ -111,7 +111,7 @@ void AbScene::startPauseV()
     {
         count++;
         setStatus(AB_STATUS_BREAK);
-        loadVerifyFile();
+        verify->loadNext();
         QQmlProperty::write(root, "ab_count", count);
         float pause_time = QQmlProperty::read(root, "ab_verify_pause").toFloat();
         break_timer->start(pause_time * 1000);
@@ -121,13 +121,6 @@ void AbScene::startPauseV()
         setStatus(AB_STATUS_STOP);
     }
 }
-
-void AbScene::loadVerifyFile(int id)
-{
-    verify->loadNext();
-    QQmlProperty::write(root, "ab_address", file_path);
-}
-
 void AbScene::setCategory()
 {
     editor->updateStat();
