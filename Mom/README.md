@@ -12,3 +12,8 @@ Mom is an application thats only available for the Win32 platforms, for linux ju
 This project wouldn't be possible without the help of:
 - S. Dadashi
 - Dr. E. Akhavan
+
+## Good To Know
+https://illuminati.services/2021/03/17/windows-10-task-manager-cpu-inaccurate-a-tale-of-two-metrics/
+https://aaron-margosis.medium.com/task-managers-cpu-numbers-are-all-but-meaningless-2d165b421e43
+https://github.com/XhmikosR/perfmonbar/issues/19

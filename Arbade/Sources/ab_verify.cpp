@@ -193,7 +193,7 @@ void AbVerify::execWrongKey(int key)
     QFile file(old_path);
     file.copy(new_path);
 //    file.remove();
-    editor->stat->cache_files[0].removeLast();
+    editor->stat->deleteCacheLast(AB_UNVER_ID);
     recRemove();
 }
 
@@ -243,7 +243,7 @@ void AbVerify::deleteFile()
     QString new_path = wrongAll(file_path);
     file.copy(new_path);
 //    file.remove();
-    editor->stat->cache_files[0].removeLast();
+    editor->stat->deleteCacheLast(AB_UNVER_ID);
     recRemove();
 }
 
@@ -252,7 +252,7 @@ void AbVerify::trashFile()
     QString file_path = editor->stat->cache_files[0].last();
     QFile file(file_path);
 //    file.remove();
-    editor->stat->cache_files[0].removeLast();
+    editor->stat->deleteCacheLast(AB_UNVER_ID);
     recRemove();
 }
 
@@ -284,8 +284,9 @@ void AbVerify::recRemove()
 }
 
 // verification and playing phase
-void AbVerify::updateParam(QString filename)
+void AbVerify::loadNext()
 {
+    QString filename = editor->stat->cache_files[0].last();
     double power = wav_rd->getPower(filename);
     QQmlProperty::write(root, "ab_power", power);
 
@@ -301,6 +302,7 @@ void AbVerify::updateParam(QString filename)
     QString words = idsToWords(id_list);
     qDebug() << "ab_words" << words;
     QQmlProperty::write(root, "ab_words", words);
+    QQmlProperty::write(root, "ab_address", filename);
 }
 
 QString AbVerify::idsToWords(QVector<int> ids)

@@ -29,6 +29,7 @@ public:
     QString idToWord(int id);
     void deleteCache(QString category, int i);
     void deleteCache(int cat_id, int i);
+    void deleteCacheLast(int cat_id);
 
     QString dif_editor;
     QStringList lexicon;

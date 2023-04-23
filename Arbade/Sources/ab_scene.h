@@ -31,7 +31,7 @@ private slots:
 private:
     void fillRecParams();
     void updateAutoCpmplete();
-    void loadVerifyFile();
+    void loadVerifyFile(int id);
 
     QObject *root;       // root qml object
     QObject *qml_editor; // editor qml object

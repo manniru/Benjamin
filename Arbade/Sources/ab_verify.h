@@ -15,7 +15,8 @@ public:
                      QObject *parent = nullptr);
 
     QString wrongAll(QString file_path);
-    void updateParam(QString filename);
+    void loadNext();
+    void deleteCacheLast(int cat_id);
 
 private slots:
     void moveToOnline();

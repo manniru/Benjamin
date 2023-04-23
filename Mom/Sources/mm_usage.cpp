@@ -3,18 +3,8 @@
 
 MmUsage::MmUsage(QObject *parent) : QObject(parent)
 {
-//    HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
-//                                    CLSCTX_INPROC_SERVER,
-//                                    IID_PPV_ARGS(&device_enum));
-//    if( hr )
-//    {
-//        qDebug() << "CoCreateInstance MMDeviceEnumerator failed"
-//                 << hr;
-//        return;
-//    }
     PdhOpenQuery(NULL, NULL, &cpuQuery);
-    // You can also use L"\\Processor(*)\\% Processor Time" and get individual CPU values with PdhGetFormattedCounterArray()
-    PdhAddCounter(cpuQuery, L"\\Processor(_Total)\\% Processor Time",
+    PdhAddCounter(cpuQuery, L"\\Processor Information(_Total)\\% Processor Utility",
                          NULL, &cpuTotal);
     PdhCollectQueryData(cpuQuery);
 
@@ -24,6 +14,10 @@ MmUsage::MmUsage(QObject *parent) : QObject(parent)
 
     cpu_usage  = 0;
     history_id = 0;
+    for( int i=0 ; i<MOM_HISTORY_LEN ; i++ )
+    {
+        cpu_history[i] = 0;
+    }
     timer->start(100);
 }
 
@@ -55,18 +49,7 @@ void MmUsage::updateCpuUsage()
     PdhGetFormattedCounterValue(cpuTotal, PDH_FMT_DOUBLE | PDH_FMT_NOCAP100,
                                 NULL, &counterVal);
 
-    cpu_history[history_id] = counterVal.doubleValue;
-//    FILETIME a0, a1, a2;
-
-//    GetSystemTimes(&a0, &a1, &a2);
-
-//    uint64_t idl = FromFileTime( a0 );
-//    uint64_t ker = FromFileTime( a1 );
-//    uint64_t usr = FromFileTime( a2 );
-
-//    uint64_t cpu = (ker + usr) * 100 / (ker + usr + idl);
-//    cpu_history[history_id] = (ker + usr) * 100 / (ker + usr + idl);
-//    qDebug()<< "cpu = " << cpu;
+    cpu_history[history_id] = qRound(counterVal.doubleValue);
 
     history_id++;
     if( history_id>=MOM_HISTORY_LEN )
@@ -79,7 +62,7 @@ void MmUsage::updateCpuUsage()
     {
         sum += cpu_history[i];
     }
-    cpu_usage = sum/MOM_HISTORY_LEN;
+    cpu_usage = qRound(sum/MOM_HISTORY_LEN);
 }
 
 uint64_t MmUsage::FromFileTime( const FILETIME& ft )

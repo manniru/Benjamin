@@ -404,9 +404,14 @@ void AbStat::deleteCache(QString category, int i)
     deleteCache(cat_id,i);
 }
 
-
 void AbStat::deleteCache(int cat_id, int i)
 {
     cache_files[cat_id].remove(i);
     // cache_count[i] = getCount(&cache_files[i]);
+}
+
+void AbStat::deleteCacheLast(int cat_id)
+{
+    int last_id = cache_files[cat_id].length()-1;
+    deleteCache(cat_id, last_id);
 }
