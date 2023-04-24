@@ -6,7 +6,8 @@
 
 AbConsole::AbConsole(QObject *ui, QObject *parent) : QObject(parent)
 {
-    is_ready = 0;
+    is_ready = 1;
+    init_shit = 1;
     root = ui;
     console_qml = root->findChild<QObject*>("Console");
 
@@ -31,6 +32,7 @@ AbConsole::AbConsole(QObject *ui, QObject *parent) : QObject(parent)
 
 AbConsole::~AbConsole()
 {
+    qDebug() << "Terminating Process";
     TerminateProcess(piProcInfo.hProcess, 255);
     CloseHandle(piProcInfo.hProcess);
     CloseHandle(piProcInfo.hThread);
@@ -150,6 +152,7 @@ void AbConsole::run(QString cmd)
 {
     DWORD dwWritten;
     cmd += "\n";
+    init_shit = 0;
 
     if( is_ready )
     {
@@ -167,6 +170,10 @@ void AbConsole::run(QString cmd)
 
 void AbConsole::readyData(QString line, int flag)
 {
+    if( init_shit )
+    {
+        return;
+    }
     processLine(line);
 
     QString color = "#ccc";
@@ -174,23 +181,36 @@ void AbConsole::readyData(QString line, int flag)
     int count = lines.count();
     for( int i=0; i<count ; i++)
     {
-        QString line_fmt;
-        if( flag==AB_CONSOLE_ERROR )
+        if( lines[i]=="\r" || lines[i].isEmpty() )
         {
-            color = "#dcc2a9";
+            continue;
         }
-        line_fmt = "<font style=\"color: ";
-        line_fmt += color;
-        line_fmt += ";\">";
-        line_fmt += lines[i];
-        line_fmt += "</font>";
+//        QString line_fmt;
+//        if( flag==AB_CONSOLE_ERROR )
+//        {
+//            color = "#dcc2a9";
+//        }
+//        line_fmt = "<font style=\"color: ";
+//        line_fmt += color;
+//        line_fmt += ";\">";
+//        line_fmt += lines[i];
+//        line_fmt += "</font>";
 
-        if( i<count-1 )
+//        if( i<count-1 )
+//        {
+//            line_fmt += "<br>";
+//        }
+//        QQmlProperty::write(console_qml, "line_buf", line_fmt);
+        if( lines[i].contains("\r") )
         {
-            line_fmt += "<br>";
+            QQmlProperty::write(console_qml, "line_buf", lines[i]+"\n");
+            QMetaObject::invokeMethod(console_qml, "addLine");
         }
-        QQmlProperty::write(console_qml, "line_buf", line_fmt);
-//        qDebug() << i << "line_fmt" << line_fmt;
-        QMetaObject::invokeMethod(console_qml, "addLine");
+        else
+        {
+            QQmlProperty::write(console_qml, "line_buf", lines[i]);
+            QMetaObject::invokeMethod(console_qml, "addText");
+        }
+        qDebug() << i << "line_fmt" << lines[i];
     }
 }

@@ -120,7 +120,7 @@ void AbTrain::initWsl()
 
 void AbTrain::train()
 {
-    qDebug() << "train KalB";
+    qDebug() << "train KalB" << wsl_path;
     QQmlProperty::write(console_qml, "visible", true);
 
     int test_count = needTestCount();

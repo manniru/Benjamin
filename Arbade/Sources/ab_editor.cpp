@@ -62,6 +62,11 @@ void AbEditor::wordAddedRec(int id)
 
 void AbEditor::recRemove(int id, int f_focus)
 {
+    if( id>=rec_lines.length() )
+    {
+        //unbuffered index
+        return;
+    }
     QString path = QQmlProperty::read(rec_lines[id], "path").toString();
 
     QVariant id_v(id);

@@ -41,6 +41,7 @@ private:
     QThread *out_thread;
 
     int is_ready;
+    int init_shit; //flag to skip printing cmd initial welcome message
     QVector<QString> commands;
 
     QObject   *root;    // root qml object

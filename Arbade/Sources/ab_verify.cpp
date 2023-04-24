@@ -55,6 +55,11 @@ void AbVerify::generateWrongForms()
 
     QString wrong_path = ab_getAudioPath() + "wrong\\";
     int len = w_path.length();
+    if( len>35 )
+    {
+        len = 35;
+    }
+
     for( int i=0 ; i<len; i++ )
     {
         if( name_extended.size()>1 )
@@ -179,8 +184,12 @@ void AbVerify::execWrongKey(int key)
     }
     else if( key==Qt::Key_Z )
     {
-        moveToOnline();
+        trashFile();
         recRemove();
+        return;
+    }
+    else
+    {
         return;
     }
 
@@ -194,7 +203,7 @@ void AbVerify::execWrongKey(int key)
     QString new_path = w_path[id];
     QFile file(old_path);
     file.copy(new_path);
-//    file.remove();
+    file.remove();
     editor->stat->deleteCache(AB_UNVER_ID, cache_id);
     recRemove();
 }
@@ -231,9 +240,10 @@ void AbVerify::moveToOnline()
     QString file_path = editor->stat->cache_files[0][id];
     QString online_path = ab_getAudioPath() + "train\\online\\";
     QFile file(file_path);
-    online_path += file.fileName();
+    QFileInfo info(file_path);
+    online_path += info.fileName();
     file.copy(online_path);
-//    file.remove();
+    file.remove();
     editor->stat->moveToOnline(id);
 
     recRemove();
@@ -256,7 +266,7 @@ void AbVerify::trashFile()
     int id = getId();
     QString file_path = editor->stat->cache_files[0][id];
     QFile file(file_path);
-//    file.remove();
+    file.remove();
     editor->stat->deleteCache(AB_UNVER_ID, id);
     recRemove();
 }
