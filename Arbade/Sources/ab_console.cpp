@@ -151,7 +151,7 @@ void AbConsole::wsl_run(QString cmd)
 void AbConsole::run(QString cmd)
 {
     DWORD dwWritten;
-    cmd += "\n";
+    cmd += "\r\n";
     init_shit = 0;
 
     if( is_ready )
@@ -206,11 +206,16 @@ void AbConsole::readyData(QString line, int flag)
             QQmlProperty::write(console_qml, "line_buf", lines[i]+"\n");
             QMetaObject::invokeMethod(console_qml, "addLine");
         }
-        else
+        else if( lines[i].contains(prompt)==0 )
         {
             QQmlProperty::write(console_qml, "line_buf", lines[i]);
             QMetaObject::invokeMethod(console_qml, "addText");
         }
-        qDebug() << i << "line_fmt" << lines[i];
+        else //prompt line
+        {
+            QQmlProperty::write(console_qml, "line_buf", prompt + " ");
+            QMetaObject::invokeMethod(console_qml, "addText");
+        }
+        qDebug() << i << "line_fmt" << lines[i] << line;
     }
 }

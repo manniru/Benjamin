@@ -35,7 +35,7 @@ void AbConsoleHandle::readData()
         // to support clink
         output = output.replace("\b", "");
         emit readyData(output, flag);
-        qDebug() << flag << output;
+//        qDebug() << "hi" << flag << output;
     }
     qDebug() << "THREAD CRASHED";
 }

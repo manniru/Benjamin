@@ -84,9 +84,8 @@ void AbInitWSL::uncompImage(QString path)
 
 int AbInitWSL::checkWSLInstalled()
 {
-//    QString output = getStrCommand("wsl -l");
-    QString output = getStrCommand("echo hello");
-    qDebug() << output;
+    QString output = getStrCommand("wsl -l");
+    qDebug() << "checkWSLInstalled" << output;
     if( output.isEmpty() )
     {
         return 0;
