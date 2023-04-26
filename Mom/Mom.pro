@@ -23,6 +23,7 @@ SOURCES += Sources/main.cpp \
            Sources/mm_label.cpp \
            Sources/mm_lua.cpp \
            Sources/mm_monitor.cpp \
+           Sources/mm_music.cpp \
            Sources/mm_nt_user.cpp \
            Sources/mm_parser.cpp \
            Sources/mm_sound.cpp \
@@ -60,6 +61,7 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_label.h \
            Sources/mm_lua.h \
            Sources/mm_monitor.h \
+           Sources/mm_music.h \
            Sources/mm_nt_user.h \
            Sources/mm_parser.h \
            Sources/mm_sound.h \

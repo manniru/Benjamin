@@ -7,15 +7,16 @@ MmBar::MmBar(QObject *root, MmVirt *vi,
     parser = new MmParser;
     sound  = new MmSound;
     usage  = new MmUsage;
+    music  = new MmMusic;
     virt   = vi;
     // List ui
     left_bar  = root->findChild<QObject*>("LeftBar");
     right_bar = root->findChild<QObject*>("RightBar");
 
     connect(left_bar, SIGNAL(executeAction(QString)),
-            this, SLOT(executeCommand(QString)));
+            this, SLOT(executeAction(QString)));
     connect(right_bar, SIGNAL(executeAction(QString)),
-            this, SLOT(executeCommand(QString)));
+            this, SLOT(executeAction(QString)));
 
     // Timer
     timer = new QTimer(this);
@@ -23,7 +24,7 @@ MmBar::MmBar(QObject *root, MmVirt *vi,
     timer->start(MM_BAR_TIMEOUT);
 }
 
-void MmBar::executeCommand(QString action)
+void MmBar::executeAction(QString action)
 {
     if( action=="sound" )
     {
@@ -36,6 +37,18 @@ void MmBar::executeCommand(QString action)
     else if( action=="vol_down" )
     {
         sound->volumeDown();
+    }
+    else if( action=="prev" )
+    {
+        music->prevClick();
+    }
+    else if( action=="play" )
+    {
+        music->playClick();
+    }
+    else if( action=="next" )
+    {
+        music->nextClick();
     }
     else
     {
@@ -116,17 +129,29 @@ int MmBar::addWorkID()
 int MmBar::addRWidget()
 {
     int ret;
+    MmLabel music_lbl;
+    QString music_val = music->getLabel();
+    QVector<MmLabel> out_music;
+    parser->parse(music_val, &out_music);
+
+    int len = out_music.length();
+    for(int i=0 ; i<len ; i++ )
+    {
+        updateLabel(i, &(out_music[i]));
+    }
+    ret = len;
+
     MmLabel usage_lbl;
     QString usage_val = usage->getLabel();
     QVector<MmLabel> out_usage;
     parser->parse(usage_val, &out_usage);
 
-    int len = out_usage.length();
+    len = out_usage.length();
     for(int i=0 ; i<len ; i++ )
     {
-        updateLabel(i, &(out_usage[i]));
+        updateLabel(i+ret, &(out_usage[i]));
     }
-    ret = len;
+    ret += len;
 
     MmLabel sound_lbl;
     QString sound_val = sound->getLabel();

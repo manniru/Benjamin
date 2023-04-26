@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "mm_config.h"
+#include "mm_music.h"
 #include "mm_parser.h"
 #include "mm_sound.h"
 #include "mm_usage.h"
@@ -16,7 +17,7 @@ public:
                    QObject *parent = nullptr);
 
 private slots:
-    void executeCommand(QString action);
+    void executeAction(QString action);
     void loadLabels();
 
 private:
@@ -42,6 +43,7 @@ private:
     MmVirt   *virt;
     MmSound  *sound;
     MmUsage  *usage;
+    MmMusic  *music;
 
     // These are buffers to help reduce number of updates
     // requests need
