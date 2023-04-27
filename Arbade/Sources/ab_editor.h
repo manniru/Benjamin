@@ -16,6 +16,7 @@ public:
 
     AbStat  *stat;
     QThread *stat_thread;
+    QString  dif_wordlist;
     QVector<QObject *> editor_lines;
     QVector<QObject *> rec_lines;
 

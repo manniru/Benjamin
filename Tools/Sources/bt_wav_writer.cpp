@@ -67,9 +67,9 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
 
     exemption_list << "kick";
     exemption_list << "side";
-//    exemption_list << "copy";
-//    exemption_list << "paste";
-//    exemption_list << "switch";
+    exemption_list << "copy";
+    exemption_list << "paste";
+    exemption_list << "switch";
 }
 
 BtWavWriter::~BtWavWriter()
@@ -269,6 +269,10 @@ int BtWavWriter::snRec(int num, QVector<BtWord> result)
             {
                 return 1; // skip if exist
             }
+        }
+        else
+        {
+            return 1; // skip more than one word
         }
     }
 

@@ -20,6 +20,7 @@ public:
 
     QVector<int>* getCategoryCount(QString category);
     QVector<int>  getAllCount();
+    int  wordToIndex(QString word);
     void addWord(QString word, int count, QString phoneme);
     void addRecList(QString word, QString path);
     void createWordEditor(QString category);
@@ -29,6 +30,7 @@ public:
     QString idToWord(int id);
     void deleteCache(QString category, int i);
     void deleteCache(int cat_id, int i);
+    void delAllSamples(int word_id);
 
     QString dif_editor;
     QStringList lexicon;
@@ -40,7 +42,6 @@ signals:
     void cacheCreated();
 
 private slots:
-    void delWordSamples();
     void deleteSample(QString sample);
     void create(QString catagorys);
     void update();
@@ -49,11 +50,10 @@ private:
     void createCache();
     QVector<QString>* loadCacheFiles(QString category);
     QVector<int> getCount(QVector<QString> *file_list);
-    QVector<int> makeDelList();
-    int wordToIndex(QString word);
     int meanCount(QVector<int> *count);
     int varCount(QVector<int> *count, int mean);
     int catToIndex(QString category);
+    int haveWord(int word_id, QString path);
 
     QObject *root;//root qml object
     QObject *editor;//word editor qml object

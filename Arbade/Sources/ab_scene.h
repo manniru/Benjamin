@@ -27,6 +27,7 @@ private slots:
     void focusWordChanged();
     void createEditor();
     void cacheCreated();
+    void deleteAllSamples();
 
 private:
     void fillRecParams();

@@ -14,8 +14,6 @@ AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
 
     connect(root, SIGNAL(deleteSample(QString)),
             this, SLOT(deleteSample(QString)));
-    connect(editor, SIGNAL(updateDifWords()),
-            this, SLOT(delWordSamples()));
 }
 
 QVector<int> AbStat::getCount(QVector<QString> *file_list)
@@ -222,15 +220,8 @@ void AbStat::updateMeanVar(QVector<int> *count)
     QQmlProperty::write(buttons, "variance", var);
 }
 
-void AbStat::delWordSamples()
+void AbStat::delAllSamples(int word_id)
 {
-    QVector<int> del_list = makeDelList();
-    int len = del_list.size();
-    if( len==0 )
-    {
-        return;
-    }
-
     QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
     if( len_dir==0 )
@@ -244,44 +235,55 @@ void AbStat::delWordSamples()
 
         for( int j=0 ; j<len_files ; j++ )
         {
-            QString sample_path = cache_files[i][j];
-            QFileInfo sample_info(sample_path);
-            QStringList audio_words = sample_info.baseName().split("_");
+            QString path = cache_files[i][j];
 
-            for( int k=0 ; k<len ; k++ )
+            if( haveWord(word_id, path) )
             {
-                if( audio_words.contains(QString::number(del_list[k])) )
-                {
-                    QFile removing_file(sample_info.absoluteFilePath());
-                    qDebug() << "del" << sample_info.absoluteFilePath();
-                    removing_file.remove();
-                    deleteCache(i, j);
-                    len_files--;
-                    j--;
-                    break;
-                }
+                QFile file(path);
+                qDebug() << "del" << path;
+//                file.remove();
+                deleteCache(i, j);
+                len_files--;
+                j--;
             }
+        }
+    }
+
+    QString wrong_dir = ab_getAudioPath() + "wrong";
+    QVector<QString> wrong_files = ab_listFiles(wrong_dir);
+    int wrong_len = wrong_files.size();
+    for( int j=0 ; j<wrong_len ; j++ )
+    {
+        QString path = wrong_files[j];
+
+        if( haveWord(word_id, path) )
+        {
+            QFile file(path);
+            qDebug() << "del" << path;
+//            file.remove();
         }
     }
 }
 
-QVector<int> AbStat::makeDelList()
+// return true if path contains the word id, wether is wrong (negative)
+// or normal word_id
+int AbStat::haveWord(int word_id, QString path)
 {
-    QStringList dif_words = dif_editor.split("\n");
-    int len = dif_words.length();
-    QVector<int> del_list;
+    QFileInfo info(path);
+    QStringList words = info.baseName().split("_");
+    int words_len = words.length();
 
-    for( int i=0 ; i<len ; i++ )
+    for( int i=0 ; i<words_len ; i++ )
     {
-        dif_words[i] = dif_words[i].split(".")[1].split("(")[0].trimmed();
-        int result = wordToIndex(dif_words[i]);
-
-        if( result>=0 && result<lexicon.size() )
+        int w_id = words[i].toInt();
+        w_id = qAbs(w_id);
+        if( w_id==word_id )
         {
-            del_list.push_back(result);
+            return 1;
         }
     }
-    return del_list;
+
+    return 0;
 }
 
 void AbStat::create(QString category)

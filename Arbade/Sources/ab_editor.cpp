@@ -138,11 +138,10 @@ void AbEditor::saveProcess()
         }
     }
 
-    QString dif = getDif();
-    stat->dif_editor = dif;
-    if( dif.length() )
+    dif_wordlist = getDif();
+    if( dif_wordlist.length() )
     {
-        QVariant dif_v(dif);
+        QVariant dif_v(dif_wordlist);
         QGenericArgument arg_dif  = Q_ARG(QVariant, dif_v);
         QMetaObject::invokeMethod(editor, "launchDialog", arg_dif);
     }

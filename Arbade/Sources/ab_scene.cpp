@@ -19,6 +19,8 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 
     connect(break_timer, SIGNAL(timeout()),
             this, SLOT(breakTimeout()));
+    connect(qml_editor, SIGNAL(updateDifWords()),
+            this, SLOT(deleteAllSamples()));
 
     connect(root, SIGNAL(startPauseV()), this, SLOT(startPauseV()));
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
@@ -174,7 +176,12 @@ void AbScene::processKey(int key)
 {
     if( key==Qt::Key_O )
     {
-        QString category = QQmlProperty::read(qml_editor, "category").toString();
+        QString category = AB_UNVER;
+        int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+        if( verifier==0 )
+        {
+            category = QQmlProperty::read(editor, "category").toString();
+        }
         ab_openCategory(category);
     }
     else if( key==Qt::Key_W )
@@ -218,4 +225,33 @@ void AbScene::cacheCreated()
         QQmlProperty::write(root, "ab_total_count_v", count);
     }
     focusWordChanged();
+}
+
+void AbScene::deleteAllSamples()
+{
+    QVector<int> del_list;
+    QStringList diff_words = editor->dif_wordlist.split("\n");
+
+    int diff_len = diff_words.length();
+    for( int i=0 ; i<diff_len ; i++ )
+    {
+        diff_words[i] = diff_words[i].split(".")[1].split("(")[0].trimmed();
+        int result = editor->stat->wordToIndex(diff_words[i]);
+
+        if( result>=0 )
+        {
+            del_list.push_back(result);
+        }
+    }
+
+    int len = del_list.size();
+    if( len==0 )
+    {
+        return;
+    }
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        editor->stat->delAllSamples(del_list[i]);
+    }
 }
