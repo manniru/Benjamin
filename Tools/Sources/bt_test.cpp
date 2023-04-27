@@ -93,7 +93,7 @@ void BtTest::startDecode()
                 buf += " ";
                 bt_writeBarResult(result);
             }
-            qDebug() << buf;
+            qDebug() << "test: " << buf;
         }
         o_decoder->wav_id++;
         o_decoder->resetODecoder();

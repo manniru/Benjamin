@@ -142,7 +142,7 @@ void KdOnlineLDecoder::printLog()
         char msg[300];
         sprintf(msg, "<%d> le:%.0lf uf:%d", wav_id+1,
                 floor(result.last().end*100), uframe);
-        qDebug() << msg << buf << result.size();
+        qDebug() << "msg" << msg << buf << result.size();
     }
 
 }

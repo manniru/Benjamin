@@ -58,7 +58,6 @@ float BtNetwork::getConf(int start, int len, int id)
     fillRaw(start, len);
 #endif
 
-
     return predict(id);
 }
 

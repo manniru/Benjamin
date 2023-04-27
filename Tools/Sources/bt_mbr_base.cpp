@@ -64,5 +64,5 @@ void bt_printResult(QVector<BtWord> result)
         buf += " ";
     }
 
-    qDebug() << buf;
+    qDebug() << "Buf" << buf;
 }

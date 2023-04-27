@@ -75,7 +75,7 @@ void BtEnn::startDecode()
 
     //    int len = 50;
     int len = file_list.size();
-    qDebug() << file_list.size() << cat_dir;
+    qDebug() << "size" << file_list.size() << cat_dir;
     for( int i=0 ; i<len ; i++ )
     {
         if( checkExist(file_list[i]) )

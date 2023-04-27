@@ -6,7 +6,8 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     cy_buf = buffer;
     st     = state;
     au_online_path  = ab_getAudioPath();
-    au_online_path += "online\\";
+    au_online_path += "online";
+    au_online_path += QDir::separator();
     QDir au_online_dir(au_online_path);
 
     if( !au_online_dir.exists() )
@@ -23,7 +24,8 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     }
 
     au_unver_path  = ab_getAudioPath();
-    au_unver_path += "unverified\\";
+    au_unver_path += "unverified";
+    au_unver_path += QDir::separator();
     QDir au_unverified_dir(au_unver_path);
 
     if( !au_unverified_dir.exists() )
@@ -40,7 +42,10 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     }
 
     au_tonline_path  = ab_getAudioPath();
-    au_tonline_path += "train/online";
+    au_tonline_path += "train";
+    au_tonline_path += QDir::separator();
+    au_tonline_path += "online";
+     au_tonline_path += QDir::separator();
     QDir au_train_dir(au_tonline_path);
 
     if( !au_train_dir.exists() )
@@ -61,9 +66,9 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     readWordList();
     exemption_list << "kick";
     exemption_list << "side";
-    exemption_list << "copy";
-    exemption_list << "paste";
-    exemption_list << "switch";
+//    exemption_list << "copy";
+//    exemption_list << "paste";
+//    exemption_list << "switch";
 }
 
 BtWavWriter::~BtWavWriter()
@@ -148,11 +153,15 @@ void BtWavWriter::readWordList()
         return;
     }
 
-    QFile wl_file(BT_WORDLIST_PATH);
+    QString wordlist_path  = ab_getAudioPath();
+    wordlist_path += "..";
+    wordlist_path += QDir::separator();
+    wordlist_path += "word_list";
+    QFile wl_file(wordlist_path);
 
     if( !wl_file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
-        qDebug() << "Error opening" << BT_WORDLIST_PATH;
+        qDebug() << "Error opening" << wordlist_path;
         return;
     }
 
