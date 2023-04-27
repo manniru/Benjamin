@@ -18,6 +18,7 @@ BtTest::BtTest(QString dir_name, BtState *state,
 
     net = new BtNetwork(state);
     st  = state;
+    wav_w = new BtWavWriter(cy_buf, st);
     init();
 }
 
@@ -55,7 +56,6 @@ void BtTest::startDecode()
     KdDecodable decodable(cy_buf, oa_model,
                           t_model, st);
     net->cfb   = decodable.features->o_features;
-    net->wav_w = new BtWavWriter(cy_buf, st);
     decodable.features->enableENN();
 
     o_decoder->InitDecoding(&decodable);
@@ -199,7 +199,7 @@ void BtTest::saveWave(int start, int len, QString fname)
     cy_buf->rewind(rw_len);
 
     int sample_len = len * BT_REC_RATE/100.0;
-    net->wav_w->writeEnn(fname + ".wav", sample_len);
+    wav_w->writeEnn(fname + ".wav", sample_len);
 
     cy_buf->rewind(-rw_len);
 }

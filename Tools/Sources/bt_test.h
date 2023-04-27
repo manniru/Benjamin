@@ -43,6 +43,7 @@ private:
     QStringList       file_list;
     BtNetwork        *net;
     BtState          *st;
+    BtWavWriter      *wav_w;
 };
 
 #endif // BT_TEST_H

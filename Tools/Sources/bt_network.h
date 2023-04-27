@@ -21,8 +21,7 @@ public:
     float getConf(int start, int len, int id);
     void  fillImage(int start, int len);
     void  fillRaw(int start, int len);
-    BtCFB       *cfb;
-    BtWavWriter *wav_w;
+    BtCFB *cfb;
     QImage img_s;
 
 private:

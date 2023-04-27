@@ -172,20 +172,3 @@ void BtNetwork::calcStat(int start, int len)
     offset_delta = mean;
     scale_delta = var;
 }
-
-void BtNetwork::saveWave(int start, int len, QString word)
-{
-//    double end = o_decoder->uframe/100.0;
-//    double rw_len = end - (start + len); // rewind length
-//    double word_len;
-
-//    QString fname = KAL_AU_DIR"tt/";
-//    mkDir(path);
-//    fname = word + ".wav";
-
-//    rw_len *= BT_REC_RATE/1000.0;
-//    cy_buf->rewind(rw_len);
-//    word_len = len * BT_REC_RATE/1000.0;
-
-//    wav_w->writeEnn(path, word_len);
-}
