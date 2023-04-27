@@ -170,9 +170,11 @@ void AbStat::createRecList(QString category)
     {
         qDebug() << "Info 85: empty category";
         return;
+        return;
     }
 
     int samples_len = files->length();
+    int lexicon_len = lexicon.length();
     int start_i = 0;
     if( samples_len>AB_MAX_RECLIST )
     {
@@ -191,7 +193,17 @@ void AbStat::createRecList(QString category)
         for( int j=0 ; j<world_list_len ; j++)
         {
             int num = word_list[j].toInt();
-            word += lexicon[num] + " ";
+
+            if( num<lexicon_len )
+            {
+                word += lexicon[num] + " ";
+            }
+            else
+            {
+                qDebug() << "Error 161: Out of range sample"
+                         << info.path();
+                return;
+            }
         }
         if( name_extended.size()>1 )
         {

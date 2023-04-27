@@ -179,6 +179,12 @@ void AbConsole::readyData(QString line, int flag)
     QString color = "#ccc";
     QStringList lines = line.split("\n");
     int count = lines.count();
+    int new_line = 0;
+    if( line.back()=="\n" )
+    {
+        new_line = 1;
+    }
+
     for( int i=0; i<count ; i++)
     {
         if( lines[i]=="\r" || lines[i].isEmpty() )
@@ -201,19 +207,14 @@ void AbConsole::readyData(QString line, int flag)
 //            line_fmt += "<br>";
 //        }
 //        QQmlProperty::write(console_qml, "line_buf", line_fmt);
-        if( lines[i].contains("\r") )
+        if( i<count-1 || new_line )
         {
             QQmlProperty::write(console_qml, "line_buf", lines[i]+"\n");
             QMetaObject::invokeMethod(console_qml, "addLine");
         }
-        else if( lines[i].contains(prompt)==0 )
+        else
         {
             QQmlProperty::write(console_qml, "line_buf", lines[i]);
-            QMetaObject::invokeMethod(console_qml, "addText");
-        }
-        else //prompt line
-        {
-            QQmlProperty::write(console_qml, "line_buf", prompt + " ");
             QMetaObject::invokeMethod(console_qml, "addText");
         }
         qDebug() << i << "line_fmt" << lines[i] << line;
