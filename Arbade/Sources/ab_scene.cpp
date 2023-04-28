@@ -253,5 +253,6 @@ void AbScene::deleteAllSamples()
     for( int i=0 ; i<len ; i++ )
     {
         editor->stat->delAllSamples(del_list[i]);
+        editor->stat->deleteEnn(del_list[i]);
     }
 }

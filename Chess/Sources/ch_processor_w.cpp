@@ -231,8 +231,8 @@ void ChProcessorW::setPosFine(int key)
     POINT pt;
     GetCursorPos(&pt);
 
-    int r_x = (x - 1) * 27;
-    int r_y = (y - 1) * 22;
+    int r_x = (x - 1) * 20;
+    int r_y = (y - 1) * 20;
 
     int x2 = pt.x + r_x;
     int y2 = pt.y + r_y;

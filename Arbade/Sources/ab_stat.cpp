@@ -241,26 +241,11 @@ void AbStat::delAllSamples(int word_id)
             {
                 QFile file(path);
                 qDebug() << "del" << path;
-//                file.remove();
+                file.remove();
                 deleteCache(i, j);
                 len_files--;
                 j--;
             }
-        }
-    }
-
-    QString wrong_dir = ab_getAudioPath() + "wrong";
-    QVector<QString> wrong_files = ab_listFiles(wrong_dir);
-    int wrong_len = wrong_files.size();
-    for( int j=0 ; j<wrong_len ; j++ )
-    {
-        QString path = wrong_files[j];
-
-        if( haveWord(word_id, path) )
-        {
-            QFile file(path);
-            qDebug() << "del" << path;
-//            file.remove();
         }
     }
 }
@@ -270,6 +255,7 @@ void AbStat::delAllSamples(int word_id)
 int AbStat::haveWord(int word_id, QString path)
 {
     QFileInfo info(path);
+    //baseName remove all after the first .
     QStringList words = info.baseName().split("_");
     int words_len = words.length();
 
@@ -284,6 +270,40 @@ int AbStat::haveWord(int word_id, QString path)
     }
 
     return 0;
+}
+
+// delete ENN Sample based on word_id
+void AbStat::deleteEnn(int word_id)
+{
+    // remove wrong sample
+    QString wrong_dir = ab_getAudioPath() + "wrong";
+    QVector<QString> wrong_files = ab_listFiles(wrong_dir);
+    int wrong_len = wrong_files.size();
+    for( int j=0 ; j<wrong_len ; j++ )
+    {
+        QString path = wrong_files[j];
+
+        if( haveWord(word_id, path) )
+        {
+            QFile file(path);
+            qDebug() << "del" << path;
+            file.remove();
+        }
+    }
+
+    if( word_id>=lexicon.length() )
+    {
+        qDebug() << "Error 149: word_id exceeds lexicon len";
+        return;
+    }
+    QString word = lexicon[word_id];
+    // remove wrong sample
+    QString enn_path = ab_getAudioPath() + "enn";
+    enn_path += QDir::separator() + word;
+    qDebug() << "enn_path"
+             << enn_path;
+    QDir enn_dir(enn_path);
+    enn_dir.removeRecursively();
 }
 
 void AbStat::create(QString category)

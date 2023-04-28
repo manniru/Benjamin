@@ -31,6 +31,7 @@ public:
     void deleteCache(QString category, int i);
     void deleteCache(int cat_id, int i);
     void delAllSamples(int word_id);
+    void deleteEnn(int word_id);
 
     QString dif_editor;
     QStringList lexicon;
