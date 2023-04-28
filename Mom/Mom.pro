@@ -31,7 +31,8 @@ SOURCES += Sources/main.cpp \
            Sources/mm_virt.cpp \
            Sources/mm_watcher.cpp \
            Sources/mm_win32.cpp \
-           Sources/mm_win32_win.cpp
+           Sources/mm_win32_win.cpp \
+           Sources/mm_win_manager.cpp
 
 win32:LIBS += -L../PNN/libs \
              -lKernel32 -lUser32 -lole32 \
@@ -71,4 +72,5 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_win32.h \
            Sources/mm_win32_const.h \
            Sources/mm_win32_win.h \
+           Sources/mm_win_manager.h \
            Sources/win_policy.h
