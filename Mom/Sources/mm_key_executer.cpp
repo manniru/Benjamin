@@ -14,6 +14,7 @@ MmKeyExec::MmKeyExec(MmVirt *vi, QObject *parent) : QObject(parent)
     timer->start(2);
 
     launcher = new MmAppLauncher(vi);
+    manager  = new MmWinManager();
 }
 
 MmKeyExec::~MmKeyExec()
@@ -53,10 +54,25 @@ void MmKeyExec::delayedExec()
         QString shortcut = "Visual Studio Code\\Visual Studio Code";
         launcher->focusOpen(shortcut);
     }
-    else if( key_buf=='-' ) //enter
+    else if( key_buf=='=' ) //enter
     {
-//        QString shortcut = "Visual Studio Code\\Visual Studio Code";
         launcher->launchCMD();
+    }
+    else if( key_buf=='+' ) //up
+    {
+        manager->maximise();
+    }
+    else if( key_buf=='-' ) //down
+    {
+        manager->restore();
+    }
+    else if( key_buf=='*' ) //right
+    {
+        manager->putRight();
+    }
+    else if( key_buf=='/' ) //left
+    {
+        manager->putLeft();
     }
     else if( key_buf>0 && key_buf<10 )
     {
@@ -140,9 +156,29 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
         key_buf = virt->last_desktop;
         return 1;
     }
-    else if( key_code==VK_RETURN ) // Quote '
+    else if( key_code==VK_RETURN ) // Enter
+    {
+        key_buf = '=';
+        return 1;
+    }
+    else if( key_code==VK_UP ) // Quote '
+    {
+        key_buf = '+';
+        return 1;
+    }
+    else if( key_code==VK_DOWN ) // Quote '
     {
         key_buf = '-';
+        return 1;
+    }
+    else if( key_code==VK_LEFT ) // Quote '
+    {
+        key_buf = '/';
+        return 1;
+    }
+    else if( key_code==VK_RIGHT ) // Quote '
+    {
+        key_buf = '*';
         return 1;
     }
     return 0;

@@ -6,6 +6,7 @@
 #include <QVector>
 #include "mm_app_launcher.h"
 #include "mm_virt.h"
+#include "mm_win_manager.h"
 
 typedef struct MmKbState
 {
@@ -40,6 +41,7 @@ private:
     int key_buf;
 
     MmAppLauncher *launcher;
+    MmWinManager  *manager;
 };
 
 #endif // MM_KEY_EXECUTER_H
