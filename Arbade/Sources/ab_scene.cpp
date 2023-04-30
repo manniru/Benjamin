@@ -123,6 +123,7 @@ void AbScene::startPauseV()
         setStatus(AB_STATUS_STOP);
     }
 }
+
 void AbScene::setCategory()
 {
     editor->updateStat();
@@ -180,7 +181,7 @@ void AbScene::processKey(int key)
         int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
         if( verifier==0 )
         {
-            category = QQmlProperty::read(editor, "category").toString();
+            category = QQmlProperty::read(qml_editor, "category").toString();
         }
         ab_openCategory(category);
     }

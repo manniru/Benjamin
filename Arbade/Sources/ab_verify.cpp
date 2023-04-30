@@ -1,6 +1,8 @@
 #include "ab_verify.h"
 #include <QQmlProperty>
 #include <QGuiApplication>
+#include <sys/types.h>
+#include <utime.h>
 
 AbVerify::AbVerify(AbEditor *ed, QObject *ui, QObject *parent): QObject(parent)
 {
@@ -55,9 +57,9 @@ void AbVerify::generateWrongForms()
 
     QString wrong_path = ab_getAudioPath() + "wrong\\";
     int len = w_path.length();
-    if( len>35 )
+    if( len>15 )
     {
-        len = 35;
+        len = 15;
     }
 
     for( int i=0 ; i<len; i++ )
@@ -81,7 +83,8 @@ void AbVerify::generateWrongForms()
         }
         else
         {
-            w_shortcut << QString('a' + (i-10));
+            w_shortcut << QString(QChar('a' + (i-10)));
+            qDebug() << "w_shortcut" << w_shortcut[i];
         }
 
         addWrongForm(w_word[i], w_path[i], w_shortcut[i]);
@@ -166,7 +169,7 @@ QString AbVerify::idToWord(QString filename, QString id)
         ret += "(" + id + ")";
     }
 
-    qDebug() << "word = " << ret;
+//    qDebug() << "word = " << ret;
     return ret;
 }
 
@@ -243,6 +246,9 @@ void AbVerify::moveToOnline()
     QFileInfo info(file_path);
     online_path += info.fileName();
     file.copy(online_path);
+    // change last modification time to now
+    utime(online_path.toStdString().c_str(), NULL);
+
     file.remove();
     editor->stat->moveToOnline(id);
 

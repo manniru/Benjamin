@@ -91,7 +91,7 @@ Window
                           word_text: w_word,
                           word_path: w_path,
                           objectName: comp_name});
-//        wordAdded(word_i);
+//        console.log("addForm", shortcut);
     }
 
     function addCompleted()

@@ -23,7 +23,7 @@ ApplicationWindow
     title: "ArBade"
     visible: true
 
-    property int flag_kesafat_kari: 0
+    property int flag_clean_stop: 0
 
     property int sig_del_file: 0
     property int default_func_v: ab_const.ab_VMODE_COPY
@@ -358,14 +358,15 @@ ApplicationWindow
 
         onStopped:
         {
-            if( flag_kesafat_kari==0 )
+            console.log("hello", flag_clean_stop);
+            if( flag_clean_stop==0 )
             {
                 ab_status = ab_const.ab_STATUS_DECPAUESE;
                 decide_timer.start();
             }
             else
             {
-                flag_kesafat_kari = 0;
+                flag_clean_stop = 0;
             }
         }
     }
@@ -614,8 +615,11 @@ ApplicationWindow
 
     function cleanStop()
     {
-        flag_kesafat_kari = 1;
-        audioPlayer.stop();
+        if( audioPlayer.playbackState )
+        {
+            flag_clean_stop = 1;
+            audioPlayer.stop();
+        }
     }
 
     function initWsl()

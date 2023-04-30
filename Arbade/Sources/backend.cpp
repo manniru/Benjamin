@@ -223,10 +223,12 @@ void ab_openCategory(QString category)
 
     if( category!="unverified" )
     {
-        path += "train\\";
+        path += "train";
+        path += QDir::separator();
     }
 
-    path += category + "\\";
+    path += category + QDir::separator();
+    qDebug() << "cat" << category;
 
     QString cmd = "explorer.exe " + path;
     system(cmd.toStdString().c_str());

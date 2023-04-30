@@ -9,7 +9,7 @@ import QtQuick.Window 2.10
 Rectangle
 {
     height: linenum_lbl.height + 10
-    property int    word_shortcut: 0
+    property string word_shortcut: ""
     property string word_text: ""
     property string word_path: ""
 
