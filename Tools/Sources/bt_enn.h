@@ -15,6 +15,8 @@
 #include "bt_wav_writer.h"
 #include "bt_state.h"
 
+#define BT_MAX_SHIT 10
+
 class BtEnn: public QObject
 {
     Q_OBJECT

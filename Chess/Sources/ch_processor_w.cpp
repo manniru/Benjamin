@@ -14,6 +14,7 @@ ChProcessorW::ChProcessorW(ChChannelW *ch, QObject *ui,
 
     QWindow *window = qobject_cast<QWindow *>(ui);
     hWnd = (HWND)(window->winId());
+    mon = new ChMonitor;
 }
 
 ChProcessorW::~ChProcessorW()
@@ -31,7 +32,16 @@ void ChProcessorW::showUI(QString text)
     }
     else if( text=="side" )
     {
-        click_mode = CH_RIGHT_CLICK;
+//        click_mode = CH_RIGHT_CLICK;
+        click_mode = CH_LEFT_CLICK;
+        QQmlProperty::write(root, "width", mon->secondary.width);
+        QQmlProperty::write(root, "height", mon->secondary.height);
+        QQmlProperty::write(root, "x", mon->secondary.x);
+        QQmlProperty::write(root, "y", mon->secondary.y);
+        qDebug() << "width" << mon->secondary.width
+                 << "height" << mon->secondary.height
+                 << "x" << mon->secondary.x
+                 << "y" << mon->secondary.y;
     }
     else if( text=="persist" )
     {
@@ -39,6 +49,15 @@ void ChProcessorW::showUI(QString text)
     }
     else
     {
+        QQmlProperty::write(root, "width", mon->primary.width);
+        QQmlProperty::write(root, "height", mon->primary.height);
+        QQmlProperty::write(root, "x", mon->primary.x);
+        QQmlProperty::write(root, "y", mon->primary.y);
+
+        qDebug() << "width" << mon->primary.width
+                 << "height" << mon->primary.height
+                 << "x" << mon->primary.x
+                 << "y" << mon->primary.y;
         click_mode = CH_LEFT_CLICK;
     }
 

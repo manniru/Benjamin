@@ -101,7 +101,7 @@ void BtEnn::startDecode()
                         decodable.features->o_features, st);
             decodable.features->delta->min_frame = o_decoder->status.min_frame;
             last_r.clear();
-            if( shit_counter<13 )
+            if( shit_counter<BT_MAX_SHIT )
             {
                 continue;
             }

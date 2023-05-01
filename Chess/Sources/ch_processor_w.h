@@ -8,6 +8,7 @@
 #include "config.h"
 #include "ch_channel_w.h"
 #include "ch_keyboard_w.h"
+#include "ch_monitor.h"
 
 #define CH_BACKSPACE_CODE 16777219
 #define CH_ESCAPE_CODE    16777216
@@ -57,6 +58,7 @@ private:
     int       click_mode;
     int       meta_mode; // get a number at end
     HWND      hWnd;
+    ChMonitor *mon;
 };
 
 #endif // CH_PROCESSOR_W_H

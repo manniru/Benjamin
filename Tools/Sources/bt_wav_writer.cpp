@@ -70,6 +70,7 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     exemption_list << "copy";
     exemption_list << "paste";
     exemption_list << "switch";
+    exemption_list << "side";
 }
 
 BtWavWriter::~BtWavWriter()
