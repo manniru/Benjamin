@@ -30,7 +30,6 @@ public:
 
 signals:
     void show(QString args);
-    void side(QString args);
 
 public slots:
     void listenPipe();

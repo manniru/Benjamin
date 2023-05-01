@@ -24,12 +24,14 @@ win32:LIBS += -lUser32
 SOURCES += \
     Sources/backend.cpp \
     Sources/ch_keyboard_w.cpp \
+    Sources/ch_monitor.cpp \
     Sources/main.cpp \
     Sources/ch_chapar.cpp
 
 HEADERS += \
     Sources/backend.h \
     Sources/ch_keyboard_w.h \
+    Sources/ch_monitor.h \
     Sources/config.h \
     Sources/ch_chapar.h
 
