@@ -191,22 +191,7 @@ void AbConsole::readyData(QString line, int flag)
         {
             continue;
         }
-//        QString line_fmt;
-//        if( flag==AB_CONSOLE_ERROR )
-//        {
-//            color = "#dcc2a9";
-//        }
-//        line_fmt = "<font style=\"color: ";
-//        line_fmt += color;
-//        line_fmt += ";\">";
-//        line_fmt += lines[i];
-//        line_fmt += "</font>";
 
-//        if( i<count-1 )
-//        {
-//            line_fmt += "<br>";
-//        }
-//        QQmlProperty::write(console_qml, "line_buf", line_fmt);
         if( i<count-1 || new_line )
         {
             QQmlProperty::write(console_qml, "line_buf", lines[i]+"\n");

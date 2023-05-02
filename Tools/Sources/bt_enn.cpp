@@ -24,13 +24,12 @@ BtEnn::BtEnn(QString dir_name, BtState *state,
         min_delta[i] = 10000;
     }
 
-    enn_dir = ab_getAudioPath();
-#ifdef WIN32
-        enn_dir += "enn\\";
-#else
-        enn_dir += "enn/";
-#endif
+    enn_dir = ab_getAudioPath() + "enn";
+    enn_dir += QDir::separator();
     bt_mkDir(enn_dir);
+    shit_dir = ab_getAudioPath() + "shit";
+    shit_dir += QDir::separator();
+    bt_mkDir(shit_dir);
 
     wav_w = new BtWavWriter(cy_buf, st);
 
@@ -103,6 +102,8 @@ void BtEnn::startDecode()
             last_r.clear();
             if( shit_counter<BT_MAX_SHIT )
             {
+                wav_file.close();
+                moveToShit(file_list[i]);
                 continue;
             }
             exit(1);
@@ -481,4 +482,16 @@ void BtEnn::fillExist()
         QString path = enn_dir + words[i];
         exist_list += QDir(path).entryList(QDir::Files);
     }
+}
+
+void BtEnn::moveToShit(QString path)
+{
+    QString old_path = path;
+    QFileInfo info(old_path);
+    QFile file(old_path);
+
+    QString new_path = shit_dir;
+    new_path += info.fileName();
+    file.copy(new_path);
+//    file.remove();
 }

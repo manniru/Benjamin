@@ -15,7 +15,7 @@
 #include "bt_wav_writer.h"
 #include "bt_state.h"
 
-#define BT_MAX_SHIT 10
+#define BT_MAX_SHIT 99
 
 class BtEnn: public QObject
 {
@@ -41,6 +41,7 @@ private:
     void calcStat(QVector<BtFrameBuf *> data);
     void preProcess();
     bool sanityCheck(QString filename);
+    void moveToShit(QString path);
 
     BtCyclic         *cy_buf;
     KdOnlineStatus    status;
@@ -54,6 +55,7 @@ private:
     QStringList       exist_list;
     QString           cat_dir; // category directory
     QString           enn_dir; // enn sample directory
+    QString           shit_dir; // shit sample directory
     BtState           *st;
 
     double max_delta[3];

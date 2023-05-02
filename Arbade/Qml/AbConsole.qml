@@ -66,10 +66,19 @@ Rectangle
 
     function addLine()
     {
+        // create line_num
         line_num++;
         var zero = 4 - line_num.toString().length + 1;
         console_linenum.text += Array(+(zero>0 && zero)).join("0");
         console_linenum.text += line_num + "\n";
+
+        if( line_num>1000)
+        {
+            var txt = console_text.text;
+            txt = txt.substring(txt.indexOf("\n") + 1);
+            console_text.text = txt;
+        }
+
         console_text.text += line_buf;
 
         var pos_y = console_text.height - parent.height + 200

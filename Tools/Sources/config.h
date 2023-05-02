@@ -15,7 +15,7 @@
 #define KAL_NATO_DIR_WIN  "..\\Nato\\"
 
 #define MOM_LABEL_DIR    "..\\Mom\\Labels"
-#define MOM_LABEL_STATUS "\\r1_status.lbl"
+#define MOM_LABEL_STATUS "\\r2_status.lbl"
 // Pipe Named Path follow \\.\pipe\[pipename] format
 // where [pipename] can be change and dot represent
 // server name, dot refer to local computer
