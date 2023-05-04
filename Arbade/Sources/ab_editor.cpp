@@ -283,6 +283,13 @@ void AbEditor::updateStatAll()
         }
     }
     stat->updateMeanVar(&word_count);
+    int count = 0;
+    int len_cat = AB_MAX_CAT;
+    for( int i=1 ; i<len_cat ; i++ )
+    {
+        count += stat->cache_files[i].length();
+    }
+    QQmlProperty::write(editor, "count", count);
 }
 
 void AbEditor::createList()

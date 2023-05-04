@@ -143,6 +143,9 @@ void AbStat::createWordEditor(QString category)
 {
     QVector<int> *count = getCategoryCount(category);
     updateMeanVar(count);
+    int id = catToIndex(category);
+    int count_cat = cache_files[id].length();
+    QQmlProperty::write(editor, "count", count_cat);
 
     int lexicon_len = lexicon.length();
     for( int i=0 ; i<lexicon_len ; i++ )
