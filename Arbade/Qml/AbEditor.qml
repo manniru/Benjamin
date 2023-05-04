@@ -14,6 +14,7 @@ Rectangle
     property string category: ""
     property int ed_height: height
     property int focused_line: -1
+    property int count: 0
 
     signal updateWordList()
     signal updateDifWords()
@@ -48,6 +49,17 @@ Rectangle
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             anchors.leftMargin: 15
+            font.pixelSize: 15
+        }
+
+        Text
+        {
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.rightMargin: 15
+
+            color: "#e5e5e5"
+            text: "Count: " + count
             font.pixelSize: 15
         }
     }

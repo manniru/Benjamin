@@ -168,7 +168,6 @@ void AbStat::createRecList(QString category)
     {
         qDebug() << "Info 85: empty category";
         return;
-        return;
     }
 
     int samples_len = files->length();

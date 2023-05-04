@@ -316,6 +316,9 @@ void AbEditor::updateStatCat()
         }
     }
     stat->updateMeanVar(word_count);
+    int id = stat->catToIndex(category);
+    int count = stat->cache_files[id].length();
+    QQmlProperty::write(editor, "count", count);
 }
 
 void AbEditor::updateStat()

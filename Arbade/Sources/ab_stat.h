@@ -21,6 +21,7 @@ public:
     QVector<int>* getCategoryCount(QString category);
     QVector<int>  getAllCount();
     int  wordToIndex(QString word);
+    int  catToIndex(QString category);
     void addWord(QString word, int count, QString phoneme);
     void addRecList(QString word, QString path);
     void createWordEditor(QString category);
@@ -53,7 +54,6 @@ private:
     QVector<int> getCount(QVector<QString> *file_list);
     int meanCount(QVector<int> *count);
     int varCount(QVector<int> *count, int mean);
-    int catToIndex(QString category);
     int haveWord(int word_id, QString path);
 
     QObject *root;//root qml object
