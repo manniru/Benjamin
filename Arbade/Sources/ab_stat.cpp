@@ -293,13 +293,29 @@ void AbStat::deleteEnn(int word_id)
         }
     }
 
+    // remove test samples
+    QString test_dir = ab_getAudioPath() + "test";
+    QVector<QString> test_files = ab_listFiles(test_dir);
+    int test_len = test_files.size();
+    for( int j=0 ; j<test_len ; j++ )
+    {
+        QString path = test_files[j];
+
+        if( haveWord(word_id, path) )
+        {
+            QFile file(path);
+            qDebug() << "del" << path;
+            file.remove();
+        }
+    }
+
     if( word_id>=lexicon.length() )
     {
         qDebug() << "Error 149: word_id exceeds lexicon len";
         return;
     }
     QString word = lexicon[word_id];
-    // remove wrong sample
+    // remove enn whole word directory
     QString enn_path = ab_getAudioPath() + "enn";
     enn_path += QDir::separator() + word;
     qDebug() << "enn_path"

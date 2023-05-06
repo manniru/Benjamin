@@ -87,7 +87,7 @@ Window
     function keyHandler(key_event)
     {
         var min_key = '0'.charCodeAt()-1;
-        var max_key = 'Z'.charCodeAt()-1;
+        var max_key = 'Z'.charCodeAt()+1;
         if( key_event===Qt.Key_F1 )
         {
             ch_cell_color = "#cf002422"

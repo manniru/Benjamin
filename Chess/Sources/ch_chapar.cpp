@@ -5,7 +5,7 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
 #ifdef WIN32
     ch_thread = new QThread;
     channel = new ChChannelW;
-    processor = new ChProcessorW(channel, ui);
+    processor = new ChProcessorW(ui);
 
     connect(channel, SIGNAL(show(QString)),
             processor, SLOT(showUI(QString)));

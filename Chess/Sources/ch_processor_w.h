@@ -19,13 +19,14 @@
 #define CH_LEFT_CLICK   0
 #define CH_NO_CLICK     1
 #define CH_RIGHT_CLICK  2
-#define CH_PERSIST      3
+#define CH_DOUBLE_CLICK 3
+#define CH_PERSIST      4
 
 class ChProcessorW : public QObject
 {
     Q_OBJECT
 public:
-    ChProcessorW(ChChannelW *ch, QObject *ui, QObject *parent = NULL);
+    ChProcessorW(QObject *ui, QObject *parent = NULL);
     ~ChProcessorW();
     void setLanguage();
 
@@ -41,6 +42,7 @@ private:
     void createStatFile();
     void rmStatFile();
     void activateWindow();
+    void updateScreen(QString cmd);
 
     void sendLeftKey();
     void sendRightKey();

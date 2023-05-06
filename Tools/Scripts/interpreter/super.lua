@@ -27,6 +27,8 @@ function get_Super(word)
 		return "111"
 	elseif word == "spotify" then
 		return "112"
+	elseif word == "double" then
+		return "113"
 	end
 
 end
