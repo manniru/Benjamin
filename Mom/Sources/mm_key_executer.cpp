@@ -30,6 +30,11 @@ void MmKeyExec::delayedExec()
     {
         launcher->openFirefox();
     }
+    else if( key_buf=='i' )
+    {
+        QString shortcut = "Inkscape\\Inkscape";
+        launcher->focusOpen(shortcut, 2);
+    }
     else if( key_buf=='a' )
     {
         mm_launchScript(RE_WINSCR_DIR"\\git_date.cmd");
@@ -122,6 +127,11 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
     else if( key_code=='D' )
     {
         key_buf = 'd';
+        return 1;
+    }
+    else if( key_code=='I' )
+    {
+        key_buf = 'i';
         return 1;
     }
     else if( key_code=='P' )

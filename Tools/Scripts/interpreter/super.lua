@@ -29,6 +29,8 @@ function get_Super(word)
 		return "112"
 	elseif word == "double" then
 		return "113"
+	elseif word == "select" then
+		return "114"
 	end
 
 end

@@ -72,7 +72,7 @@ SOURCES += \
 
 win32:HEADERS +=
 
-win32:SOURCES +=
+win32:SOURCES += ../PNN/aj_dllgen.cpp
 
 HEADERS +=
 
@@ -99,3 +99,5 @@ DISTFILES += \
     Qml/AbRecPlay.qml \
     Qml/AbStatusLabel.qml \
     Qml/AbTimeBar.qml
+
+win32:RC_ICONS += icon.ico

@@ -174,3 +174,7 @@ Arbade/Build/
 *dll_gen.bat
 
 *words.txt
+
+Arbade/release/
+
+Arbade/Arbade_resource.rc
