@@ -22,5 +22,6 @@
         <file>AbRecPlay.qml</file>
         <file>AbMessage.qml</file>
         <file>AbQueryLine.qml</file>
+        <file>AbHelpWindow.qml</file>
     </qresource>
 </RCC>

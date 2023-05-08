@@ -1,8 +1,13 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.2
+import QtQuick.Window 2.12
 
-Rectangle
+Window
 {
+    title: "Keyboard Shortcuts"
+    width: help_grid.width + 60
+    height: help_grid.height + 110
+
     property string font_name_label:    fontRobotoRegular.name
 
     property int    font_size:          20
@@ -15,14 +20,15 @@ Rectangle
                              "D: Gen E-Sample", "E: Train ENN",
                              "J/K: Word Num",
                              "O:Open Category", "T: Train",
-                             "V:Verify Mode"]
+                             "V:Verify Mode", "P: Show Terminal"]
 
     color: "#262626"
 //    color: "yellow"
 
     GridLayout
     {
-        rows: 2
+        id: help_grid
+        rows: 5
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: 30
@@ -58,7 +64,7 @@ Rectangle
 
         Text
         {
-            text: "/:All Shortcuts"
+            text: "Q:Close Window"
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label

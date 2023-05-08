@@ -351,6 +351,11 @@ ApplicationWindow
         power: ab_power
     }
 
+    AbHelpWindow
+    {
+        id: help_win
+    }
+
     Audio
     {
         id: audioPlayer
@@ -445,8 +450,6 @@ ApplicationWindow
                 ab_status = ab_const.ab_STATUS_STOP;
                 setStatus(ab_status);
             }
-
-            sendKey(key);
         }
         else if( key===Qt.Key_Left )
         {
@@ -559,20 +562,36 @@ ApplicationWindow
             get_value_dialog.dialog_text = get_value_dialog.focus_word_title;
             get_value_dialog.visible = true;
         }
+        else if( key===Qt.Key_H )
+        {
+            ab_status = ab_const.ab_STATUS_STOP;
+            setStatus(ab_status);
+            audioPlayer.stop();
+            if( ab_verifier===2 )
+            {
+                ab_verifier = 0;
+            }
+            else // verifier = 0/1
+            {
+                ab_verifier = 2;
+            }
+            ab_count = 0
+            verifierChanged();
+        }
         else if( key===Qt.Key_V )
         {
             ab_status = ab_const.ab_STATUS_STOP;
             setStatus(ab_status);
-            audioPlayer.stop()
-            if( ab_verifier )
+            audioPlayer.stop();
+            if( ab_verifier===1 )
             {
                 ab_verifier = 0;
             }
-            else
+            else // verifier = 0/2
             {
                 ab_verifier = 1;
             }
-            ab_count = 0
+            ab_count = 0;
             verifierChanged();
         }
         else if( key===Qt.Key_Z )
@@ -600,6 +619,14 @@ ApplicationWindow
             {
                 default_func_v = ab_const.ab_VMODE_COPY;
             }
+        }
+        else if( key===Qt.Key_Slash )
+        {
+            help_win.visible = true;
+        }
+        else if( key===Qt.Key_P )
+        {
+            console_box.visible = true;
         }
     }
 
