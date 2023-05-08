@@ -21,8 +21,10 @@
 #define KD_INFINITY_DB std::numeric_limits<double>::infinity()
 #define KD_INFINITY_FL std::numeric_limits<float>::infinity()
 
-#define AB_LIST_NAMES 1
-#define AB_LIST_PATHS 2
+#define AB_LIST_NAMES  1
+#define AB_LIST_PATHS  2
+#define AB_UNVER_DIR   "unverified"
+#define AB_SHIT_DIR    "shit"
 
 int getIntCommand(char *command);
 QString getStrCommand(QString command);
@@ -38,5 +40,7 @@ void ab_openCategory(QString category);
 QFileInfoList ab_getAudioDirs();
 QStringList ab_listFilesSorted(QString path);
 QString getStatusStr(int status);
+void ab_checkAuDir(QString dirname);
+void ab_checkDir(QString path);
 
 #endif // BACKEND_H

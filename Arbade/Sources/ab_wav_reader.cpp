@@ -2,35 +2,9 @@
 
 AbWavReader::AbWavReader()
 {
-    QString unver_path = ab_getAudioPath() + "unverified";
-    QDir unverified_dir(unver_path);
-
-    if( !unverified_dir.exists() )
-    {
-        qDebug() << "Creating" << unver_path
-                 << " Directory";
-#ifdef WIN32
-        QString cmd = "mkdir " + unver_path;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "unverified");
-#endif
-    }
-
-    QString train_path = ab_getAudioPath() + "train";
-    QDir au_TrainDir(train_path);
-
-    if( !au_TrainDir.exists() )
-    {
-        qDebug() << "Creating" << train_path
-                 << " Directory";
-#ifdef WIN32
-        QString cmd = "mkdir " + train_path;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "train");
-#endif
-    }
+    ab_checkAuDir("unverified");
+    ab_checkAuDir("shit");
+    ab_checkAuDir("train");
 
     wav_file = new QFile;
 }

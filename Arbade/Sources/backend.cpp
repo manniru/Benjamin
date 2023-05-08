@@ -221,7 +221,7 @@ void ab_openCategory(QString category)
 {
     QString path = ab_getAudioPath();
 
-    if( category!="unverified" )
+    if( category!="unverified" && category!="shit" )
     {
         path += "train";
         path += QDir::separator();
@@ -237,19 +237,28 @@ void ab_openCategory(QString category)
 QFileInfoList ab_getAudioDirs()
 {
     QFileInfoList dir_list;
-    QString path = ab_getAudioPath() + "unverified";
+    QString audio_path = ab_getAudioPath();
+    QString path = audio_path + "unverified";
     QFileInfo unver(path);
-
     if( !unver.exists() )
     {
         qDebug() << "Warning: unverified directory doesn't Exist,"
                  << "cannot generate statistics.";
         return QFileInfoList();
     }
-
     dir_list.append(unver); // add unverified dir to list of train category dirs
 
-    path = ab_getAudioPath() + "train\\";
+    path = audio_path + "shit";
+    unver.setFile(path);
+    if( !unver.exists() )
+    {
+        qDebug() << "Warning: shit directory doesn't Exist,"
+                 << "cannot generate statistics.";
+        return QFileInfoList();
+    }
+    dir_list.append(unver); // add shit dir to list of train category dirs
+
+    path = audio_path + "train\\";
     QDir dir(path);
 
     if( !dir.exists() )
@@ -291,4 +300,31 @@ QString getStatusStr(int status)
         return "Play";
     }
     return "";
+}
+
+// check if dirname does not exist in audio directory then create one
+void ab_checkAuDir(QString dirname)
+{
+    QString path = ab_getAudioPath() + dirname;
+    ab_checkDir(path);
+}
+
+// check if path does not exist create one
+void ab_checkDir(QString path)
+{
+    QDir dir(path);
+
+    if( !dir.exists() )
+    {
+        qDebug() << "Creating" << path
+                 << " Directory";
+#ifdef WIN32
+        QString cmd = "mkdir " + path;
+        system(cmd.toStdString().c_str());
+#else //OR __linux
+        QString cmd = "mkdir -p ";
+        cmd += path;
+        system(cmd.toStdString().c_str());
+#endif
+    }
 }

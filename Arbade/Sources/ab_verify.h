@@ -23,6 +23,7 @@ private slots:
     void execWrongKey(int key);
     void deleteFile();
     void trashFile();
+    void updateVerifier();
 
 private:
     void checkOnlineExist();
@@ -42,6 +43,7 @@ private:
     QObject  *query;    // query qml object
     AbEditor *editor;
     AbWavReader *wav_rd;
+    int verify_id;
 };
 
 #endif // AB_VERIFY_H
