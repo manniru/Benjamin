@@ -38,6 +38,7 @@ private:
     QObject *message; // message qml object
     AbAudio *audio;
     AbVerify *verify;
+    AbTelegram *telegram;
     QTimer *break_timer;
 };
 

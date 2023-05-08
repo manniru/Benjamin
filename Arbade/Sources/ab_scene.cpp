@@ -5,11 +5,12 @@
 AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
+    telegram = new AbTelegram();
     qml_editor = root->findChild<QObject *>("WordList");
     message = root->findChild<QObject *>("Message");
 
     break_timer = new QTimer();
-    editor = new AbEditor(root);
+    editor = new AbEditor(root, telegram);
 
     audio = new AbAudio(editor->stat, root);
     verify = new AbVerify(editor, root);
@@ -59,7 +60,7 @@ void AbScene::setStatus(int status)
     {
         audio->stop();
     }
-    else if( status==AB_STATUS_STOP && verifier==1 )
+    else if( status==AB_STATUS_STOP && verifier>0 )
     {
         editor->clearRecList();
         editor->updateStat();
@@ -83,7 +84,15 @@ void AbScene::verifierChanged()
     editor->updateStat();
     if( verifier )
     {
-        int count = editor->stat->cache_files[0].size();
+        int count;
+        if( verifier==1 )
+        {
+            count = editor->stat->cache_files[AB_UNVER_ID].size();
+        }
+        else // verifier = 2
+        {
+            count = editor->stat->cache_files[AB_SHIT_ID].size();
+        }
         if( count>AB_MAX_RECLIST )
         {
             count = AB_MAX_RECLIST;
@@ -177,7 +186,7 @@ void AbScene::processKey(int key)
 {
     if( key==Qt::Key_O )
     {
-        QString category = AB_UNVER;
+        QString category = AB_UNVER_DIR;
         int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
         if( verifier==0 )
         {
@@ -218,7 +227,15 @@ void AbScene::cacheCreated()
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier )
     {
-        int count = editor->stat->cache_files[0].size();
+        int count;
+        if( verifier==1 )
+        {
+            count = editor->stat->cache_files[AB_UNVER_ID].size();
+        }
+        else // verifier = 2
+        {
+            count = editor->stat->cache_files[AB_SHIT_ID].size();
+        }
         if( count>AB_MAX_RECLIST )
         {
             count = AB_MAX_RECLIST;

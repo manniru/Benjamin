@@ -4,11 +4,14 @@
 #include <QDebug>
 #include <QThread>
 
-AbEditor::AbEditor(QObject *ui, QObject *parent) : QObject(parent)
+AbEditor::AbEditor(QObject *ui, AbTelegram *tel,
+                   QObject *parent) : QObject(parent)
 {
     root = ui;
+    telegram = tel;
+    cache = new AbCache();
 
-    stat = new AbStat(root);
+    stat = new AbStat(root, cache, telegram);
     stat_thread = new QThread;
     stat->moveToThread(stat_thread);
     stat_thread->start();
@@ -159,7 +162,7 @@ void AbEditor::resetProcess()
 
 void AbEditor::timerEdTimeout()
 {
-    QString category = AB_UNVER;
+    QString category = AB_UNVER_DIR;
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier==0 )
     {
@@ -172,7 +175,7 @@ void AbEditor::timerEdTimeout()
 
 void AbEditor::timerRecTimeout()
 {
-    QString category = AB_UNVER;
+    QString category = AB_UNVER_DIR;
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier==0 )
     {
@@ -294,7 +297,7 @@ void AbEditor::updateStatAll()
 
 void AbEditor::createList()
 {
-    QString category = AB_UNVER;
+    QString category = AB_UNVER_DIR;
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier==0 )
     {
@@ -306,7 +309,7 @@ void AbEditor::createList()
 void AbEditor::updateStatCat()
 {
     int len_lines = editor_lines.length();
-    QString category = AB_UNVER;
+    QString category = AB_UNVER_DIR;
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
     if( verifier==0 )
     {

@@ -31,6 +31,7 @@ QMLCACHE_DIR = ./Build
 OTHER_FILES = BaTool.conf
 
 HEADERS += \
+    Sources/ab_cache.h \
     Sources/ab_audio.h \
     Sources/ab_console.h \
     Sources/ab_console_handle.h \
@@ -41,6 +42,7 @@ HEADERS += \
     Sources/ab_recorder.h \
     Sources/ab_scene.h \
     Sources/ab_stat.h \
+    Sources/ab_telegram.h \
     Sources/ab_train.h \
     Sources/ab_verify.h \
     Sources/ab_wav_reader.h \
@@ -51,6 +53,7 @@ HEADERS += \
     Sources/ta_ini.h
 
 SOURCES += \
+    Sources/ab_cache.cpp \
     Sources/ab_audio.cpp \
     Sources/ab_console.cpp \
     Sources/ab_console_handle.cpp \
@@ -61,6 +64,7 @@ SOURCES += \
     Sources/ab_recorder.cpp \
     Sources/ab_scene.cpp \
     Sources/ab_stat.cpp \
+    Sources/ab_telegram.cpp \
     Sources/ab_train.cpp \
     Sources/ab_verify.cpp \
     Sources/ab_wav_reader.cpp \
@@ -90,6 +94,7 @@ DISTFILES += \
     Qml/AbButtons.qml \
     Qml/AbConsole.qml \
     Qml/AbDialogWsl.qml \
+    Qml/AbHelpWindow.qml \
     Qml/AbMessage.qml \
     Qml/AbQueryLine.qml \
     Qml/AbRecDelete.qml \

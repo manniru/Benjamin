@@ -40,6 +40,10 @@ Rectangle
                   {
                       "Word Editor - Category: \"unverified\""
                   }
+                  else if( root.ab_verifier===2 )
+                  {
+                      "Word Editor - Category: \"shit\""
+                  }
                   else
                   {
                       "Word Editor - Category: \"" + category + "\""

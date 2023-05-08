@@ -97,23 +97,9 @@ void AbAudio::writeWav()
 void AbAudio::checkCategoryExist()
 {
     QString category = QQmlProperty::read(editor, "category").toString();
-    QString base_name = ab_getAudioPath()+"train\\";
-    base_name += category + "\\";
-    QDir category_dir(base_name);
-
-    if( !category_dir.exists() )
-    {
-        qDebug() << "Creating" << base_name
-                 << " Directory";
-        QString cmd;
-#ifdef WIN32
-        cmd = "mkdir " + base_name;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        cmd = "mkdir -p " KAL_AU_DIR "online";
-        system(cmd.toStdString().c_str());
-#endif
-    }
+    QString base_name = "train";
+    base_name += QDir::separator() + category;
+    ab_checkAuDir(base_name);
 }
 
 void AbAudio::breakTimeout()

@@ -8,7 +8,8 @@ class AbEditor : public QObject
 {
     Q_OBJECT
 public:
-    explicit AbEditor(QObject *ui, QObject *parent = nullptr);
+    explicit AbEditor(QObject *ui, AbTelegram *tel,
+                      QObject *parent = nullptr);
 
     void updateStat();
     void createList();
@@ -50,6 +51,8 @@ private:
     QObject *buttons;  // buttons qml object
     QObject *rec_list; // rec list qml object
     QObject *message;  // messege qml object
+    AbTelegram *telegram;
+    AbCache *cache;
 };
 
 #endif // ABEDITOR_H
