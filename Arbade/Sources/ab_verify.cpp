@@ -32,7 +32,7 @@ void AbVerify::generateWrongForms()
     w_path.clear();
 
     int id = getId();
-    QString file_path = editor->stat->cache_files[verify_id][id];
+    QString file_path = editor->cache->cache_files[verify_id][id];
     QFileInfo info(file_path);
     QString filename = info.fileName();
     filename = filename.remove(".wav");
@@ -190,12 +190,12 @@ void AbVerify::execWrongKey(int key)
     }
 
     int cache_id = getId();
-    QString old_path = editor->stat->cache_files[verify_id][cache_id];
+    QString old_path = editor->cache->cache_files[verify_id][cache_id];
     QString new_path = w_path[id];
     QFile file(old_path);
     file.copy(new_path);
     file.remove();
-    editor->stat->deleteCache(AB_UNVER_ID, cache_id);
+    editor->cache->deleteCache(AB_UNVER_ID, cache_id);
     recRemove();
 }
 
@@ -228,7 +228,7 @@ void AbVerify::moveToOnline()
     checkOnlineExist();
 
     int id = getId();
-    QString file_path = editor->stat->cache_files[verify_id][id];
+    QString file_path = editor->cache->cache_files[verify_id][id];
     QString online_path = ab_getAudioPath() + "train\\online\\";
     QFile file(file_path);
     QFileInfo info(file_path);
@@ -247,22 +247,22 @@ void AbVerify::moveToOnline()
 void AbVerify::deleteFile()
 {
     int id = getId();
-    QString file_path = editor->stat->cache_files[verify_id][id];
+    QString file_path = editor->cache->cache_files[verify_id][id];
     QFile file(file_path);
     QString new_path = wrongAll(file_path);
     file.copy(new_path);
 //    file.remove();
-    editor->stat->deleteCache(AB_UNVER_ID, id);
+    editor->cache->deleteCache(AB_UNVER_ID, id);
     recRemove();
 }
 
 void AbVerify::trashFile()
 {
     int id = getId();
-    QString file_path = editor->stat->cache_files[verify_id][id];
+    QString file_path = editor->cache->cache_files[verify_id][id];
     QFile file(file_path);
     file.remove();
-    editor->stat->deleteCache(AB_UNVER_ID, id);
+    editor->cache->deleteCache(AB_UNVER_ID, id);
     recRemove();
 }
 
@@ -292,7 +292,7 @@ void AbVerify::loadNext()
 
     QFileInfo wav_file(filename);
     QString basename = wav_file.baseName();
-    QStringList id_strlist = basename.split("_", Qt::SkipEmptyParts);
+    QStringList id_strlist = basename.split("_", QString::SkipEmptyParts);
     int len = id_strlist.size();
     QVector<int> id_list;
     for( int i=0 ; i<len ; i++ )
@@ -311,7 +311,7 @@ QString AbVerify::getNext()
 
     if( focus_word==-1 ) //no focus word
     {
-        filename = editor->stat->cache_files[verify_id].last();
+        filename = editor->cache->cache_files[verify_id].last();
     }
     else
     {
@@ -319,7 +319,7 @@ QString AbVerify::getNext()
 
         if( curr_id==0 )
         {
-            int len = editor->stat->cache_files[verify_id].length();
+            int len = editor->cache->cache_files[verify_id].length();
             curr_id = len-1;
             qDebug() << "curr_id" << filename << curr_id;
         }
@@ -327,7 +327,7 @@ QString AbVerify::getNext()
         while( curr_id>0 )
         {
             curr_id--;
-            filename = editor->stat->cache_files[verify_id][curr_id];
+            filename = editor->cache->cache_files[verify_id][curr_id];
             QFileInfo info(filename);
             QStringList split = info.baseName().split("_");
             int split_len = split.length();
@@ -354,7 +354,7 @@ int AbVerify::getId()
 
     if( focus_word==-1 ) //no focus word
     {
-        ret = editor->stat->cache_files[verify_id].length()-1;
+        ret = editor->cache->cache_files[verify_id].length()-1;
     }
     else
     {

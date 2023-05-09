@@ -19,36 +19,6 @@ AbStat::AbStat(QObject *ui, AbCache *ch, AbTelegram *tel,
             this, SLOT(deleteSample(QString)));
 }
 
-QVector<int> AbStat::getCount(QVector<QString> *file_list)
-{
-    int lexicon_len = lexicon.length();
-    QString filename;
-    QStringList words_index;
-    QVector<int> count;
-    count.resize(lexicon_len);
-    count.fill(0);
-    int file_num = file_list->size();
-
-    for( int j=0 ; j<file_num ; j++ )
-    {
-        QFileInfo info(file_list->at(j));
-        filename = info.baseName();
-
-        words_index = filename.split("_", QString::SkipEmptyParts);
-        int words_num = words_index.length();
-        for( int i=0 ; i<words_num ; i++ )
-        {
-            int index = words_index[i].toInt();
-            if( index>=0 && index<lexicon_len )
-            {
-                count[index]++;
-            }
-        }
-    }
-
-    return count;
-}
-
 int AbStat::meanCount(QVector<int> *count)
 {
     int len = count->size();
@@ -113,8 +83,8 @@ void AbStat::addRecList(QString word, QString path)
 QVector<int>* AbStat::getCategoryCount(QString category)
 {
     QVector<int> *ret = NULL;
-    int id = catToIndex(category);
-    ret = &cache_count[id];
+    int id = cache->catToIndex(category);
+    ret = &(cache->cache_count[id]);
     return ret;
 }
 
@@ -135,7 +105,7 @@ QVector<int> AbStat::getAllCount()
     {
         for( int j=0 ; j<lex_len ; j++ )
         {
-            ret[j] += cache_count[i][j];
+            ret[j] += cache->cache_count[i][j];
         }
     }
 
@@ -146,8 +116,8 @@ void AbStat::createWordEditor(QString category)
 {
     QVector<int> *count = getCategoryCount(category);
     updateMeanVar(count);
-    int id = catToIndex(category);
-    int count_cat = cache_files[id].length();
+    int id = cache->catToIndex(category);
+    int count_cat = cache->cache_files[id].length();
     QQmlProperty::write(editor, "count", count_cat);
 
     int lexicon_len = lexicon.length();
@@ -169,7 +139,7 @@ void AbStat::createWordEditor(QString category)
 
 void AbStat::createRecList(QString category)
 {
-    QVector<QString> *files = loadCacheFiles(category);
+    QVector<QString> *files = cache->loadCacheFiles(category);
     if( files==NULL )
     {
         qDebug() << "Info 85: empty category";
@@ -236,18 +206,18 @@ void AbStat::delAllSamples(int word_id)
 
     for( int i=0 ; i<len_dir ; i++ )
     {
-        int len_files = cache_files[i].size();
+        int len_files = cache->cache_files[i].size();
 
         for( int j=0 ; j<len_files ; j++ )
         {
-            QString path = cache_files[i][j];
+            QString path = cache->cache_files[i][j];
 
             if( haveWord(word_id, path) )
             {
                 QFile file(path);
                 qDebug() << "del" << path;
                 file.remove();
-                deleteCache(i, j);
+                cache->deleteCache(i, j);
                 len_files--;
                 j--;
             }
@@ -333,7 +303,7 @@ void AbStat::create(QString category)
     lexicon = bt_parseLexicon();
     srand(time(NULL));
 
-    createCache();
+    cache->createCache();
     createWordEditor(category);
     createRecList(category);
 }
@@ -381,33 +351,6 @@ int AbStat::wordToIndex(QString word)
     return -1;
 }
 
-int AbStat::catToIndex(QString category)
-{
-    int cat_id = AB_UNVER_ID;
-    if( category==AB_UNVER_DIR )
-    {
-        cat_id = AB_UNVER_ID;
-    }
-    else if( category==AB_SHIT_DIR )
-    {
-        cat_id = AB_SHIT_ID;
-    }
-    else
-    {
-        QFileInfoList dir_list = ab_getAudioDirs();
-        int len_dir = dir_list.size();
-        for( int i=2 ; i<len_dir ; i++ )
-        {
-            QString dir_name = dir_list[i].baseName();
-            if( dir_name==category )
-            {
-                return i;
-            }
-        }
-    }
-    return cat_id;
-}
-
 QString AbStat::idToWord(int id)
 {
     if( id<lexicon.count() )
@@ -433,51 +376,14 @@ void AbStat::moveToOnline(int id)
             int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
             if( verifier==2 )
             {
-                cache_files[i] << cache_files[AB_SHIT_ID][id];
-                deleteCache(AB_SHIT_DIR, id);
+                cache->cache_files[i] << cache->cache_files[AB_SHIT_ID][id];
+                cache->deleteCache(AB_SHIT_DIR, id);
             }
             else if( verifier==1 )
             {
-                cache_files[i] << cache_files[AB_UNVER_ID][id];
-                deleteCache(AB_UNVER_ID, id);
+                cache->cache_files[i] << cache->cache_files[AB_UNVER_ID][id];
+                cache->deleteCache(AB_UNVER_ID, id);
             }
         }
     }
-}
-
-////////// Cache /////////////////
-void AbStat::createCache()
-{
-    QFileInfoList dir_list = ab_getAudioDirs();
-    int len_dir = dir_list.size();
-
-    for( int i=0 ; i<len_dir ; i++ )
-    {
-        QString cat_path = dir_list[i].absoluteFilePath();
-        cache_files[i] = ab_listFiles(cat_path);
-        cache_count[i] = getCount(&cache_files[i]);
-    }
-
-    emit cacheCreated();
-}
-
-QVector<QString>* AbStat::loadCacheFiles(QString category)
-{
-    QVector<QString> *files = NULL;
-    int id = catToIndex(category);
-    files = &cache_files[id];
-
-    return files;
-}
-
-void AbStat::deleteCache(QString category, int i)
-{
-    int cat_id = catToIndex(category);
-    deleteCache(cat_id,i);
-}
-
-void AbStat::deleteCache(int cat_id, int i)
-{
-    cache_files[cat_id].remove(i);
-    // cache_count[i] = getCount(&cache_files[i]);
 }

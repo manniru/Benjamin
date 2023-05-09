@@ -8,11 +8,6 @@
 #include "ab_phoneme.h"
 #include "ab_cache.h"
 
-#define AB_MAX_CAT     100
-#define AB_MAX_RECLIST 200
-#define AB_UNVER_ID    0
-#define AB_SHIT_ID     1
-
 class AbStat: public QObject
 {
     Q_OBJECT
@@ -24,7 +19,6 @@ public:
     QVector<int>* getCategoryCount(QString category);
     QVector<int>  getAllCount();
     int  wordToIndex(QString word);
-    int  catToIndex(QString category);
     void addWord(QString word, int count, QString phoneme);
     void addRecList(QString word, QString path);
     void createWordEditor(QString category);
@@ -39,12 +33,11 @@ public:
 
     QString dif_editor;
     QStringList lexicon;
-    QVector<QString> cache_files[AB_MAX_CAT];
-    QVector<int> cache_count[AB_MAX_CAT];
+
+    AbCache *cache;
     AbPhoneme *phoneme;
 
 signals:
-    void cacheCreated();
 
 private slots:
     void deleteSample(QString sample);
@@ -52,9 +45,6 @@ private slots:
     void update();
 
 private:
-    void createCache();
-    QVector<QString>* loadCacheFiles(QString category);
-    QVector<int> getCount(QVector<QString> *file_list);
     int meanCount(QVector<int> *count);
     int varCount(QVector<int> *count, int mean);
     int haveWord(int word_id, QString path);
@@ -65,7 +55,6 @@ private:
     QObject *buttons;//buttons qml object
     QObject *status;//status qml object
     AbTelegram *telegram;
-    AbCache *cache;
 };
 
 #endif // AB_STAT_H

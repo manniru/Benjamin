@@ -197,16 +197,16 @@ void AbTrain::addTestSample(int count)
     for( int i=0 ; i<count ; i++ )
     {
         int cat_id = 1+rand()%cat_count;
-        int cat_len = stat->cache_files[cat_id].size();
+        int cat_len = stat->cache->cache_files[cat_id].size();
         int sample_id = rand()%cat_len;
-        QString sample_path = stat->cache_files[cat_id][sample_id];
+        QString sample_path = stat->cache->cache_files[cat_id][sample_id];
 
         QFile file(sample_path);
         QFileInfo info(sample_path);
         QString new_path = test_path+info.fileName();
         file.copy(new_path);
         file.remove();
-        stat->deleteCache(cat_id, sample_id);
+        stat->cache->deleteCache(cat_id, sample_id);
     }
 }
 
@@ -236,7 +236,7 @@ int AbTrain::getTrainCount()
 
     for( int i=0 ; i<len_dir ; i++ )
     {
-        ret += stat->cache_files[i+1].size();
+        ret += stat->cache->cache_files[i+1].size();
     }
 
     return ret;
