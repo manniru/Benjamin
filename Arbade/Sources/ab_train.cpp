@@ -152,20 +152,13 @@ void AbTrain::trainENN()
 
 void AbTrain::checkModelExist()
 {
-    QString model_path = AB_MODEL_DIR;
-    QDir model_dir(model_path);
-
-    if( !model_dir.exists() )
-    {
-        qDebug() << "Creating" << model_path
-                 << " Directory";
+    QString model_path;
 #ifdef WIN32
-        QString cmd = "mkdir " + model_path;
-        system(cmd.toStdString().c_str());
+    model_path = AB_MODEL_DIR;
 #else //OR __linux
-        system("mkdir -p ../Tools/Model");
+    model_path = "../Tools/Model";
 #endif
-    }
+    ab_checkDir(model_path);
 }
 
 int AbTrain::needTestCount()
@@ -219,19 +212,8 @@ void AbTrain::addTestSample(int count)
 
 int AbTrain::getTestCount()
 {
-    QString test_path = ab_getAudioPath();
-    test_path += "test\\";
-    QDir dir_test(test_path);
-    if( !dir_test.exists() )
-    {
-#ifdef WIN32
-        QString cmd = "mkdir " + test_path;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "test");
-#endif
-        qDebug() << "Info: Directory" << test_path << "Created";
-    }
+    ab_checkAuDir("test");
+    QString test_path = ab_getAudioPath() + "test\\";
 
     QVector<QString> test_files = ab_listFiles(test_path);
     int count = test_files.count();

@@ -20,21 +20,9 @@ AbVerify::AbVerify(AbEditor *ed, QObject *ui, QObject *parent): QObject(parent)
     connect(root, SIGNAL(delVerifyFile()), this, SLOT(deleteFile()));
     connect(root, SIGNAL(copyUnverifyFile()), this, SLOT(moveToOnline()));
     connect(root, SIGNAL(trashVerifyFile()), this, SLOT(trashFile()));
+    connect(root, SIGNAL(verifierChanged()), this, SLOT());
 
-    QString wrong_path = ab_getAudioPath() + "wrong";
-    QDir wrong_dir(wrong_path);
-
-    if( !wrong_dir.exists() )
-    {
-        qDebug() << "Creating" << wrong_path
-                 << " Directory";
-#ifdef WIN32
-        QString cmd = "mkdir " + wrong_path;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "wrong");
-#endif
-    }
+    ab_checkAuDir("wrong");
 }
 
 void AbVerify::generateWrongForms()
@@ -44,7 +32,7 @@ void AbVerify::generateWrongForms()
     w_path.clear();
 
     int id = getId();
-    QString file_path = editor->stat->cache_files[0][id];
+    QString file_path = editor->stat->cache_files[verify_id][id];
     QFileInfo info(file_path);
     QString filename = info.fileName();
     filename = filename.remove(".wav");
@@ -202,7 +190,7 @@ void AbVerify::execWrongKey(int key)
     }
 
     int cache_id = getId();
-    QString old_path = editor->stat->cache_files[0][cache_id];
+    QString old_path = editor->stat->cache_files[verify_id][cache_id];
     QString new_path = w_path[id];
     QFile file(old_path);
     file.copy(new_path);
@@ -240,7 +228,7 @@ void AbVerify::moveToOnline()
     checkOnlineExist();
 
     int id = getId();
-    QString file_path = editor->stat->cache_files[0][id];
+    QString file_path = editor->stat->cache_files[verify_id][id];
     QString online_path = ab_getAudioPath() + "train\\online\\";
     QFile file(file_path);
     QFileInfo info(file_path);
@@ -250,6 +238,7 @@ void AbVerify::moveToOnline()
     utime(online_path.toStdString().c_str(), NULL);
 
     file.remove();
+//    if( )
     editor->stat->moveToOnline(id);
 
     recRemove();
@@ -258,7 +247,7 @@ void AbVerify::moveToOnline()
 void AbVerify::deleteFile()
 {
     int id = getId();
-    QString file_path = editor->stat->cache_files[0][id];
+    QString file_path = editor->stat->cache_files[verify_id][id];
     QFile file(file_path);
     QString new_path = wrongAll(file_path);
     file.copy(new_path);
@@ -270,7 +259,7 @@ void AbVerify::deleteFile()
 void AbVerify::trashFile()
 {
     int id = getId();
-    QString file_path = editor->stat->cache_files[0][id];
+    QString file_path = editor->stat->cache_files[verify_id][id];
     QFile file(file_path);
     file.remove();
     editor->stat->deleteCache(AB_UNVER_ID, id);
@@ -279,21 +268,10 @@ void AbVerify::trashFile()
 
 void AbVerify::checkOnlineExist()
 {
-    QString online_dir = ab_getAudioPath();
-    online_dir += "train\\online";
-    QDir au_TrainDir(online_dir);
-
-    if( !au_TrainDir.exists() )
-    {
-        qDebug() << "Creating" << online_dir
-                 << " Directory";
-#ifdef WIN32
-        QString cmd = "mkdir " + online_dir;
-        system(cmd.toStdString().c_str());
-#else //OR __linux
-        system("mkdir -p " KAL_AU_DIR "train/online");
-#endif
-    }
+    QString dirname = "train";
+    dirname += QDir::separator();
+    dirname += "online";
+    ab_checkAuDir(dirname);
 }
 
 void AbVerify::recRemove()
@@ -314,7 +292,7 @@ void AbVerify::loadNext()
 
     QFileInfo wav_file(filename);
     QString basename = wav_file.baseName();
-    QStringList id_strlist = basename.split("_", QString::SkipEmptyParts);
+    QStringList id_strlist = basename.split("_", Qt::SkipEmptyParts);
     int len = id_strlist.size();
     QVector<int> id_list;
     for( int i=0 ; i<len ; i++ )
@@ -333,7 +311,7 @@ QString AbVerify::getNext()
 
     if( focus_word==-1 ) //no focus word
     {
-        filename = editor->stat->cache_files[0].last();
+        filename = editor->stat->cache_files[verify_id].last();
     }
     else
     {
@@ -341,7 +319,7 @@ QString AbVerify::getNext()
 
         if( curr_id==0 )
         {
-            int len = editor->stat->cache_files[0].length();
+            int len = editor->stat->cache_files[verify_id].length();
             curr_id = len-1;
             qDebug() << "curr_id" << filename << curr_id;
         }
@@ -349,7 +327,7 @@ QString AbVerify::getNext()
         while( curr_id>0 )
         {
             curr_id--;
-            filename = editor->stat->cache_files[0][curr_id];
+            filename = editor->stat->cache_files[verify_id][curr_id];
             QFileInfo info(filename);
             QStringList split = info.baseName().split("_");
             int split_len = split.length();
@@ -376,7 +354,7 @@ int AbVerify::getId()
 
     if( focus_word==-1 ) //no focus word
     {
-        ret = editor->stat->cache_files[0].length()-1;
+        ret = editor->stat->cache_files[verify_id].length()-1;
     }
     else
     {
@@ -384,6 +362,19 @@ int AbVerify::getId()
     }
 
     return ret;
+}
+
+void AbVerify::updateVerifier()
+{
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    if( verifier==2 )
+    {
+        verify_id = 1;
+    }
+    else
+    {
+        verify_id = 0;
+    }
 }
 
 QString AbVerify::idsToWords(QVector<int> ids)

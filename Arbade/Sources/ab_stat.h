@@ -4,19 +4,22 @@
 #include <QObject>
 #include "config.h"
 #include "backend.h"
+#include "ab_telegram.h"
 #include "ab_phoneme.h"
+#include "ab_cache.h"
 
 #define AB_MAX_CAT     100
 #define AB_MAX_RECLIST 200
 #define AB_UNVER_ID    0
-#define AB_UNVER       "unverified"
+#define AB_SHIT_ID     1
 
 class AbStat: public QObject
 {
     Q_OBJECT
 
 public:
-    explicit AbStat(QObject *ui, QObject *parent = nullptr);
+    explicit AbStat(QObject *ui, AbCache *ch, AbTelegram *tel,
+                    QObject *parent = nullptr);
 
     QVector<int>* getCategoryCount(QString category);
     QVector<int>  getAllCount();
@@ -61,6 +64,8 @@ private:
     QObject *rec_list;//rec list qml object
     QObject *buttons;//buttons qml object
     QObject *status;//status qml object
+    AbTelegram *telegram;
+    AbCache *cache;
 };
 
 #endif // AB_STAT_H

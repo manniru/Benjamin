@@ -4,9 +4,12 @@
 #include <QQmlProperty>
 #include <QVariant>
 
-AbStat::AbStat(QObject *ui, QObject *parent) : QObject(parent)
+AbStat::AbStat(QObject *ui, AbCache *ch, AbTelegram *tel,
+               QObject *parent) : QObject(parent)
 {
     root = ui;
+    telegram = tel;
+    cache = ch;
     buttons = root->findChild<QObject *>("Buttons");
     status = root->findChild<QObject *>("Status");
     editor = root->findChild<QObject *>("WordList");
@@ -381,11 +384,19 @@ int AbStat::wordToIndex(QString word)
 int AbStat::catToIndex(QString category)
 {
     int cat_id = AB_UNVER_ID;
-    if( category!=AB_UNVER )
+    if( category==AB_UNVER_DIR )
+    {
+        cat_id = AB_UNVER_ID;
+    }
+    else if( category==AB_SHIT_DIR )
+    {
+        cat_id = AB_SHIT_ID;
+    }
+    else
     {
         QFileInfoList dir_list = ab_getAudioDirs();
         int len_dir = dir_list.size();
-        for( int i=1 ; i<len_dir ; i++ )
+        for( int i=2 ; i<len_dir ; i++ )
         {
             QString dir_name = dir_list[i].baseName();
             if( dir_name==category )
@@ -414,13 +425,22 @@ void AbStat::moveToOnline(int id)
     QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
 
-    for( int i=1 ; i<len_dir ; i++ )
+    for( int i=2 ; i<len_dir ; i++ )
     {
         QString dir_name = dir_list[i].baseName();
         if( dir_name=="online" )
         {
-            cache_files[i] << cache_files[0][id];
-            deleteCache(AB_UNVER_ID, id);
+            int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+            if( verifier==2 )
+            {
+                cache_files[i] << cache_files[AB_SHIT_ID][id];
+                deleteCache(AB_SHIT_DIR, id);
+            }
+            else if( verifier==1 )
+            {
+                cache_files[i] << cache_files[AB_UNVER_ID][id];
+                deleteCache(AB_UNVER_ID, id);
+            }
         }
     }
 }
