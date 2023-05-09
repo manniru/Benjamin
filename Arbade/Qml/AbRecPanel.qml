@@ -35,7 +35,7 @@ Rectangle
         {
             id: count_label
 
-            text: if( root.ab_verifier===1 )
+            text: if( root.ab_verifier )
                   {
                       "Count: [" + root.ab_count.toString() + "/" +
                         root.ab_total_count_v.toString() + "]"
@@ -70,6 +70,10 @@ Rectangle
             text: if( root.ab_verifier===1 )
                   {
                       "Category: \"unverified\""
+                  }
+                  else if( root.ab_verifier===2 )
+                  {
+                      "Category: \"shit\""
                   }
                   else
                   {
