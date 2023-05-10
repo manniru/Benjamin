@@ -16,6 +16,7 @@ public:
     void clearRecList();
 
     AbStat  *stat;
+    AbCache *cache;
     QThread *stat_thread;
     QString  dif_wordlist;
     QVector<QObject *> editor_lines;
@@ -52,7 +53,6 @@ private:
     QObject *rec_list; // rec list qml object
     QObject *message;  // messege qml object
     AbTelegram *telegram;
-    AbCache *cache;
 };
 
 #endif // ABEDITOR_H

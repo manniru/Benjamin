@@ -87,11 +87,11 @@ void AbScene::verifierChanged()
         int count;
         if( verifier==1 )
         {
-            count = editor->stat->cache_files[AB_UNVER_ID].size();
+            count = editor->cache->cache_files[AB_UNVER_ID].size();
         }
         else // verifier = 2
         {
-            count = editor->stat->cache_files[AB_SHIT_ID].size();
+            count = editor->cache->cache_files[AB_SHIT_ID].size();
         }
         if( count>AB_MAX_RECLIST )
         {
@@ -230,11 +230,11 @@ void AbScene::cacheCreated()
         int count;
         if( verifier==1 )
         {
-            count = editor->stat->cache_files[AB_UNVER_ID].size();
+            count = editor->cache->cache_files[AB_UNVER_ID].size();
         }
         else // verifier = 2
         {
-            count = editor->stat->cache_files[AB_SHIT_ID].size();
+            count = editor->cache->cache_files[AB_SHIT_ID].size();
         }
         if( count>AB_MAX_RECLIST )
         {

@@ -290,7 +290,7 @@ void AbEditor::updateStatAll()
     int len_cat = AB_MAX_CAT;
     for( int i=1 ; i<len_cat ; i++ )
     {
-        count += stat->cache_files[i].length();
+        count += cache->cache_files[i].length();
     }
     QQmlProperty::write(editor, "count", count);
 }
@@ -326,8 +326,8 @@ void AbEditor::updateStatCat()
         }
     }
     stat->updateMeanVar(word_count);
-    int id = stat->catToIndex(category);
-    int count = stat->cache_files[id].length();
+    int id = cache->catToIndex(category);
+    int count = cache->cache_files[id].length();
     QQmlProperty::write(editor, "count", count);
 }
 
