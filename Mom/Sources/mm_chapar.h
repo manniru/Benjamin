@@ -26,6 +26,7 @@ private:
     MmMonitor  *mon;
     MmKeyboard *key;
     MmVirt     *virt;
+    MmSound    *sound;
     HWND hWnd;
 };
 

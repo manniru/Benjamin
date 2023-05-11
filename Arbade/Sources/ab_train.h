@@ -7,7 +7,8 @@
 #include "ab_console.h"
 #include "ab_stat.h"
 
-#define AB_MODEL_DIR "..\\Tools\\Model"
+#define AB_MODEL_DIR    "..\\Tools\\Model"
+#define AB_TEST_PERCENT 3.0
 
 class AbTrain : public QObject
 {

@@ -3,10 +3,11 @@
 
 MmChapar::MmChapar(QObject *root, QObject *parent) : QObject(parent)
 {
-    mon  = new MmMonitor(root);
-    virt = new MmVirt;
-    bar  = new MmBar(root, virt);
-    key  = new MmKeyboard(virt);
+    mon   = new MmMonitor(root);
+    virt  = new MmVirt;
+    sound = new MmSound;
+    bar   = new MmBar(root, virt, sound);
+    key   = new MmKeyboard(virt, sound);
 
     mm_setKeyboard(key);
 

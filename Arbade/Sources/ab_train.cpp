@@ -163,15 +163,16 @@ void AbTrain::checkModelExist()
 
 int AbTrain::needTestCount()
 {
-    int sample_count = 0;
-    int test_need_count;
-    int test_curr_count;
-    int ret;
+    float sample_count = 0;
+    float percent = AB_TEST_PERCENT/100.0;
+    int   test_need_count;
+    int   test_curr_count;
+    int   ret;
 
     sample_count = getTrainCount();
-    test_need_count = sample_count/10;
+    test_need_count = qFloor(sample_count*percent);
     test_curr_count = getTestCount();
-    ret = test_need_count-test_curr_count ;
+    ret = test_need_count-test_curr_count;
 
     if( ret>0 )
     {

@@ -1,11 +1,11 @@
 #include "mm_bar.h"
 #include <QDir>
 
-MmBar::MmBar(QObject *root, MmVirt *vi,
+MmBar::MmBar(QObject *root, MmVirt *vi, MmSound *snd,
              QObject *parent) : QObject(parent)
 {
     parser = new MmParser;
-    sound  = new MmSound;
+    sound  = snd;
     usage  = new MmUsage;
     music  = new MmMusic;
     virt   = vi;

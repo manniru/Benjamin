@@ -13,7 +13,7 @@ class MmBar : public QObject
 {
     Q_OBJECT
 public:
-    explicit MmBar(QObject *root, MmVirt *vi,
+    explicit MmBar(QObject *root, MmVirt *vi, MmSound *snd,
                    QObject *parent = nullptr);
 
 private slots:
