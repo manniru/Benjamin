@@ -45,7 +45,8 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-MmKeyboard::MmKeyboard(MmVirt *vi, QObject *parent) : QObject(parent)
+MmKeyboard::MmKeyboard(MmVirt *vi, MmSound *snd,
+                       QObject *parent) : QObject(parent)
 {
     state = 0;
     emul_mode = 0;
@@ -63,7 +64,8 @@ MmKeyboard::MmKeyboard(MmVirt *vi, QObject *parent) : QObject(parent)
     }
 
     e_key = new MmKeyEmulator;
-    exec  = new MmKeyExec(vi);
+    sound = snd;
+    exec  = new MmKeyExec(vi, sound);
     exec_thread = new QThread;
     exec->moveToThread(exec_thread);
     exec_thread->start();

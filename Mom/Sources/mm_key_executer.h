@@ -6,6 +6,7 @@
 #include <QVector>
 #include "mm_app_launcher.h"
 #include "mm_virt.h"
+#include "mm_sound.h"
 #include "mm_win_manager.h"
 
 typedef struct MmKbState
@@ -19,7 +20,7 @@ class MmKeyExec : public QObject
 {
     Q_OBJECT
 public:
-    explicit MmKeyExec(MmVirt *vi,
+    explicit MmKeyExec(MmVirt *vi, MmSound *snd,
                        QObject *parent = nullptr);
     ~MmKeyExec();
 
@@ -32,13 +33,13 @@ public slots:
     void delayedExec();
 
 private:
-    int execWinNum(int key_code);
     int execShiftWin(int key_code);
 
-    QTimer *timer;
-    MmVirt *virt;
+    QTimer  *timer;
+    MmVirt  *virt;
+    MmSound *sound;
     //cannot be QString as of the virtual num msg
-    int key_buf;
+    QString key_buf;
 
     MmAppLauncher *launcher;
     MmWinManager  *manager;

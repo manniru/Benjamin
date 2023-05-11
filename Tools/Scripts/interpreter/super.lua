@@ -31,6 +31,8 @@ function get_Super(word)
 		return "113"
 	elseif word == "select" then
 		return "114"
+	elseif word == "drag" then
+		return "115"
 	end
 
 end

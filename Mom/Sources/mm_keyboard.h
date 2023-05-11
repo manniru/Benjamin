@@ -6,6 +6,7 @@
 #include <QVector>
 #include <QTimer>
 #include <Windows.h>
+#include "mm_sound.h"
 #include "mm_key_emulator.h"
 #include "mm_key_executer.h"
 
@@ -21,7 +22,7 @@ class MmKeyboard : public QObject
 {
     Q_OBJECT
 public:
-    explicit MmKeyboard(MmVirt *vi,
+    explicit MmKeyboard(MmVirt *vi, MmSound *snd,
                         QObject *parent = nullptr);
     ~MmKeyboard();
 
@@ -54,7 +55,8 @@ private:
 
     HHOOK hHook = NULL;
     int state;
-    MmVirt *virt;    
+    MmVirt  *virt;
+    MmSound *sound;
 
     QThread *exec_thread;
     MmKeyExec *exec;
