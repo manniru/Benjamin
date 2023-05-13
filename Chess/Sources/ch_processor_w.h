@@ -8,7 +8,7 @@
 #include "config.h"
 #include "ch_channel_w.h"
 #include "ch_keyboard_w.h"
-#include "ch_monitor.h"
+#include "ch_exec_w.h"
 
 #define CH_BACKSPACE_CODE 16777219
 #define CH_ESCAPE_CODE    16777216
@@ -21,6 +21,7 @@
 #define CH_RIGHT_CLICK  2
 #define CH_DOUBLE_CLICK 3
 #define CH_PERSIST      4
+#define CH_DRAG         5
 
 class ChProcessorW : public QObject
 {
@@ -28,7 +29,6 @@ class ChProcessorW : public QObject
 public:
     ChProcessorW(QObject *ui, QObject *parent = NULL);
     ~ChProcessorW();
-    void setLanguage();
 
 public slots:
     void showUI(QString text);
@@ -39,28 +39,16 @@ private:
     void setPos(int x, int y);
     void setPosFine(int key);
     void hideUI();
-    void createStatFile();
-    void rmStatFile();
-    void activateWindow();
-    void updateScreen(QString cmd);
-
-    void sendLeftKey();
-    void sendRightKey();
-    void sendMiddleKey();
 
     void setFocus();
-    void sendKey(int key_val);
-    void pressKey(int key_val);
-    void releaseKey(int key_val);
 
-    QString   key_buf; //requested word
-    QObject  *root;
-    int       count_x; //read from qml
-    int       count_y; //read from qml
-    int       click_mode;
-    int       meta_mode; // get a number at end
-    HWND      hWnd;
-    ChMonitor *mon;
+    int        count_x; //read from qml
+    int        count_y; //read from qml
+    int        click_mode;
+    int        meta_mode; // get a number at end
+    QString    key_buf; //requested word
+    ChExecW   *exec;
+    QObject   *root;
 };
 
 #endif // CH_PROCESSOR_W_H

@@ -1,6 +1,5 @@
 #include "ch_processor_w.h"
 #include <unistd.h>
-#include <QWindow>
 
 ChProcessorW::ChProcessorW(QObject *ui,
                            QObject *parent) : QObject(parent)
@@ -12,9 +11,7 @@ ChProcessorW::ChProcessorW(QObject *ui,
     meta_mode = 0;
     click_mode = CH_LEFT_CLICK;
 
-    QWindow *window = qobject_cast<QWindow *>(ui);
-    hWnd = (HWND)(window->winId());
-    mon = new ChMonitor;
+    exec = new ChExecW(root);
 }
 
 ChProcessorW::~ChProcessorW()
@@ -25,8 +22,7 @@ ChProcessorW::~ChProcessorW()
 void ChProcessorW::showUI(QString text)
 {
 //    reset();
-    qDebug() << "showUI";
-    updateScreen(text);
+    exec->updateScreen(text);
     if( text=="no_click" )
     {
         click_mode = CH_NO_CLICK;
@@ -47,8 +43,14 @@ void ChProcessorW::showUI(QString text)
     {
         click_mode = CH_PERSIST;
     }
+    else if( text=="drag" )
+    {
+        click_mode = CH_DRAG;
+        qDebug() << "showUI: DRAG";
+    }
     else
     {
+        qDebug() << "showUI: Unknown" << text;
         click_mode = CH_LEFT_CLICK;
     }
 
@@ -56,8 +58,8 @@ void ChProcessorW::showUI(QString text)
     QQmlProperty::write(root, "visible", true);
     QQmlProperty::write(root, "ch_timer", true);
 
-    activateWindow();
-    setLanguage();
+    exec->activateWindow();
+    exec->setLanguage();
 }
 
 void ChProcessorW::hideUI()
@@ -71,46 +73,36 @@ void ChProcessorW::hideUI()
     if( click_mode==CH_LEFT_CLICK )
     {
         QThread::msleep(50);
-        sendLeftKey();
+        exec->sendLeftKey();
         meta_mode = 0;
         click_mode = CH_LEFT_CLICK;
     }
     else if( click_mode==CH_RIGHT_CLICK )
     {
         QThread::msleep(50);
-        sendRightKey();
+        exec->sendRightKey();
         meta_mode = 0;
         click_mode = CH_LEFT_CLICK;
     }
     else if( click_mode==CH_DOUBLE_CLICK )
     {
         QThread::msleep(50);
-        sendLeftKey();
+        exec->sendLeftKey();
         QThread::msleep(50);
-        sendLeftKey();
+        exec->sendLeftKey();
         meta_mode = 0;
         click_mode = CH_LEFT_CLICK;
     }
     else if( click_mode==CH_PERSIST )
     {
         QThread::msleep(50);
-        sendLeftKey();
+        exec->sendLeftKey();
         QThread::msleep(10);
         QQmlProperty::write(root, "visible", 1);
         meta_mode = 0;
-        activateWindow();
+        exec->activateWindow();
         QQmlProperty::write(root, "ch_timer", true);
     }
-}
-
-void ChProcessorW::createStatFile()
-{
-//    system("touch chess_en");
-}
-
-void ChProcessorW::rmStatFile()
-{
-//    system("rm chess_en");
 }
 
 void ChProcessorW::keyPressed(int key)
@@ -161,45 +153,6 @@ void ChProcessorW::keyPressed(int key)
             hideUI();
         }
     }
-}
-
-void ChProcessorW::sendLeftKey()
-{
-    INPUT input;
-    input.type=INPUT_MOUSE;
-    input.mi.dx=0;
-    input.mi.dy=0;
-    input.mi.dwFlags=(MOUSEEVENTF_LEFTDOWN|MOUSEEVENTF_LEFTUP);
-    input.mi.mouseData=0;
-    input.mi.dwExtraInfo=NULL;
-    input.mi.time=0;
-    SendInput(1,&input,sizeof(INPUT));
-}
-
-void ChProcessorW::sendRightKey()
-{
-    INPUT input;
-    input.type=INPUT_MOUSE;
-    input.mi.dx=0;
-    input.mi.dy=0;
-    input.mi.dwFlags=(MOUSEEVENTF_RIGHTDOWN|MOUSEEVENTF_RIGHTUP);
-    input.mi.mouseData=0;
-    input.mi.dwExtraInfo=NULL;
-    input.mi.time=0;
-    SendInput(1,&input,sizeof(INPUT));
-}
-
-void ChProcessorW::sendMiddleKey()
-{
-    INPUT input;
-    input.type=INPUT_MOUSE;
-    input.mi.dx=0;
-    input.mi.dy=0;
-    input.mi.dwFlags=(MOUSEEVENTF_MIDDLEDOWN|MOUSEEVENTF_MIDDLEUP);
-    input.mi.mouseData=0;
-    input.mi.dwExtraInfo=NULL;
-    input.mi.time=0;
-    SendInput(1,&input,sizeof(INPUT));
 }
 
 void ChProcessorW::strToPos(QString input, int *x, int *y)
@@ -259,69 +212,3 @@ void ChProcessorW::setPosFine(int key)
     SetCursorPos(x2, y2);
 }
 
-void ChProcessorW::activateWindow()
-{
-    bool forground_en = SetForegroundWindow(hWnd);
-    HWND last_active = SetActiveWindow(hWnd);
-    HWND focus_ret = SetFocus(hWnd);
-
-    bool pos_ret = SetWindowPos(hWnd, HWND_TOPMOST,
-                                0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
-//    qDebug() << "SetFocus" << focus_ret
-//             << "SetWindowPos" << pos_ret
-//             << "SetForegroundWindow" << forground_en
-//             << "SetActiveWindow" << last_active;
-
-    int mid_x = count_x/2;
-    int mid_y = count_y/2;
-    QThread::msleep(50);
-    setPos(mid_x, mid_y);
-    QThread::msleep(50);
-    sendLeftKey();
-}
-
-void ChProcessorW::setLanguage()
-{
-    char layout_id[200];
-    GetKeyboardLayoutNameA(layout_id);
-    QString layout_idq = layout_id;
-
-    qDebug() << "Language" << layout_idq;
-
-    if( layout_idq=="00000429" )
-    {
-        qDebug() << "Changing to english";
-        ActivateKeyboardLayout((HKL)HKL_NEXT,
-                               KLF_SETFORPROCESS);
-    }
-}
-
-void ChProcessorW::updateScreen(QString cmd)
-{
-    int width = 0;
-    int height = 0;
-    int x = 0;
-    int y = 0;
-    if( cmd=="comment" )
-    {
-        width  = mon->secondary.width;
-        height = mon->secondary.height;
-        x = mon->secondary.x;
-        y = mon->secondary.y;
-    }
-    else
-    {
-        width  = mon->primary.width;
-        height = mon->primary.height;
-        x = mon->primary.x;
-        y = mon->primary.y;
-    }
-
-    QQmlProperty::write(root, "width", width);
-    QQmlProperty::write(root, "height", height+40);
-    QQmlProperty::write(root, "x", x);
-    QQmlProperty::write(root, "y", y);
-//    qDebug() << "width" << width << "height" << height
-//             << "x" << x << "y" << y;
-}
