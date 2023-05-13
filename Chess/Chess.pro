@@ -41,6 +41,7 @@ linux:HEADERS += \
 
 win32:HEADERS += \
     Sources/ch_channel_w.h \
+    Sources/ch_exec_w.h \
     Sources/ch_processor_w.h
 
 linux:SOURCES += \
@@ -49,6 +50,7 @@ linux:SOURCES += \
 
 win32:SOURCES += \
     Sources/ch_channel_w.cpp \
+    Sources/ch_exec_w.cpp \
     Sources/ch_processor_w.cpp
 
 MOC_DIR = Build/.moc

@@ -3,10 +3,12 @@
 #include <QDebug>
 #include <QThread>
 
-MmKeyExec::MmKeyExec(MmVirt *vi, QObject *parent) : QObject(parent)
+MmKeyExec::MmKeyExec(MmVirt *vi, MmSound *snd,
+                     QObject *parent) : QObject(parent)
 {
     key_buf = "";
     virt = vi;
+    sound = snd;
 
     timer = new QTimer;
     connect(timer, SIGNAL(timeout()),
@@ -89,7 +91,7 @@ void MmKeyExec::delayedExec()
     }
     else if( key_buf=="backspace" )
     {
-
+        sound->leftClick();
     }
     else if( key_buf.contains("work") )
     {

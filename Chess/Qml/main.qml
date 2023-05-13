@@ -12,8 +12,9 @@ Window
     property int     count_y : 26
     property bool    ch_timer: true
     property real    o_state: 1
-    property color   ch_cell_color: "#cf000000" // "#cf000000"
+    property color   ch_cell_color:   "#cf000000" // "#cf000000"
     property color   ch_active_color: "#7f5f6f00"
+    property color   ch_drag_color:   "#7f6f0064"
     property string  ch_buffer: ""
 
     signal eKeyPressed(int key)
@@ -133,6 +134,11 @@ Window
     function hightlightCell(row, col)
     {
         g_layout.children[row*count_x+col].cell_color = ch_active_color;
+    }
+
+    function lightDragCell(row, col)
+    {
+        g_layout.children[row*count_x+col].cell_color = ch_drag_color;
     }
 
     function resetHighlight()

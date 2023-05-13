@@ -18,7 +18,6 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
 
     channel->moveToThread(ch_thread);
     ch_thread->start();
-    processor->setLanguage();
     emit run();
 
 #else
