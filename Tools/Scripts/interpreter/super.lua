@@ -23,7 +23,7 @@ function get_Super(word)
 		return "109"
 	elseif word == "roger" then
 		return "110"
-	elseif word == "resist" then
+	elseif word == "touch" then
 		return "111"
 	elseif word == "spotify" then
 		return "112"

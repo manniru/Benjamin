@@ -9,6 +9,7 @@ ChProcessorW::ChProcessorW(QObject *ui,
     count_x   = QQmlProperty::read(root, "count_x").toInt();
     count_y   = QQmlProperty::read(root, "count_y").toInt();
     meta_mode = 0;
+    drag_mode = 0;
     click_mode = CH_LEFT_CLICK;
 
     exec = new ChExecW(root);
@@ -73,7 +74,16 @@ void ChProcessorW::hideUI()
     if( click_mode==CH_LEFT_CLICK )
     {
         QThread::msleep(50);
-        exec->sendLeftKey();
+
+        if( drag_mode )
+        {
+            exec->sendRightKey();
+            drag_mode = 0;
+        }
+        else
+        {
+            exec->sendLeftKey();
+        }
         meta_mode = 0;
         click_mode = CH_LEFT_CLICK;
     }
@@ -103,6 +113,14 @@ void ChProcessorW::hideUI()
         exec->activateWindow();
         QQmlProperty::write(root, "ch_timer", true);
     }
+    else if( click_mode==CH_DRAG )
+    {
+        QThread::msleep(50);
+        exec->sendLeftKey();
+        meta_mode = 0;
+        drag_mode = 1;
+        click_mode = CH_LEFT_CLICK;
+    }
 }
 
 void ChProcessorW::keyPressed(int key)
@@ -128,30 +146,35 @@ void ChProcessorW::keyPressed(int key)
     }
     else if( key>CH_KEY_MIN && key<CH_KEY_MAX )
     {
-        key_buf += (char)key;
-        QQmlProperty::write(root, "ch_timer", false);
-        if( key_buf.length()==CHESS_CHAR_COUNT )
+        processNatoKey(key);
+    }
+}
+
+void ChProcessorW::processNatoKey(int key)
+{
+    key_buf += (char)key;
+    QQmlProperty::write(root, "ch_timer", false);
+    if( key_buf.length()==CHESS_CHAR_COUNT )
+    {
+        int x, y;
+        strToPos(key_buf, &x, &y);
+        setPos(x, y);
+        if( meta_mode==0 )
         {
-            int x, y;
-            strToPos(key_buf, &x, &y);
-            setPos(x, y);
-            if( meta_mode==0 )
-            {
-                hideUI();
-            }
-        }
-        else if( key_buf.length()==CHESS_CHAR_COUNT+1 &&
-                 meta_mode )
-        {
-            if( '9'<key || key<'0' )
-            {
-                qDebug() << "wrong fine input";
-                key_buf.remove( key_buf.length()-1, 1 ); // remove last char
-                return;
-            }
-            setPosFine(key);
             hideUI();
         }
+    }
+    else if( key_buf.length()==CHESS_CHAR_COUNT+1 &&
+             meta_mode )
+    {
+        if( '9'<key || key<'0' )
+        {
+            qDebug() << "wrong fine input";
+            key_buf.remove( key_buf.length()-1, 1 ); // remove last char
+            return;
+        }
+        setPosFine(key);
+        hideUI();
     }
 }
 

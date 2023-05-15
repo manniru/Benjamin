@@ -24,8 +24,6 @@ function get_Meta(word)
 		return "10"
 	elseif word == "mouse" then
 		return "11"
-	elseif word == "touch" then
-		return "12"
 	end
 
 end

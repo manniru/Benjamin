@@ -35,6 +35,7 @@ public slots:
     void keyPressed(int key);
 
 private:
+    void processNatoKey(int key);
     void strToPos(QString input, int *x, int *y);
     void setPos(int x, int y);
     void setPosFine(int key);
@@ -46,6 +47,7 @@ private:
     int        count_y; //read from qml
     int        click_mode;
     int        meta_mode; // get a number at end
+    int        drag_mode;
     QString    key_buf; //requested word
     ChExecW   *exec;
     QObject   *root;
