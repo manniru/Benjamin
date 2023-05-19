@@ -124,6 +124,14 @@ void ChProcessorW::hideUI()
     }
 }
 
+// Escape Pressed
+void ChProcessorW::cancel()
+{
+    click_mode = CH_NO_CLICK;
+    hideUI();
+    ch_setFocus();
+}
+
 // enable finer detail mode
 void ChProcessorW::meta()
 {
@@ -134,15 +142,9 @@ void ChProcessorW::meta()
 
 void ChProcessorW::keyPressed(int key)
 {
-    qDebug() << "key" << key;
+//    qDebug() << "key" << key;
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
-    if( key==CH_ESCAPE_CODE )
-    {
-        click_mode = CH_NO_CLICK;
-        hideUI();
-        ch_setFocus();
-    }
-    else if( key==CH_BACKSPACE_CODE )
+    if( key==CH_BACKSPACE_CODE )
     {
         if( key_buf.length()>0 )
         {

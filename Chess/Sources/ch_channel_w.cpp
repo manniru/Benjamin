@@ -85,18 +85,23 @@ void ChChannelW::processCommand(QString cmd, QString arg)
     {
         emit show(arg);
     }
-    else if( cmd.contains("Key_") )
-    {
-        cmd.remove(0, 4);
-        qDebug() << "key" << cmd;
-    }
     else if( cmd=="Meta" )
     {
         emit meta();
     }
+    else if( cmd.contains("Key_") )
+    {
+        cmd.remove(0, 4);
+        int key = cmd.toInt();
+
+        if( key==VK_ESCAPE )
+        {
+            emit cancel();
+        }
+        qDebug() << "key" << key;
+    }
     else
     {
-        qDebug() << "Show" << cmd;
         emit show(cmd);
     }
 }

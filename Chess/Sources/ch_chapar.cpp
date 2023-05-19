@@ -11,6 +11,8 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
             processor, SLOT(showUI(QString)));
     connect(channel, SIGNAL(meta()),
             processor, SLOT(meta()));
+    connect(channel, SIGNAL(cancel()),
+            processor, SLOT(cancel()));
 
     connect(ui, SIGNAL(eKeyPressed(int)),
             processor, SLOT(keyPressed(int)));
