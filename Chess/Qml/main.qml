@@ -89,11 +89,7 @@ Window
     {
         var min_key = '0'.charCodeAt()-1;
         var max_key = 'Z'.charCodeAt()+1;
-        if( key_event===Qt.Key_F1 )
-        {
-            ch_cell_color = "#cf002422"
-        }
-        else if ( key_event===Qt.Key_Backspace )
+        if ( key_event===Qt.Key_Backspace )
         {
             if( ch_buffer.length )
             {
@@ -178,5 +174,11 @@ Window
                 }
             }
         }
+    }
+
+    function metaMode()
+    {
+        ch_cell_color = "#cf002422";
+        updateState();
     }
 }

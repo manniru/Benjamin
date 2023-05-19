@@ -33,6 +33,7 @@ public:
 public slots:
     void showUI(QString text);
     void keyPressed(int key);
+    void meta();
 
 private:
     void processNatoKey(int key);

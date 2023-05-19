@@ -58,6 +58,7 @@ void ChProcessorW::showUI(QString text)
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
     QQmlProperty::write(root, "visible", true);
     QQmlProperty::write(root, "ch_timer", true);
+    meta_mode = 0;
 
     exec->activateWindow();
     exec->setLanguage();
@@ -123,6 +124,14 @@ void ChProcessorW::hideUI()
     }
 }
 
+// enable finer detail mode
+void ChProcessorW::meta()
+{
+    QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
+    meta_mode = 1; ///FIXME: MAKE THIS TOGGLE
+    QMetaObject::invokeMethod(root, "metaMode");
+}
+
 void ChProcessorW::keyPressed(int key)
 {
     qDebug() << "key" << key;
@@ -139,10 +148,6 @@ void ChProcessorW::keyPressed(int key)
         {
             key_buf.remove( key_buf.length()-1, 1 );
         }
-    }
-    else if( key==CH_F1_CODE )
-    {
-        meta_mode = 1; ///FIXME: MAKE THIS TOGGLE
     }
     else if( key>CH_KEY_MIN && key<CH_KEY_MAX )
     {

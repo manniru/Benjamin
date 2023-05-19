@@ -88,7 +88,7 @@ function get_Nato(word)
 	elseif word == "canals" then -- backslash
 		return "220"
 	elseif word == "edge" then -- app menu key
-		return "164"
+		return "93"
 		-- xdotool key shift+minus make problem when sleep
 	elseif word == "bracket" then
 		return "219"
