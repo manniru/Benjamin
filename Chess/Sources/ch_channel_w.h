@@ -30,6 +30,7 @@ public:
 
 signals:
     void show(QString args);
+    void key(int val);
     void meta();
     void cancel();
 

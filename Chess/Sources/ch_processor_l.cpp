@@ -77,7 +77,7 @@ void ChProcessorL::rmStatFile()
     system("rm chess_en");
 }
 
-void ChProcessorL::keyPressed(int key)
+void ChProcessorL::key(int key)
 {
     qDebug() << "key" << key;
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);

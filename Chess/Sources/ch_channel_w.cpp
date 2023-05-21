@@ -92,13 +92,16 @@ void ChChannelW::processCommand(QString cmd, QString arg)
     else if( cmd.contains("Key_") )
     {
         cmd.remove(0, 4);
-        int key = cmd.toInt();
+        int key_val = cmd.toInt();
 
-        if( key==VK_ESCAPE )
+        if( key_val==VK_ESCAPE )
         {
             emit cancel();
         }
-        qDebug() << "key" << key;
+        else
+        {
+            emit key(key_val);
+        }
     }
     else
     {

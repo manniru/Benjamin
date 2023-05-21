@@ -26,7 +26,7 @@ public:
 
 public slots:
     void showUI(QString text);
-    void keyPressed(int key);
+    void key(int key);
 
 private:
     void strToPos(QString input, int *x, int *y);

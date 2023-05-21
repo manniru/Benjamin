@@ -17,8 +17,6 @@ Window
     property color   ch_drag_color:   "#7f6f0064"
     property string  ch_buffer: ""
 
-    signal eKeyPressed(int key)
-
     title: "Chess"
     width: 800
     height: 600
@@ -26,19 +24,6 @@ Window
     color: "transparent"
     opacity: 0.8
     flags: Qt.WA_X11NetWmWindowTypeDock
-
-    Item
-    {
-        focus: true
-        Keys.onPressed:
-        {
-            if( event.key!==Qt.Key_Escape )
-            {
-                keyHandler(event.key);
-            }
-            eKeyPressed(event.key);
-        }
-    }
 
     GridLayout
     {
@@ -85,21 +70,18 @@ Window
         running:  ch_timer
     }
 
+    function backspace()
+    {
+        if( ch_buffer.length )
+        {
+            ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
+            updateState();
+        }
+    }
+
     function keyHandler(key_event)
     {
-        var min_key = '0'.charCodeAt()-1;
-        var max_key = 'Z'.charCodeAt()+1;
-        if ( key_event===Qt.Key_Backspace )
-        {
-            if( ch_buffer.length )
-            {
-                ch_buffer = ch_buffer.substring(0, ch_buffer.length-1);
-            }
-        }
-        else if( key_event>min_key && key_event<max_key )
-        {
-            ch_buffer += String.fromCharCode(key_event);
-        }
+        ch_buffer += String.fromCharCode(key_event);
         updateState();
     }
 

@@ -13,9 +13,8 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
             processor, SLOT(meta()));
     connect(channel, SIGNAL(cancel()),
             processor, SLOT(cancel()));
-
-    connect(ui, SIGNAL(eKeyPressed(int)),
-            processor, SLOT(keyPressed(int)));
+    connect(channel, SIGNAL(key(int)),
+            processor, SLOT(key(int)));
 
     connect(this, SIGNAL(run()),
             channel, SLOT(listenPipe()));
@@ -29,6 +28,6 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
     ChProcessorL *processor = new ChProcessorL(channel, ui);
 
     QObject::connect(ui, SIGNAL(eKeyPressed(int)),
-                     processor, SLOT(keyPressed(int)));
+                     processor, SLOT(key(int)));
 #endif
 }
