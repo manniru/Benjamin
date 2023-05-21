@@ -7,9 +7,6 @@
 #include "backend.h"
 #include "config.h"
 
-#define CH_BACKSPACE_CODE 16777219
-#define CH_ESCAPE_CODE    16777216
-#define CH_F1_CODE        16777264
 #define CH_KEY_MIN        ('0'-1)
 #define CH_KEY_MAX        ('Z'+1)
 

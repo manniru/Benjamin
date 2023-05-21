@@ -19,7 +19,7 @@ linux:LIBS += -lnotify \
     -lgobject-2.0 \
     -lglib-2.0
 
-win32:LIBS += -lUser32
+win32:LIBS += -lUser32 -lPsapi
 
 SOURCES += \
     Sources/backend.cpp \

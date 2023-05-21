@@ -131,7 +131,7 @@ void ChProcessorW::cancel()
 {
     click_mode = CH_NO_CLICK;
     hideUI();
-    ch_setFocus();
+    ch_returnFocus();
 }
 
 // enable finer detail mode
@@ -144,9 +144,9 @@ void ChProcessorW::meta()
 
 void ChProcessorW::key(int val)
 {
-//    qDebug() << "key" << key;
+    qDebug() << "key" << val;
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
-    if( val==CH_BACKSPACE_CODE )
+    if( val==VK_BACK )
     {
         if( key_buf.length()>0 )
         {
