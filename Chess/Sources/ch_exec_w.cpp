@@ -33,7 +33,7 @@ void ChExecW::activateWindow()
     QThread::msleep(50);
     SetCursorPos(mid_x, mid_y);
     QThread::msleep(50);
-    sendLeftKey();
+    sendMouseKey(1);
 }
 
 void ChExecW::setLanguage()
@@ -84,41 +84,101 @@ void ChExecW::updateScreen(QString cmd)
 //             << "x" << x << "y" << y;
 }
 
-void ChExecW::sendLeftKey()
+void ChExecW::sendMouseKey(int val)
 {
+#ifdef WIN32
     INPUT input;
     input.type = INPUT_MOUSE;
     input.mi.dx = 0;
     input.mi.dy = 0;
-    input.mi.dwFlags = (MOUSEEVENTF_LEFTDOWN|MOUSEEVENTF_LEFTUP);
     input.mi.mouseData = 0;
+
+    if( val==1 )
+    {
+        input.mi.dwFlags = (MOUSEEVENTF_LEFTDOWN|MOUSEEVENTF_LEFTUP);
+    }
+    else if( val==2 )
+    {
+        input.mi.dwFlags = (MOUSEEVENTF_MIDDLEDOWN|MOUSEEVENTF_MIDDLEUP);
+    }
+    else if( val==3 )
+    {
+        input.mi.dwFlags = (MOUSEEVENTF_RIGHTDOWN|MOUSEEVENTF_RIGHTUP);
+    }
+    else if( val==4 )
+    {
+        input.mi.dwFlags = MOUSEEVENTF_WHEEL;
+        input.mi.mouseData = WHEEL_DELTA;
+    }
+    else if( val==5 )
+    {
+        input.mi.dwFlags = MOUSEEVENTF_WHEEL;
+        input.mi.mouseData = -WHEEL_DELTA;
+    }
+
     input.mi.dwExtraInfo = NULL;
     input.mi.time = 0;
-    SendInput(1,&input,sizeof(INPUT));
+    SendInput(1, &input,sizeof(INPUT));
+#else
+    QString cmd = "xdotool click ";;
+
+    cmd += QString::number(btn);
+    system(cmd.toStdString().c_str());
+#endif
 }
 
-void ChExecW::sendRightKey()
+void ChExecW::mousePress(int btn)
 {
+#ifdef WIN32
     INPUT input;
     input.type = INPUT_MOUSE;
     input.mi.dx = 0;
     input.mi.dy = 0;
-    input.mi.dwFlags = (MOUSEEVENTF_RIGHTDOWN|MOUSEEVENTF_RIGHTUP);
+
+    if( btn==1 )
+    {
+        input.mi.dwFlags=(MOUSEEVENTF_LEFTDOWN);
+    }
+    else if( btn==2 )
+    {
+        input.mi.dwFlags=(MOUSEEVENTF_MIDDLEDOWN);
+    }
+    else if( btn==3 )
+    {
+        input.mi.dwFlags=(MOUSEEVENTF_RIGHTDOWN);
+    }
+
     input.mi.mouseData = 0;
     input.mi.dwExtraInfo = NULL;
     input.mi.time = 0;
-    SendInput(1, &input, sizeof(INPUT));
+    SendInput(1, &input,sizeof(INPUT));
+#endif
 }
 
-void ChExecW::sendMiddleKey()
+void ChExecW::mouseRelease(int btn)
 {
+#ifdef WIN32
     INPUT input;
     input.type = INPUT_MOUSE;
     input.mi.dx = 0;
     input.mi.dy = 0;
-    input.mi.dwFlags = (MOUSEEVENTF_MIDDLEDOWN|MOUSEEVENTF_MIDDLEUP);
+
+    if( btn==1 )
+    {
+        input.mi.dwFlags=(MOUSEEVENTF_LEFTUP);
+    }
+    else if( btn==2 )
+    {
+        input.mi.dwFlags=(MOUSEEVENTF_MIDDLEUP);
+    }
+    else if( btn==3 )
+    {
+        input.mi.dwFlags=(MOUSEEVENTF_RIGHTUP);
+    }
+
     input.mi.mouseData = 0;
     input.mi.dwExtraInfo = NULL;
     input.mi.time = 0;
-    SendInput(1, &input, sizeof(INPUT));
+    SendInput(1, &input,sizeof(INPUT));
+#endif
 }

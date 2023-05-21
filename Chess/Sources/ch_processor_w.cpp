@@ -60,7 +60,7 @@ void ChProcessorW::showUI(QString text)
     QQmlProperty::write(root, "ch_timer", true);
     meta_mode = 0;
 
-    exec->activateWindow();
+//    exec->activateWindow();
     exec->setLanguage();
 }
 
@@ -78,12 +78,12 @@ void ChProcessorW::hideUI()
 
         if( drag_mode )
         {
-            exec->sendRightKey();
+            exec->mouseRelease(1);
             drag_mode = 0;
         }
         else
         {
-            exec->sendLeftKey();
+            exec->sendMouseKey(1);
         }
         meta_mode = 0;
         click_mode = CH_LEFT_CLICK;
@@ -91,36 +91,38 @@ void ChProcessorW::hideUI()
     else if( click_mode==CH_RIGHT_CLICK )
     {
         QThread::msleep(50);
-        exec->sendRightKey();
+        exec->sendMouseKey(3);
         meta_mode = 0;
         click_mode = CH_LEFT_CLICK;
     }
     else if( click_mode==CH_DOUBLE_CLICK )
     {
         QThread::msleep(50);
-        exec->sendLeftKey();
+        exec->sendMouseKey(1);
         QThread::msleep(50);
-        exec->sendLeftKey();
+        exec->sendMouseKey(1);
         meta_mode = 0;
         click_mode = CH_LEFT_CLICK;
     }
     else if( click_mode==CH_PERSIST )
     {
         QThread::msleep(50);
-        exec->sendLeftKey();
+        exec->sendMouseKey(1);
         QThread::msleep(10);
         QQmlProperty::write(root, "visible", 1);
         meta_mode = 0;
-        exec->activateWindow();
+//        exec->activateWindow();
         QQmlProperty::write(root, "ch_timer", true);
     }
     else if( click_mode==CH_DRAG )
     {
         QThread::msleep(50);
-        exec->sendLeftKey();
+        exec->mousePress(1);
         meta_mode = 0;
         drag_mode = 1;
         click_mode = CH_LEFT_CLICK;
+        QThread::msleep(50);
+        QQmlProperty::write(root, "visible", 1);
     }
 }
 
@@ -140,20 +142,21 @@ void ChProcessorW::meta()
     QMetaObject::invokeMethod(root, "metaMode");
 }
 
-void ChProcessorW::keyPressed(int key)
+void ChProcessorW::key(int val)
 {
 //    qDebug() << "key" << key;
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
-    if( key==CH_BACKSPACE_CODE )
+    if( val==CH_BACKSPACE_CODE )
     {
         if( key_buf.length()>0 )
         {
+            QMetaObject::invokeMethod(root, "backspace");
             key_buf.remove( key_buf.length()-1, 1 );
         }
     }
-    else if( key>CH_KEY_MIN && key<CH_KEY_MAX )
+    else if( val>CH_KEY_MIN && val<CH_KEY_MAX )
     {
-        processNatoKey(key);
+        processNatoKey(val);
     }
 }
 
@@ -161,6 +164,10 @@ void ChProcessorW::processNatoKey(int key)
 {
     key_buf += (char)key;
     QQmlProperty::write(root, "ch_timer", false);
+
+    QVariant key_v(key);
+    QGenericArgument arg_key = Q_ARG(QVariant, key_v);
+    QMetaObject::invokeMethod(root, "keyHandler", arg_key);
     if( key_buf.length()==CHESS_CHAR_COUNT )
     {
         int x, y;

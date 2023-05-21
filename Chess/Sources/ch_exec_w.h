@@ -19,9 +19,9 @@ public:
     void activateWindow();
     void updateScreen(QString cmd);
 
-    void sendLeftKey();
-    void sendRightKey();
-    void sendMiddleKey();
+    void sendMouseKey(int val);
+    void mousePress(int btn);
+    void mouseRelease(int btn);
 signals:
 
 public slots:

@@ -32,7 +32,7 @@ public:
 
 public slots:
     void showUI(QString text);
-    void keyPressed(int key);
+    void key(int val);
     void meta();
     void cancel();
 
