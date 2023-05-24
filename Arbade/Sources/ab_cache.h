@@ -8,8 +8,6 @@
 
 #define AB_MAX_CAT     100
 #define AB_MAX_RECLIST 200
-#define AB_UNVER_ID    0
-#define AB_SHIT_ID     1
 
 class AbCache: public QObject
 {
@@ -20,8 +18,11 @@ public:
 
     void createCache();
     QVector<QString>* loadCacheFiles(QString category);
+    void deleteCache(QString category, QString path);
     void deleteCache(QString category, int i);
     void deleteCache(int cat_id, int i);
+    void addCache(QString category, QString file);
+    void addCache(int cat_id, QString file);
     QVector<int> getCount(QVector<QString> *file_list);
 
     QVector<QString> cache_files[AB_MAX_CAT];
@@ -32,6 +33,8 @@ signals:
     void cacheCreated();
 
 private:
+    QVector<int> getWordsIndex(QString filename);
+
     QStringList lexicon;
 };
 

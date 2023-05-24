@@ -24,9 +24,41 @@ QVector<QString>* AbCache::loadCacheFiles(QString category)
 {
     QVector<QString> *files = NULL;
     int id = catToIndex(category);
+//    qDebug() << "loadCacheFiles:" << id;
     files = &cache_files[id];
 
     return files;
+}
+
+void AbCache::addCache(QString category, QString file)
+{
+    int cat_id = catToIndex(category);
+    addCache(cat_id, file);
+}
+
+void AbCache::addCache(int cat_id, QString file)
+{
+    cache_files[cat_id].push_back(file);
+    QVector<int> words_index = getWordsIndex(file);
+    int len = words_index.length();
+    for( int i=0 ; i<len ; i++ )
+    {
+        int word_id = words_index[i];
+        cache_count[cat_id][word_id]++;
+    }
+}
+
+void AbCache::deleteCache(QString category, QString path)
+{
+    int cat_id = catToIndex(category);
+    int len = cache_files[cat_id].length();
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( cache_files[cat_id][i]==path )
+        {
+            deleteCache(cat_id, i);
+        }
+    }
 }
 
 void AbCache::deleteCache(QString category, int i)
@@ -37,8 +69,15 @@ void AbCache::deleteCache(QString category, int i)
 
 void AbCache::deleteCache(int cat_id, int i)
 {
+    QString removing_file = cache_files[cat_id][i];
+    QVector<int> words_index = getWordsIndex(removing_file);
+    int len = words_index.length();
+    for( int j=0 ; j<len ; j++ )
+    {
+        int word_id = words_index[j];
+        cache_count[cat_id][word_id]--;
+    }
     cache_files[cat_id].remove(i);
-    // cache_count[i] = getCount(&cache_files[i]);
 }
 
 int AbCache::catToIndex(QString category)
@@ -71,8 +110,7 @@ int AbCache::catToIndex(QString category)
 QVector<int> AbCache::getCount(QVector<QString> *file_list)
 {
     int lexicon_len = lexicon.length();
-    QString filename;
-    QStringList words_index;
+    QVector<int> words_index;
     QVector<int> count;
     count.resize(lexicon_len);
     count.fill(0);
@@ -80,14 +118,11 @@ QVector<int> AbCache::getCount(QVector<QString> *file_list)
 
     for( int j=0 ; j<file_num ; j++ )
     {
-        QFileInfo info(file_list->at(j));
-        filename = info.baseName();
-
-        words_index = filename.split("_", QString::SkipEmptyParts);
+        words_index = getWordsIndex(file_list->at(j));
         int words_num = words_index.length();
         for( int i=0 ; i<words_num ; i++ )
         {
-            int index = words_index[i].toInt();
+            int index = words_index[i];
             if( index>=0 && index<lexicon_len )
             {
                 count[index]++;
@@ -96,4 +131,20 @@ QVector<int> AbCache::getCount(QVector<QString> *file_list)
     }
 
     return count;
+}
+
+QVector<int> AbCache::getWordsIndex(QString filename)
+{
+    QFileInfo info(filename);
+    filename = info.baseName();
+    QVector<int> ret;
+    QStringList words_index = filename.split("_",
+                                     QString::SkipEmptyParts);
+    int len = words_index.length();
+    ret.resize(len);
+    for( int i=0 ; i<len ; i++ )
+    {
+        ret[i] = words_index[i].toInt();
+    }
+    return ret;
 }

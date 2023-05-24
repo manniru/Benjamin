@@ -33,7 +33,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(setCategory()));
     connect(root, SIGNAL(focusWordChanged()),
             this, SLOT(focusWordChanged()));
-    connect(editor->stat, SIGNAL(cacheCreated()),
+    connect(editor->cache, SIGNAL(cacheCreated()),
             this, SLOT(cacheCreated()));
 
     updateAutoCpmplete();
@@ -80,7 +80,6 @@ void AbScene::setStatusAudio(int status)
 void AbScene::verifierChanged()
 {
     int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-
     editor->updateStat();
     if( verifier )
     {
@@ -199,6 +198,10 @@ void AbScene::processKey(int key)
         // toggle all stat
         int stat = QQmlProperty::read(root, "ab_all_stat").toInt();
         QQmlProperty::write(root, "ab_all_stat", !stat);
+        editor->updateStat();
+    }
+    else if( key==Qt::Key_Escape )
+    {
         editor->updateStat();
     }
     else
