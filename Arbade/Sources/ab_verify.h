@@ -43,7 +43,7 @@ private:
     QObject  *query;    // query qml object
     AbEditor *editor;
     AbWavReader *wav_rd;
-    int verify_id;
+    int verify_id = 0;
 };
 
 #endif // AB_VERIFY_H

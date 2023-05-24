@@ -157,7 +157,7 @@ QString ab_getWslPath()
             if( dir_list[j].fileName()==AB_WSL_ROOT )
             {
                 QString wsl_path = dir_list[j].filePath();
-                wsl_path.replace("/", "\\");
+                wsl_path = correctWinPath(wsl_path);
                 return wsl_path;
             }
         }
@@ -302,6 +302,24 @@ QString getStatusStr(int status)
     return "";
 }
 
+// used for debuging purposes
+QString getVerifierStr(int verifier)
+{
+    if( verifier==0 )
+    {
+        return "Recorder";
+    }
+    else if( verifier==1 )
+    {
+        return "verifier";
+    }
+    else if( verifier==2 )
+    {
+        return "shit mode";
+    }
+    return "";
+}
+
 // check if dirname does not exist in audio directory then create one
 void ab_checkAuDir(QString dirname)
 {
@@ -327,4 +345,12 @@ void ab_checkDir(QString path)
         system(cmd.toStdString().c_str());
 #endif
     }
+}
+
+QString correctWinPath(QString path)
+{
+#ifdef WIN32
+    path.replace("\\", "/");
+#endif
+    return path;
 }

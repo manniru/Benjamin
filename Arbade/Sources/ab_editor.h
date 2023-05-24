@@ -14,6 +14,7 @@ public:
     void updateStat();
     void createList();
     void clearRecList();
+    QString getCategory();
 
     AbStat  *stat;
     AbCache *cache;

@@ -86,7 +86,10 @@ void AbEditor::recRemove(int id, int f_focus)
         {
             removing_file.remove();
         }
+        QString category = getCategory();
+        cache->deleteCache(category, path);
     }
+    updateStat();
 }
 
 void AbEditor::changeWord(int id, QString text)
@@ -129,7 +132,7 @@ void AbEditor::saveProcess()
     int len = editor_lines.length() - 1;
     for( int i=0 ; i<len ; i++ )
     {
-        QString word = QQmlProperty::read(editor_lines[i], "word_text").toString();
+//        QString word = QQmlProperty::read(editor_lines[i], "word_text").toString();
         QString phon = QQmlProperty::read(editor_lines[i], "word_phoneme").toString();
         if( phon.isEmpty() )
         {
@@ -162,12 +165,7 @@ void AbEditor::resetProcess()
 
 void AbEditor::timerEdTimeout()
 {
-    QString category = AB_UNVER_DIR;
-    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    if( verifier==0 )
-    {
-        category = QQmlProperty::read(editor, "category").toString();
-    }
+    QString category = getCategory();
 
     stat->createWordEditor(category);
     timer_editor->stop();
@@ -175,12 +173,7 @@ void AbEditor::timerEdTimeout()
 
 void AbEditor::timerRecTimeout()
 {
-    QString category = AB_UNVER_DIR;
-    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    if( verifier==0 )
-    {
-        category = QQmlProperty::read(editor, "category").toString();
-    }
+    QString category = getCategory();
 
     stat->createRecList(category);
     timer_rec->stop();
@@ -258,6 +251,21 @@ QString AbEditor::getUiWordList()
     return ret.trimmed();
 }
 
+QString AbEditor::getCategory()
+{
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+    QString category = AB_UNVER_DIR;
+    if( verifier==2 )
+    {
+        category = AB_SHIT_DIR;
+    }
+    else if( verifier==0 )
+    {
+        category = QQmlProperty::read(editor, "category").toString();
+    }
+    return category;
+}
+
 void AbEditor::writeWordList()
 {
     QString wl_path = ab_getAudioPath() + "..\\word_list";
@@ -295,26 +303,10 @@ void AbEditor::updateStatAll()
     QQmlProperty::write(editor, "count", count);
 }
 
-void AbEditor::createList()
-{
-    QString category = AB_UNVER_DIR;
-    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    if( verifier==0 )
-    {
-        category = QQmlProperty::read(editor, "category").toString();
-    }
-    emit create(category);
-}
-
 void AbEditor::updateStatCat()
 {
     int len_lines = editor_lines.length();
-    QString category = AB_UNVER_DIR;
-    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-    if( verifier==0 )
-    {
-        category = QQmlProperty::read(editor, "category").toString();
-    }
+    QString category = getCategory();
     QVector<int> *word_count = stat->getCategoryCount(category);
     int len_stat = word_count->length();
     for( int i=0 ; i<len_stat ; i++ )
@@ -329,6 +321,7 @@ void AbEditor::updateStatCat()
     int id = cache->catToIndex(category);
     int count = cache->cache_files[id].length();
     QQmlProperty::write(editor, "count", count);
+    qDebug() << "updateStatCat:" << count;
 }
 
 void AbEditor::updateStat()
@@ -350,4 +343,10 @@ void AbEditor::updateStat()
     {
         updateStatCat();
     }
+}
+
+void AbEditor::createList()
+{
+    QString category = getCategory();
+    emit create(category);
 }

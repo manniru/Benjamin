@@ -23,6 +23,8 @@
 
 #define AB_LIST_NAMES  1
 #define AB_LIST_PATHS  2
+#define AB_UNVER_ID    0
+#define AB_SHIT_ID     1
 #define AB_UNVER_DIR   "unverified"
 #define AB_SHIT_DIR    "shit"
 
@@ -40,7 +42,9 @@ void ab_openCategory(QString category);
 QFileInfoList ab_getAudioDirs();
 QStringList ab_listFilesSorted(QString path);
 QString getStatusStr(int status);
+QString getVerifierStr(int verifier);
 void ab_checkAuDir(QString dirname);
 void ab_checkDir(QString path);
+QString correctWinPath(QString path);
 
 #endif // BACKEND_H

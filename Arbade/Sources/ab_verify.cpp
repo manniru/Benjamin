@@ -20,7 +20,7 @@ AbVerify::AbVerify(AbEditor *ed, QObject *ui, QObject *parent): QObject(parent)
     connect(root, SIGNAL(delVerifyFile()), this, SLOT(deleteFile()));
     connect(root, SIGNAL(copyUnverifyFile()), this, SLOT(moveToOnline()));
     connect(root, SIGNAL(trashVerifyFile()), this, SLOT(trashFile()));
-    connect(root, SIGNAL(verifierChanged()), this, SLOT());
+    connect(root, SIGNAL(verifierChanged()), this, SLOT(updateVerifier()));
 
     ab_checkAuDir("wrong");
 }
@@ -238,7 +238,6 @@ void AbVerify::moveToOnline()
     utime(online_path.toStdString().c_str(), NULL);
 
     file.remove();
-//    if( )
     editor->stat->moveToOnline(id);
 
     recRemove();
@@ -252,7 +251,7 @@ void AbVerify::deleteFile()
     QString new_path = wrongAll(file_path);
     file.copy(new_path);
 //    file.remove();
-    editor->cache->deleteCache(AB_UNVER_ID, id);
+    editor->cache->deleteCache(verify_id, id);
     recRemove();
 }
 
@@ -262,7 +261,7 @@ void AbVerify::trashFile()
     QString file_path = editor->cache->cache_files[verify_id][id];
     QFile file(file_path);
     file.remove();
-    editor->cache->deleteCache(AB_UNVER_ID, id);
+    editor->cache->deleteCache(verify_id, id);
     recRemove();
 }
 
