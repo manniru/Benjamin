@@ -26,7 +26,7 @@ void AbAudio::record()
     QString category = QQmlProperty::read(editor, "category").toString();
     wav_path = getRandPath(category);
     wav_wr->setCategory(category);
-    setStatus(AB_STATUS_BREAK);
+    emit setStatus(AB_STATUS_BREAK);
 //    qDebug() << "record:AB_STATUS_BREAK";
     QQmlProperty::write(root, "ab_elapsed_time", 0);
     float pause_time = QQmlProperty::read(root, "ab_rec_pause").toFloat();
@@ -58,20 +58,17 @@ void AbAudio::writeWav()
     {
         if( status==AB_STATUS_REQPAUSE )
         {
-            setStatus(AB_STATUS_PAUSE);
-//            qDebug() << "writeWav:AB_STATUS_PAUSE";
+            emit setStatus(AB_STATUS_PAUSE);
         }
         else
         {
-            setStatus(AB_STATUS_BREAK);
-//            qDebug() << "writeWav:AB_STATUS_BREAK";
+            emit setStatus(AB_STATUS_BREAK);
             QQmlProperty::write(root, "ab_elapsed_time", 0);
         }
     }
     else
     {
         setStatus(AB_STATUS_STOP);
-//        qDebug() << "writeWav:AB_STATUS_STOP";
         count = 0;
     }
 
@@ -83,8 +80,10 @@ void AbAudio::writeWav()
     checkCategoryExist();
 
     wav_wr->write(wav_path);
-    QString wav_wpath = wav_path.replace("\\", "/");
+    QString wav_wpath = correctWinPath(wav_path);
     stat->addRecList(total_words, wav_wpath);
+    QString category = QQmlProperty::read(editor, "category").toString();
+    stat->cache->addCache(category, wav_wpath);
 
     status = QQmlProperty::read(root, "ab_status").toInt();
     if( count<total_count &&
@@ -107,13 +106,13 @@ void AbAudio::breakTimeout()
     int status = QQmlProperty::read(root, "ab_status").toInt();
     if( status==AB_STATUS_REQPAUSE )
     {
-        setStatus(AB_STATUS_PAUSE);
+        emit setStatus(AB_STATUS_PAUSE);
 //        qDebug() << "readDone:AB_STATUS_PAUSE";
     }
     else
     {
         qDebug() << "start record";
-        setStatus(AB_STATUS_REC);
+        emit setStatus(AB_STATUS_REC);
 //        qDebug() << "readDone:AB_STATUS_REC";
         rec->reset();
     }
@@ -184,8 +183,8 @@ QString AbAudio::getFileName(QVector<AbWord> words,
                               QString category)
 {
     // verified base name
-    QString base_name = ab_getAudioPath() + "train\\";
-    base_name += category + "\\";
+    QString base_name = ab_getAudioPath() + "train" + QDir::separator();
+    base_name += category + QDir::separator();
     base_name += wordToId(words);
     QString name = base_name + ".wav";
 

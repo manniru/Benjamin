@@ -87,7 +87,7 @@ void AbTrain::trainFinished()
         QString old_path = wsl_path + "\\Benjamin\\Tools\\Model\\";
         old_path += files[i];
         QString new_path = AB_MODEL_DIR;
-        new_path +=  "\\" + files[i];
+        new_path +=  QDir::separator() + files[i];
 
         QFile file(old_path);
         if( QFile::exists(new_path) )

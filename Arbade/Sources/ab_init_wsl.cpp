@@ -23,7 +23,7 @@ void AbInitWSL::createWSL(QString drive)
         qDebug() << "Info: Directory" << arch_dir << "Created";
     }
 
-    QString rar_path = arch_dir + "\\";
+    QString rar_path = arch_dir + QDir::separator();
     rar_path += AB_IMAGE_FILENAME;
     QString tar_path = arch_dir + "\\install.tar";
     if( !QFile::exists(rar_path) && !QFile::exists(tar_path) )

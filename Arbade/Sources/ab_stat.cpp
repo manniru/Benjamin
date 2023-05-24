@@ -316,8 +316,8 @@ void AbStat::deleteSample(QString sample)
 {
     QString category = QQmlProperty::read(editor, "category")
                                         .toString();
-    QString file_path = ab_getAudioPath() + "train\\";
-    file_path += category + "\\";
+    QString file_path = ab_getAudioPath() + "train" + QDir::separator();
+    file_path += category + QDir::separator();
 
     QStringList sample_words = sample.split(" ",
                                      QString::SkipEmptyParts);

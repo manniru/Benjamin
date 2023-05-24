@@ -459,14 +459,6 @@ ApplicationWindow
         {
             ab_rec_time += .1;
         }
-        else if( key===Qt.Key_K )
-        {
-            ab_num_words--;
-        }
-        else if( key===Qt.Key_J )
-        {
-            ab_num_words++;
-        }
         else if( key===Qt.Key_Up )
         {
             if( ab_verifier )
@@ -533,6 +525,14 @@ ApplicationWindow
                     setStatus(ab_status);
                 }
             }
+        }
+        else if( key===Qt.Key_K )
+        {
+            ab_num_words--;
+        }
+        else if( key===Qt.Key_J )
+        {
+            ab_num_words++;
         }
         else if( key===Qt.Key_Q )
         {
