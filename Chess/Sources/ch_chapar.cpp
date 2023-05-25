@@ -5,22 +5,22 @@ ChChapar::ChChapar(QObject *ui, QObject *parent) : QObject(parent)
 #ifdef WIN32
     ch_thread = new QThread;
     channel = new ChChannelW;
+    channel->moveToThread(ch_thread);
+    ch_thread->start();
     processor = new ChProcessorW(ui);
 
-    connect(channel, SIGNAL(show(QString)),
+    connect(channel, SIGNAL(show_chess(QString)),
             processor, SLOT(showUI(QString)));
     connect(channel, SIGNAL(meta()),
             processor, SLOT(meta()));
     connect(channel, SIGNAL(cancel()),
             processor, SLOT(cancel()));
-    connect(channel, SIGNAL(key(int)),
-            processor, SLOT(key(int)));
+    connect(channel, SIGNAL(key_chess(int)),
+            processor, SLOT(keyReceived(int)));
 
     connect(this, SIGNAL(run()),
             channel, SLOT(listenPipe()));
 
-    channel->moveToThread(ch_thread);
-    ch_thread->start();
     emit run();
 
 #else

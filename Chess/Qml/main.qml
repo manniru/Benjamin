@@ -9,8 +9,8 @@ Window
 {
     id: window_main
     property int     count_x : 36
-    property int     count_y : 26
-    property bool    ch_timer: true
+    property int     count_y : 36
+    property bool    ch_timer: false
     property real    o_state: 1
     property color   ch_cell_color:   "#cf000000" // "#cf000000"
     property color   ch_active_color: "#7f5f6f00"
@@ -22,8 +22,8 @@ Window
     height: 600
     visible: true
     color: "transparent"
-    opacity: 0.8
-    flags: Qt.WA_X11NetWmWindowTypeDock
+    opacity: 0.0
+//    flags: Qt.WA_X11NetWmWindowTypeDock
 
     GridLayout
     {
@@ -39,10 +39,22 @@ Window
         {
             for( var j=0 ; j<count_x ; j++ )
             {
-                var ch_name  = String.fromCharCode(i+65);
+                var ch_name = "";
+                if( i<10 )
+                {
+                    ch_name = String.fromCharCode(i+48);
+                }
+                else
+                {
+                    ch_name = String.fromCharCode(i+55);
+                }
                 if( j<10 )
                 {
                     ch_name += String.fromCharCode(j+48);
+                }
+                else if( j===37 )
+                {
+                    ch_name += "\\\\";
                 }
                 else
                 {
@@ -55,8 +67,9 @@ Window
                 {
                     width:1000
                     height:1000
-                    cell_name: \"" + ch_name + "\"
-                }";
+                    cell_name: '";
+                    query += ch_name;
+                query += "'\n}";
 
                 var object = Qt.createQmlObject(query, g_layout);
             }
@@ -99,6 +112,7 @@ Window
         {
             state1Highlight();
         }
+        update();
     }
 
     function highlightRow(row)

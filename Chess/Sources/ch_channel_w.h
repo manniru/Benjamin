@@ -26,8 +26,8 @@ public:
     ~ChChannelW();
 
 signals:
-    void show(QString args);
-    void key(int val);
+    void show_chess(QString args);
+    void key_chess(int val);
     void meta();
     void cancel();
 

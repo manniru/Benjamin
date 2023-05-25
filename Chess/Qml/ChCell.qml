@@ -6,7 +6,8 @@ import QtQuick.Layouts 1.1
 
 Rectangle
 {
-    property int    cell_size : 18
+    property int    cell_size  : 35
+    property int    cell_fsize : 16
     property color  cell_color: ch_cell_color
     property string cell_name : "lolo"
 
@@ -17,8 +18,8 @@ Rectangle
 
     Rectangle
     {
-        width: 40
-        height: 40
+        width:  cell_size
+        height: cell_size
 
         radius: 15
         color : cell_color
@@ -28,7 +29,7 @@ Rectangle
         Label
         {
             text: cell_name
-            font.pixelSize: cell_size
+            font.pixelSize: cell_fsize
             color: if( cell_color=="#7f000000")
                    {
                        "#ccc"

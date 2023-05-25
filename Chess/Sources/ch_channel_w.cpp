@@ -1,5 +1,6 @@
 #include "ch_channel_w.h"
 #include <unistd.h>
+#include <QApplication>
 
 ChChannelW::ChChannelW(QObject *parent) : QObject(parent)
 {
@@ -13,6 +14,7 @@ ChChannelW::~ChChannelW()
 
 void ChChannelW::listenPipe()
 {
+    qDebug() << "listenPipe";
     char buffer[BUFFER_SIZE];
     DWORD dwRead;
     while( hPipe!=INVALID_HANDLE_VALUE )
@@ -34,6 +36,10 @@ void ChChannelW::listenPipe()
                     processLine(lines[i]);
                 }
             }
+        }
+        else
+        {
+            qDebug() << "failed";
         }
 
         qDebug() << "Client Disconnected";
@@ -81,9 +87,10 @@ void ChChannelW::createPipe()
 
 void ChChannelW::processCommand(QString cmd, QString arg)
 {
+    qDebug() << "pro" << cmd;
     if( cmd=="show" )
     {
-        emit show(arg);
+        emit show_chess(arg);
     }
     else if( cmd=="Meta" )
     {
@@ -100,11 +107,14 @@ void ChChannelW::processCommand(QString cmd, QString arg)
         }
         else
         {
-            emit key(key_val);
+            qDebug() << "pc" << key_val;
+            emit key_chess(key_val);
         }
     }
     else
     {
-        emit show(cmd);
+        emit show_chess(cmd);
     }
+    QCoreApplication::processEvents();
+    QGuiApplication::processEvents();
 }

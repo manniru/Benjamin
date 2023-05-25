@@ -73,15 +73,15 @@ void ChExecW::updateScreen(QString cmd)
         y = mon->primary.y;
     }
 
-    QQmlProperty::write(root, "width", width);
-    QQmlProperty::write(root, "height", height+40);
+//    QQmlProperty::write(root, "width", width);
+//    QQmlProperty::write(root, "height", height+40);
     QQmlProperty::write(root, "x", x);
     QQmlProperty::write(root, "y", y);
 
     mid_x = x + width/2;
     mid_y = y + height/2;
-//    qDebug() << "width" << width << "height" << height
-//             << "x" << x << "y" << y;
+    qDebug() << "width" << width << "height" << height
+             << "x" << x << "y" << y;
 }
 
 void ChExecW::sendMouseKey(int val)
