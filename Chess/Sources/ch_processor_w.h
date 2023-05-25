@@ -29,7 +29,7 @@ public:
 
 public slots:
     void showUI(QString text);
-    void key(int val);
+    void keyReceived(int val);
     void meta();
     void cancel();
 

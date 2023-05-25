@@ -22,8 +22,8 @@ ChProcessorW::~ChProcessorW()
 
 void ChProcessorW::showUI(QString text)
 {
-//    reset();
     exec->updateScreen(text);
+    qDebug() << "heu" << text;
     if( text=="no_click" )
     {
         click_mode = CH_NO_CLICK;
@@ -51,12 +51,11 @@ void ChProcessorW::showUI(QString text)
     }
     else
     {
-        qDebug() << "showUI: Unknown" << text;
         click_mode = CH_LEFT_CLICK;
     }
 
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
-    QQmlProperty::write(root, "visible", true);
+//    QQmlProperty::write(root, "visible", true);
     QQmlProperty::write(root, "ch_timer", true);
     meta_mode = 0;
 
@@ -66,7 +65,8 @@ void ChProcessorW::showUI(QString text)
 
 void ChProcessorW::hideUI()
 {
-    QQmlProperty::write(root, "visible", 0);
+    QQmlProperty::write(root, "ch_timer", false);
+    QQmlProperty::write(root, "opacity", 0);
     QQmlProperty::write(root, "ch_buffer", "");
     QQmlProperty::write(root, "ch_cell_color", "#cf000000");
     QMetaObject::invokeMethod(root, "resetHighlight");
@@ -142,7 +142,7 @@ void ChProcessorW::meta()
     QMetaObject::invokeMethod(root, "metaMode");
 }
 
-void ChProcessorW::key(int val)
+void ChProcessorW::keyReceived(int val)
 {
     qDebug() << "key" << val;
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
@@ -195,7 +195,6 @@ void ChProcessorW::processNatoKey(int key)
 void ChProcessorW::strToPos(QString input, int *x, int *y)
 {
     char ch_x = input.toStdString()[1];
-
     if( '0'<=ch_x && ch_x<='9' )
     {
         *x = (int)ch_x - '0';
@@ -205,7 +204,15 @@ void ChProcessorW::strToPos(QString input, int *x, int *y)
         *x = (int)ch_x - 'A' + 10;
     }
 
-    *y = (int)(input.toStdString()[0]) - 'A';
+    char ch_y = input.toStdString()[0];
+    if( '0'<=ch_y && ch_y<='9' )
+    {
+        *y = (int)ch_y - '0';
+    }
+    else
+    {
+        *y = (int)ch_y - 'A' + 10;
+    }
 }
 
 void ChProcessorW::setPos(int x, int y)
@@ -248,4 +255,3 @@ void ChProcessorW::setPosFine(int key)
 
     SetCursorPos(x2, y2);
 }
-

@@ -9,6 +9,6 @@
 
 #define CH_NP_SEPARATOR ","
 
-#define CH_TASKBAR_HEIGHT 50
+#define CH_TASKBAR_HEIGHT 80
 
 #endif // CONFIG_H
