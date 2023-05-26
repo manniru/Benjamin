@@ -221,14 +221,14 @@ void ab_openCategory(QString category)
 {
     QString path = ab_getAudioPath();
 
-    if( category!="unverified" && category!="shit" )
+    if( category!=AB_UNVER_DIR && category!=AB_SHIT_DIR )
     {
         path += "train";
         path += QDir::separator();
     }
 
     path += category + QDir::separator();
-    qDebug() << "cat" << category;
+    qDebug() << "cat" << category << path;
 
     QString cmd = "explorer.exe " + path;
     system(cmd.toStdString().c_str());
@@ -248,7 +248,7 @@ QFileInfoList ab_getAudioDirs()
     }
     dir_list.append(unver); // add unverified dir to list of train category dirs
 
-    path = audio_path + "shit";
+    path = audio_path + AB_SHIT_DIR;
     unver.setFile(path);
     if( !unver.exists() )
     {
@@ -350,7 +350,7 @@ void ab_checkDir(QString path)
 QString correctWinPath(QString path)
 {
 #ifdef WIN32
-    path.replace("\\", "/");
+    path.replace("/", "\\");
 #endif
     return path;
 }

@@ -128,8 +128,11 @@ void AbTrain::train()
     {
         addTestSample(test_count);
     }
+    removeEmptyDirs(); // empty dirs should be removed for Kaldi
     console->wsl_run("./wsl_init.sh");
     console->wsl_run("./wsl_train.sh");
+    checkOnlineExist(); // we should remake online dir
+                        // if it was deleted because of emptiness
 }
 
 void AbTrain::createENN()
@@ -241,4 +244,30 @@ int AbTrain::getTrainCount()
     }
 
     return ret;
+}
+
+void AbTrain::removeEmptyDirs()
+{
+    QFileInfoList audio_dirs = ab_getAudioDirs();
+    int len = audio_dirs.length();
+    for( int i=2 ; i<len ; i++ )
+    {
+        QString cat_dirname = audio_dirs[i].absoluteFilePath();
+        QDir cat_dir(cat_dirname);
+        QFileInfoList file_list = cat_dir.entryInfoList(QDir::Files);
+        if( file_list.length()==0 )
+        {
+            QFile rmdir(cat_dirname);
+            qDebug() << "Info:" << cat_dirname << "deleted because of being empty";
+            rmdir.remove();
+        }
+    }
+}
+
+void AbTrain::checkOnlineExist()
+{
+    QString dirname = "train";
+    dirname += QDir::separator();
+    dirname += "online";
+    ab_checkAuDir(dirname);
 }

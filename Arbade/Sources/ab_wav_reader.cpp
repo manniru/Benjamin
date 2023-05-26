@@ -2,8 +2,8 @@
 
 AbWavReader::AbWavReader()
 {
-    ab_checkAuDir("unverified");
-    ab_checkAuDir("shit");
+    ab_checkAuDir(AB_UNVER_DIR);
+    ab_checkAuDir(AB_SHIT_DIR);
     ab_checkAuDir("train");
 
     wav_file = new QFile;

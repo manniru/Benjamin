@@ -39,6 +39,8 @@ private:
     int  needTestCount();
     int  getTestCount();
     int  getTrainCount();
+    void removeEmptyDirs();
+    void checkOnlineExist();
 
     QObject   *root;    // root qml object
     QObject   *wsl_dialog;
