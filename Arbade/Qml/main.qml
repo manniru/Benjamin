@@ -28,6 +28,7 @@ ApplicationWindow
     property int sig_del_file: 0
     property int default_func_v: ab_const.ab_VMODE_COPY
     property real played_time
+    property int ctrl_pressed: 0
 
     property string ab_words: ""
     property string ab_address: ""
@@ -61,8 +62,8 @@ ApplicationWindow
     signal setStatus(int st)
     signal verifierChanged()
     signal focusWordChanged()
-    signal saveWordList()
     signal setCategory()
+    signal saveWordList()
 
     Component.onCompleted:
     {
@@ -110,6 +111,13 @@ ApplicationWindow
         Keys.onPressed:
         {
             execKey(event.key);
+        }
+        Keys.onReleased:
+        {
+            if( event.key===Qt.Key_Control )
+            {
+                ctrl_pressed = 0;
+            }
         }
     }
 
@@ -436,7 +444,11 @@ ApplicationWindow
     function execKey(key)
     {
         sendKey(key);
-        if( key===Qt.Key_Escape )
+        if( key===Qt.Key_Control )
+        {
+            ctrl_pressed = 1;
+        }
+        else if( key===Qt.Key_Escape )
         {
             if( console_box.visible )
             {
@@ -540,7 +552,11 @@ ApplicationWindow
         }
         else if( key===Qt.Key_S )
         {
-            if( ab_verifier===0 )
+            if( ctrl_pressed )
+            {
+                saveWordList();
+            }
+            else if( ab_verifier===0 )
             {
                 get_value_dialog.title = get_value_dialog.category_title;
                 get_value_dialog.dialog_label = get_value_dialog.value_label;
@@ -638,6 +654,11 @@ ApplicationWindow
     function incCount()
     {
         ab_count++;
+    }
+
+    function decCount()
+    {
+        ab_count--;
     }
 
     function cleanStop()

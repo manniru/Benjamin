@@ -31,6 +31,7 @@ AbEditor::AbEditor(QObject *ui, AbTelegram *tel,
     connect(editor, SIGNAL(updateWordList()),
             this, SLOT(writeWordList()));
     connect(buttons, SIGNAL(saveClicked()), this, SLOT(saveProcess()));
+    connect(root, SIGNAL(saveWordList()), this, SLOT(saveProcess()));
     connect(buttons, SIGNAL(resetClicked()), this, SLOT(resetProcess()));
     connect(this, SIGNAL(create(QString)), stat, SLOT(create(QString)));
 }
@@ -321,7 +322,6 @@ void AbEditor::updateStatCat()
     int id = cache->catToIndex(category);
     int count = cache->cache_files[id].length();
     QQmlProperty::write(editor, "count", count);
-    qDebug() << "updateStatCat:" << count;
 }
 
 void AbEditor::updateStat()

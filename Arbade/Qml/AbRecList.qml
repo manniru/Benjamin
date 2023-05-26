@@ -167,7 +167,7 @@ Rectangle
                 focus_index = len-2;
             }
             prev_elem = reclist_cl.children[id-1];
-            if( f_focus )
+            if( f_focus && prev_elem!==undefined )
             {
                 prev_elem.forceActiveFocus();
             }

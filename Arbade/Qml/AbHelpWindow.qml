@@ -20,7 +20,8 @@ Window
                              "D: Gen E-Sample", "E: Train ENN",
                              "J/K: Word Num",
                              "O:Open Category", "T: Train",
-                             "V:Verify Mode", "P: Show Terminal"]
+                             "V:Verify Mode", "P: Show Terminal",
+                             "H:Shit Mode"]
 
     color: "#262626"
 //    color: "yellow"

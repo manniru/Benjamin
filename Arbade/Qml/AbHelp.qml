@@ -58,7 +58,7 @@ Rectangle
 
         Text
         {
-            text: "/:All Shortcuts"
+            text: "/:Show Help"
             color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
