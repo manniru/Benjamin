@@ -109,9 +109,9 @@ void ChProcessorW::hideUI()
         QThread::msleep(50);
         exec->sendMouseKey(1);
         QThread::msleep(10);
-        QQmlProperty::write(root, "visible", 1);
         meta_mode = 0;
 //        exec->activateWindow();
+        QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
         QQmlProperty::write(root, "ch_timer", true);
     }
     else if( click_mode==CH_DRAG )
@@ -122,7 +122,8 @@ void ChProcessorW::hideUI()
         drag_mode = 1;
         click_mode = CH_LEFT_CLICK;
         QThread::msleep(50);
-        QQmlProperty::write(root, "visible", 1);
+        QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
+        QQmlProperty::write(root, "ch_timer", true);
     }
 }
 

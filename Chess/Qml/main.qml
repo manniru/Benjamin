@@ -8,10 +8,10 @@ import QtQml 2.3
 Window
 {
     id: window_main
-    property int     count_x : 36
-    property int     count_y : 36
+    property int     count_x:  36
+    property int     count_y:  36
     property bool    ch_timer: false
-    property real    o_state: 1
+    property real    o_state:  1
     property color   ch_cell_color:   "#cf000000" // "#cf000000"
     property color   ch_active_color: "#7f5f6f00"
     property color   ch_drag_color:   "#7f6f0064"

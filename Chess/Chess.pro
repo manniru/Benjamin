@@ -19,12 +19,13 @@ linux:LIBS += -lnotify \
     -lgobject-2.0 \
     -lglib-2.0
 
-win32:LIBS += -lUser32 -lPsapi
+win32:LIBS += -lUser32 -lPsapi -lGdi32
 
 SOURCES += \
     Sources/backend.cpp \
     Sources/ch_keyboard_w.cpp \
     Sources/ch_monitor.cpp \
+    Sources/ch_screenshot.cpp \
     Sources/main.cpp \
     Sources/ch_chapar.cpp
 
@@ -32,6 +33,7 @@ HEADERS += \
     Sources/backend.h \
     Sources/ch_keyboard_w.h \
     Sources/ch_monitor.h \
+    Sources/ch_screenshot.h \
     Sources/config.h \
     Sources/ch_chapar.h
 

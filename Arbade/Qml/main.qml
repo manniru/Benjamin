@@ -45,7 +45,6 @@ ApplicationWindow
     property int ab_status: ab_const.ab_STATUS_STOP
     property real ab_rec_time: 3
     property int ab_num_words: 3
-    property int ab_num_words_v: 3
     property int ab_verifier: 0
     property int ab_verify_id: 0
     property real ab_rec_pause: 1.0
