@@ -13,6 +13,7 @@ ChProcessorW::ChProcessorW(QObject *ui,
     click_mode = CH_LEFT_CLICK;
 
     exec = new ChExecW(root);
+    shot = new ChScreenshot;
 }
 
 ChProcessorW::~ChProcessorW()
@@ -48,6 +49,10 @@ void ChProcessorW::showUI(QString text)
     {
         click_mode = CH_DRAG;
         qDebug() << "showUI: DRAG";
+    }
+    else if( text=="screenshot" )
+    {
+        click_mode = CH_SHOT_I;
     }
     else
     {
@@ -124,6 +129,19 @@ void ChProcessorW::hideUI()
         QThread::msleep(50);
         QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
         QQmlProperty::write(root, "ch_timer", true);
+    }
+    else if( click_mode==CH_SHOT_I )
+    {
+        click_mode = CH_SHOT_II;
+        QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
+        QQmlProperty::write(root, "ch_timer", true);
+    }
+    else if( click_mode==CH_SHOT_II )
+    {
+        QThread::msleep(50);
+        shot->takeShot(shot_x, shot_y,
+                       shot_w, shot_h);
+        click_mode = CH_LEFT_CLICK;
     }
 }
 
@@ -230,7 +248,7 @@ void ChProcessorW::setPos(int x, int y)
     x = w_x + qRound(x*width  + width /2);
     y = w_y + qRound(y*height + height/2);
 
-    SetCursorPos(x, y);
+    setCursor(x, y);
 }
 
 void ChProcessorW::setPosFine(int key)
@@ -254,5 +272,23 @@ void ChProcessorW::setPosFine(int key)
     int x2 = pt.x + r_x;
     int y2 = pt.y + r_y;
 
-    SetCursorPos(x2, y2);
+    setCursor(x2, y2);
+}
+
+void ChProcessorW::setCursor(int x, int y)
+{
+    if( click_mode==CH_SHOT_I )
+    {
+        shot_x = x;
+        shot_y = y;
+    }
+    else if( click_mode==CH_SHOT_II )
+    {
+        shot_w = x-shot_x;
+        shot_h = y-shot_y;
+    }
+    else
+    {
+        SetCursorPos(x, y);
+    }
 }

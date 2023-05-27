@@ -4,7 +4,7 @@
 
 ChScreenshot::ChScreenshot(QObject *parent) : QObject(parent)
 {
-    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, (LPARAM)this);
+    ;
 }
 
 ChScreenshot::~ChScreenshot()
@@ -28,7 +28,7 @@ void ChScreenshot::takeShot(int shot_x, int shot_y,
     }
 
     // Create a compatible bitmap for the screenshot
-    HBITMAP bitmap = CreateCompatibleBitmap(screenDC, shot_w, shot_h);
+    bitmap = CreateCompatibleBitmap(screenDC, shot_w, shot_h);
     if( bitmap==NULL )
     {
         DeleteDC(memDC);
@@ -37,7 +37,7 @@ void ChScreenshot::takeShot(int shot_x, int shot_y,
     }
 
     // Select the bitmap into the memory device context
-    HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, bitmap);
+    oldBitmap = (HBITMAP)SelectObject(memDC, bitmap);
 
     // Copy the screen contents to the memory device context
     BitBlt(memDC, 0, 0, shot_w, shot_h,
