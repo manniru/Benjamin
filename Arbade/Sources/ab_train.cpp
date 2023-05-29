@@ -11,6 +11,7 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
 
     wsl_thread->start();
     root = ui;
+    topbar = root->findChild<QObject*>("TopBar");
     wsl_dialog = root->findChild<QObject*>("WslDialog");
     console_qml = root->findChild<QObject*>("Console");
     connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
@@ -30,6 +31,8 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
     QString batool_dir = QDir::currentPath();
     batool_dir += "/../Tools";
     enn_console->startConsole(batool_dir);
+    checkBenjamin();
+    updateWerSer();
 }
 
 AbTrain::~AbTrain()
@@ -96,6 +99,10 @@ void AbTrain::trainFinished()
         }
         file.copy(new_path);
     }
+
+    updateWerSer();
+    checkOnlineExist(); // we should remake online dir
+                        // if it was deleted because of emptiness
 }
 
 // called from main
@@ -131,8 +138,6 @@ void AbTrain::train()
     removeEmptyDirs(); // empty dirs should be removed for Kaldi
     console->wsl_run("./wsl_init.sh");
     console->wsl_run("./wsl_train.sh");
-    checkOnlineExist(); // we should remake online dir
-                        // if it was deleted because of emptiness
 }
 
 void AbTrain::createENN()
@@ -257,9 +262,8 @@ void AbTrain::removeEmptyDirs()
         QFileInfoList file_list = cat_dir.entryInfoList(QDir::Files);
         if( file_list.length()==0 )
         {
-            QFile rmdir(cat_dirname);
             qDebug() << "Info:" << cat_dirname << "deleted because of being empty";
-            rmdir.remove();
+            cat_dir.removeRecursively();
         }
     }
 }
@@ -270,4 +274,56 @@ void AbTrain::checkOnlineExist()
     dirname += QDir::separator();
     dirname += "online";
     ab_checkAuDir(dirname);
+}
+
+void AbTrain::updateWerSer()
+{
+    QString wer_path;
+#ifdef WIN32
+    wer_path = ab_getWslPath();
+    wer_path += "\\Benjamin\\Nato\\exp\\tri1\\decode\\wer_16";
+#else
+    wer_path = KAL_WER_DIR;
+#endif
+
+    QFile wer_file(wer_path);
+    if( !wer_file.open(QIODevice::ReadOnly | QIODevice::Text) )
+    {
+        qDebug() << "Error opening" << wer_path;
+        return;
+    }
+
+    QString wer_content = wer_file.readAll();
+    QString wer_text = wer_content.split("%WER")[1];
+    QString ser_text = wer_content.split("%SER")[1];
+    wer_text = wer_text.split("[")[0];
+    ser_text = ser_text.split("[")[0];
+    double wer = wer_text.trimmed().toDouble();
+    double ser = ser_text.trimmed().toDouble();
+    qDebug() << "updateWerSer" << wer << ser;
+    QQmlProperty::write(topbar, "model_wer", wer);
+    QQmlProperty::write(topbar, "model_ser", ser);
+}
+
+void AbTrain::checkBenjamin()
+{
+    QString path;
+#ifdef WIN32
+    wsl_path = ab_getWslPath();
+    if( wsl_path.isEmpty() )
+    {
+        return;
+    }
+    console->startConsole(wsl_path);
+    path = wsl_path + "\\Benjamin\\Tools\\";
+#else
+    path = KAL_TOOL_DIR;
+#endif
+    QDir dir(path);
+    qDebug() << "checkBenjamin:path" << path;
+    if( !dir.exists() )
+    {
+        qDebug() << "checkBenjamin";
+        console->wsl_run("./wsl_init.sh");
+    }
 }

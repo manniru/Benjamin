@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>AbHelp.qml</file>
         <file>AbStatus.qml</file>
         <file>AbConst.qml</file>
         <file>AbDialog.qml</file>
@@ -23,5 +22,6 @@
         <file>AbMessage.qml</file>
         <file>AbQueryLine.qml</file>
         <file>AbHelpWindow.qml</file>
+        <file>AbTopBar.qml</file>
     </qresource>
 </RCC>

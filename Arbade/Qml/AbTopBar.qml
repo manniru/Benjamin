@@ -16,6 +16,8 @@ Rectangle
                              "J/K: Word Num",
                              "O:Open Category", "T: Train",
                              "V:Verify Mode"]
+    property real model_wer: 0 // word error rate
+    property real model_ser: 0 // sentence error rate
 
     color: "#262626"
 //    color: "yellow"
@@ -104,6 +106,22 @@ Rectangle
                     "#cd68cb"
                 }
             }
+            font.pixelSize: font_size
+            font.family: font_name_label
+        }
+
+        Text
+        {
+            text: "WER: " + model_wer + "%"
+            color: color_text
+            font.pixelSize: font_size
+            font.family: font_name_label
+        }
+
+        Text
+        {
+            text: "SER:  " + model_ser + "%"
+            color: color_text
             font.pixelSize: font_size
             font.family: font_name_label
         }

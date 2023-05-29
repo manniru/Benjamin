@@ -41,8 +41,11 @@ private:
     int  getTrainCount();
     void removeEmptyDirs();
     void checkOnlineExist();
+    void updateWerSer();
+    void checkBenjamin();
 
-    QObject   *root;    // root qml object
+    QObject   *root;        // root qml object
+    QObject   *topbar;      // topbar qml object
     QObject   *wsl_dialog;
     QObject   *console_qml; // console qml object
     QString    wsl_path;

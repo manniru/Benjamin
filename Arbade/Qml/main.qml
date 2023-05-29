@@ -157,9 +157,10 @@ ApplicationWindow
                     }
     }
 
-    AbHelp
+    AbTopBar
     {
-        id: ab_help
+        id: top_bar
+        objectName: "TopBar"
 
         height: 80
         anchors.top: parent.top
@@ -266,7 +267,7 @@ ApplicationWindow
         id: editor_box
         objectName: "WordList"
 
-        anchors.top: ab_help.bottom
+        anchors.top: top_bar.bottom
         anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 30
@@ -296,7 +297,7 @@ ApplicationWindow
         objectName: "RecList"
 
         height: editor_box.height
-        anchors.top: ab_help.bottom
+        anchors.top: top_bar.bottom
         anchors.topMargin: 20
         anchors.bottom: buttons_box.top
         anchors.bottomMargin: 30

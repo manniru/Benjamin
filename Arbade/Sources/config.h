@@ -2,7 +2,10 @@
 #define BT_CONFIG_H
 
 #define KAL_NATO_DIR      "../Nato/"
+#define KAL_TOOL_DIR      "../Tools/"
 #define KAL_AU_DIR        KAL_NATO_DIR"audio/"
+#define KAL_WER_DIR       KAL_NATO_DIR"exp/tri1/decode"
+
 #define AB_WSL_ROOT       "Arch"
 
 // Pipe Named Path follow \\.\pipe\[pipename] format
