@@ -28,6 +28,7 @@ Rectangle
             if( event.key===Qt.Key_Delete )
             {
                 removeClicked(num_id);
+                decTotalCount();
             }
             else if( event.key===Qt.Key_Up )
             {
@@ -171,7 +172,12 @@ Rectangle
         line_fcsd: line_focused
 
         onHoverChange: line_hovered = h
-        onClick: removeClicked(num_id);
+        onClick:
+        {
+            rec_list.focus_index = num_id;
+            removeClicked(num_id);
+            decTotalCount();
+        }
     }
 
     AbRecPlay
@@ -226,6 +232,19 @@ Rectangle
         rec_list.focus_index = num_id;
         play_button.playing = true;
         rec_player.play();
+    }
+
+    function decTotalCount()
+    {
+        if( ab_verifier )
+        {
+            root.ab_total_count_v--;
+        }
+        else
+        {
+            // after deleting item from reclist, there is no need to decrease total_count
+//            root.ab_total_count--;
+        }
     }
 }
 

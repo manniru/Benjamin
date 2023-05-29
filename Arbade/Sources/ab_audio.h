@@ -40,6 +40,7 @@ private:
     QTimer *read_timer;
     QString wav_path;
     QString total_words;
+    int pause_while_break=0;
 };
 
 #endif // ABAUDIO_H

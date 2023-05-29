@@ -370,7 +370,7 @@ ApplicationWindow
 
         onStopped:
         {
-            console.log("hello", flag_clean_stop);
+//            console.log("audioPlayer", flag_clean_stop);
             if( flag_clean_stop==0 )
             {
                 ab_status = ab_const.ab_STATUS_DECPAUESE;
@@ -499,6 +499,7 @@ ApplicationWindow
                 if( ab_status===ab_const.ab_STATUS_STOP )
                 {
                     ab_count = 0;
+                    decide_timer.stop();
                     startPauseV();
                 }
                 else if( ab_status===ab_const.ab_STATUS_PAUSE )

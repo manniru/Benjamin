@@ -73,6 +73,13 @@ void AbEditor::recRemove(int id, int f_focus)
     }
     QString path = QQmlProperty::read(rec_lines[id], "path").toString();
 
+    QString address = QQmlProperty::read(root, "ab_address").toString();
+    // deleting paused file, cause a stop for audioPlayer, and we need cleanstop
+    if( path==address )
+    {
+        QMetaObject::invokeMethod(root, "cleanStop");
+    }
+
     QVariant id_v(id);
     QGenericArgument arg_id  = Q_ARG(QVariant, id_v);
     QVariant focus_v(f_focus);

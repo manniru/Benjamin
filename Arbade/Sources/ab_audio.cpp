@@ -22,10 +22,14 @@ AbAudio::AbAudio(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
 
 void AbAudio::record()
 {
-    QMetaObject::invokeMethod(root, "incCount"); // ab_count++
-    QString category = QQmlProperty::read(editor, "category").toString();
-    wav_path = getRandPath(category);
-    wav_wr->setCategory(category);
+    if( !pause_while_break )
+    {
+        QMetaObject::invokeMethod(root, "incCount"); // ab_count++
+        QString category = QQmlProperty::read(editor, "category").toString();
+        wav_path = getRandPath(category);
+        wav_wr->setCategory(category);
+    }
+    pause_while_break = 0;
     emit setStatus(AB_STATUS_BREAK);
 //    qDebug() << "record:AB_STATUS_BREAK";
     QQmlProperty::write(root, "ab_elapsed_time", 0);
@@ -106,6 +110,7 @@ void AbAudio::breakTimeout()
     int status = QQmlProperty::read(root, "ab_status").toInt();
     if( status==AB_STATUS_REQPAUSE )
     {
+        pause_while_break = 1;
         emit setStatus(AB_STATUS_PAUSE);
 //        qDebug() << "readDone:AB_STATUS_PAUSE";
     }

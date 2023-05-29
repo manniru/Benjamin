@@ -72,6 +72,7 @@ void AbScene::setStatusAudio(int status)
     QQmlProperty::write(root, "ab_status", status);
     if( status==AB_STATUS_STOP )
     {
+        qDebug() << "setStatusAudio ab_count 0";
         QQmlProperty::write(root, "ab_count", 0);
         editor->updateStat();
     }
@@ -83,19 +84,7 @@ void AbScene::verifierChanged()
     editor->updateStat();
     if( verifier )
     {
-        int count;
-        if( verifier==1 )
-        {
-            count = editor->cache->cache_files[AB_UNVER_ID].size();
-        }
-        else // verifier = 2
-        {
-            count = editor->cache->cache_files[AB_SHIT_ID].size();
-        }
-        if( count>AB_MAX_RECLIST )
-        {
-            count = AB_MAX_RECLIST;
-        }
+        int count = getCount(verifier);
         QQmlProperty::write(root, "ab_total_count_v", count);
     }
 
@@ -191,6 +180,10 @@ void AbScene::processKey(int key)
         {
             category = QQmlProperty::read(qml_editor, "category").toString();
         }
+        else if( verifier==2 )
+        {
+            category = AB_SHIT_DIR;
+        }
         ab_openCategory(category);
     }
     else if( key==Qt::Key_W )
@@ -202,12 +195,41 @@ void AbScene::processKey(int key)
     }
     else if( key==Qt::Key_Escape )
     {
+        int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+        if( verifier==0 )
+        {
+            QQmlProperty::write(root, "ab_count", 0);
+        }
+        else
+        {
+            int count = getCount(verifier);
+            QQmlProperty::write(root, "ab_count", 0);
+            QQmlProperty::write(root, "ab_total_count_v", count);
+        }
         editor->updateStat();
     }
     else
     {
         return;
     }
+}
+
+int AbScene::getCount(int verifier)
+{
+    int count;
+    if( verifier==1 )
+    {
+        count = editor->cache->cache_files[AB_UNVER_ID].size();
+    }
+    else // verifier = 2
+    {
+        count = editor->cache->cache_files[AB_SHIT_ID].size();
+    }
+    if( count>AB_MAX_RECLIST )
+    {
+        count = AB_MAX_RECLIST;
+    }
+    return count;
 }
 
 void AbScene::updateAutoCpmplete()
