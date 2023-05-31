@@ -182,3 +182,14 @@ void ChExecW::mouseRelease(int btn)
     SendInput(1, &input,sizeof(INPUT));
 #endif
 }
+
+void ChExecW::bringToFront()
+{
+    bool pos_ret = SetWindowPos(hWnd, HWND_TOPMOST,
+                                0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+//    qDebug() << "SetFocus" << focus_ret
+//             << "SetWindowPos" << pos_ret
+//             << "SetForegroundWindow" << forground_en
+//             << "SetActiveWindow" << last_active;
+}

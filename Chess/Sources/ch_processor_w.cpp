@@ -14,6 +14,7 @@ ChProcessorW::ChProcessorW(QObject *ui,
 
     exec = new ChExecW(root);
     shot = new ChScreenshot;
+    chr  = new ChChar(root);
 }
 
 ChProcessorW::~ChProcessorW()
@@ -65,6 +66,7 @@ void ChProcessorW::showUI(QString text)
     meta_mode = 0;
 
 //    exec->activateWindow();
+    exec->bringToFront();
     exec->setLanguage();
 }
 
@@ -190,7 +192,7 @@ void ChProcessorW::processNatoKey(int key)
     if( key_buf.length()==CHESS_CHAR_COUNT )
     {
         int x, y;
-        strToPos(key_buf, &x, &y);
+        chr->strToPos(key_buf, &x, &y);
         setPos(x, y);
         if( meta_mode==0 )
         {
@@ -208,29 +210,6 @@ void ChProcessorW::processNatoKey(int key)
         }
         setPosFine(key);
         hideUI();
-    }
-}
-
-void ChProcessorW::strToPos(QString input, int *x, int *y)
-{
-    char ch_x = input.toStdString()[1];
-    if( '0'<=ch_x && ch_x<='9' )
-    {
-        *x = (int)ch_x - '0';
-    }
-    else
-    {
-        *x = (int)ch_x - 'A' + 10;
-    }
-
-    char ch_y = input.toStdString()[0];
-    if( '0'<=ch_y && ch_y<='9' )
-    {
-        *y = (int)ch_y - '0';
-    }
-    else
-    {
-        *y = (int)ch_y - 'A' + 10;
     }
 }
 

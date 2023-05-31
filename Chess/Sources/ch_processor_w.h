@@ -10,6 +10,7 @@
 #include "ch_keyboard_w.h"
 #include "ch_exec_w.h"
 #include "ch_screenshot.h"
+#include "ch_char.h"
 
 #define CH_KEY_MIN        ('0'-1)
 #define CH_KEY_MAX        ('Z'+1)
@@ -38,7 +39,6 @@ public slots:
 
 private:
     void processNatoKey(int key);
-    void strToPos(QString input, int *x, int *y);
     void setPos(int x, int y);
     void setPosFine(int key);
     void hideUI();
@@ -59,6 +59,7 @@ private:
 
     QString       key_buf; //requested word
     ChExecW      *exec;
+    ChChar       *chr;
     ChScreenshot *shot;
     QObject   *root;
 };

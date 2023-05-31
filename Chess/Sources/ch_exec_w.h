@@ -17,6 +17,7 @@ public:
 
     void setLanguage();
     void activateWindow();
+    void bringToFront();
     void updateScreen(QString cmd);
 
     void sendMouseKey(int val);

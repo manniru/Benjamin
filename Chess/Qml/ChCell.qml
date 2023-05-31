@@ -7,7 +7,7 @@ import QtQuick.Layouts 1.1
 Rectangle
 {
     property int    cell_size  : 35
-    property int    cell_fsize : 16
+    property int    cell_fsize : 18
     property color  cell_color: ch_cell_color
     property string cell_name : "lolo"
 
@@ -42,6 +42,4 @@ Rectangle
             anchors.centerIn: parent
         }
     }
-
 }
-

@@ -23,6 +23,7 @@ win32:LIBS += -lUser32 -lPsapi -lGdi32
 
 SOURCES += \
     Sources/backend.cpp \
+    Sources/ch_char.cpp \
     Sources/ch_keyboard_w.cpp \
     Sources/ch_monitor.cpp \
     Sources/ch_screenshot.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
 
 HEADERS += \
     Sources/backend.h \
+    Sources/ch_char.h \
     Sources/ch_keyboard_w.h \
     Sources/ch_monitor.h \
     Sources/ch_screenshot.h \

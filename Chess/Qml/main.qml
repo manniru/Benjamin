@@ -61,17 +61,7 @@ Window
                     ch_name += String.fromCharCode(j+55);
                 }
 
-                var query = "
-                import QtQuick 2.2;
-                ChCell
-                {
-                    width:1000
-                    height:1000
-                    cell_name: '";
-                    query += ch_name;
-                query += "'\n}";
-
-                var object = Qt.createQmlObject(query, g_layout);
+                addCell(ch_name);
             }
         }
     }
@@ -176,5 +166,20 @@ Window
     {
         ch_cell_color = "#cf002422";
         updateState();
+    }
+
+    function addCell(cell_name)
+    {
+        var query = "
+        import QtQuick 2.2;
+        ChCell
+        {
+            width:1000
+            height:1000
+            cell_name: '";
+        query += cell_name;
+        query += "'\n}";
+
+        var object = Qt.createQmlObject(query, g_layout);
     }
 }
