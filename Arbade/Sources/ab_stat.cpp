@@ -84,6 +84,12 @@ QVector<int>* AbStat::getCategoryCount(QString category)
 {
     QVector<int> *ret = NULL;
     int id = cache->catToIndex(category);
+    if( id<0 )
+    {
+        qDebug() << "Warning 321: cannot retrieve "
+                    "category cache files (getCategoryCount)";
+        return ret;
+    }
     ret = &(cache->cache_count[id]);
     return ret;
 }
@@ -115,10 +121,17 @@ QVector<int> AbStat::getAllCount()
 void AbStat::createWordEditor(QString category)
 {
     QVector<int> *count = getCategoryCount(category);
-    updateMeanVar(count);
+    if( count!=NULL )
+    {
+        updateMeanVar(count);
+    }
+
     int id = cache->catToIndex(category);
-    int count_cat = cache->cache_files[id].length();
-    QQmlProperty::write(editor, "count", count_cat);
+    if( id>=0 )
+    {
+        int count_cat = cache->cache_files[id].length();
+        QQmlProperty::write(editor, "count", count_cat);
+    }
 
     int lexicon_len = lexicon.length();
     for( int i=0 ; i<lexicon_len ; i++ )

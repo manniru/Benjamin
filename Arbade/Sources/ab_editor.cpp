@@ -316,17 +316,36 @@ void AbEditor::updateStatCat()
     int len_lines = editor_lines.length();
     QString category = getCategory();
     QVector<int> *word_count = stat->getCategoryCount(category);
-    int len_stat = word_count->length();
-    for( int i=0 ; i<len_stat ; i++ )
+    if( word_count!=NULL )
     {
-        if( i<len_lines )
+        int len_stat = word_count->length();
+        for( int i=0 ; i<len_stat ; i++ )
+        {
+            if( i<len_lines )
+            {
+                QQmlProperty::write(editor_lines[i],
+                                "word_count", word_count->at(i));
+            }
+        }
+        stat->updateMeanVar(word_count);
+    }
+    else
+    {
+        for( int i=0 ; i<len_lines ; i++ )
         {
             QQmlProperty::write(editor_lines[i],
-                                "word_count", word_count->at(i));
+                        "word_count", 0);
         }
     }
-    stat->updateMeanVar(word_count);
+
     int id = cache->catToIndex(category);
+    if( id<0 )
+    {
+        qDebug() << "Warning 321: cannot retrieve "
+                    "category cache files (updateStatCat)";
+        QQmlProperty::write(editor, "count", 0);
+        return;
+    }
     int count = cache->cache_files[id].length();
     QQmlProperty::write(editor, "count", count);
 }

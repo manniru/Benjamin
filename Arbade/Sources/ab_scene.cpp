@@ -35,6 +35,8 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
             this, SLOT(focusWordChanged()));
     connect(editor->cache, SIGNAL(cacheCreated()),
             this, SLOT(cacheCreated()));
+    connect(audio, SIGNAL(reqUpdateStat()),
+            editor, SLOT(updateStat()));
 
     updateAutoCpmplete();
     createEditor();

@@ -18,6 +18,7 @@ public:
 
 signals:
     void setStatus(int status);
+    void reqUpdateStat();
 
 private slots:
     void updateTime(int percent);

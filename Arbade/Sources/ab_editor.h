@@ -11,7 +11,6 @@ public:
     explicit AbEditor(QObject *ui, AbTelegram *tel,
                       QObject *parent = nullptr);
 
-    void updateStat();
     void createList();
     void clearRecList();
     QString getCategory();
@@ -25,6 +24,7 @@ public:
 
 public slots:
     void recRemove(int id, int f_focus=1);
+    void updateStat();
 
 signals:
     void create(QString category);

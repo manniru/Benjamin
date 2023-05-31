@@ -72,8 +72,7 @@ void AbAudio::writeWav()
     }
     else
     {
-        setStatus(AB_STATUS_STOP);
-        count = 0;
+        emit setStatus(AB_STATUS_STOP);
     }
 
     float rec_time = QQmlProperty::read(root, "ab_rec_time").toFloat();
@@ -95,6 +94,10 @@ void AbAudio::writeWav()
     {
         record();
     }
+    else if( count>=total_count )
+    {
+        emit reqUpdateStat();
+    }
 }
 
 void AbAudio::checkCategoryExist()
@@ -102,7 +105,10 @@ void AbAudio::checkCategoryExist()
     QString category = QQmlProperty::read(editor, "category").toString();
     QString base_name = "train";
     base_name += QDir::separator() + category;
-    ab_checkAuDir(base_name);
+    if( !ab_checkAuDir(base_name) )
+    {
+        stat->cache->addCategory(category);
+    }
 }
 
 void AbAudio::breakTimeout()
