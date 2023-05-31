@@ -165,7 +165,7 @@ void ChProcessorW::meta()
 
 void ChProcessorW::keyReceived(int val)
 {
-    qDebug() << "key" << val;
+//    qDebug() << "key" << val;
     QQmlProperty::write(root, "opacity", CHESS_MAX_OPACITY);
     if( val==VK_BACK )
     {
@@ -179,6 +179,51 @@ void ChProcessorW::keyReceived(int val)
     {
         processNatoKey(val);
     }
+    else if( val==VK_OEM_PLUS )
+    {
+        qDebug() << "PLUS" << val;
+        processNatoKey('+');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey(';');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey('+');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey('-');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey('=');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey('[');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey(']');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey('\'');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey('.');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey(',');
+    }
+    else if( val==VK_OEM_PLUS )
+    {
+        processNatoKey('/');
+    }
 }
 
 void ChProcessorW::processNatoKey(int key)
@@ -191,8 +236,8 @@ void ChProcessorW::processNatoKey(int key)
     QMetaObject::invokeMethod(root, "keyHandler", arg_key);
     if( key_buf.length()==CHESS_CHAR_COUNT )
     {
-        int x, y;
-        chr->strToPos(key_buf, &x, &y);
+        int x = chr->strToPos(key_buf[1]);
+        int y = chr->strToPos(key_buf[0]);
         setPos(x, y);
         if( meta_mode==0 )
         {

@@ -6,9 +6,6 @@
 #include "backend.h"
 #include "config.h"
 
-#define CH_KEY_MIN        ('0'-1)
-#define CH_KEY_MAX        ('Z'+1)
-
 class ChChar : public QObject
 {
     Q_OBJECT
@@ -16,12 +13,14 @@ public:
     ChChar(QObject *ui, QObject *parent = NULL);
     ~ChChar();
 
-    void strToPos(QString input, int *x, int *y);
+    int strToPos(QChar input);
 private:
     void addCell(QString name);
+    void createCells();
 
     int count_x; //read from qml
     int count_y; //read from qml
+    QVector<int> dictionary;
 
     QObject   *root;
 };

@@ -7,9 +7,6 @@
 #include "backend.h"
 #include "config.h"
 
-#define CH_KEY_MIN        ('0'-1)
-#define CH_KEY_MAX        ('Z'+1)
-
 #define CH_LEFT_CLICK   0
 #define CH_NO_CLICK     1
 #define CH_RIGHT_CLICK  2

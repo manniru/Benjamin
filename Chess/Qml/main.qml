@@ -8,7 +8,7 @@ import QtQml 2.3
 Window
 {
     id: window_main
-    property int     count_x:  36
+    property int     count_x:  46
     property int     count_y:  36
     property bool    ch_timer: false
     property real    o_state:  1
@@ -35,35 +35,7 @@ Window
 
     Component.onCompleted:
     {
-        for( var i=0 ; i<count_y ; i++ )
-        {
-            for( var j=0 ; j<count_x ; j++ )
-            {
-                var ch_name = "";
-                if( i<10 )
-                {
-                    ch_name = String.fromCharCode(i+48);
-                }
-                else
-                {
-                    ch_name = String.fromCharCode(i+55);
-                }
-                if( j<10 )
-                {
-                    ch_name += String.fromCharCode(j+48);
-                }
-                else if( j===37 )
-                {
-                    ch_name += "\\\\";
-                }
-                else
-                {
-                    ch_name += String.fromCharCode(j+55);
-                }
-
-                addCell(ch_name);
-            }
-        }
+        ;
     }
 
     OpTimer
