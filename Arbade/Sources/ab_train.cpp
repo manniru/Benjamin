@@ -289,7 +289,7 @@ void AbTrain::updateWerSer()
     QFile wer_file(wer_path);
     if( !wer_file.open(QIODevice::ReadOnly | QIODevice::Text) )
     {
-        qDebug() << "Error opening" << wer_path;
+        qDebug() << "Warning 121: cannot open" << wer_path;
         return;
     }
 
@@ -320,10 +320,8 @@ void AbTrain::checkBenjamin()
     path = KAL_TOOL_DIR;
 #endif
     QDir dir(path);
-    qDebug() << "checkBenjamin:path" << path;
     if( !dir.exists() )
     {
-        qDebug() << "checkBenjamin";
         console->wsl_run("./wsl_init.sh");
     }
 }

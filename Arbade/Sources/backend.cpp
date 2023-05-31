@@ -321,14 +321,14 @@ QString getVerifierStr(int verifier)
 }
 
 // check if dirname does not exist in audio directory then create one
-void ab_checkAuDir(QString dirname)
+int ab_checkAuDir(QString dirname)
 {
     QString path = ab_getAudioPath() + dirname;
-    ab_checkDir(path);
+    return ab_checkDir(path);
 }
 
 // check if path does not exist create one
-void ab_checkDir(QString path)
+int ab_checkDir(QString path)
 {
     QDir dir(path);
 
@@ -344,7 +344,9 @@ void ab_checkDir(QString path)
         cmd += path;
         system(cmd.toStdString().c_str());
 #endif
+        return 0;
     }
+    return 1;
 }
 
 QString correctWinPath(QString path)

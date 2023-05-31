@@ -43,8 +43,8 @@ QFileInfoList ab_getAudioDirs();
 QStringList ab_listFilesSorted(QString path);
 QString getStatusStr(int status);
 QString getVerifierStr(int verifier);
-void ab_checkAuDir(QString dirname);
-void ab_checkDir(QString path);
+int ab_checkAuDir(QString dirname);
+int ab_checkDir(QString path);
 QString correctWinPath(QString path);
 
 #endif // BACKEND_H

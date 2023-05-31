@@ -24,7 +24,12 @@ QVector<QString>* AbCache::loadCacheFiles(QString category)
 {
     QVector<QString> *files = NULL;
     int id = catToIndex(category);
-//    qDebug() << "loadCacheFiles:" << id;
+    if( id<0 )
+    {
+        qDebug() << "Warning 321: cannot retrieve "
+                    "category cache files (loadCacheFiles)";
+        return files;
+    }
     files = &cache_files[id];
 
     return files;
@@ -33,6 +38,12 @@ QVector<QString>* AbCache::loadCacheFiles(QString category)
 void AbCache::addCache(QString category, QString file)
 {
     int cat_id = catToIndex(category);
+    if( cat_id<0 )
+    {
+        qDebug() << "Error 321: cannot retrieve "
+                    "category cache files (addCache)";
+        return;
+    }
     addCache(cat_id, file);
 }
 
@@ -51,6 +62,12 @@ void AbCache::addCache(int cat_id, QString file)
 void AbCache::deleteCache(QString category, QString path)
 {
     int cat_id = catToIndex(category);
+    if( cat_id<0 )
+    {
+        qDebug() << "Error 321: cannot retrieve "
+                    "category cache files (deleteCache)";
+        return;
+    }
     int len = cache_files[cat_id].length();
     for( int i=0 ; i<len ; i++ )
     {
@@ -64,6 +81,12 @@ void AbCache::deleteCache(QString category, QString path)
 void AbCache::deleteCache(QString category, int i)
 {
     int cat_id = catToIndex(category);
+    if( cat_id<0 )
+    {
+        qDebug() << "Error 321: cannot retrieve "
+                    "category cache files (deleteCache)";
+        return;
+    }
     deleteCache(cat_id,i);
 }
 
@@ -80,9 +103,31 @@ void AbCache::deleteCache(int cat_id, int i)
     cache_files[cat_id].remove(i);
 }
 
+void AbCache::addCategory(QString category)
+{
+    int cat_index = catToIndex(category);
+    if( cat_index<0 )
+    {
+        qDebug() << "Error 321: cannot retrieve "
+                    "category cache files (deleteCache)";
+        return;
+    }
+    QFileInfoList dir_list = ab_getAudioDirs();
+    int list_len = dir_list.length();
+
+    for( int i=list_len-1 ; i>=cat_index ; i-- )
+    {
+        cache_files[i+1] = cache_files[i];
+        cache_count[i+1] = cache_count[i];
+    }
+    QString cat_path = dir_list[cat_index].absoluteFilePath();
+    cache_files[cat_index] = ab_listFiles(cat_path);
+    cache_count[cat_index] = getCount(&cache_files[cat_index]);
+}
+
 int AbCache::catToIndex(QString category)
 {
-    int cat_id = AB_UNVER_ID;
+    int cat_id = -1;
     if( category==AB_UNVER_DIR )
     {
         cat_id = AB_UNVER_ID;
