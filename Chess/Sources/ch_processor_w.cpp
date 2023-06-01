@@ -179,20 +179,20 @@ void ChProcessorW::keyReceived(int val)
     {
         processNatoKey(val);
     }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_1 )
+    {
+        processNatoKey(';');
+    }
+    else if( val==VK_ADD )
     {
         qDebug() << "PLUS" << val;
         processNatoKey('+');
     }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_5 )
     {
-        processNatoKey(';');
+        processNatoKey('\\');
     }
-    else if( val==VK_OEM_PLUS )
-    {
-        processNatoKey('+');
-    }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_MINUS )
     {
         processNatoKey('-');
     }
@@ -200,27 +200,27 @@ void ChProcessorW::keyReceived(int val)
     {
         processNatoKey('=');
     }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_4 )
     {
         processNatoKey('[');
     }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_6 )
     {
         processNatoKey(']');
     }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_7 )
     {
         processNatoKey('\'');
     }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_PERIOD )
     {
         processNatoKey('.');
     }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_COMMA )
     {
         processNatoKey(',');
     }
-    else if( val==VK_OEM_PLUS )
+    else if( val==VK_OEM_2 )
     {
         processNatoKey('/');
     }
