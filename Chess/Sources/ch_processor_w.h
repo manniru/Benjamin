@@ -24,6 +24,13 @@
 #define CH_SHOT_I       6
 #define CH_SHOT_II      7
 
+#define CH_META_RESET    0
+#define CH_META_NORM     1
+#define CH_META_TOP      2
+#define CH_META_LEFT     3
+#define CH_META_BOTTOM   4
+#define CH_META_RIGHT    5
+
 class ChProcessorW : public QObject
 {
     Q_OBJECT

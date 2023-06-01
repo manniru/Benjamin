@@ -1,6 +1,7 @@
 #include "bt_captain.h"
 #include <QDebug>
 #include <QColor>
+#include <QtMath>
 
 BtCaptain::BtCaptain(BtState *state,
                      QObject *parent) : QObject(parent)
@@ -20,6 +21,9 @@ BtCaptain::BtCaptain(BtState *state,
 //    strict_word << "five";
 //    strict_word << "four";
     strict_word << "go";
+    strict_word << "end";
+    strict_word << "echo";
+    strict_word << "home";
 #ifdef WIN32
     lua = new BtLua();
 #endif
@@ -239,6 +243,13 @@ QString BtCaptain::getWordFmt(BtHistory word)
         {
             buf += "->";
         }
+    }
+
+    if( word.conf<st->hard_threshold )
+    {
+        buf += "(";
+        buf += QString::number(qFloor(word.conf*100));
+        buf += ")";
     }
 
     buf += "%{-U} ";

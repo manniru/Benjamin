@@ -25,7 +25,6 @@ ChProcessorW::~ChProcessorW()
 void ChProcessorW::showUI(QString text)
 {
     exec->updateScreen(text);
-    qDebug() << "heu" << text;
     if( text=="no_click" )
     {
         click_mode = CH_NO_CLICK;
@@ -224,6 +223,22 @@ void ChProcessorW::keyReceived(int val)
     {
         processNatoKey('/');
     }
+    else if( val==VK_HOME )
+    {
+        meta_mode = CH_META_TOP;
+    }
+    else if( val==VK_END )
+    {
+        meta_mode = CH_META_BOTTOM;
+    }
+    else if( val==VK_RIGHT )
+    {
+        meta_mode = CH_META_RIGHT;
+    }
+    else if( val==VK_LEFT )
+    {
+        meta_mode = CH_META_LEFT;
+    }
 }
 
 void ChProcessorW::processNatoKey(int key)
@@ -239,13 +254,29 @@ void ChProcessorW::processNatoKey(int key)
         int x = chr->strToPos(key_buf[1]);
         int y = chr->strToPos(key_buf[0]);
         setPos(x, y);
-        if( meta_mode==0 )
+        if( meta_mode!=CH_META_NORM )
         {
+            if( meta_mode==CH_META_TOP )
+            {
+                setPosFine('2');
+            }
+            else if( meta_mode==CH_META_BOTTOM )
+            {
+                setPosFine('8');
+            }
+            else if( meta_mode==CH_META_LEFT )
+            {
+                setPosFine('4');
+            }
+            else if( meta_mode==CH_META_RIGHT )
+            {
+                setPosFine('6');
+            }
             hideUI();
         }
     }
     else if( key_buf.length()==CHESS_CHAR_COUNT+1 &&
-             meta_mode )
+             meta_mode==1 )
     {
         if( '9'<key || key<'0' )
         {
