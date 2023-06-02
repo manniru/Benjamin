@@ -97,10 +97,10 @@ void MmChannel::processCommand(QString cmd, QString arg)
     else if( cmd.contains("Sys_") )
     {
         cmd.remove(0, 4);
-        int key_val = cmd.toInt();
+//        int key_val = cmd.toInt();
 
-        qDebug() << "pc" << key_val;
-        emit set_virt(key_val);
+        qDebug() << "pc" << cmd;
+        emit meta(cmd);
     }
     else
     {

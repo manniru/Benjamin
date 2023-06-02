@@ -34,7 +34,7 @@ void MmAppLauncher::focusOpen(QString shortcut, int desktop_id)
 
     if( app.hwnd )
     {
-        focus(app.hwnd);
+        mm_focusWindow(app.hwnd);
     }
     else
     {
@@ -47,34 +47,13 @@ void MmAppLauncher::focusOpen(QString shortcut, int desktop_id)
     }
 }
 
-void MmAppLauncher::focus(HWND hwnd)
-{
-    DWORD dwCurrentThread = GetCurrentThreadId();
-    DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
-    AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
-
-    AllowSetForegroundWindow(ASFW_ANY);
-    LockSetForegroundWindow(LSFW_UNLOCK);
-    BringWindowToTop(hwnd);
-    SetForegroundWindow(hwnd);
-    SetActiveWindow(hwnd);
-
-    // If window is minimzed
-    if( IsIconic(hwnd) )
-    {
-        ShowWindow(hwnd, SW_RESTORE);
-    }
-
-    AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
-}
-
 void MmAppLauncher::openFirefox()
 {
     MmApplication app = getApplication("Firefox", "");
 
     if( app.hwnd )
     {
-        focus(app.hwnd);
+        mm_focusWindow(app.hwnd);
     }
     else
     {

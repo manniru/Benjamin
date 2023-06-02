@@ -4,12 +4,24 @@
 MmBar::MmBar(QObject *root, MmVirt *vi, MmSound *snd,
              QObject *parent) : QObject(parent)
 {
-    parser = new MmParser(root);
-    sound  = snd;
-    usage  = new MmUsage;
-    music  = new MmMusic;
-    virt   = vi;
-    ui     = root;
+    parser  = new MmParser(root);
+    sound   = snd;
+    usage   = new MmUsage;
+    music   = new MmMusic;
+    virt    = vi;
+    ui      = root;
+
+    // run namedpipe channel
+    channel = new MmChannel;
+    channel_thread = new QThread();
+    channel->moveToThread(channel_thread);
+    channel_thread->start();
+
+    connect(this, SIGNAL(startChannel()), channel, SLOT(listenPipe()));
+    connect(channel, SIGNAL(meta(QString)),
+            this, SLOT(executeAction(QString)));
+
+    emit startChannel();
     // List ui
     left_bar  = root->findChild<QObject*>("LeftBar");
     right_bar = root->findChild<QObject*>("RightBar");

@@ -11,6 +11,7 @@
 #include "mm_win32.h"
 #include "mm_nt_user.h"
 #include "mm_win32_win.h"
+#include "mm_api.h"
 // https://github.com/senfiron/win10-virtual-desktop-switcher/tree/master/VirtualDesktopSwitcher/VirtualDesktopSwitcher
 // https://github.com/chuckrector/virtual_desktopper/blob/main/virtual_desktopper.h
 
@@ -174,11 +175,12 @@ public:
     // way to check other wise seg fault will result
     int current_desktop;
 
-    void sendKey(int key_val);
-    void pressKey(int key_val);
-    void releaseKey(int key_val);
-    void setDesktop(int id);
-    void moveToDesktop(int id);
+    void  sendKey(int key_val);
+    void  pressKey(int key_val);
+    void  releaseKey(int key_val);
+    void  setDesktop(int id);
+    void  moveToDesktop(int id);
+    HWND  getMainWindow();
 
 private:
     void updateGUID();

@@ -21,7 +21,6 @@ public:
 
 private:
     MmApplication getApplication(QString shortcut_name, QString win_title);
-    void focus(HWND hwnd);
 
     MmLua  *lua;
     MmVirt *virt;
