@@ -43,6 +43,7 @@ HEADERS += \
     Sources/ab_scene.h \
     Sources/ab_stat.h \
     Sources/ab_telegram.h \
+    Sources/ab_test_errors.h \
     Sources/ab_train.h \
     Sources/ab_verify.h \
     Sources/ab_wav_reader.h \
@@ -65,6 +66,7 @@ SOURCES += \
     Sources/ab_scene.cpp \
     Sources/ab_stat.cpp \
     Sources/ab_telegram.cpp \
+    Sources/ab_test_errors.cpp \
     Sources/ab_train.cpp \
     Sources/ab_verify.cpp \
     Sources/ab_wav_reader.cpp \
@@ -86,7 +88,8 @@ RESOURCES += \
              Qml/ui.qrc \
              Resources/fonts.qrc
 
-OTHER_FILES += Qml/*.qml
+OTHER_FILES += Qml/*.qml \
+               Qml/Queries/*.qml
 
 QML_IMPORT_PATH += Qml/
 

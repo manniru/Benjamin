@@ -21,7 +21,7 @@ Window
                              "J/K: Word Num",
                              "O:Open Category", "T: Train",
                              "V:Verify Mode", "P: Show Terminal",
-                             "H:Shit Mode"]
+                             "H:Shit Mode", "A: Show Test Errors"]
 
     color: "#262626"
 //    color: "yellow"

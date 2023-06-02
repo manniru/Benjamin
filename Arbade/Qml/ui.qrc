@@ -3,13 +3,9 @@
         <file>main.qml</file>
         <file>AbStatus.qml</file>
         <file>AbConst.qml</file>
-        <file>AbDialog.qml</file>
-        <file>AbQuery.qml</file>
         <file>AbEditor.qml</file>
-        <file>AbDiffAccept.qml</file>
         <file>AbWordLine.qml</file>
         <file>AbButton.qml</file>
-        <file>AbDialogWsl.qml</file>
         <file>AbConsole.qml</file>
         <file>AbTimeBar.qml</file>
         <file>AbStatusLabel.qml</file>
@@ -19,9 +15,14 @@
         <file>AbRecPanel.qml</file>
         <file>AbRecDelete.qml</file>
         <file>AbRecPlay.qml</file>
-        <file>AbMessage.qml</file>
-        <file>AbQueryLine.qml</file>
-        <file>AbHelpWindow.qml</file>
         <file>AbTopBar.qml</file>
+        <file alias="AbDialog.qml">Queries/AbDialog.qml</file>
+        <file alias="AbDialogWsl.qml">Queries/AbDialogWsl.qml</file>
+        <file alias="AbDiffAccept.qml">Queries/AbDiffAccept.qml</file>
+        <file alias="AbHelpWindow.qml">Queries/AbHelpWindow.qml</file>
+        <file alias="AbMessage.qml">Queries/AbMessage.qml</file>
+        <file alias="AbQuery.qml">Queries/AbQuery.qml</file>
+        <file alias="AbQueryLine.qml">Queries/AbQueryLine.qml</file>
+        <file alias="AbTestErrors.qml">Queries/AbTestErrors.qml</file>
     </qresource>
 </RCC>
