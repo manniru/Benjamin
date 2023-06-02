@@ -15,6 +15,22 @@ Rectangle
     property int ed_height: height
     property int focused_line: -1
     property int count: 0
+    property bool read_only: false
+    property string title_str:
+    {
+        if( root.ab_verifier===1 )
+        {
+            "Word Editor - Category: \"unverified\""
+        }
+        else if( root.ab_verifier===2 )
+        {
+            "Word Editor - Category: \"shit\""
+        }
+        else
+        {
+            "Word Editor - Category: \"" + category + "\""
+        }
+    }
 
     signal updateWordList()
     signal updateDifWords()
@@ -36,19 +52,7 @@ Rectangle
 
         Text
         {
-            text: if( root.ab_verifier===1 )
-                  {
-                      "Word Editor - Category: \"unverified\""
-                  }
-                  else if( root.ab_verifier===2 )
-                  {
-                      "Word Editor - Category: \"shit\""
-                  }
-                  else
-                  {
-                      "Word Editor - Category: \"" + category + "\""
-                  }
-
+            text: title_str
             color: "#e5e5e5"
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -190,7 +194,8 @@ Rectangle
                           word_text: w_text,
                           word_phoneme: w_phoneme,
                           word_count: w_count,
-                          objectName: comp_name});
+                          objectName: comp_name,
+                          read_only_line: read_only});
         wordAdded(word_i);
     }
 

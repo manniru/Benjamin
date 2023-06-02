@@ -16,8 +16,11 @@ Rectangle
     property int    word_count: 0
     property bool   line_hovered: false
     property bool   wrong_phoneme: false
+    property bool   control_pressed: false
+    property bool   read_only_line: false
 
     signal wordChanged(int id, string text_w)
+    signal saveWords()
 
     Rectangle
     {
@@ -108,6 +111,7 @@ Rectangle
         selectedTextColor: "#333"
         selectionColor: "#ccc"
         visible: !line_hovered
+        readOnly: read_only_line
 
         onTextChanged:
         {
@@ -122,7 +126,15 @@ Rectangle
 
         Keys.onPressed:
         {
-            if( event.key===Qt.Key_Backspace && text==="" )
+            if( event.key===Qt.Key_Control )
+            {
+                control_pressed = true;
+            }
+            else if( event.key===Qt.Key_S )
+            {
+                saveWords();
+            }
+            else if( event.key===Qt.Key_Backspace && text==="" )
             {
                 var id = word_id;
                 var word_count = editor_box.wordCount();
@@ -135,6 +147,14 @@ Rectangle
                      event.key===Qt.Key_Down )
             {
                 editor_box.arrowPress(word_id, event.key);
+            }
+        }
+
+        Keys.onReleased:
+        {
+            if( event.key===Qt.Key_Control )
+            {
+                control_pressed = false;
             }
         }
 

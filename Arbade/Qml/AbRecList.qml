@@ -74,6 +74,7 @@ Rectangle
         var comp = Qt.createComponent("AbRecLine.qml");
         var comp_name = "RecLine" + len;
         var rec_line;
+        path_in = path_in.replace(/\\/g, "/");
         if( len>0 )
         {
             var last_element = reclist_cl.children[len-1];

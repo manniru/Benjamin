@@ -74,6 +74,8 @@ void AbCache::deleteCache(QString category, QString path)
         if( cache_files[cat_id][i]==path )
         {
             deleteCache(cat_id, i);
+            i--;
+            len--;
         }
     }
 }

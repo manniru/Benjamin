@@ -48,6 +48,9 @@ void AbEditor::wordAdded(int id)
 
     connect(editor_lines[id], SIGNAL(wordChanged(int,QString)),
             this, SLOT(changeWord(int,QString)));
+
+    connect(editor_lines[id], SIGNAL(saveWords()),
+            this, SLOT(saveProcess()));
 }
 
 void AbEditor::wordAddedRec(int id)

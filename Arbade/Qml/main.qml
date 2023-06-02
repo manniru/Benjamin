@@ -50,7 +50,6 @@ ApplicationWindow
     property real ab_rec_pause: 1.0
     property real ab_verify_pause: 0.5
     property real ab_power: 0
-    property real ab_start_now: 0
 
     signal startPauseV()
     signal delVerifyFile()
@@ -63,10 +62,10 @@ ApplicationWindow
     signal focusWordChanged()
     signal setCategory()
     signal saveWordList()
+    signal readTestErrors()
 
     Component.onCompleted:
     {
-        ab_start_now = Date.now();
         x = Screen.width / 2 - width / 2
         y = Screen.height / 2 - height / 2
     }
@@ -539,31 +538,10 @@ ApplicationWindow
                 }
             }
         }
-        else if( key===Qt.Key_K )
+        else if( key===Qt.Key_A)
         {
-            ab_num_words--;
-        }
-        else if( key===Qt.Key_J )
-        {
-            ab_num_words++;
-        }
-        else if( key===Qt.Key_Q )
-        {
-            close();
-        }
-        else if( key===Qt.Key_S )
-        {
-            if( ctrl_pressed )
-            {
-                saveWordList();
-            }
-            else if( ab_verifier===0 )
-            {
-                get_value_dialog.title = get_value_dialog.category_title;
-                get_value_dialog.dialog_label = get_value_dialog.value_label;
-                get_value_dialog.dialog_text = get_value_dialog.category_title;
-                get_value_dialog.visible = true;
-            }
+            test_errors.show();
+            readTestErrors();
         }
         else if( key===Qt.Key_C )
         {
@@ -595,6 +573,51 @@ ApplicationWindow
             ab_count = 0
             verifierChanged();
         }
+        else if( key===Qt.Key_J )
+        {
+            ab_num_words++;
+        }
+        else if( key===Qt.Key_K )
+        {
+            ab_num_words--;
+        }
+        else if( key===Qt.Key_P )
+        {
+            console_box.visible = true;
+        }
+        else if( key===Qt.Key_Q )
+        {
+            close();
+        }
+        else if( key===Qt.Key_R )
+        {
+            if( default_func_v===ab_const.ab_VMODE_COPY )
+            {
+                default_func_v = ab_const.ab_VMODE_TRASH;
+            }
+            else if( default_func_v===ab_const.ab_VMODE_TRASH )
+            {
+                default_func_v = ab_const.ab_VMODE_WRONG;
+            }
+            else // ab_VMODE_WRONG
+            {
+                default_func_v = ab_const.ab_VMODE_COPY;
+            }
+        }
+        else if( key===Qt.Key_S )
+        {
+            if( ctrl_pressed )
+            {
+                saveWordList();
+            }
+            else if( ab_verifier===0 )
+            {
+                get_value_dialog.title = get_value_dialog.category_title;
+                get_value_dialog.dialog_label = get_value_dialog.value_label;
+                get_value_dialog.dialog_text = get_value_dialog.category_title;
+                get_value_dialog.visible = true;
+            }
+        }
         else if( key===Qt.Key_V )
         {
             ab_status = ab_const.ab_STATUS_STOP;
@@ -622,28 +645,9 @@ ApplicationWindow
                 verify_dialog.visible = true;
             }
         }
-        else if( key===Qt.Key_R )
-        {
-            if( default_func_v===ab_const.ab_VMODE_COPY )
-            {
-                default_func_v = ab_const.ab_VMODE_TRASH;
-            }
-            else if( default_func_v===ab_const.ab_VMODE_TRASH )
-            {
-                default_func_v = ab_const.ab_VMODE_WRONG;
-            }
-            else // ab_VMODE_WRONG
-            {
-                default_func_v = ab_const.ab_VMODE_COPY;
-            }
-        }
         else if( key===Qt.Key_Slash )
         {
             help_win.visible = true;
-        }
-        else if( key===Qt.Key_P )
-        {
-            console_box.visible = true;
         }
     }
 
