@@ -8,6 +8,11 @@
 #include <psapi.h> // For access to GetModuleFileNameEx
 #include "Windows.h"
 #include "mm_win32.h"
+#include "mm_api.h"
+
+#define MM_MINWIN_HEIGHT   50
+#define MM_MINWIN_WIDTH    100
+#define MM_MINWIN_OPACITY  100
 
 typedef struct MmWindow
 {

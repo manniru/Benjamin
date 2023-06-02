@@ -34,14 +34,17 @@ void re_AddHwnd(HWND hwnd, MmWin32Win *thread_w)
     {
         int cloaked;
         DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, 4);
-//        if(cloaked==0)
-        if(1)
+//        if(1)
+        if( cloaked==0 )
         {
             HWND shell_window = GetShellWindow();
             GetWindowRect(hwnd, &rc);
-            int width = rc.right - rc.left;
+            int width  = rc.right - rc.left;
+            int height = rc.bottom - rc.top;
+            int opacity = mm_getWindowOpacity(hwnd);
 
-            if((hwnd!=shell_window) && (width>100) ) //&& (rc.bottom>0)
+            if( (hwnd!=shell_window) && (width>MM_MINWIN_WIDTH) &&
+                (height>MM_MINWIN_HEIGHT) && (opacity>MM_MINWIN_OPACITY) ) //&& (rc.bottom>0)
             {
                 int success = GetWindowTextA(hwnd, buffer, 128); //get title
 
@@ -60,8 +63,9 @@ void re_AddHwnd(HWND hwnd, MmWin32Win *thread_w)
             }
             else
             {
-//                int success = GetWindowTextA(hwnd, buffer, 128); //get title
-//                qDebug() << "----------" << buffer << rc.bottom << width;
+//                GetWindowTextA(hwnd, buffer, 128); //get title
+//                qDebug() << "----------" << buffer << rc.bottom
+//                         << width << GetWindowOpacity(hwnd);
             }
         }
     }

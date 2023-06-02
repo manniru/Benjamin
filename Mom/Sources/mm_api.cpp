@@ -193,3 +193,41 @@ void mm_closeWindow()
 
     AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
 }
+
+void mm_focusWindow(HWND hwnd)
+{
+    DWORD dwCurrentThread = GetCurrentThreadId();
+    DWORD dwFGThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
+    AttachThreadInput(dwCurrentThread, dwFGThread, TRUE);
+
+    AllowSetForegroundWindow(ASFW_ANY);
+    LockSetForegroundWindow(LSFW_UNLOCK);
+    BringWindowToTop(hwnd);
+    SetForegroundWindow(hwnd);
+    SetActiveWindow(hwnd);
+
+    // If window is minimzed
+    if( IsIconic(hwnd) )
+    {
+        ShowWindow(hwnd, SW_RESTORE);
+    }
+
+    AttachThreadInput(dwCurrentThread, dwFGThread, FALSE);
+}
+
+// Function to get the window opacity
+int  mm_getWindowOpacity(HWND hwnd)
+{
+    BYTE opacity = 0;
+    DWORD flags = 0;
+
+    if (GetLayeredWindowAttributes(hwnd, NULL, &opacity, &flags))
+    {
+        if (flags & LWA_ALPHA)
+        {
+            return opacity;
+        }
+    }
+
+    return 255;  // Default opacity if unable to retrieve
+}

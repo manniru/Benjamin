@@ -131,6 +131,35 @@ int MmVirt::isCurrentActive()
     return false;
 }
 
+HWND MmVirt::getMainWindow()
+{
+    HWND min_hwnd = NULL;
+    int min_x = 9999;
+    win_lister->update();
+
+    int win_len = win_lister->wins.length();
+    for( int i=0 ; i<win_len ; i++ )
+    {
+        MmWindow win = win_lister->wins[i];
+        HWND hwnd = win.hWnd;
+        BOOL ret;
+        pDesktopManager->IsWindowOnCurrentVirtualDesktop(hwnd, &ret);
+        if( ret )
+        {
+            RECT rc;
+            GetWindowRect(hwnd, &rc);
+            if( rc.right<min_x )
+            {
+                min_hwnd = hwnd;
+                min_x = rc.right;
+            }
+            qDebug() << "Main Window" << win.title;
+        }
+    }
+
+    return min_hwnd;
+}
+
 void MmVirt::setFocus()
 {
     QThread::msleep(100);
@@ -140,6 +169,14 @@ void MmVirt::setFocus()
         pressKey(VK_LMENU); //ALT
         sendKey(VK_TAB);
         releaseKey(VK_LMENU);
+    }
+
+    QThread::msleep(100);
+
+    if( isCurrentActive()==0 )
+    {
+        HWND hwnd = getMainWindow();
+        mm_focusWindow(hwnd);
     }
 }
 
