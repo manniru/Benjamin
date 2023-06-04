@@ -1,27 +1,27 @@
-#include "ab_test_errors.h"
+#include "ab_ler_stat.h"
 
-AbTestErrors::AbTestErrors(QObject *ui, QObject *parent) : QObject(parent)
+AbLerStat::AbLerStat(QObject *ui, QObject *parent) : QObject(parent)
 {
     root = ui;
-    t_err_qml = root->findChild<QObject *>("TestErrors");
-    t_word_edit = root->findChild<QObject *>("TestStat");
+    ler_qml = root->findChild<QObject *>("LerStat");
+    word_edit = root->findChild<QObject *>("TestStat");
     timer_editor = new QTimer();
 
     connect(root, SIGNAL(readTestErrors()),
-            this, SLOT(loadWordErrors()));
+            this, SLOT(loadLer()));
     connect(timer_editor, SIGNAL(timeout()),
             this, SLOT(timerTimeout()));
 }
 
-void AbTestErrors::loadWordErrors()
+void AbLerStat::loadLer()
 {
-    readWordErrors();
+    readLerFile();
     clearEditor();
 }
 
-void AbTestErrors::clearEditor()
+void AbLerStat::clearEditor()
 {
-    QMetaObject::invokeMethod(t_word_edit, "clearEditor");
+    QMetaObject::invokeMethod(word_edit, "clearEditor");
     editor_lines.clear();
     // Qt QML destroy bug forced us to exert a timer
     // to make sure that the "clearEditor" function
@@ -29,7 +29,7 @@ void AbTestErrors::clearEditor()
     timer_editor->start(10);
 }
 
-void AbTestErrors::timerTimeout()
+void AbLerStat::timerTimeout()
 {
     timer_editor->stop();
     int len = words.size();
@@ -37,12 +37,12 @@ void AbTestErrors::timerTimeout()
     for( int i=0 ; i<len ; i++ )
     {
         QString object_name = "WordLine" + QString::number(i);
-        editor_lines[i] = t_word_edit->findChild<QObject *>(object_name);
-        addWord(words[i], word_errors[i], "");
+        editor_lines[i] = word_edit->findChild<QObject *>(object_name);
+        addWord(words[i], ler[i], "");
     }
 }
 
-void AbTestErrors::addWord(QString word, int count, QString phoneme)
+void AbLerStat::addWord(QString word, int count, QString phoneme)
 {
     QVariant word_v(word);
     QVariant phoneme_v(phoneme);
@@ -51,31 +51,31 @@ void AbTestErrors::addWord(QString word, int count, QString phoneme)
     QGenericArgument arg_count   = Q_ARG(QVariant, count);
     QGenericArgument arg_phoneme = Q_ARG(QVariant, phoneme_v);
 
-    QMetaObject::invokeMethod(t_word_edit, "addWord", arg_word,
+    QMetaObject::invokeMethod(word_edit, "addWord", arg_word,
                               arg_count, arg_phoneme);
 }
 
-void AbTestErrors::readWordErrors()
+void AbLerStat::readLerFile()
 {
 #ifdef WIN32
     QString filename = ab_getAudioPath();
-    filename += + "..\\exp\\tri1\\decode\\scoring\\test_errors";
+    filename += + "..\\exp\\tri1\\decode\\scoring\\ler_stat";
 #else //OR __linux
-    QString filename = KAL_SCORE_DIR"test_errors";
+    QString filename = KAL_SCORE_DIR"ler_stat";
 #endif
-    QFile *t_err_file = new QFile(filename);
-    if( !t_err_file->open(QIODevice::ReadOnly |
+    QFile *ler_file = new QFile(filename);
+    if( !ler_file->open(QIODevice::ReadOnly |
                         QIODevice::Text) )
     {
         qDebug() << "Error opening" << filename;
         return;
     }
 
-    QString file_content = t_err_file->readAll();
+    QString file_content = ler_file->readAll();
     QStringList lines = file_content.split("\n");
     int len = lines.size();
 
-    word_errors.resize(len);
+    ler.resize(len);
     words.resize(len);
     for( int i=0 ; i<len ; i++ )
     {
@@ -83,7 +83,7 @@ void AbTestErrors::readWordErrors()
         if( line_split.size()==2 )
         {
             bool convert_ok;
-            word_errors[i] = line_split[1].toInt(&convert_ok);
+            ler[i] = line_split[1].toInt(&convert_ok);
             words[i] = line_split[0];
 
             if( !convert_ok )

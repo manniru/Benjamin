@@ -363,6 +363,12 @@ ApplicationWindow
         id: help_win
     }
 
+    AbLerStat
+    {
+        id: ler_stat
+        objectName: "LerStat"
+    }
+
     Audio
     {
         id: audioPlayer
@@ -540,7 +546,7 @@ ApplicationWindow
         }
         else if( key===Qt.Key_A)
         {
-            test_errors.show();
+            ler_stat.show();
             readTestErrors();
         }
         else if( key===Qt.Key_C )

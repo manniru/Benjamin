@@ -23,6 +23,6 @@
         <file alias="AbMessage.qml">Queries/AbMessage.qml</file>
         <file alias="AbQuery.qml">Queries/AbQuery.qml</file>
         <file alias="AbQueryLine.qml">Queries/AbQueryLine.qml</file>
-        <file alias="AbTestErrors.qml">Queries/AbTestErrors.qml</file>
+        <file alias="AbLerStat.qml">Queries/AbLerStat.qml</file>
     </qresource>
 </RCC>

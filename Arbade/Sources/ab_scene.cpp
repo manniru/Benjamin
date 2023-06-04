@@ -14,6 +14,7 @@ AbScene::AbScene(QObject *ui, QObject *parent) : QObject(parent)
 
     audio = new AbAudio(editor->stat, root);
     verify = new AbVerify(editor, root);
+    ler_stat = new AbLerStat(root);
 
     connect(audio, SIGNAL(setStatus(int)),
             this, SLOT(setStatusAudio(int)));
@@ -74,7 +75,6 @@ void AbScene::setStatusAudio(int status)
     QQmlProperty::write(root, "ab_status", status);
     if( status==AB_STATUS_STOP )
     {
-        qDebug() << "setStatusAudio ab_count 0";
         QQmlProperty::write(root, "ab_count", 0);
         editor->updateStat();
     }

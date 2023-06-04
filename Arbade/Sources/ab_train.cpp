@@ -205,7 +205,7 @@ void AbTrain::addTestSample(int count)
 
     for( int i=0 ; i<count ; i++ )
     {
-        int cat_id = 1+rand()%cat_count;
+        int cat_id = 2+rand()%cat_count;
         int cat_len = stat->cache->cache_files[cat_id].size();
         int sample_id = rand()%cat_len;
         QString sample_path = stat->cache->cache_files[cat_id][sample_id];
@@ -245,7 +245,7 @@ int AbTrain::getTrainCount()
 
     for( int i=0 ; i<len_dir ; i++ )
     {
-        ret += stat->cache->cache_files[i+1].size();
+        ret += stat->cache->cache_files[i+2].size();
     }
 
     return ret;
@@ -283,7 +283,7 @@ void AbTrain::updateWerSer()
     wer_path = ab_getWslPath();
     wer_path += "\\Benjamin\\Nato\\exp\\tri1\\decode\\wer_16";
 #else
-    wer_path = KAL_WER_DIR;
+    wer_path = KAL_WER_DIR"wer_16";
 #endif
 
     QFile wer_file(wer_path);

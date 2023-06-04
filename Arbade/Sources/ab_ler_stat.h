@@ -1,5 +1,6 @@
-#ifndef ABTESTERRORS_H
-#define ABTESTERRORS_H
+#ifndef AB_LER_STAT_H
+#define AB_LER_STAT_H
+// Lexicon Error Rate Statistics
 
 #include <QObject>
 #include <QFile>
@@ -7,31 +8,31 @@
 #include "config.h"
 #include "backend.h"
 
-class AbTestErrors : public QObject
+class AbLerStat : public QObject
 {
     Q_OBJECT
 public:
-    explicit AbTestErrors(QObject *ui,
+    explicit AbLerStat(QObject *ui,
                           QObject *parent = nullptr);
 
 signals:
 
 private slots:
-    void loadWordErrors();
+    void loadLer();
     void timerTimeout();
 
 private:
-    void readWordErrors();
+    void readLerFile();
     void addWord(QString word, int count, QString phoneme);
+    void clearEditor();
 
     QObject *root;     // root qml object
-    QObject *t_err_qml; // test errors in qml
-    QObject *t_word_edit; // test word edit in qml
+    QObject *ler_qml; // test errors in qml
+    QObject *word_edit; // test word edit in qml
     QVector<QObject *> editor_lines;
-    QVector<int> word_errors;
+    QVector<int> ler; // lexicon error rate
     QVector<QString> words;
     QTimer *timer_editor;
-    void clearEditor();
 };
 
-#endif // ABTESTERRORS_H
+#endif // AB_LER_STAT_H

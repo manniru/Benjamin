@@ -7,6 +7,7 @@
 #include "ab_editor.h"
 #include "ab_audio.h"
 #include "ab_verify.h"
+#include "ab_ler_stat.h"
 
 class AbScene : public QObject
 {
@@ -39,6 +40,7 @@ private:
     QObject *message; // message qml object
     AbAudio *audio;
     AbVerify *verify;
+    AbLerStat *ler_stat;
     AbTelegram *telegram;
     QTimer *break_timer;
 };
