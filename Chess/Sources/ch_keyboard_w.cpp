@@ -94,3 +94,10 @@ QString ch_getActivePName()
 
     return filename;
 }
+
+void ch_altTab()
+{
+    ch_pressKey(VK_LMENU); //ALT
+    ch_sendKey(VK_TAB);
+    ch_releaseKey(VK_LMENU);
+}

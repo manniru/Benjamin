@@ -64,6 +64,7 @@ public:
     void sendKey(int key_val);
     void pressKey(int key_val);
     void releaseKey(int key_val);
+    void altTab();
 
 private:
     bool isExtended(int key_val);

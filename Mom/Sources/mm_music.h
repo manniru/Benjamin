@@ -20,8 +20,8 @@ public:
     void playClick();
     void prevClick();
 
-private:
     MmKeyEmulator *emul;
+private:
 };
 
 #endif // MM_MUSIC_H

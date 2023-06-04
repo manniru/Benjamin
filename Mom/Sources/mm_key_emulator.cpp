@@ -57,6 +57,13 @@ void MmKeyEmulator::releaseKey(int key_val)
     SendInput(1, &input, sizeof(INPUT));
 }
 
+void MmKeyEmulator::altTab()
+{
+    pressKey(VK_LMENU); //ALT
+    sendKey(VK_TAB);
+    releaseKey(VK_LMENU);
+}
+
 bool MmKeyEmulator::isExtended(int key_val)
 {
     if( extended_keys.contains(key_val) )

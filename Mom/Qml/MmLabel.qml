@@ -50,7 +50,6 @@ Rectangle
         anchors.fill: parent
         enabled: label_action_l != ""
         cursorShape: enabled ? Qt.PointingHandCursor:Qt.ArrowCursor
-
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         onClicked:
         {
@@ -67,6 +66,8 @@ Rectangle
             {
                 labelClicked(label_action_m);
             }
+
+            root.focus_back = 1;
         }
 
         onWheel:

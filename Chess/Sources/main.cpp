@@ -22,6 +22,9 @@ int main(int argc, char *argv[])
     int flags = Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint
                | Qt::WindowTransparentForInput;
     QQmlProperty::write(root, "flags", flags);
+
+    // prevent from stealing focus on startup
+    ch_altTab();
 #endif
 
     ChChapar chapar(root);

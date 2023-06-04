@@ -9,6 +9,7 @@ MmBar::MmBar(QObject *root, MmVirt *vi, MmSound *snd,
     usage  = new MmUsage;
     music  = new MmMusic;
     virt   = vi;
+    ui     = root;
     // List ui
     left_bar  = root->findChild<QObject*>("LeftBar");
     right_bar = root->findChild<QObject*>("RightBar");
@@ -55,6 +56,12 @@ void MmBar::executeAction(QString action)
         qDebug() << "execute" << action;
         int desktop_id = action.toInt();
         virt->setDesktop(desktop_id-1);
+    }
+
+    int focus = QQmlProperty::read(ui, "focus_back").toInt();
+    if( focus )
+    {
+        music->emul->altTab();
     }
 }
 

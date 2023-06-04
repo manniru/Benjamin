@@ -5,6 +5,7 @@ import Qt.labs.settings 1.0
 
 Window
 {
+    property int focus_back: 0
     id: root
 
     visible: true

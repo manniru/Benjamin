@@ -25,8 +25,10 @@ int main(int argc, char *argv[])
     QScreen *screen = QGuiApplication::primaryScreen();
     QQmlProperty::write(mainItem, "width", screen->geometry().width());
 
-    MmChapar bar(mainItem);
+    MmChapar  chapar(mainItem);
     MmWatcher watcher;
+
+    chapar.key->e_key->altTab();
 
     return app.exec();
 }

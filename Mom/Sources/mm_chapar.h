@@ -17,6 +17,8 @@ public:
     explicit MmChapar(QObject *root, QObject *parent = nullptr);
     ~MmChapar();
 
+    MmKeyboard *key;
+
 private:
     void Register();
     void UnRegister();
@@ -24,7 +26,6 @@ private:
 
     MmBar *bar;
     MmMonitor  *mon;
-    MmKeyboard *key;
     MmVirt     *virt;
     MmSound    *sound;
     HWND hWnd;

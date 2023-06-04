@@ -44,6 +44,7 @@ private:
     MmSound  *sound;
     MmUsage  *usage;
     MmMusic  *music;
+    QObject  *ui;
 
     // These are buffers to help reduce number of updates
     // requests need
