@@ -50,7 +50,10 @@ Rectangle
 
             onEntered:
             {
-                line_hovered = true;
+                if( !read_only_line )
+                {
+                    line_hovered = true;
+                }
             }
             onExited:
             {
@@ -196,11 +199,11 @@ Rectangle
         {
             var mean = parseInt(buttons_box.mean);
             var variance = parseInt(buttons_box.variance);
-            if( word_count<mean-variance )
+            if( word_count<mean-variance && !read_only_line )
             {
                 "#cb6565"; // red
             }
-            else if( word_count>mean+variance )
+            else if( word_count>mean+variance && !read_only_line)
             {
                 "#80bf73"; // green
             }

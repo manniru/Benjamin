@@ -4,7 +4,8 @@
 #define KAL_NATO_DIR      "../Nato/"
 #define KAL_TOOL_DIR      "../Tools/"
 #define KAL_AU_DIR        KAL_NATO_DIR"audio/"
-#define KAL_WER_DIR       KAL_NATO_DIR"exp/tri1/decode"
+#define KAL_WER_DIR       KAL_NATO_DIR"exp/tri1/decode/"
+#define KAL_SCORE_DIR     KAL_WER_DIR"scoring/"
 
 #define AB_WSL_ROOT       "Arch"
 

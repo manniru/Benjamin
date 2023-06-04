@@ -67,7 +67,16 @@ Rectangle
             anchors.rightMargin: 15
 
             color: "#e5e5e5"
-            text: "Count: " + count
+            text:
+                if( !read_only )
+                {
+                    "Count: " + count
+                }
+                else
+                {
+                    ""
+                }
+
             font.pixelSize: 15
         }
     }
