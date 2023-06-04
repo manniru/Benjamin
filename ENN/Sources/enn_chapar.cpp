@@ -1,21 +1,28 @@
 #include "enn_chapar.h"
 #include "enn_test.h"
 
-EnnChapar::EnnChapar(int mode, float l_rate)
+EnnChapar::EnnChapar(EnnCmdOptions *options)
 {
-    if( mode==ENN_LEARN_MODE )
+    if( options->mode==ENN_LEARN_MODE )
     {
-        learnMode(l_rate);
+        if( options->word.length() )
+        {
+            singleMode(options->learning_rate, options->word);
+        }
+        else
+        {
+            learnMode(options->learning_rate);
+        }
     }
-    else if( mode==ENN_TEST_MODE )
+    else if( options->mode==ENN_TEST_MODE )
     {
         testMode();
     }
-    else if( mode==ENN_TF_MODE )
+    else if( options->mode==ENN_TF_MODE )
     {
         testFullMode();
     }
-    else if( mode==ENN_FILE_MODE )
+    else if( options->mode==ENN_FILE_MODE )
     {
         fileMode();
     }
@@ -34,6 +41,7 @@ void EnnChapar::learnMode(float l_rate)
         int learned_count = 0;
 
         int len = word_list.size();
+
         for( int i=0 ; i<len ; i++ )
         {
             word_list[i].remove("\n");
@@ -61,6 +69,35 @@ void EnnChapar::learnMode(float l_rate)
         {
             break;
         }
+    }
+}
+
+void EnnChapar::singleMode(float l_rate, QString l_word)
+{
+    QStringList word_list = bt_parseLexicon(BT_WORDS_PATH);
+    while( 1 ) // until all model reached target loss
+    {
+        int index = word_list.indexOf(l_word);
+
+        word_list[index].remove("\n");
+        qDebug() << word_list[index];
+        EnnNetwork net(word_list[index], index);
+        float first_loss = net.last_loss;
+        net.train(l_rate);
+        float diff_loss = net.last_loss - first_loss;
+
+        if( net.last_loss<ENN_TARGET_LOSS )
+        {
+            return;
+        }
+        if( diff_loss>0 ) // we are not learning anything
+        {                 // after 100 epoch
+            qDebug() << "BAD LEARNING" << diff_loss;
+            return;
+        }
+        printf("----- learned word=%s loss=%.2f ----\n",
+               word_list[index].toStdString().c_str(),
+               net.last_loss);
     }
 }
 

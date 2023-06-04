@@ -9,7 +9,7 @@
 #define ENN_TARGET_LOSS 0.5
 #define ENN_MIN_LRATE   0.0002
 #define ENN_MAX_EPOCH   200
-#define ENN_LEARN_RATE  0.001
+#define ENN_LEARN_RATE  "0.001"
 
 #define AB_WSL_ROOT     "Arch"
 

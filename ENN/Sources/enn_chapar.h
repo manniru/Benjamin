@@ -9,16 +9,24 @@
 #define ENN_TF_MODE    3
 #define ENN_FILE_MODE  4
 
+typedef struct EnnCmdOptions
+{
+    int mode;
+    float learning_rate;
+    QString word;
+}EnnCmdOptions;
+
 class EnnChapar
 {
 public:
-    EnnChapar(int mode, float l_rate);
+    EnnChapar(EnnCmdOptions *options);
     ~EnnChapar();
 
     void testMode();
     void fileMode();
     void testFullMode();
     void learnMode(float l_rate);
+    void singleMode(float l_rate, QString l_word);
 
 private:
 };

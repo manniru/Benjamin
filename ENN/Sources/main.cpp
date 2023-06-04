@@ -1,6 +1,9 @@
 #include <QGuiApplication>
 #include "enn_chapar.h"
 #include "../PNN/aj_dllgen.h"
+#include <QCommandLineParser>
+
+EnnCmdOptions* parseClOptions(QCoreApplication *app);
 
 int main(int argc, char *argv[])
 {
@@ -8,31 +11,61 @@ int main(int argc, char *argv[])
 #ifdef WIN32
     aj_dllGen();
 #endif
-
-    float learning_rate = ENN_LEARN_RATE;
-    int   mode = ENN_LEARN_MODE;
-    if( argc>1 )
-    {
-        QString arg1 = QString(argv[1]);
-
-        if( arg1=="t" )
-        {
-            mode = ENN_TEST_MODE;
-        }
-        else if( arg1=="tf" ) // test full mode
-        {
-            mode = ENN_TF_MODE;
-        }
-        else if( arg1=="f" )
-        {
-            mode = ENN_FILE_MODE;
-        }
-        else
-        {
-            learning_rate = arg1.toFloat();
-        }
-    }
-    EnnChapar chapar(mode, learning_rate);
+    EnnCmdOptions *options = parseClOptions(&app);
+    EnnChapar chapar(options);
 
     return 0;
+}
+
+EnnCmdOptions* parseClOptions(QCoreApplication *app)
+{
+    QCommandLineParser parser;
+    EnnCmdOptions *ret_opt = new EnnCmdOptions;
+
+    // -t TEST_MODE
+    QCommandLineOption test_mode("t", "Set Test Mode");
+    parser.addOption(test_mode);
+
+    // -tf TEST_FULL_MODE
+    QCommandLineOption test_full_mode("tf", "Set Test Full Mode");
+    parser.addOption(test_full_mode);
+
+    // -f FILE_MODE
+    QCommandLineOption file_mode("f", "Set File Mode");
+    parser.addOption(file_mode);
+
+    // -l learning rate
+    QStringList option_lr;
+    option_lr << "l" << "learning_rate";
+    QCommandLineOption lr_option(option_lr,
+                       "Set Learning Rate", "Learning Rate", ENN_LEARN_RATE);
+    parser.addOption(lr_option);
+
+    // -w word
+    QStringList option_word;
+    option_word << "w" << "word";
+    QCommandLineOption word_option(option_word,
+                       "Set Word", "Word", "");
+    parser.addOption(word_option);
+
+    parser.process(*app);
+
+    ret_opt->mode = ENN_LEARN_MODE;
+    if( parser.isSet(test_mode) )
+    {
+        ret_opt->mode = ENN_TEST_MODE;
+    }
+    else if( parser.isSet(test_full_mode) )
+    {
+        ret_opt->mode = ENN_TF_MODE;
+    }
+    else if( parser.isSet(file_mode) )
+    {
+        ret_opt->mode = ENN_FILE_MODE;
+    }
+
+    ret_opt->learning_rate = parser.value(lr_option).toInt();
+    ret_opt->word = parser.value(word_option);
+
+    return ret_opt;
 }
