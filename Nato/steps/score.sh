@@ -62,4 +62,8 @@ python3 steps/print_wer.py $lang_or_graph $dir
 #fi
 
 rm input
+
+# Generate Lexicon Error Rate
+python3 steps/gen_ler.py $lang_or_graph $dir
+
 exit 0;
