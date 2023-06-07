@@ -225,19 +225,23 @@ void ChProcessorW::keyReceived(int val)
     }
     else if( val==VK_HOME )
     {
-        meta_mode = CH_META_TOP;
+        int w_y = QQmlProperty::read(root, "y").toInt();
+        QQmlProperty::write(root, "y", w_y-CH_SHIFT_DELTA);
     }
     else if( val==VK_END )
     {
-        meta_mode = CH_META_BOTTOM;
+        int w_y = QQmlProperty::read(root, "y").toInt();
+        QQmlProperty::write(root, "y", w_y+CH_SHIFT_DELTA);
     }
     else if( val==VK_RIGHT )
     {
-        meta_mode = CH_META_RIGHT;
+        int w_x = QQmlProperty::read(root, "x").toInt();
+        QQmlProperty::write(root, "x", w_x+CH_SHIFT_DELTA);
     }
     else if( val==VK_LEFT )
     {
-        meta_mode = CH_META_LEFT;
+        int w_x = QQmlProperty::read(root, "x").toInt();
+        QQmlProperty::write(root, "x", w_x-CH_SHIFT_DELTA);
     }
 }
 
@@ -321,8 +325,8 @@ void ChProcessorW::setPosFine(int key)
     POINT pt;
     GetCursorPos(&pt);
 
-    int r_x = (x - 1) * 20;
-    int r_y = (y - 1) * 20;
+    int r_x = (x - 1) * CH_SHIFT_DELTA;
+    int r_y = (y - 1) * CH_SHIFT_DELTA;
 
     int x2 = pt.x + r_x;
     int y2 = pt.y + r_y;
