@@ -13,15 +13,18 @@ Window
     property int    font_size:          20
     property color  color_text:         "#9a9a9a"
 
-    property var help_text: ["Space: Rec/Pause","S: Set Category",
+    property var help_text: ["Space: Rec/Pause",
                              "Up/Down: Pause Time",
                              "Right/Left: Rec Time",
+                             "A: Show LER",
                              "B: Find Bad", "C: Change Count",
                              "D: Gen E-Sample", "E: Train ENN",
-                             "J/K: Word Num",
-                             "O:Open Category", "T: Train",
-                             "V:Verify Mode", "P: Show Terminal",
-                             "H:Shit Mode", "A: Show Test Errors"]
+                             "F: Set Focus-Word",
+                             "H: Shit Mode", "J/K: Word Num",
+                             "O: Open Category",
+                             "P: Show Terminal", "Q: Close Window",
+                             "S: Set Category", "T: Train",
+                             "V: Verify Mode"]
 
     color: "#262626"
 //    color: "yellow"
@@ -35,6 +38,7 @@ Window
         anchors.leftMargin: 30
         columnSpacing: 20
         flow: GridLayout.TopToBottom
+        focus: true
 
         Repeater
         {
@@ -50,50 +54,19 @@ Window
 
         Text
         {
-            text: "W:All Stat"
-            color: if( root.ab_all_stat )
-                   {
-                       "#cd8968"
-                   }
-                   else
-                   {
-                       color_text
-                   }
-            font.pixelSize: font_size
-            font.family: font_name_label
-        }
-
-        Text
-        {
-            text: "Q:Close Window"
-            color: color_text
-            font.pixelSize: font_size
-            font.family: font_name_label
-        }
-
-        Text
-        {
-            text: "Z:Delete Sample"
-            color: color_text
-            font.pixelSize: font_size
-            font.family: font_name_label
-        }
-
-        Text
-        {
             text:
             {
                 if( root.default_func_v===ab_const.ab_VMODE_WRONG )
                 {
-                    "R:Wrong Mode"
+                    "R: Wrong Mode"
                 }
                 else if( root.default_func_v===ab_const.ab_VMODE_COPY )
                 {
-                    "R:Copy Mode"
+                    "R: Copy Mode"
                 }
                 else
                 {
-                    "R:Trash Mode"
+                    "R: Trash Mode"
                 }
             }
             color:
@@ -113,6 +86,34 @@ Window
             }
             font.pixelSize: font_size
             font.family: font_name_label
+        }
+
+        Text
+        {
+            text: "W: All Stat"
+            color: if( root.ab_all_stat )
+                   {
+                       "#cd8968"
+                   }
+                   else
+                   {
+                       color_text
+                   }
+            font.pixelSize: font_size
+            font.family: font_name_label
+        }
+
+        Text
+        {
+            text: "Z: Delete Sample"
+            color: color_text
+            font.pixelSize: font_size
+            font.family: font_name_label
+        }
+
+        Keys.onEscapePressed:
+        {
+            close();
         }
     }
 }

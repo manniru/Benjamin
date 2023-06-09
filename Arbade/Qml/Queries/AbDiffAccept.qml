@@ -9,14 +9,15 @@ import QtQuick.Window 2.10
 Window
 {
     title: "Delete File ?"
-    height: accept_label.height + 110
-    width: accept_label.width + 40
+    height: changed_word_list.height + 150
+    width: Math.max(changed_word_list.width, accept_label.width) + 50
     property string dialog_result: ""
-    property string dialog_label: ""
+    property var dialog_label: []
     property string botton_text: "#b6b6b6"
     property string botton_bg: "#4d4d4d"
     property string botton_border: "#bfbfbf"
     property string area_text: "#c9c9c9"
+    property string font_name_label:    fontRobotoRegular.name
 
     color: "#2e2e2e"
 
@@ -27,8 +28,9 @@ Window
         anchors.topMargin: 30
         anchors.left: parent.left
         anchors.leftMargin: 20
+        font.family: font_name_label
         font.pixelSize: 20
-        text: dialog_label
+        text: "Are you sure to change these words?"
         lineHeight: 1.4
         color: area_text
 
@@ -47,13 +49,36 @@ Window
         }
     }
 
+    GridLayout
+    {
+        id: changed_word_list
+        rows: 10
+        anchors.left: parent.left
+        anchors.top: accept_label.bottom
+        anchors.leftMargin: 30
+        columnSpacing: 20
+        flow: GridLayout.TopToBottom
+
+        Repeater
+        {
+            model: dialog_label
+            Text
+            {
+                text: modelData
+                color: area_text
+                font.family: font_name_label
+                font.pixelSize: 20
+            }
+        }
+    }
+
     AbButton
     {
         id: yes_button
         text: "Yes"
-        width: (parent.width-45)/2
-        anchors.left: parent.left
-        anchors.leftMargin: 15
+        width: 150
+        anchors.right: parent.horizontalCenter
+        anchors.rightMargin: 15
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 25
         DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
@@ -68,9 +93,9 @@ Window
     {
         id: no_button
         text: "No"
-        width: (parent.width-45)/2
-        anchors.right: parent.right
-        anchors.rightMargin: 15
+        width: 150
+        anchors.left: parent.horizontalCenter
+        anchors.leftMargin: 15
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 25
         DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
@@ -84,19 +109,19 @@ Window
 
     Component.onCompleted:
     {
-        accept_label.forceActiveFocus()
+        accept_label.forceActiveFocus();
     }
 
     function accept()
     {
-        dialog_result = "Y"
-        close()
+        dialog_result = "Y";
+        close();
     }
 
     function reject()
     {
-        dialog_result = "N"
-        close()
+        dialog_result = "N";
+        close();
     }
 
 

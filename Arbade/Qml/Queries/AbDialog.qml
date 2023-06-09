@@ -14,10 +14,6 @@ Window
     x: (root.width - width) / 2
     y: (root.height - height) / 2
     color: "#2e2e2e"
-    property string botton_border: "#bfbfbf"
-    property string botton_text: "#b6b6b6"
-    property color  botton_bg: "#4d4d4d"
-    property color  botton_hbg: "#666"
     property string dialog_label: ""
     property string dialog_text: ""
     property int    dialog_width: width
@@ -137,7 +133,7 @@ Window
             anchors.verticalCenter: get_value_input.verticalCenter
             font.pixelSize: 16
     //        color: "#999"
-            text: "khar"
+            text: ""
         }
     }
 
