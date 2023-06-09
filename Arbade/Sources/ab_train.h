@@ -29,11 +29,14 @@ private slots:
     void processKey(int key);
     void trainFinished();
     void WslCreated();
+    void handleTrainError();
+    void createENN();
+    void copyShitToOnline();
+    void trainENN();
+    void genEFinished();
 
 private:
     void train();
-    void trainENN();
-    void createENN();
     void checkModelExist();
     void addTestSample(int count);
     int  needTestCount();
@@ -43,11 +46,14 @@ private:
     void checkOnlineExist();
     void updateWerSer();
     void checkBenjamin();
+    int checkShitDir();
 
-    QObject   *root;        // root qml object
-    QObject   *topbar;      // topbar qml object
+    QObject   *root;            // root qml object
+    QObject   *topbar;          // topbar qml object
     QObject   *wsl_dialog;
-    QObject   *console_qml; // console qml object
+    QObject   *console_qml;     // console qml object
+    QObject   *shit_dialog;     // verify shit dialog qml object
+    QObject   *train_enn_qml;   // Train Enn Dialog qml object
     QString    wsl_path;
 
     QThread   *wsl_thread;
@@ -58,6 +64,7 @@ private:
     QThread   *enn_thread;
     AbConsole *enn_console;
     AbStat    *stat;
+    int train_failed;
 };
 
 

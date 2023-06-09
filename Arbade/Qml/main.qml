@@ -63,6 +63,7 @@ ApplicationWindow
     signal setCategory()
     signal saveWordList()
     signal readTestErrors()
+    signal generateESamples()
 
     Component.onCompleted:
     {
@@ -302,6 +303,11 @@ ApplicationWindow
         anchors.bottomMargin: 30
         anchors.right: parent.right
         anchors.rightMargin: 20
+
+        Keys.onPressed:
+        {
+            execKey(event.key);
+        }
     }
 
     AbMessage
@@ -367,6 +373,37 @@ ApplicationWindow
     {
         id: ler_stat
         objectName: "LerStat"
+    }
+
+    AbESampleQuery
+    {
+        id: e_sample_query
+        onAcceptDialog:
+        {
+            generateESamples();
+        }
+    }
+
+    AbVerifyShit
+    {
+        id: verify_shit_query
+        objectName: "ShitDialog"
+        onAcceptDialog:
+        {
+            ab_status = ab_const.ab_STATUS_STOP;
+            setStatus(ab_status);
+            audioPlayer.stop();
+            ab_verifier = 2;
+            ab_count = 0;
+            console_box.visible = false;
+            verifierChanged();
+        }
+    }
+
+    AbTrainEnnQuery
+    {
+        id: train_enn_query
+        objectName: "TrainEnnDialog"
     }
 
     Audio
@@ -551,10 +588,17 @@ ApplicationWindow
         }
         else if( key===Qt.Key_C )
         {
-            get_value_dialog.title = get_value_dialog.cnt_title;
-            get_value_dialog.dialog_label = get_value_dialog.value_label;
-            get_value_dialog.dialog_text = get_value_dialog.cnt_title;
-            get_value_dialog.visible = true;
+            if( !ab_verifier )
+            {
+                get_value_dialog.title = get_value_dialog.cnt_title;
+                get_value_dialog.dialog_label = get_value_dialog.value_label;
+                get_value_dialog.dialog_text = get_value_dialog.cnt_title;
+                get_value_dialog.visible = true;
+            }
+            else
+            {
+                ab_message.message = "Cannot use count in verifying mode";
+            }
         }
         else if( key===Qt.Key_F )
         {
@@ -576,7 +620,7 @@ ApplicationWindow
             {
                 ab_verifier = 2;
             }
-            ab_count = 0
+            ab_count = 0;
             verifierChanged();
         }
         else if( key===Qt.Key_J )
@@ -684,5 +728,10 @@ ApplicationWindow
     function initWsl()
     {
         dialog_wsl.visible = true;
+    }
+
+    function launchESample()
+    {
+        e_sample_query.show();
     }
 }

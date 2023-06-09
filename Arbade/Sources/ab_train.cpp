@@ -14,14 +14,25 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
     topbar = root->findChild<QObject*>("TopBar");
     wsl_dialog = root->findChild<QObject*>("WslDialog");
     console_qml = root->findChild<QObject*>("Console");
-    connect(root, SIGNAL(sendKey(int)), this, SLOT(processKey(int)));
+    shit_dialog = root->findChild<QObject*>("ShitDialog");
+    train_enn_qml = root->findChild<QObject*>("TrainEnnDialog");
+    connect(root, SIGNAL(sendKey(int)),
+            this, SLOT(processKey(int)));
+    connect(root, SIGNAL(generateESamples()),
+            this, SLOT(createENN()));
     connect(wsl_dialog, SIGNAL(driveEntered(QString)),
             wsl, SLOT(createWSL(QString)));
+    connect(shit_dialog, SIGNAL(rejectDialog()),
+            this, SLOT(copyShitToOnline()));
+    connect(train_enn_qml, SIGNAL(acceptDialog()),
+            this, SLOT(trainENN()));
 
     console = new AbConsole(root);
     enn_console = new AbConsole(root);
 
     connect(console, SIGNAL(finished()), this, SLOT(trainFinished()));
+    connect(console, SIGNAL(trainFailed()), this, SLOT(handleTrainError()));
+    connect(enn_console, SIGNAL(finished()), this, SLOT(trainFinished()));
 
     connect(this, SIGNAL(createWSL(QString)),
             wsl, SLOT(createWSL(QString)));
@@ -33,6 +44,7 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
     enn_console->startConsole(batool_dir);
     checkBenjamin();
     updateWerSer();
+    train_failed = 0;
 }
 
 AbTrain::~AbTrain()
@@ -103,6 +115,14 @@ void AbTrain::trainFinished()
     updateWerSer();
     checkOnlineExist(); // we should remake online dir
                         // if it was deleted because of emptiness
+    if( !train_failed )
+    {
+        QMetaObject::invokeMethod(root, "launchESample"); // launch E Sample Query Dialog
+    }
+    else
+    {
+        train_failed = 0;
+    }
 }
 
 // called from main
@@ -129,13 +149,12 @@ void AbTrain::train()
 {
     qDebug() << "train KalB" << wsl_path;
     QQmlProperty::write(console_qml, "visible", true);
-
+    removeEmptyDirs(); // empty dirs should be removed for Kaldi
     int test_count = needTestCount();
     if( test_count )
     {
         addTestSample(test_count);
     }
-    removeEmptyDirs(); // empty dirs should be removed for Kaldi
     console->wsl_run("./wsl_init.sh");
     console->wsl_run("./wsl_train.sh");
 }
@@ -145,13 +164,14 @@ void AbTrain::createENN()
     qDebug() << "createENN";
     QQmlProperty::write(console_qml, "visible", true);
     enn_console->prompt = "Tools>";
-    enn_console->run("cd ..\\Tools");
-    enn_console->run("release\\BaTool.exe e");
+    enn_console->commands << "cd ..\\Tools";
+    enn_console->commands << "release\\BaTool.exe e";
+    enn_console->runAll();
 }
 
 void AbTrain::trainENN()
 {
-    qDebug() << "createENN";
+    qDebug() << "trainENN";
     QQmlProperty::write(console_qml, "visible", true);
     enn_console->prompt = "ENN>";
     enn_console->run("cd ..\\ENN");
@@ -202,14 +222,12 @@ void AbTrain::addTestSample(int count)
     test_path += "test\\";
 
     int cat_count = dir_list.size();
-
     for( int i=0 ; i<count ; i++ )
     {
-        int cat_id = 2+rand()%cat_count;
+        int cat_id = AB_CAT_SHIFT_IND+rand()%cat_count;
         int cat_len = stat->cache->cache_files[cat_id].size();
         int sample_id = rand()%cat_len;
         QString sample_path = stat->cache->cache_files[cat_id][sample_id];
-
         QFile file(sample_path);
         QFileInfo info(sample_path);
         QString new_path = test_path+info.fileName();
@@ -245,7 +263,7 @@ int AbTrain::getTrainCount()
 
     for( int i=0 ; i<len_dir ; i++ )
     {
-        ret += stat->cache->cache_files[i+2].size();
+        ret += stat->cache->cache_files[i+AB_CAT_SHIFT_IND].size();
     }
 
     return ret;
@@ -323,5 +341,71 @@ void AbTrain::checkBenjamin()
     if( !dir.exists() )
     {
         console->wsl_run("./wsl_init.sh");
+    }
+}
+
+void AbTrain::handleTrainError()
+{
+    train_failed = 1;
+}
+
+int AbTrain::checkShitDir()
+{
+    QString shit_path = ab_getAudioPath() + AB_SHIT_DIR;
+    QDir shit_dir(shit_path);
+    if( shit_dir.exists() )
+    {
+        QFileInfoList shit_list = shit_dir.entryInfoList(
+                                            QDir::Files);
+        if( shit_list.size() )
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+void AbTrain::copyShitToOnline()
+{
+    qDebug() << "copyShitToOnline";
+    checkOnlineExist();
+    QString audio_path = ab_getAudioPath();
+    QString shit_path = audio_path + AB_SHIT_DIR;
+    QString online_path = audio_path + "train" +
+            QDir::separator() + "online" + QDir::separator();
+    QDir shit_dir(shit_path);
+    QFileInfoList shit_list = shit_dir.entryInfoList(
+                                        QDir::Files);
+    int len = shit_list.size();
+
+    qDebug() << shit_path << online_path << len;
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        QFile shit_file(shit_list[i].absoluteFilePath());
+        QString dest_path = online_path + shit_list[i].fileName();
+        qDebug() << i << ")" << dest_path;
+        shit_file.copy(dest_path);
+        shit_file.remove();
+    }
+    QMetaObject::invokeMethod(train_enn_qml, "show"); // launch train ENN Query Dialog
+}
+
+void AbTrain::genEFinished()
+{
+    if( checkShitDir() )
+    {
+        QMetaObject::invokeMethod(shit_dialog, "show"); // launch E Sample Query Dialog
+    }
+    else
+    {
+        QMetaObject::invokeMethod(train_enn_qml, "show"); // launch train ENN Query Dialog
     }
 }
