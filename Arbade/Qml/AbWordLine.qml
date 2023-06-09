@@ -197,19 +197,34 @@ Rectangle
         text: "(" + word_count + ")"
         color:
         {
-            var mean = parseInt(buttons_box.mean);
-            var variance = parseInt(buttons_box.variance);
-            if( word_count<mean-variance && !read_only_line )
+            if( read_only_line )
             {
-                "#cb6565"; // red
-            }
-            else if( word_count>mean+variance && !read_only_line)
-            {
-                "#80bf73"; // green
+                var mean_ler = parseInt(ler_stat.mean);
+                if( word_count<=mean_ler )
+                {
+                    "#bbbf61"
+                }
+                else
+                {
+                    "#cb6565"
+                }
             }
             else
             {
-                "#9a9a9a"; // gray
+                var mean = parseInt(buttons_box.mean);
+                var variance = parseInt(buttons_box.variance);
+                if( word_count<mean-variance && !read_only_line )
+                {
+                    "#cb6565"; // red
+                }
+                else if( word_count>mean+variance && !read_only_line)
+                {
+                    "#80bf73"; // green
+                }
+                else
+                {
+                    "#9a9a9a"; // gray
+                }
             }
         }
         visible: word_count!==-1 &&

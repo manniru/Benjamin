@@ -33,6 +33,7 @@ private:
     QVector<int> ler; // lexicon error rate
     QVector<QString> words;
     QTimer *timer_editor;
+    int mean;
 };
 
 #endif // AB_LER_STAT_H

@@ -163,8 +163,7 @@ Rectangle
 
     function launchDialog(dif_words)
     {
-        wordlist_dialog.dialog_label = "Are you sure" +
-                " to change these words?\n" + dif_words;
+        wordlist_dialog.dialog_label = dif_words.split("\n");
         wordlist_dialog.visible = true;
     }
 

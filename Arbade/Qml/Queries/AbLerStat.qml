@@ -13,6 +13,8 @@ Window
     height: 790
     color: "#2e2e2f"
 
+    property int mean: 0
+
     AbEditor
     {
         id: test_stat

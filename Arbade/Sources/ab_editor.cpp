@@ -307,7 +307,7 @@ void AbEditor::updateStatAll()
     stat->updateMeanVar(&word_count);
     int count = 0;
     int len_cat = AB_MAX_CAT;
-    for( int i=1 ; i<len_cat ; i++ )
+    for( int i=AB_CAT_SHIFT_IND ; i<len_cat ; i++ )
     {
         count += cache->cache_files[i].length();
     }

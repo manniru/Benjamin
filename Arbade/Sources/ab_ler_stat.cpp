@@ -1,4 +1,5 @@
 #include "ab_ler_stat.h"
+#include <QQmlProperty>
 
 AbLerStat::AbLerStat(QObject *ui, QObject *parent) : QObject(parent)
 {
@@ -72,9 +73,10 @@ void AbLerStat::readLerFile()
     }
 
     QString file_content = ler_file->readAll();
-    QStringList lines = file_content.split("\n");
+    QStringList lines = file_content.split("\n", Qt::SkipEmptyParts);
     int len = lines.size();
 
+    int sum = 0;
     ler.resize(len);
     words.resize(len);
     for( int i=0 ; i<len ; i++ )
@@ -84,6 +86,7 @@ void AbLerStat::readLerFile()
         {
             bool convert_ok;
             ler[i] = line_split[1].toInt(&convert_ok);
+            sum += ler[i];
             words[i] = line_split[0];
 
             if( !convert_ok )
@@ -92,5 +95,7 @@ void AbLerStat::readLerFile()
             }
         }
     }
+    mean = sum/len;
+    QQmlProperty::write(ler_qml, "mean", mean);
 }
 
