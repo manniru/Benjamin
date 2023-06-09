@@ -15,7 +15,10 @@ public:
 
     void wsl_run(QString cmd);
     void run(QString cmd);
+    void runAll();
+
     QString prompt;
+    QVector<QString> commands;
 
 public slots:
     void startConsole(QString wsl_path);
@@ -24,6 +27,7 @@ public slots:
 signals:
     void startRead();
     void finished();
+    void trainFailed();
 
 private:
     void processLine(QString line);
@@ -42,7 +46,7 @@ private:
 
     int is_ready;
     int init_shit; //flag to skip printing cmd initial welcome message
-    QVector<QString> commands;
+
 
     QObject   *root;    // root qml object
     QObject   *console_qml; // console qml object

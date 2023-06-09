@@ -24,7 +24,8 @@ Rectangle
     Keys.onPressed:
     {
         if( rec_list.focus_index===num_id )
-        { 
+        {
+            event.accepted = true;
             if( event.key===Qt.Key_Delete )
             {
                 removeClicked(num_id);
@@ -53,6 +54,10 @@ Rectangle
             else if( event.key===Qt.Key_Space )
             {
                 playAudio();
+            }
+            else
+            {
+                event.accepted = false;
             }
         }
     }

@@ -140,6 +140,15 @@ void AbConsole::processLine(QString line)
             emit finished();
         }
     }
+    if( line.contains("error", Qt::CaseInsensitive) )
+    {
+        emit trainFailed();
+    }
+}
+
+void AbConsole::runAll()
+{
+    run(commands[0]);
 }
 
 void AbConsole::wsl_run(QString cmd)

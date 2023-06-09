@@ -8,6 +8,10 @@
 #include "ab_phoneme.h"
 #include "ab_cache.h"
 
+#define AB_RECORD_MODE  0
+#define AB_VERIFY_MODE  1
+#define AB_SHIT_MODE    2
+
 class AbStat: public QObject
 {
     Q_OBJECT

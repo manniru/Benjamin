@@ -49,6 +49,8 @@
 #define AB_STATUS_BREAK    5
 #define AB_STATUS_PLAY     6
 
+#define AB_CAT_SHIFT_IND   2 // this shift for index is because of verify and shit dirs
+
 #endif // BT_CONFIG_H
 
 

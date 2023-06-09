@@ -381,18 +381,18 @@ void AbStat::moveToOnline(int id)
     QFileInfoList dir_list = ab_getAudioDirs();
     int len_dir = dir_list.size();
 
-    for( int i=2 ; i<len_dir ; i++ )
+    for( int i=AB_CAT_SHIFT_IND ; i<len_dir ; i++ )
     {
         QString dir_name = dir_list[i].baseName();
         if( dir_name=="online" )
         {
             int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-            if( verifier==2 )
+            if( verifier==AB_SHIT_MODE )
             {
                 cache->cache_files[i] << cache->cache_files[AB_SHIT_ID][id];
                 cache->deleteCache(AB_SHIT_DIR, id);
             }
-            else if( verifier==1 )
+            else if( verifier==AB_VERIFY_MODE )
             {
                 cache->cache_files[i] << cache->cache_files[AB_UNVER_ID][id];
                 cache->deleteCache(AB_UNVER_ID, id);

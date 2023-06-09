@@ -106,6 +106,8 @@ DISTFILES += \
     Qml/AbRecPanel.qml \
     Qml/AbRecPlay.qml \
     Qml/AbStatusLabel.qml \
-    Qml/AbTimeBar.qml
+    Qml/AbTimeBar.qml \
+    Qml/Queries/AbTrainEnnQuery.qml \
+    Qml/Queries/AbVerifyShit.qml
 
 win32:RC_ICONS += icon.ico
