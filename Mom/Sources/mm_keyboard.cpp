@@ -52,9 +52,6 @@ MmKeyboard::MmKeyboard(MmVirt *vi, MmSound *snd,
     emul_mode = 0;
     is_mom = 0;
     virt = vi;
-    timer = new QTimer;
-    connect(timer, SIGNAL(timeout()),
-            this, SLOT(delayedExec()));
 
     hHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, 0, 0);
     if( hHook==NULL )
@@ -80,30 +77,6 @@ MmKeyboard::~MmKeyboard()
     }
 }
 
-void MmKeyboard::delayedExec()
-{
-    int len = key_buf.length();
-    if( len )
-    {
-        emul_mode = 1;
-        for( int i=0 ; i<len ; i++ )
-        {
-            e_key->pressKey(key_buf[i]);
-            QThread::msleep(5);
-            qDebug() << "timer 1";
-        }
-        for( int i=len ; i>0 ; i-- )
-        {
-            e_key->releaseKey(key_buf[i-1]);
-            QThread::msleep(5);
-            qDebug() << "timer 2";
-        }
-        key_buf.clear();
-        timer->stop();
-        emul_mode = 0;
-    }
-}
-
 int MmKeyboard::procPressKey(int key_code)
 {
     if( key_code==VK_LWIN ||
@@ -114,6 +87,7 @@ int MmKeyboard::procPressKey(int key_code)
     }
     else if( key_code==VK_APPS )
     {
+        app_mode = MM_AKEY_STATE1;
         addPressKey(VK_LWIN);
         return 1;
     }
@@ -143,6 +117,11 @@ int MmKeyboard::procPressKey(int key_code)
             { // press all captured keys
                 qDebug() << "fakePress";
                 fakePress(0);
+
+                if( app_mode==MM_AKEY_STATE1 )
+                {
+                    app_mode = MM_AKEY_STATE2;
+                }
             }
             return ret;
         }
@@ -174,11 +153,11 @@ int MmKeyboard::procReleaseKey(int key_code)
 
     if( is_mom==1 ) // a mom shortcut captured
     {
+        int is_sup = isSuppressed(key_code);
         if( key_code==VK_APPS )
         {
-            key_code = VK_LWIN;
+            is_sup = isSuppressed(VK_LWIN);
         }
-        int is_sup = isSuppressed(key_code);
 
         if( is_sup )
         {
@@ -186,7 +165,7 @@ int MmKeyboard::procReleaseKey(int key_code)
             return 1;
         }
     }
-    else if( pk_buf.length() )
+    else if( pk_buf.length() ) //pk_buf.len will always be 1
     {
         if( key_code==VK_APPS )
         {
@@ -199,6 +178,11 @@ int MmKeyboard::procReleaseKey(int key_code)
             exec_start = 1;
         }
         fakePress(exec_start);
+    }
+    else if( key_code==VK_APPS )
+    {
+        fakeRelease(VK_LWIN);
+        return 1;
     }
 
     return 0;
@@ -232,10 +216,8 @@ void MmKeyboard::fakePress(int exec_start)
 
 void MmKeyboard::fakeRelease(int key_code)
 {
-    qDebug() << "key->supress_r=1";
-    key->key_buf.push_back(key_code);
-    key->timer->start(2);
     qDebug() << "key->supress_r=0";
+    e_key->releaseKey(key_code);
 }
 
 // This function will prevent adding duplicate item

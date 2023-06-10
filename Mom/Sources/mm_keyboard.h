@@ -36,12 +36,6 @@ public:
     int emul_mode = 0; // dont interfere if we are pressing keys
                        // emulation (fake) keys are on going
     MmKeyEmulator *e_key;
-    QTimer *timer;
-    QVector<int> key_buf; // buffer of keycodes that
-                          // need to be delayed execute
-
-private slots:
-    void delayedExec();
 
 private:
     void SetSide();
@@ -58,7 +52,7 @@ private:
     MmVirt  *virt;
     MmSound *sound;
 
-    QThread *exec_thread;
+    QThread   *exec_thread;
     MmKeyExec *exec;
     QVector<int> pk_buf; // pressed keys buffer
 };

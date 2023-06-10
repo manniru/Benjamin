@@ -15,7 +15,6 @@ public:
 
     void wsl_run(QString cmd);
     void run(QString cmd);
-    void runAll();
 
     QString prompt;
     QVector<QString> commands;

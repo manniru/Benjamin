@@ -146,11 +146,6 @@ void AbConsole::processLine(QString line)
     }
 }
 
-void AbConsole::runAll()
-{
-    run(commands[0]);
-}
-
 void AbConsole::wsl_run(QString cmd)
 {
     QString wsl_cmd = "KalB.exe run " + cmd;

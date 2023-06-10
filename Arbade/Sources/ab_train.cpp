@@ -32,7 +32,8 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
 
     connect(console, SIGNAL(finished()), this, SLOT(trainFinished()));
     connect(console, SIGNAL(trainFailed()), this, SLOT(handleTrainError()));
-    connect(enn_console, SIGNAL(finished()), this, SLOT(trainFinished()));
+    connect(enn_console, SIGNAL(finished()), this,
+            SLOT(trainFinished()));
 
     connect(this, SIGNAL(createWSL(QString)),
             wsl, SLOT(createWSL(QString)));
@@ -164,9 +165,8 @@ void AbTrain::createENN()
     qDebug() << "createENN";
     QQmlProperty::write(console_qml, "visible", true);
     enn_console->prompt = "Tools>";
-    enn_console->commands << "cd ..\\Tools";
-    enn_console->commands << "release\\BaTool.exe e";
-    enn_console->runAll();
+    enn_console->commands << "release\\BaTool.exe e\r\n";
+    enn_console->run("cd ..\\Tools");
 }
 
 void AbTrain::trainENN()
