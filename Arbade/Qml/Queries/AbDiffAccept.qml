@@ -42,7 +42,8 @@ Window
                 accept();
             }
             else if( event.key===Qt.Key_Q ||
-                    event.key===Qt.Key_N )
+                     event.key===Qt.Key_N ||
+                     event.key===Qt.Key_Escape )
             {
                 reject();
             }
@@ -124,5 +125,11 @@ Window
         close();
     }
 
-
+    onVisibleChanged:
+    {
+        if( visible )
+        {
+            accept_label.forceActiveFocus();
+        }
+    }
 }

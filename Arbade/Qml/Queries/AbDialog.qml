@@ -111,6 +111,10 @@ Window
                 {
                     accept();
                 }
+                else if( event.key===Qt.Key_Escape )
+                {
+                    reject();
+                }
             }
         }
 

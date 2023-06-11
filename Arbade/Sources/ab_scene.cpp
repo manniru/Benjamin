@@ -210,6 +210,28 @@ void AbScene::processKey(int key)
         }
         editor->updateStat();
     }
+    else if( key==Qt::Key_I )
+    {
+#ifdef WIN32
+        QString wsl_path = ab_getWslPath();
+        QString path = wsl_path + "Benjamin\\Nato\\exp"
+                       "\\tri1\\decode\\scoring\\16.tra";
+
+        HINSTANCE result = ShellExecuteA(NULL, "edit",
+                                         path.toStdString().c_str(),
+                                         NULL, NULL, SW_SHOWNORMAL);
+        if( (INT_PTR)result>32 )
+        {
+            qDebug() << "succeed";
+        }
+        else
+        {
+            qDebug() << "failed" << result;
+        }
+#else
+        /// IMPLEMENT THIS FOR LINUX
+#endif
+    }
     else
     {
         return;

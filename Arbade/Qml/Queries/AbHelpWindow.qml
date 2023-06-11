@@ -19,7 +19,7 @@ Window
                              "A: Show LER",
                              "B: Find Bad", "C: Change Count",
                              "D: Gen E-Sample", "E: Train ENN",
-                             "F: Set Focus-Word",
+                             "F: Set Focus-Word", "",
                              "H: Shit Mode", "J/K: Word Num",
                              "O: Open Category",
                              "P: Show Terminal", "Q: Close Window",
@@ -32,12 +32,11 @@ Window
     GridLayout
     {
         id: help_grid
-        rows: 5
+        columns: 4
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: 30
         columnSpacing: 20
-        flow: GridLayout.TopToBottom
         focus: true
 
         Repeater

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <shellapi.h>
 #include "ab_editor.h"
 #include "ab_audio.h"
 #include "ab_verify.h"

@@ -378,6 +378,7 @@ ApplicationWindow
     AbESampleQuery
     {
         id: e_sample_query
+        visible: false
         onAcceptDialog:
         {
             generateESamples();
