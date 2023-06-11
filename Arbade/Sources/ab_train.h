@@ -65,6 +65,7 @@ private:
     AbConsole *enn_console;
     AbStat    *stat;
     int train_failed;
+    int init_flag;
 };
 
 

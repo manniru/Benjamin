@@ -15,6 +15,15 @@ Window
 
     property int mean: 0
 
+    Item
+    {
+        focus: true
+        Keys.onEscapePressed:
+        {
+            close();
+        }
+    }
+
     AbEditor
     {
         id: test_stat

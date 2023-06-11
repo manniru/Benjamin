@@ -133,6 +133,11 @@ void AbConsole::processLine(QString line)
             DWORD dwWritten;
             WriteFile(handle_in, cmd.toStdString().c_str(),
                       cmd.length(), &dwWritten, NULL);
+            init_shit = 0;
+        }
+        else if( init_shit )
+        {
+            init_shit = 0;
         }
         else
         {
@@ -156,9 +161,8 @@ void AbConsole::run(QString cmd)
 {
     DWORD dwWritten;
     cmd += "\r\n";
-    init_shit = 0;
 
-    if( is_ready )
+    if( is_ready && init_shit==0 )
     {
         qDebug() << "Write" << cmd;
         WriteFile(handle_in, cmd.toStdString().c_str(),
@@ -176,6 +180,7 @@ void AbConsole::readyData(QString line, int flag)
 {
     if( init_shit )
     {
+        processLine(line);
         return;
     }
     processLine(line);

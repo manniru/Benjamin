@@ -30,10 +30,12 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
     console = new AbConsole(root);
     enn_console = new AbConsole(root);
 
-    connect(console, SIGNAL(finished()), this, SLOT(trainFinished()));
-    connect(console, SIGNAL(trainFailed()), this, SLOT(handleTrainError()));
-    connect(enn_console, SIGNAL(finished()), this,
-            SLOT(trainFinished()));
+    connect(console, SIGNAL(finished()),
+            this, SLOT(trainFinished()));
+    connect(console, SIGNAL(trainFailed()),
+            this, SLOT(handleTrainError()));
+    connect(enn_console, SIGNAL(finished()),
+            this, SLOT(genEFinished()));
 
     connect(this, SIGNAL(createWSL(QString)),
             wsl, SLOT(createWSL(QString)));
@@ -43,9 +45,9 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
     QString batool_dir = QDir::currentPath();
     batool_dir += "/../Tools";
     enn_console->startConsole(batool_dir);
-    checkBenjamin();
     updateWerSer();
     train_failed = 0;
+    init_flag = 0;
 }
 
 AbTrain::~AbTrain()
@@ -87,7 +89,12 @@ void AbTrain::WslCreated()
 
 void AbTrain::trainFinished()
 {
-    qDebug() << QDir::currentPath();
+    qDebug() << "trainFinished" << QDir::currentPath();
+    if( init_flag )
+    {
+        init_flag = 0;
+        return;
+    }
     checkModelExist();
 
     QVector<QString> files;
@@ -143,6 +150,7 @@ void AbTrain::initWsl()
     else
     {
         console->startConsole(wsl_path);
+        checkBenjamin();
     }
 }
 
@@ -332,7 +340,6 @@ void AbTrain::checkBenjamin()
     {
         return;
     }
-    console->startConsole(wsl_path);
     path = wsl_path + "\\Benjamin\\Tools\\";
 #else
     path = KAL_TOOL_DIR;
@@ -340,6 +347,9 @@ void AbTrain::checkBenjamin()
     QDir dir(path);
     if( !dir.exists() )
     {
+        init_flag = 1;
+        QQmlProperty::write(console_qml, "visible", true);
+        QThread::msleep(500); // wait to cmudict close its file
         console->wsl_run("./wsl_init.sh");
     }
 }
@@ -400,6 +410,7 @@ void AbTrain::copyShitToOnline()
 
 void AbTrain::genEFinished()
 {
+    qDebug() << "genEFinished";
     if( checkShitDir() )
     {
         QMetaObject::invokeMethod(shit_dialog, "show"); // launch E Sample Query Dialog
