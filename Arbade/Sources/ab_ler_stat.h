@@ -23,17 +23,25 @@ private slots:
 
 private:
     void readLerFile();
-    void addWord(QString word, int count, QString phoneme);
+    void addWord(QString word, QString count, QString wrong);
     void clearEditor();
+    void addToLerStat(QString word1, QString word2);
+    void updateLerMean();
+    void resetLerVars();
+    void sortLer();
 
     QObject *root;     // root qml object
-    QObject *ler_qml; // test errors in qml
-    QObject *word_edit; // test word edit in qml
-    QVector<QObject *> editor_lines;
+    QObject *ler_qml; // lexicon error rate form in qml
+    QVector<QObject *> ler_lines;
     QVector<int> ler; // lexicon error rate
     QVector<QString> words;
+    QVector<QStringList> wrong_out; // wrong detected words
     QTimer *timer_editor;
-    int mean;
+    QVector<int> sorted_indices;
+    int mean; // mean ler
+    int sum_ler; // reverse mean ler
 };
+
+QVector<int> sortAndGetIndices(const QVector<int>& data);
 
 #endif // AB_LER_STAT_H

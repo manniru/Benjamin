@@ -62,7 +62,7 @@ ApplicationWindow
     signal focusWordChanged()
     signal setCategory()
     signal saveWordList()
-    signal readTestErrors()
+    signal readLerDiff()
     signal generateESamples()
 
     Component.onCompleted:
@@ -373,6 +373,10 @@ ApplicationWindow
     {
         id: ler_stat
         objectName: "LerStat"
+        onUpdateLer:
+        {
+            readLerDiff();
+        }
     }
 
     AbESampleQuery
@@ -585,7 +589,7 @@ ApplicationWindow
         else if( key===Qt.Key_A)
         {
             ler_stat.show();
-            readTestErrors();
+            readLerDiff();
         }
         else if( key===Qt.Key_C )
         {
