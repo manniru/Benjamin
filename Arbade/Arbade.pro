@@ -98,6 +98,7 @@ DISTFILES += \
     Qml/AbConsole.qml \
     Qml/AbDialogWsl.qml \
     Qml/AbHelpWindow.qml \
+    Qml/AbLerLine.qml \
     Qml/AbMessage.qml \
     Qml/AbQueryLine.qml \
     Qml/AbRecDelete.qml \

@@ -27,5 +27,6 @@
         <file alias="AbESampleQuery.qml">Queries/AbESampleQuery.qml</file>
         <file alias="AbVerifyShit.qml">Queries/AbVerifyShit.qml</file>
         <file alias="AbTrainEnnQuery.qml">Queries/AbTrainEnnQuery.qml</file>
+        <file alias="AbLerLine.qml">Queries/AbLerLine.qml</file>
     </qresource>
 </RCC>
