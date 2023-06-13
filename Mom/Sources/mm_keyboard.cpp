@@ -87,7 +87,6 @@ int MmKeyboard::procPressKey(int key_code)
     }
     else if( key_code==VK_APPS )
     {
-        app_mode = MM_AKEY_STATE1;
         addPressKey(VK_LWIN);
         return 1;
     }
@@ -117,11 +116,6 @@ int MmKeyboard::procPressKey(int key_code)
             { // press all captured keys
                 qDebug() << "fakePress";
                 fakePress(0);
-
-                if( app_mode==MM_AKEY_STATE1 )
-                {
-                    app_mode = MM_AKEY_STATE2;
-                }
             }
             return ret;
         }

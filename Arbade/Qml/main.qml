@@ -397,7 +397,7 @@ ApplicationWindow
         {
             ab_status = ab_const.ab_STATUS_STOP;
             setStatus(ab_status);
-            audioPlayer.stop();
+            audioCleanStop();
             ab_verifier = 2;
             ab_count = 0;
             console_box.visible = false;
@@ -676,8 +676,8 @@ ApplicationWindow
         else if( key===Qt.Key_V )
         {
             ab_status = ab_const.ab_STATUS_STOP;
-            setStatus(ab_status);
-            audioPlayer.stop();
+            audioCleanStop();
+            flag_clean_stop = 0;
             if( ab_verifier===1 )
             {
                 ab_verifier = 0;
@@ -686,6 +686,7 @@ ApplicationWindow
             {
                 ab_verifier = 1;
             }
+             setStatus(ab_status);
             ab_count = 0;
             verifierChanged();
         }
@@ -693,7 +694,7 @@ ApplicationWindow
         {
             if( ab_verifier )
             {
-                cleanStop();
+                audioCleanStop();
                 ab_status = ab_const.ab_STATUS_PAUSE;
                 setStatus(ab_status);
                 decide_timer.stop();
@@ -721,7 +722,9 @@ ApplicationWindow
         ab_count--;
     }
 
-    function cleanStop()
+    // This function has been written to only stop the audio
+    // player without triggering preparing the next sample
+    function audioCleanStop()
     {
         if( audioPlayer.playbackState )
         {

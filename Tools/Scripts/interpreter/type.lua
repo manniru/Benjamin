@@ -3,7 +3,7 @@
 
 function get_Type(word)
 
-	if word == "type" then
+	if word == "sharp" then
 		return "101"
 	end
 

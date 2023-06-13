@@ -80,7 +80,7 @@ void AbEditor::recRemove(int id, int f_focus)
     // deleting paused file, cause a stop for audioPlayer, and we need cleanstop
     if( path==address )
     {
-        QMetaObject::invokeMethod(root, "cleanStop");
+        QMetaObject::invokeMethod(root, "audioCleanStop");
     }
 
     QVariant id_v(id);

@@ -232,10 +232,6 @@ void AbScene::processKey(int key)
         /// IMPLEMENT THIS FOR LINUX
 #endif
     }
-    else
-    {
-        return;
-    }
 }
 
 int AbScene::getCount(int verifier)

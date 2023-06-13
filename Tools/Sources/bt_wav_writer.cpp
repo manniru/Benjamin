@@ -66,12 +66,12 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     readWordList();
 
     exemption_list << "kick";
-    exemption_list << "side";
     exemption_list << "copy";
     exemption_list << "paste";
     exemption_list << "switch";
     exemption_list << "side";
     exemption_list << "edge";
+    exemption_list << "drag";
     exemption_list << "canals";
 }
 

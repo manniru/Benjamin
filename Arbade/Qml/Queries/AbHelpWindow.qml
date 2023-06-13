@@ -20,7 +20,7 @@ Window
                              "B: Find Bad", "C: Change Count",
                              "D: Gen E-Sample", "E: Train ENN",
                              "F: Set Focus-Word", "",
-                             "H: Shit Mode", "J/K: Word Num",
+                             "H: Engine-False", "J/K: Word Num",
                              "O: Open Category",
                              "P: Show Terminal", "Q: Close Window",
                              "S: Set Category", "T: Train",
