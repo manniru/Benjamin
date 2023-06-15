@@ -14,7 +14,7 @@
 class MmParser
 {
 public:
-    MmParser();
+    MmParser(QObject *root);
 
     void updateProps(QString raw, MmProperty *properties);
     void parse(QString data, QVector<MmLabel> *out);
@@ -24,6 +24,7 @@ private:
     int readActions(QString raw, MmProperty *properties);
 
     MmProperty c_property;
+    QObject   *ui;
 };
 
 #endif // MM_PARSER_H

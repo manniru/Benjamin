@@ -5,7 +5,8 @@ import Qt.labs.settings 1.0
 
 Window
 {
-    property int focus_back: 0
+    property int   focus_back: 0
+    property color bg_color: "#000000"
     id: root
 
     visible: true
@@ -13,7 +14,7 @@ Window
     x: 0
     y: 0
     title: "PolyBar"
-    color: "#000000"
+    color: bg_color
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
 
     // Fonts

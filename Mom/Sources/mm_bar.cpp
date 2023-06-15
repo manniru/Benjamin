@@ -4,7 +4,7 @@
 MmBar::MmBar(QObject *root, MmVirt *vi, MmSound *snd,
              QObject *parent) : QObject(parent)
 {
-    parser = new MmParser;
+    parser = new MmParser(root);
     sound  = snd;
     usage  = new MmUsage;
     music  = new MmMusic;
@@ -114,6 +114,16 @@ void MmBar::loadLabels()
     QMetaObject::invokeMethod(left_bar, "clearLabels");
     QQmlProperty::write(right_bar, "labelID", r_id);
     QMetaObject::invokeMethod(right_bar, "clearLabels");
+
+    // update bg color
+    if( QFile::exists(MM_LABEL_DIR"r2_status.lbl") )
+    {
+        QQmlProperty::write(ui, "bg_color", "#0067aa");
+    }
+    else
+    {
+        QQmlProperty::write(ui, "bg_color", "#000000");
+    }
 }
 
 int MmBar::addWorkID()
