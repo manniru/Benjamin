@@ -83,7 +83,7 @@ bool EnnNetwork::load()
         }
         qDebug() << "model " << dataset->model_id
                  << dataset->m_name
-                 << "loaded" << "loss"   << loss ;
+                 << "loaded" << "loss"   << loss;
     }
     else // create new
     {
@@ -115,13 +115,13 @@ void EnnNetwork::createNNet()
 
 void EnnNetwork::train(float l_rate)
 {
+    qDebug() << "dataset size: test"  << dataset->test_datas.size()
+             << "train" << dataset->train_datas.size();
+
     if( !need_train )
     {
         return;
     }
-
-    qDebug() << "dataset size: test"  << dataset->test_datas.size()
-             << "train" << dataset->train_datas.size();
 
     optim.alpha = l_rate; // learning rate = 1E-4
     nn_epoch = 0;

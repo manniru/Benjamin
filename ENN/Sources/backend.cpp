@@ -156,6 +156,7 @@ QStringList bt_parseLexicon(QString filename)
     while ( !words_file.atEnd() )
     {
         QString line = QString(words_file.readLine());
+        line.remove("\n");
         QStringList line_list = line.split(" ");
         lexicon.append(line_list[0]);
     }

@@ -44,7 +44,6 @@ void EnnChapar::learnMode(float l_rate)
 
         for( int i=0 ; i<len ; i++ )
         {
-            word_list[i].remove("\n");
             qDebug() << word_list[i];
             EnnNetwork net(word_list[i], i);
             float first_loss = net.last_loss;
@@ -78,18 +77,20 @@ void EnnChapar::singleMode(float l_rate, QString l_word)
     while( 1 ) // until all model reached target loss
     {
         int index = word_list.indexOf(l_word);
-
-        word_list[index].remove("\n");
-        qDebug() << word_list[index];
-        EnnNetwork net(word_list[index], index);
-        float first_loss = net.last_loss;
-        net.train(l_rate);
-        float diff_loss = net.last_loss - first_loss;
-
-        if( net.last_loss<ENN_TARGET_LOSS )
+        if( index==-1 )
         {
+            qDebug() << "Error 101: word" << l_word
+                     << "does not exist in lexicon";
+            qDebug() << "Error 101: word" << word_list;
             return;
         }
+
+        qDebug() << index << word_list[index];
+        EnnNetwork net(word_list[index], index);
+        float first_loss = net.last_loss;
+        qDebug() << "Loaded Loss" << first_loss;
+        net.train(l_rate);
+        float diff_loss = net.last_loss - first_loss;
         if( diff_loss>0 ) // we are not learning anything
         {                 // after 100 epoch
             qDebug() << "BAD LEARNING" << diff_loss;
@@ -98,6 +99,11 @@ void EnnChapar::singleMode(float l_rate, QString l_word)
         printf("----- learned word=%s loss=%.2f ----\n",
                word_list[index].toStdString().c_str(),
                net.last_loss);
+
+        if( net.last_loss<ENN_TARGET_LOSS )
+        {
+            return;
+        }
     }
 }
 
