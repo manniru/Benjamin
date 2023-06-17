@@ -23,6 +23,7 @@ public:
     void deleteCache(int cat_id, int i);
     void addCache(QString category, QString file);
     void addCache(int cat_id, QString file);
+    void updateCategory(QString category);
     void addCategory(QString category);
     QVector<int> getCount(QVector<QString> *file_list);
 

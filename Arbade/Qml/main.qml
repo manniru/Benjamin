@@ -9,7 +9,7 @@ import QtQuick.Window 2.1
 import Qt.labs.settings 1.0
 import QtMultimedia 5.5
 import QtQml 2.12
-
+// "\uf03B5"
 ApplicationWindow
 {
     id: root
@@ -64,6 +64,7 @@ ApplicationWindow
     signal saveWordList()
     signal readLerDiff()
     signal generateESamples()
+    signal trainWithWord(int word_id)
 
     Component.onCompleted:
     {
@@ -217,6 +218,21 @@ ApplicationWindow
                 }
                 focusWordChanged();
             }
+        }
+    }
+
+    AbEnnWord
+    {
+        id: enn_word_dialog
+
+        onAcceptDialog:
+        {
+            var w_id = parseInt(value);
+            if( isNaN(w_id) )
+            {
+                ab_message.message = "Word id should be an integer.";
+            }
+            trainWithWord(w_id);
         }
     }
 
@@ -389,10 +405,10 @@ ApplicationWindow
         }
     }
 
-    AbVerifyShit
+    AbVerifyEFalse
     {
-        id: verify_shit_query
-        objectName: "ShitDialog"
+        id: verify_efalse_query
+        objectName: "EFalseDialog"
         onAcceptDialog:
         {
             ab_status = ab_const.ab_STATUS_STOP;
@@ -611,6 +627,10 @@ ApplicationWindow
             get_value_dialog.dialog_label = get_value_dialog.id_label;
             get_value_dialog.dialog_text = get_value_dialog.focus_word_title;
             get_value_dialog.visible = true;
+        }
+        else if( key===Qt.Key_G )
+        {
+            enn_word_dialog.show()
         }
         else if( key===Qt.Key_H )
         {

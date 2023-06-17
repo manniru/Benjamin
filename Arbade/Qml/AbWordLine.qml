@@ -167,6 +167,10 @@ Rectangle
             {
                 editor_box.focused_line = word_id;
             }
+            else
+            {
+                word_text = word_text.trim();
+            }
         }
     }
 

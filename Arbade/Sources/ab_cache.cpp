@@ -20,6 +20,26 @@ void AbCache::createCache()
     emit cacheCreated();
 }
 
+void AbCache::updateCategory(QString category)
+{
+    int id = catToIndex(category);
+    QString audio_path = ab_getAudioPath();
+    if( id==AB_UNVER_ID || id==AB_EFALSE_ID )
+    {
+        audio_path += category;
+    }
+    else
+    {
+        audio_path += "train";
+        audio_path += QDir::separator() + category;
+    }
+    if( QFile::exists(audio_path) )
+    {
+        cache_files[id] = ab_listFiles(audio_path);
+        cache_count[id] = getCount(&cache_files[id]);
+    }
+}
+
 QVector<QString>* AbCache::loadCacheFiles(QString category)
 {
     QVector<QString> *files = NULL;
@@ -134,9 +154,9 @@ int AbCache::catToIndex(QString category)
     {
         cat_id = AB_UNVER_ID;
     }
-    else if( category==AB_SHIT_DIR )
+    else if( category==AB_EFALSE_DIR )
     {
-        cat_id = AB_SHIT_ID;
+        cat_id = AB_EFALSE_ID;
     }
     else
     {

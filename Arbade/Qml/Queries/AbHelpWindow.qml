@@ -19,7 +19,7 @@ Window
                              "A: Show LER",
                              "B: Find Bad", "C: Change Count",
                              "D: Gen E-Sample", "E: Train ENN",
-                             "F: Set Focus-Word", "",
+                             "F: Set Focus-Word", "G: ENN with Word",
                              "H: Engine-False", "J/K: Word Num",
                              "O: Open Category",
                              "P: Show Terminal", "Q: Close Window",
