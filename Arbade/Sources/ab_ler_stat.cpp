@@ -26,7 +26,6 @@ void AbLerStat::loadLer()
 void AbLerStat::clearEditor()
 {
     QMetaObject::invokeMethod(ler_qml, "clearEditor");
-    ler_lines.clear();
     // Qt QML destroy bug forced us to exert a timer
     // to make sure that the "clearEditor" function
     // made its clearance
@@ -36,31 +35,25 @@ void AbLerStat::clearEditor()
 void AbLerStat::timerTimeout()
 {
     timer_editor->stop();
-    int len = wrong_out.size();
-    int sum = 0;
-    for( int i=0 ; i<len ; i++ )
-    {
-        sum += wrong_out[i].size();
-    }
-    ler_lines.resize(sum);
+    int len = wrong_count.size();
+
     for( int k=0 ; k<len ; k++ )
     {
         int i = sorted_indices[k];
-        QString object_name = "LerLine" + QString::number(i);
-        ler_lines[i] = ler_qml->findChild<QObject *>(object_name);
-        if( wrong_out[i].size() )
+        int len_wrong = wrong_out[i].size();
+        for( int j=0 ; j<len_wrong ; j++ )
         {
-            addWord(words[i], QString::number(ler[i]), wrong_out[i][0]);
-            int len_wrong = wrong_out[i].size();
-            for( int j=1 ; j<len_wrong ; j++ )
+            int m = sorted_wr_indices[i][j];
+            QString wrong_str = wrong_out[i][m] + " " +
+                    QString::number(wrong_count[i][m]);
+            if( j==0 )
             {
-                addWord("", "", wrong_out[i][j]);
+                addWord(words[i], QString::number(ler[i]), wrong_str);
             }
-        }
-        else
-        {
-            addWord(words[i],
-                    QString::number(ler[i]), "");
+            else
+            {
+                addWord("", "", wrong_str);
+            }
         }
     }
     addWord(QString::number(sum_ler), "Sum", "");
@@ -117,38 +110,34 @@ void AbLerStat::readLerFile()
                 word1 = line_split[0];
                 word2 = line_split[1];
             }
-            if( word1!="eps" )
-            {
-                addToLerStat(word1, word2);
-            }
+            addToLerStat(word1, word2);
         }
     }
 }
 
 void AbLerStat::addToLerStat(QString word1, QString word2)
 {
-    int w_index;
     if( words.contains(word1) )
     {
-        w_index = words.indexOf(word1);
+        int w_index = words.indexOf(word1);
         ler[w_index]++;
-        if( !wrong_out[w_index].contains(word2) && word2!="eps" )
+        if( !wrong_out[w_index].contains(word2) )
         {
             wrong_out[w_index].append(word2);
+            wrong_count[w_index].append(1);
+        }
+        else
+        {
+            int w2_index = wrong_out[w_index].indexOf(word2);
+            wrong_count[w_index][w2_index]++;
         }
     }
     else
     {
         words.append(word1);
         ler.append(1);
-        if( word2!="eps" )
-        {
-            wrong_out.append(QStringList(word2));
-        }
-        else
-        {
-            wrong_out.append(QStringList());
-        }
+        wrong_out.append(QStringList(word2));
+        wrong_count.append(QVector<int>(1, 1));
     }
 }
 
@@ -168,6 +157,12 @@ void AbLerStat::updateLerMean()
 void AbLerStat::sortLer()
 {
     sorted_indices = sortAndGetIndices(ler);
+    int len = words.length();
+    sorted_wr_indices.resize(len);
+    for( int i=0 ; i<len ; i++ )
+    {
+        sorted_wr_indices[i] = sortAndGetIndices(wrong_count[i]);
+    }
 }
 
 // clear ler vectors
@@ -176,6 +171,7 @@ void AbLerStat::resetLerVars()
     ler.clear();
     words.clear();
     wrong_out.clear();
+    wrong_count.clear();
 }
 
 QVector<int> sortAndGetIndices(const QVector<int>& data)

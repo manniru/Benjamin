@@ -32,12 +32,13 @@ private:
 
     QObject *root;     // root qml object
     QObject *ler_qml; // lexicon error rate form in qml
-    QVector<QObject *> ler_lines;
     QVector<int> ler; // lexicon error rate
     QVector<QString> words;
     QVector<QStringList> wrong_out; // wrong detected words
+    QVector<QVector<int>> wrong_count; // number of wrong detected word
     QTimer *timer_editor;
     QVector<int> sorted_indices;
+    QVector<QVector<int>> sorted_wr_indices; // sorted indices for each wrong list
     int mean; // mean ler
     int sum_ler; // reverse mean ler
 };

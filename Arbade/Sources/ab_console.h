@@ -44,7 +44,7 @@ private:
     QThread *out_thread;
 
     int is_ready;
-    int init_shit; //flag to skip printing cmd initial welcome message
+    int init_efalse; //flag to skip printing cmd initial welcome message
 
 
     QObject   *root;    // root qml object

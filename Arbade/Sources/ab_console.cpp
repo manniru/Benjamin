@@ -7,7 +7,7 @@
 AbConsole::AbConsole(QObject *ui, QObject *parent) : QObject(parent)
 {
     is_ready = 1;
-    init_shit = 1;
+    init_efalse = 1;
     root = ui;
     console_qml = root->findChild<QObject*>("Console");
 
@@ -133,11 +133,11 @@ void AbConsole::processLine(QString line)
             DWORD dwWritten;
             WriteFile(handle_in, cmd.toStdString().c_str(),
                       cmd.length(), &dwWritten, NULL);
-            init_shit = 0;
+            init_efalse = 0;
         }
-        else if( init_shit )
+        else if( init_efalse )
         {
-            init_shit = 0;
+            init_efalse = 0;
         }
         else
         {
@@ -162,7 +162,7 @@ void AbConsole::run(QString cmd)
     DWORD dwWritten;
     cmd += "\r\n";
 
-    if( is_ready && init_shit==0 )
+    if( is_ready && init_efalse==0 )
     {
         qDebug() << "Write" << cmd;
         WriteFile(handle_in, cmd.toStdString().c_str(),
@@ -178,7 +178,7 @@ void AbConsole::run(QString cmd)
 
 void AbConsole::readyData(QString line, int flag)
 {
-    if( init_shit )
+    if( init_efalse )
     {
         processLine(line);
         return;

@@ -268,7 +268,7 @@ QString AbEditor::getCategory()
     QString category = AB_UNVER_DIR;
     if( verifier==2 )
     {
-        category = AB_SHIT_DIR;
+        category = AB_EFALSE_DIR;
     }
     else if( verifier==0 )
     {

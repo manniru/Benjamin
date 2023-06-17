@@ -80,9 +80,10 @@ Window
         Grid
         {
             id: ler_grid
-            rows: Math.floor(ed_height/26)
+            rows: Math.floor(scroller.height/26)
             anchors.top: parent.top
             anchors.left: parent.left
+            anchors.bottom: parent.bottom
             columnSpacing: 40
             flow: GridLayout.TopToBottom
         }
