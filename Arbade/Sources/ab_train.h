@@ -31,8 +31,9 @@ private slots:
     void WslCreated();
     void handleTrainError();
     void createENN();
-    void copyShitToOnline();
+    void copyEFalseToOnline();
     void trainENN();
+    void trainEnnWord(int word_id);
     void genEFinished();
 
 private:
@@ -46,15 +47,15 @@ private:
     void checkOnlineExist();
     void updateWerSer();
     void checkBenjamin();
-    int checkShitDir();
+    int checkEFalseDir();
 
     QObject   *root;            // root qml object
     QObject   *topbar;          // topbar qml object
     QObject   *wsl_dialog;
     QObject   *console_qml;     // console qml object
-    QObject   *shit_dialog;     // verify shit dialog qml object
+    QObject   *efalse_dialog;     // verify efalse dialog qml object
     QObject   *train_enn_qml;   // Train Enn Dialog qml object
-    QString    wsl_path;
+    QObject   *message; // message qml object
 
     QThread   *wsl_thread;
     AbInitWSL *wsl;
@@ -64,9 +65,10 @@ private:
     QThread   *enn_thread;
     AbConsole *enn_console;
     AbStat    *stat;
-    int train_failed;
-    int init_flag;
+    QString    enn_word;
+    QString    wsl_path;
+    int        train_failed;
+    int        init_flag;
 };
-
 
 #endif // AB_TRAIN_H

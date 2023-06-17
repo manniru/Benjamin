@@ -14,16 +14,19 @@ AbTrain::AbTrain(AbStat *st, QObject *ui, QObject *parent) : QObject(parent)
     topbar = root->findChild<QObject*>("TopBar");
     wsl_dialog = root->findChild<QObject*>("WslDialog");
     console_qml = root->findChild<QObject*>("Console");
-    shit_dialog = root->findChild<QObject*>("ShitDialog");
+    efalse_dialog = root->findChild<QObject*>("EFalseDialog");
     train_enn_qml = root->findChild<QObject*>("TrainEnnDialog");
+    message = root->findChild<QObject *>("Message");
     connect(root, SIGNAL(sendKey(int)),
             this, SLOT(processKey(int)));
     connect(root, SIGNAL(generateESamples()),
             this, SLOT(createENN()));
+    connect(root, SIGNAL(trainWithWord(int)),
+            this, SLOT(trainEnnWord(int)));
     connect(wsl_dialog, SIGNAL(driveEntered(QString)),
             wsl, SLOT(createWSL(QString)));
-    connect(shit_dialog, SIGNAL(rejectDialog()),
-            this, SLOT(copyShitToOnline()));
+    connect(efalse_dialog, SIGNAL(rejectDialog()),
+            this, SLOT(copyEFalseToOnline()));
     connect(train_enn_qml, SIGNAL(acceptDialog()),
             this, SLOT(trainENN()));
 
@@ -183,7 +186,28 @@ void AbTrain::trainENN()
     QQmlProperty::write(console_qml, "visible", true);
     enn_console->prompt = "ENN>";
     enn_console->run("cd ..\\ENN");
-    enn_console->run("release\\ENN.exe");
+    if( enn_word.length() )
+    {
+        enn_console->run("release\\ENN.exe -w " + enn_word);
+    }
+    else
+    {
+        enn_console->run("release\\ENN.exe");
+    }
+}
+
+void AbTrain::trainEnnWord(int word_id)
+{
+    QString word = stat->idToWord(word_id);
+    if( word=="<Unknown>" )
+    {
+        QString msg = "Word id should be in range of Lexicon";
+        QQmlProperty::write(message, "message", msg);
+        return;
+    }
+    enn_word = word;
+    trainENN();
+    enn_word = "";
 }
 
 void AbTrain::checkModelExist()
@@ -359,22 +383,15 @@ void AbTrain::handleTrainError()
     train_failed = 1;
 }
 
-int AbTrain::checkShitDir()
+int AbTrain::checkEFalseDir()
 {
-    QString shit_path = ab_getAudioPath() + AB_SHIT_DIR;
-    QDir shit_dir(shit_path);
-    if( shit_dir.exists() )
+    QString efalse_path = ab_getAudioPath() + AB_EFALSE_DIR;
+    QDir efalse_dir(efalse_path);
+    if( efalse_dir.exists() )
     {
-        QFileInfoList shit_list = shit_dir.entryInfoList(
+        QFileInfoList efalse_list = efalse_dir.entryInfoList(
                                             QDir::Files);
-        if( shit_list.size() )
-        {
-            return 1;
-        }
-        else
-        {
-            return 0;
-        }
+        return efalse_list.size();
     }
     else
     {
@@ -382,38 +399,42 @@ int AbTrain::checkShitDir()
     }
 }
 
-void AbTrain::copyShitToOnline()
+void AbTrain::copyEFalseToOnline()
 {
-    qDebug() << "copyShitToOnline";
+    qDebug() << "copyEFalseToOnline";
     checkOnlineExist();
     QString audio_path = ab_getAudioPath();
-    QString shit_path = audio_path + AB_SHIT_DIR;
+    QString efalse_path = audio_path + AB_EFALSE_DIR;
     QString online_path = audio_path + "train" +
             QDir::separator() + "online" + QDir::separator();
-    QDir shit_dir(shit_path);
-    QFileInfoList shit_list = shit_dir.entryInfoList(
+    QDir efalse_dir(efalse_path);
+    QFileInfoList efalse_list = efalse_dir.entryInfoList(
                                         QDir::Files);
-    int len = shit_list.size();
+    int len = efalse_list.size();
 
-    qDebug() << shit_path << online_path << len;
+    qDebug() << efalse_path << online_path << len;
 
     for( int i=0 ; i<len ; i++ )
     {
-        QFile shit_file(shit_list[i].absoluteFilePath());
-        QString dest_path = online_path + shit_list[i].fileName();
+        QFile efalse_file(efalse_list[i].absoluteFilePath());
+        QString dest_path = online_path + efalse_list[i].fileName();
         qDebug() << i << ")" << dest_path;
-        shit_file.copy(dest_path);
-        shit_file.remove();
+        efalse_file.copy(dest_path);
+        efalse_file.remove();
     }
+    stat->cache->updateCategory(AB_EFALSE_DIR);
     QMetaObject::invokeMethod(train_enn_qml, "show"); // launch train ENN Query Dialog
 }
 
 void AbTrain::genEFinished()
 {
     qDebug() << "genEFinished";
-    if( checkShitDir() )
+    int efalse_num = checkEFalseDir();
+    QQmlProperty::write(efalse_dialog, "efalse_num", efalse_num);
+    stat->cache->updateCategory(AB_EFALSE_DIR);
+    if( efalse_num )
     {
-        QMetaObject::invokeMethod(shit_dialog, "show"); // launch E Sample Query Dialog
+        QMetaObject::invokeMethod(efalse_dialog, "show"); // launch E Sample Query Dialog
     }
     else
     {
