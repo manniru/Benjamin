@@ -221,7 +221,7 @@ void ab_openCategory(QString category)
 {
     QString path = ab_getAudioPath();
 
-    if( category!=AB_UNVER_DIR && category!=AB_SHIT_DIR )
+    if( category!=AB_UNVER_DIR && category!=AB_EFALSE_DIR )
     {
         path += "train";
         path += QDir::separator();
@@ -248,15 +248,15 @@ QFileInfoList ab_getAudioDirs()
     }
     dir_list.append(unver); // add unverified dir to list of train category dirs
 
-    path = audio_path + AB_SHIT_DIR;
+    path = audio_path + AB_EFALSE_DIR;
     unver.setFile(path);
     if( !unver.exists() )
     {
-        qDebug() << "Warning: shit directory doesn't Exist,"
+        qDebug() << "Warning: efalse directory doesn't Exist,"
                  << "cannot generate statistics.";
         return QFileInfoList();
     }
-    dir_list.append(unver); // add shit dir to list of train category dirs
+    dir_list.append(unver); // add efalse dir to list of train category dirs
 
     path = audio_path + "train\\";
     QDir dir(path);
@@ -315,7 +315,7 @@ QString getVerifierStr(int verifier)
     }
     else if( verifier==2 )
     {
-        return "shit mode";
+        return "efalse mode";
     }
     return "";
 }

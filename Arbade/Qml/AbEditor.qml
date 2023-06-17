@@ -24,7 +24,7 @@ Rectangle
         }
         else if( root.ab_verifier===2 )
         {
-            "Word Editor - Category: \"shit\""
+            "Word Editor - Category: \"efalse\""
         }
         else
         {

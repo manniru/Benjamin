@@ -184,7 +184,7 @@ void AbScene::processKey(int key)
         }
         else if( verifier==2 )
         {
-            category = AB_SHIT_DIR;
+            category = AB_EFALSE_DIR;
         }
         ab_openCategory(category);
     }
@@ -243,7 +243,7 @@ int AbScene::getCount(int verifier)
     }
     else // verifier = 2
     {
-        count = editor->cache->cache_files[AB_SHIT_ID].size();
+        count = editor->cache->cache_files[AB_EFALSE_ID].size();
     }
     if( count>AB_MAX_RECLIST )
     {
@@ -279,7 +279,7 @@ void AbScene::cacheCreated()
         }
         else // verifier = 2
         {
-            count = editor->cache->cache_files[AB_SHIT_ID].size();
+            count = editor->cache->cache_files[AB_EFALSE_ID].size();
         }
         if( count>AB_MAX_RECLIST )
         {

@@ -92,23 +92,4 @@ OTHER_FILES += Qml/*.qml \
                Qml/Queries/*.qml
 
 QML_IMPORT_PATH += Qml/
-
-DISTFILES += \
-    Qml/AbButtons.qml \
-    Qml/AbConsole.qml \
-    Qml/AbDialogWsl.qml \
-    Qml/AbHelpWindow.qml \
-    Qml/AbLerLine.qml \
-    Qml/AbMessage.qml \
-    Qml/AbQueryLine.qml \
-    Qml/AbRecDelete.qml \
-    Qml/AbRecLine.qml \
-    Qml/AbRecList.qml \
-    Qml/AbRecPanel.qml \
-    Qml/AbRecPlay.qml \
-    Qml/AbStatusLabel.qml \
-    Qml/AbTimeBar.qml \
-    Qml/Queries/AbTrainEnnQuery.qml \
-    Qml/Queries/AbVerifyShit.qml
-
 win32:RC_ICONS += icon.ico

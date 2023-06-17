@@ -24,9 +24,9 @@
 #define AB_LIST_NAMES  1
 #define AB_LIST_PATHS  2
 #define AB_UNVER_ID    0
-#define AB_SHIT_ID     1
+#define AB_EFALSE_ID     1
 #define AB_UNVER_DIR   "unverified"
-#define AB_SHIT_DIR    "shit"
+#define AB_EFALSE_DIR    "efalse"
 
 int getIntCommand(char *command);
 QString getStrCommand(QString command);

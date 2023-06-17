@@ -387,10 +387,10 @@ void AbStat::moveToOnline(int id)
         if( dir_name=="online" )
         {
             int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
-            if( verifier==AB_SHIT_MODE )
+            if( verifier==AB_EFALSE_MODE )
             {
-                cache->cache_files[i] << cache->cache_files[AB_SHIT_ID][id];
-                cache->deleteCache(AB_SHIT_DIR, id);
+                cache->cache_files[i] << cache->cache_files[AB_EFALSE_ID][id];
+                cache->deleteCache(AB_EFALSE_DIR, id);
             }
             else if( verifier==AB_VERIFY_MODE )
             {
