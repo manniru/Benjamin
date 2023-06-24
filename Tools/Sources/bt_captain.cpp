@@ -21,7 +21,7 @@ BtCaptain::BtCaptain(BtState *state,
 //    strict_word << "five";
 //    strict_word << "four";
     strict_word << "go";
-    strict_word << "end";
+//    strict_word << "end";
 //    strict_word << "echo";
     strict_word << "home";
 #ifdef WIN32

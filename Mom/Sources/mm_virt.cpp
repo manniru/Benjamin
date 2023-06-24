@@ -76,19 +76,20 @@ void MmVirt::updateGUID()
 
 void MmVirt::setDesktop(int id)
 {
-    if( id<vd_desks.length() && id>=0 )
+    if( id>vd_desks.length()-1 || id<0 )
     {
-        current_desktop = getCurrDesktop();
-        if( current_desktop==id+1 )
-        {
-            return;
-        }
-        manager_int->SwitchDesktop(vd_desks[id]);
-//        qDebug() << "setDesktop" << res;
-        setFocus();
-        last_desktop = current_desktop;
-        current_desktop = id + 1;
+        return;
     }
+    current_desktop = getCurrDesktop();
+    if( current_desktop==id+1 )
+    {
+        return;
+    }
+    manager_int->SwitchDesktop(vd_desks[id]);
+//        qDebug() << "setDesktop" << res;
+    setFocus();
+    last_desktop = current_desktop;
+    current_desktop = id + 1;
 }
 
 void MmVirt::moveToDesktop(int id)

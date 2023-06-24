@@ -79,7 +79,7 @@ function get_Nato(word)
 		return "51"
 	elseif word == "dash" then
 		return "12"
-	elseif word == "equal" then
+	elseif word == "level" then
 		return "13"
 	elseif word == "plus" then
 		return "78"

@@ -33,6 +33,8 @@ function get_Super(word)
 		return "114"
 	elseif word == "drag" then
 		return "115"
+	elseif word == "link" then
+		return "116"
 	end
 
 end

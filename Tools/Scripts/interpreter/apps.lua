@@ -12,8 +12,6 @@ function get_Apps(word)
 		return "4"
 	elseif word == "ding" then
 		return "5"
-	elseif word == "link" then
-		return "6"
 	elseif word == "sleep" then
 		return "7"
 	end
