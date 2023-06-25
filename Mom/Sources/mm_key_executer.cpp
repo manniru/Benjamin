@@ -15,8 +15,9 @@ MmKeyExec::MmKeyExec(MmVirt *vi, MmSound *snd,
             this, SLOT(delayedExec()));
     timer->start(2);
 
-    launcher = new MmAppLauncher(vi);
-    manager  = new MmWinManager();
+    launcher   = new MmAppLauncher(vi);
+    manager    = new MmWinManager;
+    downloader = new MmDownloader;
 }
 
 MmKeyExec::~MmKeyExec()
@@ -165,6 +166,12 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
     else if( key_code=='Y' )
     {
         key_buf = "y";
+        return 1;
+    }
+    else if( key_code=='Z' )
+    {
+        QString url = "https://binaee.com/ip";
+        downloader->download(url);
         return 1;
     }
     else if( key_code==VK_OEM_7 ) // Quote '

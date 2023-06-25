@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <QVector>
 #include "mm_app_launcher.h"
+#include "mm_downloader.h"
 #include "mm_virt.h"
 #include "mm_sound.h"
 #include "mm_win_manager.h"
@@ -43,6 +44,7 @@ private:
 
     MmAppLauncher *launcher;
     MmWinManager  *manager;
+    MmDownloader  *downloader;
 };
 
 #endif // MM_KEY_EXECUTER_H

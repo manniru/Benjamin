@@ -17,6 +17,7 @@ SOURCES += Sources/main.cpp \
            Sources/mm_app_launcher.cpp \
            Sources/mm_bar.cpp \
            Sources/mm_chapar.cpp \
+           Sources/mm_downloader.cpp \
            Sources/mm_key_emulator.cpp \
            Sources/mm_key_executer.cpp \
            Sources/mm_keyboard.cpp \
@@ -56,6 +57,7 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_app_launcher.h \
            Sources/mm_bar.h \
            Sources/mm_chapar.h \
+           Sources/mm_downloader.h \
            Sources/mm_key_emulator.h \
            Sources/mm_key_executer.h \
            Sources/mm_keyboard.h \
