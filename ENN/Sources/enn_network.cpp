@@ -75,7 +75,7 @@ bool EnnNetwork::load()
         }
         else if( is_wrong==2 )
         {
-            net = network<sequential>(); // reset network
+            net = network(); // reset network
             createNNet();
             qDebug() << "Reset from scratch";
             is_wrong = 0;

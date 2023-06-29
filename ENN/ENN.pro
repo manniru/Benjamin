@@ -2,16 +2,16 @@ TEMPLATE = app
 
 CONFIG += console
 
-INCLUDEPATH += ./Sources
+INCLUDEPATH += ../PNN
 
 #linux:LIBS += -lgio-2.0
 win32:LIBS += -lole32 -luuid
 
-DEFINES += DNN_USE_IMAGE_API \
-           CNN_USE_SSE \
+DEFINES += CNN_USE_SSE \
            CNN_USE_AVX \
            NDEBUG
 #           HAVE_CXXABI_H
+#           DNN_USE_IMAGE_API
 
 QMAKE_CXXFLAGS += -std=gnu++14 -m64 -mavx -msse3 -Wa,-mbig-obj
 QMAKE_CXXFLAGS_RELEASE -= -O2
