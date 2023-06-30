@@ -11,7 +11,7 @@ Rectangle
     property var help_text: ["Space: Rec/Pause","S: Set Category",
                              "Up/Down: Pause Time",
                              "Right/Left: Rec Time",
-                             "B: Find Bad", "C: Change Count",
+                             "A: Show LER", "C: Change Count",
                              "D: Gen E-Sample", "E: Train ENN",
                              "J/K: Word Num",
                              "O:Open Category", "T: Train",

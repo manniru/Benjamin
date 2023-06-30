@@ -239,7 +239,6 @@ void AbVerify::moveToOnline()
 
     file.remove();
     editor->stat->moveToOnline(id);
-
     recRemove();
 }
 
@@ -284,7 +283,16 @@ void AbVerify::recRemove()
 // verification and playing phase
 void AbVerify::loadNext()
 {
-    QString filename = getNext();
+    int focus_word = QQmlProperty::read(root, "ab_focus_word_v").toInt();
+    QString filename;
+    if( focus_word==-1 )
+    {
+        filename = editor->cache->cache_files[verify_id].last();
+    }
+    else
+    {
+        filename = getFNext(focus_word);
+    }
     double power = wav_rd->getPower(filename);
     QQmlProperty::write(root, "ab_power", power);
     QQmlProperty::write(root, "ab_address", filename);
@@ -303,45 +311,37 @@ void AbVerify::loadNext()
     QQmlProperty::write(root, "ab_words", words);
 }
 
-QString AbVerify::getNext()
+// get next sample for focused word
+QString AbVerify::getFNext(int focus_word)
 {
-    int focus_word = QQmlProperty::read(root, "ab_focus_word_v").toInt();
     QString filename;
+    int curr_id = QQmlProperty::read(root, "ab_verify_id").toInt();
 
-    if( focus_word==-1 ) //no focus word
+    if( curr_id==0 )
     {
-        filename = editor->cache->cache_files[verify_id].last();
+        int len = editor->cache->cache_files[verify_id].length();
+        curr_id = len;
+        qDebug() << "curr_id" << filename << curr_id;
     }
-    else
+
+    while( curr_id>0 )
     {
-        int curr_id = QQmlProperty::read(root, "ab_verify_id").toInt();
-
-        if( curr_id==0 )
+        curr_id--;
+        filename = editor->cache->cache_files[verify_id][curr_id];
+        QFileInfo info(filename);
+        QStringList split = info.baseName().split("_");
+        int split_len = split.length();
+        for( int i=0 ; i<split_len ; i++ )
         {
-            int len = editor->cache->cache_files[verify_id].length();
-            curr_id = len-1;
-            qDebug() << "curr_id" << filename << curr_id;
-        }
-
-        while( curr_id>0 )
-        {
-            curr_id--;
-            filename = editor->cache->cache_files[verify_id][curr_id];
-            QFileInfo info(filename);
-            QStringList split = info.baseName().split("_");
-            int split_len = split.length();
-            for( int i=0 ; i<split_len ; i++ )
+            if( split[i].toInt()==focus_word )
             {
-                if( split[i].toInt()==focus_word )
-                {
-                    QQmlProperty::write(root, "ab_verify_id", curr_id);
-                    return filename;
-                }
+                QQmlProperty::write(root, "ab_verify_id", curr_id);
+                return filename;
             }
-            filename = "";
         }
-        //handle marginal cond
+        filename = "";
     }
+    //handle marginal cond
 
     return filename;
 }

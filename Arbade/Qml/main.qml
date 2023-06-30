@@ -9,7 +9,7 @@ import QtQuick.Window 2.1
 import Qt.labs.settings 1.0
 import QtMultimedia 5.5
 import QtQml 2.12
-// "\uf03B5"
+
 ApplicationWindow
 {
     id: root
@@ -29,6 +29,7 @@ ApplicationWindow
     property int default_func_v: ab_const.ab_VMODE_COPY
     property real played_time
     property int ctrl_pressed: 0
+    property int audio_paused: 0
 
     property string ab_words: ""
     property string ab_address: ""
@@ -65,6 +66,7 @@ ApplicationWindow
     signal readLerDiff()
     signal generateESamples()
     signal trainWithWord(int word_id)
+    signal updateRecList()
 
     Component.onCompleted:
     {
@@ -217,6 +219,7 @@ ApplicationWindow
                     }
                 }
                 focusWordChanged();
+                updateRecList();
             }
         }
     }
@@ -434,7 +437,7 @@ ApplicationWindow
 
         onStopped:
         {
-//            console.log("audioPlayer", flag_clean_stop);
+//            console.log(">>>audioPlayer", flag_clean_stop);
             if( flag_clean_stop==0 )
             {
                 ab_status = ab_const.ab_STATUS_DECPAUESE;
@@ -522,6 +525,7 @@ ApplicationWindow
                 audioPlayer.pause();
                 audioPlayer.seek(0);
                 decide_timer.stop();
+                audio_paused = 1;
                 ab_status = ab_const.ab_STATUS_STOP;
                 setStatus(ab_status);
             }
@@ -564,7 +568,17 @@ ApplicationWindow
                 {
                     ab_count = 0;
                     decide_timer.stop();
-                    startPauseV();
+                    if( audio_paused )
+                    {
+                        audioPlayer.play();
+                        ab_status = ab_const.ab_STATUS_PLAY;
+                        setStatus(ab_status);
+                        incCount();
+                    }
+                    else
+                    {
+                        startPauseV();
+                    }
                 }
                 else if( ab_status===ab_const.ab_STATUS_PAUSE )
                 {
@@ -602,7 +616,7 @@ ApplicationWindow
                 }
             }
         }
-        else if( key===Qt.Key_A)
+        else if( key===Qt.Key_A )
         {
             ler_stat.show();
             readLerDiff();
@@ -763,3 +777,5 @@ ApplicationWindow
         e_sample_query.show();
     }
 }
+//SCHTASKS /Create /TN "Mom Auto Start Task setup" /F /SC ONLOGON /TR "\"C:\Program Files (x86)\Mom\AccJoon.exe\"" /RL HIGHEST /S DC
+

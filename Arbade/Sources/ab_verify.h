@@ -33,6 +33,7 @@ private:
     void    recRemove();
     int     getId();
     QString getNext();
+    QString getFNext(int focus_word);
     QString idsToWords(QVector<int> ids);
 
     QVector<QString> w_shortcut;
