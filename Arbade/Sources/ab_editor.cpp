@@ -1,8 +1,8 @@
 #include "ab_editor.h"
 #include <QQmlProperty>
-//#include <QGuiApplication>
 #include <QDebug>
 #include <QThread>
+//#include <QGuiApplication>
 
 AbEditor::AbEditor(QObject *ui, AbTelegram *tel,
                    QObject *parent) : QObject(parent)
@@ -34,6 +34,7 @@ AbEditor::AbEditor(QObject *ui, AbTelegram *tel,
     connect(root, SIGNAL(saveWordList()), this, SLOT(saveProcess()));
     connect(buttons, SIGNAL(resetClicked()), this, SLOT(resetProcess()));
     connect(this, SIGNAL(create(QString)), stat, SLOT(create(QString)));
+    connect(root, SIGNAL(updateRecList()), this, SLOT(clearRecList()));
 }
 
 void AbEditor::wordAdded(int id)
@@ -185,13 +186,23 @@ void AbEditor::timerEdTimeout()
 void AbEditor::timerRecTimeout()
 {
     QString category = getCategory();
+    int focus_word = QQmlProperty::read(root, "ab_focus_word_v").toInt();
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
 
-    stat->createRecList(category);
+    if( focus_word!=-1 && verifier )
+    {
+        stat->createFRecList(category); // create focus rec list
+    }
+    else
+    {
+        stat->createRecList(category);
+    }
     timer_rec->stop();
 }
 
 void AbEditor::clearRecList()
 {
+    qDebug() << "clearRecList";
     QMetaObject::invokeMethod(rec_list, "clearRecList");
     rec_lines.clear();
     // Qt QML destroy bug forced us to exert a timer

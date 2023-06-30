@@ -79,10 +79,6 @@ void AbTrain::processKey(int key)
     {
         trainENN();
     }
-    else if( key==Qt::Key_B )
-    {
-
-    }
 }
 
 void AbTrain::WslCreated()
@@ -178,6 +174,7 @@ void AbTrain::createENN()
     enn_console->prompt = "Tools>";
     enn_console->commands << "release\\BaTool.exe e\r\n";
     enn_console->run("cd ..\\Tools");
+    train_flag = 0;
 }
 
 void AbTrain::trainENN()
@@ -186,6 +183,7 @@ void AbTrain::trainENN()
     QQmlProperty::write(console_qml, "visible", true);
     enn_console->prompt = "ENN>";
     enn_console->run("cd ..\\ENN");
+    train_flag = 1;
     if( enn_word.length() )
     {
         enn_console->run("release\\ENN.exe -w " + enn_word);
@@ -429,6 +427,10 @@ void AbTrain::copyEFalseToOnline()
 void AbTrain::genEFinished()
 {
     qDebug() << "genEFinished";
+    if( train_flag )
+    {
+        return;
+    }
     int efalse_num = checkEFalseDir();
     QQmlProperty::write(efalse_dialog, "efalse_num", efalse_num);
     stat->cache->updateCategory(AB_EFALSE_DIR);

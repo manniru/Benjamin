@@ -69,6 +69,7 @@ private:
     QString    wsl_path;
     int        train_failed;
     int        init_flag;
+    int        train_flag=0;  // used to indicate train not generate Esample
 };
 
 #endif // AB_TRAIN_H

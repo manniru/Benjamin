@@ -12,7 +12,6 @@ public:
                       QObject *parent = nullptr);
 
     void createList();
-    void clearRecList();
     QString getCategory();
 
     AbStat  *stat;
@@ -25,6 +24,7 @@ public:
 public slots:
     void recRemove(int id, int f_focus=1);
     void updateStat();
+    void clearRecList();
 
 signals:
     void create(QString category);
