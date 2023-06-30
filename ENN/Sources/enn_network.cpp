@@ -10,7 +10,7 @@ int nn_epoch;
 EnnNetwork::EnnNetwork(QString word, int id)
 {
     dataset = new EnnDataset(word, id);
-    n_minibatch = 16;
+    n_minibatch = 64;
     n_train_epochs = ENN_MAX_EPOCH;
     is_wrong = 0;
 
@@ -32,7 +32,7 @@ void EnnNetwork::benchmark()
 
     double elapsed_s = t.elapsed();
     t.stop();
-    qDebug() << dataset->m_name << "Finished!"
+    qDebug() << dataset->m_name << "Finished! single infere time:"
              << elapsed_s;
 }
 
@@ -75,7 +75,8 @@ bool EnnNetwork::load()
         }
         else if( is_wrong==2 )
         {
-            net = network(); // reset network
+//            net = network(); // reset network
+            net = network<sequential>(); // reset network
             createNNet();
             qDebug() << "Reset from scratch";
             is_wrong = 0;
@@ -111,12 +112,14 @@ void EnnNetwork::createNNet()
         << conv(8, 1, 8, 1, f2, 60)        << activation::leaky_relu() // flatten conv
         << fc(60, 2)                       << activation::softmax();
 #endif
+    last_loss = 9999;
 }
 
 void EnnNetwork::train(float l_rate)
 {
     qDebug() << "dataset size: test"  << dataset->test_datas.size()
-             << "train" << dataset->train_datas.size();
+             << "train" << dataset->train_datas.size()
+             << "l_rate" << l_rate;
 
     if( !need_train )
     {
@@ -134,7 +137,7 @@ void EnnNetwork::train(float l_rate)
     net.normalize_tensor(dataset->train_labels, output_tensor);
     net.normalize_tensor(target_cost, t_cost_tensor);
 
-    net.fit<mse>(optim, input_tensor, output_tensor,
+    net.fit<cross_entropy>(optim, input_tensor, output_tensor,
                  n_minibatch, n_train_epochs, [&](){;},
                  [&](){epochLog();}, false, CNN_TASK_SIZE, t_cost_tensor);
 
@@ -173,11 +176,7 @@ void EnnNetwork::epochLog()
             net.stop_ongoing_training();
         }
 
-        double alpha = optim.alpha * 0.95;
-        if( alpha>ENN_MIN_LRATE )
-        {
-            optim.alpha = alpha;
-        }
+        optim.alpha = optim.alpha * 0.95;
         nn_t.restart();
     }
 }
@@ -199,9 +198,9 @@ float EnnNetwork::calcLoss()
     for( int i=0 ; i<len ; i++ )
     {
         vec_t predicted = net.predict(dataset->train_datas[i]);
-        float s_loss = mse::f(predicted, label_tensor[i][0]);
+        float s_loss = cross_entropy::f(predicted, label_tensor[i][0]);
 
-        if( s_loss>0.95 )
+        if( s_loss>10 )
         {
             wrong_sum += s_loss;
             wrong_i.push_back(i);
@@ -219,13 +218,15 @@ float EnnNetwork::calcLoss()
     {
         last_loss = loss;
     }
-    if( loss>70 )
+    if( loss>400 || std::isnan(loss) )
     {
         EnnResult acc_train = getAcc(dataset->train_datas,
                                   dataset->train_labels);
-        double learned_percent = acc_train.det_t;
+        double learned_percent = acc_train.det_t*100;
         learned_percent = learned_percent/acc_train.tot_t;
-        if( learned_percent<0.1 )
+        qDebug() << "learned_percent"
+                 << learned_percent;
+        if( learned_percent<10 )
         {
             qDebug() << "========= NO CONVERGANCE"
                      << dataset->m_name

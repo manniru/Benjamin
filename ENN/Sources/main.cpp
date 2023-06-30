@@ -64,7 +64,7 @@ EnnCmdOptions* parseClOptions(QCoreApplication *app)
         ret_opt->mode = ENN_FILE_MODE;
     }
 
-    ret_opt->learning_rate = parser.value(lr_option).toInt();
+    ret_opt->learning_rate = parser.value(lr_option).toFloat();
     ret_opt->word = parser.value(word_option);
 
     return ret_opt;

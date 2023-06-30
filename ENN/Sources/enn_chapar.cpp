@@ -74,6 +74,7 @@ void EnnChapar::learnMode(float l_rate)
 void EnnChapar::singleMode(float l_rate, QString l_word)
 {
     QStringList word_list = bt_parseLexicon(BT_WORDS_PATH);
+    float learn_rate = l_rate;
     while( 1 ) // until all model reached target loss
     {
         int index = word_list.indexOf(l_word);
@@ -89,12 +90,16 @@ void EnnChapar::singleMode(float l_rate, QString l_word)
         EnnNetwork net(word_list[index], index);
         float first_loss = net.last_loss;
         qDebug() << "Loaded Loss" << first_loss;
-        net.train(l_rate);
+        net.train(learn_rate);
         float diff_loss = net.last_loss - first_loss;
         if( diff_loss>0 ) // we are not learning anything
         {                 // after 100 epoch
             qDebug() << "BAD LEARNING" << diff_loss;
             return;
+        }
+        if( std::isnan(net.last_loss) )
+        {
+            learn_rate /= 1.2;
         }
         printf("----- learned word=%s loss=%.2f ----\n",
                word_list[index].toStdString().c_str(),

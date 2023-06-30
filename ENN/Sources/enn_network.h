@@ -48,7 +48,8 @@ private:
     void handleWrongs(float diff, QVector<int> &wrong_i,
                       QVector<float> &wrong_loss);
 
-    network net;
+//    network net;
+    network<sequential> net;
     adagrad optim;
 
     int n_minibatch;

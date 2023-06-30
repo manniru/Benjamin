@@ -2,7 +2,8 @@ TEMPLATE = app
 
 CONFIG += console
 
-INCLUDEPATH += ../PNN
+#INCLUDEPATH += ../PNN
+INCLUDEPATH += ./Sources
 
 #linux:LIBS += -lgio-2.0
 win32:LIBS += -lole32 -luuid
