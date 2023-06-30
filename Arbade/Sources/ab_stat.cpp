@@ -165,6 +165,11 @@ void AbStat::createRecList(QString category)
     if( samples_len>AB_MAX_RECLIST )
     {
         start_i = samples_len-AB_MAX_RECLIST;
+        QQmlProperty::write(root, "ab_total_count_v", AB_MAX_RECLIST);
+    }
+    else
+    {
+        QQmlProperty::write(root, "ab_total_count_v", samples_len);
     }
     for( int i=start_i ; i<samples_len ; i++ )
     {
@@ -196,6 +201,91 @@ void AbStat::createRecList(QString category)
             word += "(" + name_extended[1] + ")";
         }
         addRecList(word, info.absoluteFilePath());
+    }
+}
+
+void AbStat::createFRecList(QString category)
+{
+    QVector<QString> *files = cache->loadCacheFiles(category);
+    if( files==NULL )
+    {
+        qDebug() << "Info 85: empty category";
+        return;
+    }
+    int focus_word = QQmlProperty::read(root, "ab_focus_word_v").toInt();
+    QString focus_word_str = QString::number(focus_word);
+
+    int samples_len = files->length();
+    int lexicon_len = lexicon.length();
+    int reclist_cntr = 0;
+    QVector<QString> reclist;
+    QVector<QString> paths;
+    reclist.resize(AB_MAX_RECLIST);
+    paths.resize(AB_MAX_RECLIST);
+    for( int i=samples_len-1 ; i>=0 ; i-- )
+    {
+        QString word;
+        QString file_name = files->at(i);
+        QFileInfo info(file_name);
+        QStringList word_list = getWordList(file_name);
+
+        if( !word_list.contains(focus_word_str) )
+        {
+            continue;
+        }
+        int world_list_len = word_list.length();
+        for( int j=0 ; j<world_list_len ; j++)
+        {
+            int num = word_list[j].toInt();
+
+            if( num<lexicon_len )
+            {
+                word += lexicon[num] + " ";
+            }
+            else
+            {
+                qDebug() << "Error 161: Out of range sample"
+                         << info.path();
+                return;
+            }
+        }
+        word += getExtendedName(file_name);
+        reclist[reclist_cntr] = word;
+        paths[reclist_cntr] = info.absoluteFilePath();
+        reclist_cntr++;
+        if( reclist_cntr>=AB_MAX_RECLIST )
+        {
+            break;
+        }
+    }
+
+    QQmlProperty::write(root, "ab_total_count_v", reclist_cntr);
+    for( int i=reclist_cntr-1 ; i>=0 ; i-- )
+    {
+        addRecList(reclist[i], paths[i]);
+    }
+}
+
+QStringList AbStat::getWordList(QString filename)
+{
+    QFileInfo info(filename);
+    filename = info.baseName();
+    return filename.split('_');
+}
+
+QString AbStat::getExtendedName(QString filename)
+{
+    QFileInfo info(filename);
+    QString file_name = info.fileName();
+    file_name = file_name.remove(".wav");
+    QStringList name_extended = file_name.split(".");
+    if( name_extended.size()>1 )
+    {
+        return "(" + name_extended[1] + ")";
+    }
+    else
+    {
+        return "";
     }
 }
 
@@ -318,7 +408,17 @@ void AbStat::create(QString category)
 
     cache->createCache();
     createWordEditor(category);
-    createRecList(category);
+    int focus_word = QQmlProperty::read(root, "ab_focus_word_v").toInt();
+    int verifier = QQmlProperty::read(root, "ab_verifier").toInt();
+
+    if( focus_word!=-1 && verifier )
+    {
+        createFRecList(category); // create focus rec list
+    }
+    else
+    {
+        createRecList(category);
+    }
 }
 
 void AbStat::update()

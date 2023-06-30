@@ -57,7 +57,17 @@ Rectangle
         anchors.top: parent.top
         anchors.topMargin: -2
 
-        text: word_text
+        text:
+        {
+            if( word_text==="eps" )
+            {
+                "\u03B5"
+            }
+            else
+            {
+                word_text
+            }
+        }
         font.pixelSize: 16
         padding: 3
         focus: false
@@ -82,7 +92,14 @@ Rectangle
         {
             if( wrong_word.length )
             {
-                "(" + wrong_word + ")";
+                if( wrong_word.includes("eps") )
+                {
+                    "(\u03B5)"
+                }
+                else
+                {
+                    "(" + wrong_word + ")";
+                }
             }
             else
             {

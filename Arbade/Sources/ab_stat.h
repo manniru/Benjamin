@@ -27,6 +27,7 @@ public:
     void addRecList(QString word, QString path);
     void createWordEditor(QString category);
     void createRecList(QString category);
+    void createFRecList(QString category);
     void updateMeanVar(QVector<int> *count);
     void moveToOnline(int id);
     QString idToWord(int id);
@@ -52,6 +53,8 @@ private:
     int meanCount(QVector<int> *count);
     int varCount(QVector<int> *count, int mean);
     int haveWord(int word_id, QString path);
+    QString getExtendedName(QString filename);
+    QStringList getWordList(QString filename);
 
     QObject *root;//root qml object
     QObject *editor;//word editor qml object
