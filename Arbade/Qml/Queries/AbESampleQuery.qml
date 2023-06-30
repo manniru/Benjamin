@@ -56,6 +56,18 @@ Window
         }
     }
 
+    Text
+    {
+        id: yes_no_guide
+        anchors.top: e_samples_text.bottom
+        anchors.topMargin: 15
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pixelSize: 16
+
+        text: "(Press Y:generate)"
+        color: "#b4b4b4"
+    }
+
     AbButton
     {
         id: yes_button

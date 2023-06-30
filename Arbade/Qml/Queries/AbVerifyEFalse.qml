@@ -10,7 +10,7 @@ Window
 {   
     title: ""
     height: 180
-    width: efalse_query_text.width + 20
+    width: efalse_query_text.width + 60
     x: (root.width - width) / 2
     y: (root.height - height) / 2
     color: "#2e2e2e"
@@ -35,16 +35,15 @@ Window
         id: efalse_query_text
 
         anchors.left: parent.left
-        anchors.leftMargin: 10
+        anchors.leftMargin: 20
         anchors.top: parent.top
         anchors.topMargin: 17
         font.pixelSize: 20
 
-        text: "There are " + efalse_num + " files in " +
-              "efalse directory,\n" +
-              "Click Y:yes to verify efalse,\n" +
-              "Or N:no to copy efalse files to online.\n" +
-              "Or click on the appropriate button."
+        text: efalse_num + " files in " +
+              "EFalse directory.\n" +
+              "Do you want to verify?"
+
         color: "#b4b4b4"
 
         Keys.onPressed:
@@ -63,6 +62,17 @@ Window
         }
     }
 
+    Text
+    {
+        anchors.top: efalse_query_text.bottom
+        anchors.topMargin: 17
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pixelSize: 16
+
+        text: "(Press Y:yes, N:copy to online)"
+        color: "#b4b4b4"
+    }
+
     AbButton
     {
         id: yes_button
@@ -71,7 +81,7 @@ Window
         anchors.left: parent.left
         anchors.leftMargin: parent.width/4
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
+        anchors.bottomMargin: 20
         DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
 
         onClick:
@@ -88,7 +98,7 @@ Window
         anchors.right: parent.right
         anchors.rightMargin: parent.width/4
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
+        anchors.bottomMargin: 20
         DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
 
         onClick:

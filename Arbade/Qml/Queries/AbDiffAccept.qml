@@ -9,7 +9,7 @@ import QtQuick.Window 2.10
 Window
 {
     title: "Delete File ?"
-    height: changed_word_list.height + 150
+    height: changed_word_list.height + 190
     width: Math.max(changed_word_list.width, accept_label.width) + 50
     property string dialog_result: ""
     property var dialog_label: []
@@ -55,7 +55,8 @@ Window
         id: changed_word_list
         rows: 10
         anchors.left: parent.left
-        anchors.top: accept_label.bottom
+        anchors.top: yes_no_guide.bottom
+        anchors.topMargin: 10
         anchors.leftMargin: 30
         columnSpacing: 20
         flow: GridLayout.TopToBottom
@@ -71,6 +72,17 @@ Window
                 font.pixelSize: 20
             }
         }
+    }
+
+    Text
+    {
+        id: yes_no_guide
+        anchors.top: accept_label.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pixelSize: 16
+
+        text: "(Press Y:save, N:no changes)"
+        color: "#b4b4b4"
     }
 
     AbButton

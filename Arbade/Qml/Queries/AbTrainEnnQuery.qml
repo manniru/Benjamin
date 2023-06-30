@@ -56,6 +56,17 @@ Window
         }
     }
 
+    Text
+    {
+        anchors.top: train_enn_text.bottom
+        anchors.topMargin: 15
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pixelSize: 16
+
+        text: "(Press Y:Train)"
+        color: "#b4b4b4"
+    }
+
     AbButton
     {
         id: yes_button
