@@ -8,6 +8,7 @@
 #include "mm_sound.h"
 #include "mm_usage.h"
 #include "mm_virt.h"
+#include "mm_channel.h"
 
 class MmBar : public QObject
 {
@@ -15,6 +16,9 @@ class MmBar : public QObject
 public:
     explicit MmBar(QObject *root, MmVirt *vi, MmSound *snd,
                    QObject *parent = nullptr);
+
+signals:
+    void startChannel();
 
 private slots:
     void executeAction(QString action);
@@ -38,13 +42,15 @@ private:
     int l_id; //left  id
     int r_id; //right id
 
-    QTimer   *timer;
-    MmParser *parser;
-    MmVirt   *virt;
-    MmSound  *sound;
-    MmUsage  *usage;
-    MmMusic  *music;
-    QObject  *ui;
+    QTimer    *timer;
+    MmParser  *parser;
+    MmVirt    *virt;
+    MmSound   *sound;
+    MmUsage   *usage;
+    MmMusic   *music;
+    QObject   *ui;
+    MmChannel *channel;
+    QThread   *channel_thread;
 
     // These are buffers to help reduce number of updates
     // requests need

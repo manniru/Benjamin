@@ -46,6 +46,10 @@ void MmKeyExec::delayedExec()
     {
         mm_launchScript(RE_WINSCR_DIR"\\git_date.cmd");
     }
+    else if( key_buf=="q" )
+    {
+        mm_closeWindow();
+    }
     else if( key_buf=="s" )
     {
         QString shortcut = "Spotify";
@@ -146,6 +150,11 @@ int MmKeyExec::execWinKey(int key_code, MmKbState st)
         shortcut = "Qt Creator\\Qt Creator 4.15.1 (Community)";
         launcher->focusOpen(shortcut);
 
+        return 1;
+    }
+    else if( key_code=='Q' ) // close window
+    {
+        key_buf = "q";
         return 1;
     }
     else if( key_code=='S' ) // Spotify

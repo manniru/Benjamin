@@ -19,4 +19,8 @@
 #define RE_FIREFOX_DIR  "..\\..\\RAIIS\\Rebound\\Scripts\\Firefox"
 #define RE_WINSCR_DIR   "..\\..\\RAIIS\\Rebound\\Scripts\\Windows"
 
+#define MM_COM_NAME  "com.benjamin.mom"
+#define MM_PIPE_PATH "\\\\.\\pipe\\com_binaee_mom"
+#define MM_PIPE_SEP  ","
+
 #endif // MM_CONFIG_H
