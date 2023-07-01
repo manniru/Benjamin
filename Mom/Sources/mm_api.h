@@ -12,5 +12,6 @@ void mm_getLinkPath(QString path, MmApplication *app);
 void mm_getLinkPathUser(QString path, MmApplication *app);
 void mm_getLinkPathAll(QString path, MmApplication *app);
 HRESULT mm_ResolveIt(LPCSTR lnk_path, MmApplication *app);
+void mm_closeWindow();
 
 #endif // MM_API_H

@@ -94,7 +94,8 @@ void EnnChapar::singleMode(float l_rate, QString l_word)
         float diff_loss = net.last_loss - first_loss;
         if( diff_loss>0 ) // we are not learning anything
         {                 // after 100 epoch
-            qDebug() << "BAD LEARNING" << diff_loss;
+            qDebug() << "BAD LEARNING" << -diff_loss
+                     << "imporoved";
             return;
         }
         if( std::isnan(net.last_loss) )
