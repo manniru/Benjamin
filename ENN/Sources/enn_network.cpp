@@ -7,7 +7,8 @@ using namespace tiny_dnn::layers;
 timer nn_t;
 int nn_epoch;
 
-EnnNetwork::EnnNetwork(QString word, int id)
+EnnNetwork::EnnNetwork(QString word, int id,
+                       QObject *parent) : QObject(parent)
 {
     dataset = new EnnDataset(word, id);
     n_minibatch = 64;
@@ -28,7 +29,7 @@ void EnnNetwork::benchmark()
     tiny_dnn::timer t;  // start the timer
 
     // predict
-    net.predict(dataset->test_datas[0]);
+    net->predict(dataset->test_datas[0]);
 
     double elapsed_s = t.elapsed();
     t.stop();
@@ -49,7 +50,7 @@ void EnnNetwork::save()
     QString mdl_path = "Models/";
     mdl_path += dataset->m_name;
     mdl_path += ".mdl";
-    net.save(mdl_path.toStdString().c_str());
+    net->save(mdl_path.toStdString().c_str());
 }
 
 // return true if need training
@@ -61,7 +62,7 @@ bool EnnNetwork::load()
     if( QFile::exists(model_path) )
     {
         // load model
-        net.load(model_path.toStdString());
+        net->load(model_path.toStdString());
 
         // chack the loss
         float loss = calcLoss();
@@ -75,8 +76,8 @@ bool EnnNetwork::load()
         }
         else if( is_wrong==2 )
         {
-//            net = network(); // reset network
-            net = network<sequential>(); // reset network
+            net = new TdNetwork(); // reset network
+//            net = network<sequential>(); // reset network
             createNNet();
             qDebug() << "Reset from scratch";
             is_wrong = 0;
@@ -105,12 +106,12 @@ void EnnNetwork::createNNet()
 #else
     int f1 = 20;
     int f2 = f1 + 10;
-    net << conv(40, 40, 5, 40, 1, f1)      << activation::leaky_relu() // 40x5 kernel, 1 channel, 10 filter
-        << ave_pool(36, 1, f1, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
-        << conv(18, 1, 3, 1, f1, f2)       << activation::leaky_relu() // 40x5 kernel, 20 channel, 10 filter
-        << ave_pool(16, 1, f2, 2, 1, 2, 1) << activation::leaky_relu()
-        << conv(8, 1, 8, 1, f2, 60)        << activation::leaky_relu() // flatten conv
-        << fc(60, 2)                       << activation::softmax();
+    (*net) << conv(40, 40, 5, 40, 1, f1)      << activation::leaky_relu() // 40x5 kernel, 1 channel, 10 filter
+           << ave_pool(36, 1, f1, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
+           << conv(18, 1, 3, 1, f1, f2)       << activation::leaky_relu() // 40x5 kernel, 20 channel, 10 filter
+           << ave_pool(16, 1, f2, 2, 1, 2, 1) << activation::leaky_relu()
+           << conv(8, 1, 8, 1, f2, 60)        << activation::leaky_relu() // flatten conv
+           << fc(60, 2)                       << activation::softmax();
 #endif
     last_loss = 9999;
 }
@@ -133,13 +134,14 @@ void EnnNetwork::train(float l_rate)
     target_cost = create_balanced_target_cost(dataset->train_labels);
 
     std::vector<tensor_t> input_tensor, output_tensor, t_cost_tensor;
-    net.normalize_tensor(dataset->train_datas, input_tensor);
-    net.normalize_tensor(dataset->train_labels, output_tensor);
-    net.normalize_tensor(target_cost, t_cost_tensor);
+    net->normalizeTensor(dataset->train_datas, input_tensor);
+    net->normalizeTensor(dataset->train_labels, output_tensor);
+    net->normalizeTensor(target_cost, t_cost_tensor);
 
-    net.fit<cross_entropy>(optim, input_tensor, output_tensor,
-                 n_minibatch, n_train_epochs, [&](){;},
-                 [&](){epochLog();}, false, CNN_TASK_SIZE, t_cost_tensor);
+    net->fit(optim, input_tensor, output_tensor,
+                 n_minibatch, n_train_epochs, false, CNN_TASK_SIZE,
+                 t_cost_tensor);
+    connect(net, SIGNAL(OnEpochEnumerate()), this, SLOT(epochLog()));
 
     if( is_wrong!=2 )
     {
@@ -150,7 +152,7 @@ void EnnNetwork::train(float l_rate)
 
 vec_t EnnNetwork::test(vec_t *data)
 {
-    vec_t res = net.predict(*data);
+    vec_t res = net->predict(*data);
     return res;
 }
 
@@ -173,7 +175,7 @@ void EnnNetwork::epochLog()
 
         if( loss<ENN_TARGET_LOSS )
         {
-            net.stop_ongoing_training();
+            net->stopOngoingTraining();
         }
 
         optim.alpha = optim.alpha * 0.95;
@@ -188,7 +190,7 @@ float EnnNetwork::calcLoss()
     float loss = 0;
 
     std::vector<tensor_t> label_tensor;
-    net.normalize_tensor(dataset->train_labels, label_tensor);
+    net->normalizeTensor(dataset->train_labels, label_tensor);
     int len = dataset->train_datas.size();
 
     float          wrong_sum;
@@ -197,7 +199,7 @@ float EnnNetwork::calcLoss()
     wrong_sum = 0;
     for( int i=0 ; i<len ; i++ )
     {
-        vec_t predicted = net.predict(dataset->train_datas[i]);
+        vec_t predicted = net->predict(dataset->train_datas[i]);
         float s_loss = cross_entropy::f(predicted, label_tensor[i][0]);
 
         if( s_loss>10 )
@@ -231,7 +233,7 @@ float EnnNetwork::calcLoss()
             qDebug() << "========= NO CONVERGANCE"
                      << dataset->m_name
                      << " ==========";
-            net.stop_ongoing_training();
+            net->stopOngoingTraining();
             is_wrong = 2;
         }
     }
@@ -313,7 +315,7 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
     }
     if( diff<ENN_TARGET_LOSS && wrong_i.length()<5 )
     {
-        net.stop_ongoing_training();
+        net->stopOngoingTraining();
         is_wrong = 1;
 
         EnnResult acc_test = getAcc(dataset->test_datas,

@@ -2,8 +2,8 @@ TEMPLATE = app
 
 CONFIG += console
 
-#INCLUDEPATH += ../PNN
-INCLUDEPATH += ./Sources
+INCLUDEPATH += ../PNN
+#INCLUDEPATH += ./Sources
 
 #linux:LIBS += -lgio-2.0
 win32:LIBS += -lole32 -luuid
@@ -31,7 +31,10 @@ HEADERS += \
     Sources/enn_dataset.h \
     Sources/enn_dataset_image.h \
     Sources/enn_network.h \
-    Sources/enn_test.h
+    Sources/enn_test.h \
+#    Sources/td_layer.h \
+    Sources/td_network.h \
+    Sources/td_sequential.h
 
 SOURCES += \
     Sources/backend.cpp \
@@ -40,6 +43,9 @@ SOURCES += \
     Sources/enn_dataset_image.cpp \
     Sources/enn_network.cpp \
     Sources/enn_test.cpp \
-    Sources/main.cpp
+    Sources/main.cpp \
+#    Sources/td_layer.cpp \
+    Sources/td_network.cpp \
+    Sources/td_sequential.cpp
 
 win32:SOURCES += ../PNN/aj_dllgen.cpp

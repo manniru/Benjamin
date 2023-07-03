@@ -4,6 +4,8 @@
 #include <QString>
 #include <QDir>
 #include <QtDebug>
+#include <QObject>
+#include "td_network.h"
 
 #include <tiny_dnn/tiny_dnn.h>
 #ifdef ENN_IMAGE_DATASET
@@ -24,10 +26,11 @@ typedef struct EnnResult
     int det_f = 0; //corrrect detected false
 } EnnResult;
 
-class EnnNetwork
+class EnnNetwork : public QObject
 {
+    Q_OBJECT
 public:
-    EnnNetwork(QString word, int id);
+    explicit EnnNetwork(QString word, int id, QObject *parent = nullptr);
     ~EnnNetwork();
 
     bool  load();
@@ -38,9 +41,11 @@ public:
     EnnDataset *dataset;
     float       last_loss;
 
+private slots:
+    void  epochLog();
+
 private:
     void  save();
-    void  epochLog();
     float calcLoss();
     void  createNNet();
     EnnResult getAcc(std::vector<vec_t> &data,
@@ -48,8 +53,8 @@ private:
     void handleWrongs(float diff, QVector<int> &wrong_i,
                       QVector<float> &wrong_loss);
 
-//    network net;
-    network<sequential> net;
+    TdNetwork *net;
+//    network<sequential> net;
     adagrad optim;
 
     int n_minibatch;
