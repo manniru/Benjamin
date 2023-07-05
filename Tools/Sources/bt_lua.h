@@ -10,13 +10,14 @@ extern "C"
 }
 #include <windows.h>
 #include "config.h"
+#include "bt_state.h"
 
 #define BT_PN_SEPARATOR ","
 
 class BtLua
 {
 public:
-    explicit BtLua();
+    explicit BtLua(BtState *st);
     void run(QString word);
     ~BtLua();
 
@@ -28,6 +29,7 @@ private:
 
     HANDLE hPipe;
     lua_State *lst;
+    BtState *state;
 };
 
 #endif // BT_LUA_H

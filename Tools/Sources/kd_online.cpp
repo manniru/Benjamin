@@ -4,7 +4,7 @@ KdOnline::KdOnline(BtState *state, QObject *parent): QObject(parent)
 {
     cy_buf = new BtCyclic(BT_REC_RATE*BT_BUF_SIZE);
 
-    ab_src = new BtRecorder(cy_buf);
+    ab_src = new BtRecorder(cy_buf, state);
     wav_w  = new BtWavWriter(cy_buf, state);
 
     oa_model = new KdAModel;

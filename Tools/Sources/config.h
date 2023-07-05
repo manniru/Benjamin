@@ -16,15 +16,14 @@
 
 #define MOM_LABEL_DIR    "..\\Mom\\Labels"
 #define MOM_LABEL_STATUS "\\r2_status.lbl"
-// Pipe Named Path follow \\.\pipe\[pipename] format
-// where [pipename] can be change and dot represent
-// server name, dot refer to local computer
-#define BT_PIPE_ADDRESS   "\\\\.\\pipe\\com_binaee_rebound"
+
+#define BT_PIPE_ADDRESS   "com_binaee_rebound"
 
 #define BT_WORDS_PATH     KAL_NATO_DIR "exp/" KAL_MODE "/graph/words.txt"
 #define BT_OAMDL_PATH     KAL_NATO_DIR "exp/" KAL_MODE "_online/final.oalimdl" //Online Alignment
 #define BT_FST_PATH       KAL_NATO_DIR "exp/" KAL_MODE "/graph/HCLG.fst"
 #define BT_GCMVN_PATH     KAL_NATO_DIR "exp/" KAL_MODE "_online/global_cmvn.stats"
+#define BT_MIC_NAME       ""
 #define BT_BAR_RESULT     "bar_result"
 #define BT_BAR_DIR_WS     "..\\Mom\\Labels\\"
 #define BT_BAR_RESULT_WS  "l1_benjamin.lbl"

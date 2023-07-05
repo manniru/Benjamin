@@ -2,8 +2,9 @@
 #include <QtDebug>
 #include <QDir>
 
-BtLua::BtLua()
+BtLua::BtLua(BtState *st)
 {
+    state = st;
     lst = luaL_newstate();
     luaL_openlibs(lst);
 
@@ -12,25 +13,32 @@ BtLua::BtLua()
 
 void BtLua::connectPipe()
 {
+    // Pipe Named Path follow \\.\pipe\[pipename] format
+    // where [pipename] can be change and dot represent
+    // server name, dot refer to local computer
+    QString np_address = "\\\\.\\pipe\\";
+    np_address += state->channel_np;
+    const char *np_address_c = np_address.toStdString().c_str();
     // 0: Default Wait Time
-    int np_is_available = WaitNamedPipeA(BT_PIPE_ADDRESS, 0);
-    if( np_is_available )
+    qDebug() << ">>>>>>>NAME PIPE ADDRESS" << np_address;
+    int ret = WaitNamedPipeA(np_address_c, 0);
+    if( ret )
     {
-        hPipe = CreateFileA(BT_PIPE_ADDRESS, GENERIC_WRITE, // dwDesiredAccess
+        hPipe = CreateFileA(np_address_c, GENERIC_WRITE, // dwDesiredAccess
                             0, nullptr,    // lpSecurityAttributes
                             OPEN_EXISTING,  // dwCreationDisposition
                             0, nullptr);    // hTemplateFile
 
         if( hPipe==INVALID_HANDLE_VALUE )
         {
-            qDebug() << "Error 120: Cannot create " BT_PIPE_ADDRESS;
+            qDebug() << "Error 120: Cannot create " << np_address;
         }
     }
     else
     {
         hPipe = INVALID_HANDLE_VALUE;
-        qDebug() << "Error 121: Pipe " BT_PIPE_ADDRESS
-                    " not found";
+        qDebug() << "Error 121: Pipe " << np_address
+                 << " not found";
     }
 }
 

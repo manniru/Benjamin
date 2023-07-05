@@ -25,7 +25,7 @@ BtCaptain::BtCaptain(BtState *state,
 //    strict_word << "echo";
     strict_word << "home";
 #ifdef WIN32
-    lua = new BtLua();
+    lua = new BtLua(state);
 #endif
 }
 
