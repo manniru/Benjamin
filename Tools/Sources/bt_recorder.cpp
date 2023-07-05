@@ -2,9 +2,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-BtRecorder::BtRecorder(BtCyclic *buffer, QObject *parent): QObject(parent)
+BtRecorder::BtRecorder(BtCyclic *buffer, BtState *st,
+                       QObject *parent): QObject(parent)
 {
     cy_buf  = buffer;
+    state   = st;
     read_pf = 0;
 
 #ifdef __linux__
@@ -45,19 +47,91 @@ BtRecorder::~BtRecorder()
 
 void BtRecorder::openMic()
 {
-    PaError pa_err = Pa_OpenDefaultStream(&pa_stream, 1, 0, paInt16
-                         , BT_REC_RATE, 0, PaCallback, this);
+    PaError pa_err;
+    if( state->mic_name.length() )
+    {
+        pa_err = openMic(state->mic_name);
+    }
+    else
+    {
+        qDebug() << ">>>>>>>opening default";
+        pa_err = Pa_OpenDefaultStream(&pa_stream, 1, 0, paInt16
+                             , BT_REC_RATE, 0, PaCallback, this);
+    }
+
     if( pa_err )
     {
-        qDebug() << "PortAudio failed to open the default stream";
+        qDebug() << "PortAudio failed to open the stream";
         pa_stream = NULL;
     }
+}
+
+PaError BtRecorder::openMic(QString mic_name)
+{
+//    const PaDeviceInfo *deviceInfo = NULL;
+    PaStreamParameters inputParameters;
+    PaError ret;
+
+    int id = getMicId(mic_name);
+    if( id>=0 )
+    {
+        qDebug() << ">>>>>>>Opening Device" << id
+                 << ":" << mic_name;
+        //    deviceInfo = Pa_GetDeviceInfo(i);
+        inputParameters.device = id;
+        inputParameters.channelCount = 1;
+        inputParameters.sampleFormat = paInt16;
+        //    inputParameters.suggestedLatency =
+        //            deviceInfo->defaultLowInputLatency;
+        inputParameters.hostApiSpecificStreamInfo = NULL;
+
+        ret = Pa_OpenStream(&pa_stream, &inputParameters, NULL,
+                            BT_REC_RATE, 0, paNoFlag, PaCallback, this);
+
+        return ret;
+    }
+
+    // opening mic_name failed, now we open default microphone
+    ret = Pa_OpenDefaultStream(&pa_stream, 1, 0, paInt16
+                         , BT_REC_RATE, 0, PaCallback, this);
+    qDebug() << ">>>>>>>opening default";
+    return ret;
+}
+
+int BtRecorder::getMicId(QString mic_name )
+{
+    int numDevices = Pa_GetDeviceCount();
+    const PaDeviceInfo *deviceInfo = NULL;
+
+    for( int i=0 ; i<numDevices ; i++ )
+    {
+        deviceInfo = Pa_GetDeviceInfo(i);
+        if( deviceInfo->maxInputChannels==0 )
+        {
+            // skip output devices (speakers)
+            continue;
+        }
+        QString dev_name = deviceInfo->name;
+        qDebug() << "Device" << i
+                 << ":" << dev_name;
+        if( QString(dev_name).contains(mic_name) )
+        {
+            qDebug() << "Found" << dev_name;
+            return i;
+        }
+    }
+    return -1;
 }
 
 // This function deosn't need to be called
 // Only use if you don't plan on using read function
 void BtRecorder::startStream()
 {
+    if( pa_stream==NULL )
+    {
+        qDebug() << "pa_stream is NULL";
+        exit(0);
+    }
     if( Pa_IsStreamStopped(pa_stream) )
     {
         PaError paerr = Pa_StartStream(pa_stream);

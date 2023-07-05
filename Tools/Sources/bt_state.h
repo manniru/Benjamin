@@ -1,6 +1,7 @@
 #ifndef BT_STATE_H
 #define BT_STATE_H
 
+#include <QString>
 #include "config.h"
 
 #define BT_NORM_MODE 0     // online detection mode
@@ -18,6 +19,8 @@ public:
     char *mdl_path;
     char *word_path;
     char *cmvn_stat_path;
+    QString channel_np; // named pipe debug channel
+    QString mic_name;
 
     // decoder
     int max_active;

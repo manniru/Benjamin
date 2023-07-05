@@ -27,10 +27,10 @@ BtState::BtState()
 void BtState::load_config()
 {
     TaINI *config = ini_load("BaTool.conf");
-    fst_path       = ini_get(config, "model", "fst");;
-    mdl_path       = ini_get(config, "model", "mdl");;
-    word_path      = ini_get(config, "model", "word");;
-    cmvn_stat_path = ini_get(config, "model", "cmvn");;
+    fst_path       = ini_get(config, "model", "fst");
+    mdl_path       = ini_get(config, "model", "mdl");
+    word_path      = ini_get(config, "model", "word");
+    cmvn_stat_path = ini_get(config, "model", "cmvn");
 //    qDebug() << "name:" << cmvn_stat_path;
 
     // decoder
@@ -53,10 +53,19 @@ void BtState::load_config()
     // captain
     buf = ini_get(config, "captain", "hard_threshold");
     hard_threshold = buf.toDouble();
+
+    // misc
+    mic_name = ini_get(config, "misc", "mic");
+    channel_np = ini_get(config, "misc", "channel");
+    if( channel_np.length()==0 )
+    {
+        channel_np = BT_PIPE_ADDRESS;
+    }
 }
 
 void BtState::load_default()
 {
+    // model
     fst_path       = BT_FST_PATH;
     mdl_path       = BT_OAMDL_PATH;
     word_path      = BT_WORDS_PATH;
@@ -71,4 +80,8 @@ void BtState::load_default()
 
     // captain
     hard_threshold = KAL_HARD_TRESHOLD;
+
+    // misc
+    mic_name       = BT_MIC_NAME;
+    channel_np     = BT_PIPE_ADDRESS;
 }

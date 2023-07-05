@@ -6,8 +6,9 @@
 #include <QDebug>
 #include <QThread>
 
-#include "bt_cyclic.h"
 #include <portaudio.h>
+#include "bt_cyclic.h"
+#include "bt_state.h"
 
 #define BT_CON_TIMER     1000
 #define BT_INV_TIME     -1
@@ -16,7 +17,8 @@ class BtRecorder: public QObject
 {
     Q_OBJECT
 public:
-    explicit BtRecorder(BtCyclic *buffer, QObject *parent = nullptr);
+    explicit BtRecorder(BtCyclic *buffer, BtState *st,
+                        QObject *parent = nullptr);
 
     // The real PortAudio callback delegates to this one
     int Callback(int16_t *data, int size);
@@ -32,8 +34,11 @@ private slots:
 
 private:
     void openMic();
+    PaError openMic(QString mic_name);
+    int getMicId(QString mic_name);
 
     PaStream *pa_stream;
+    BtState *state;
     QTimer *con_timer; // check microphone connection periodically
     bool pa_started_; // becomes "true" after "pa_stream_" is started
     uint report_interval_; // interval (in Read() calls) to report PA rb overflows
