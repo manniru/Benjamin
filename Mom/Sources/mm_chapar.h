@@ -26,6 +26,7 @@ private:
 
     MmBar *bar;
     MmMonitor  *mon;
+    MmState    *state;
     MmVirt     *virt;
     MmSound    *sound;
     HWND hWnd;

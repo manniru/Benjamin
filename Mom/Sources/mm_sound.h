@@ -8,12 +8,13 @@
 
 #include "mm_virt.h"
 #include "mm_lua.h"
+#include "mm_state.h"
 
 class MmSound : public QObject
 {
     Q_OBJECT
 public:
-    explicit MmSound(QObject *parent = nullptr);
+    explicit MmSound(MmState *st, QObject *parent = nullptr);
     ~MmSound();
 
     void leftClick();
@@ -21,14 +22,22 @@ public:
     void volumeDown();
     QString getLabel();
 
+private slots:
+    void micTimeOut();
+
 private:
     QString getName(IMMDevice *dev);
     int     getVolume(IMMDevice *dev);
     int     isHeadset(IMMDevice *dev);
     void    setDevice(LPWSTR dev_iid);
+    void    setVolume(IMMDevice *spkr_dev, int volume);
+    void    updateDefualtMic();
     int     getNextIndex();
+    void    updateMic();
 
-    QTimer *timer;
+    MmState   *state;
+    QTimer    *mic_timer;
+    IMMDevice *mic_dev;
     IMMDeviceEnumerator *device_enum;
     IMMDeviceCollection *collection;
 };

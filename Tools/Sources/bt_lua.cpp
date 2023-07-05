@@ -20,7 +20,6 @@ void BtLua::connectPipe()
     np_address += state->channel_np;
     const char *np_address_c = np_address.toStdString().c_str();
     // 0: Default Wait Time
-    qDebug() << ">>>>>>>NAME PIPE ADDRESS" << np_address;
     int ret = WaitNamedPipeA(np_address_c, 0);
     if( ret )
     {

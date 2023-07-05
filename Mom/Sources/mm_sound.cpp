@@ -5,8 +5,10 @@
 #include <functiondiscoverykeys_devpkey.h>
 #include <QDebug>
 
-MmSound::MmSound(QObject *parent) : QObject(parent)
+MmSound::MmSound(MmState *st, QObject *parent)
+    : QObject(parent)
 {
+    state = st;
     HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
                                     CLSCTX_INPROC_SERVER,
                                     IID_PPV_ARGS(&device_enum));
@@ -25,11 +27,28 @@ MmSound::MmSound(QObject *parent) : QObject(parent)
         qDebug() << "IMMDeviceCollection::EnumAudioEndpoints: " << hr;
         return;
     }
+
+    mic_timer = new QTimer();
+    connect(mic_timer, SIGNAL(timeout()), this, SLOT(micTimeOut()));
+    mic_timer->start(15000);
+    updateMic();
 }
 
 MmSound::~MmSound()
 {
     ;
+}
+
+void MmSound::micTimeOut()
+{
+    updateMic();
+    int vol = getVolume(mic_dev);
+    if( vol<100 )
+    {
+        qDebug() << "micTimeOut: set volume from" << vol
+                 << "to" << 100;
+        setVolume(mic_dev, 100);
+    }
 }
 
 void MmSound::leftClick()
@@ -199,10 +218,54 @@ int MmSound::getNextIndex()
             }
         }
 
-        qDebug() << "[" << i << "]\t" << getName(p_device);
+//        qDebug() << "[" << i << "]\t" << getName(p_device);
     }
 
     return -1;
+}
+
+void MmSound::updateMic()
+{
+    HRESULT hr;
+
+    if( state->mic_name.length()==0 )
+    {
+        updateDefualtMic();
+    }
+
+    // Retrieve the number of active audio devices for the specified direction
+    UINT count = 0;
+    collection->GetCount(&count);
+
+    for( UINT i=0 ; i<count ; i++ )
+    {
+        IMMDevice *p_device;
+        hr = collection->Item(i, &p_device);
+        if( hr )
+        {
+            qDebug() << i << "Getting Item Failed";
+            return;
+        }
+//        qDebug() << "[" << i << "]\t" << getName(p_device);
+        QString mic_dev_name = getName(p_device);
+        if( mic_dev_name==state->mic_name )
+        {
+            mic_dev = p_device;
+            return;
+        }
+    }
+    updateDefualtMic();
+}
+
+void MmSound::updateDefualtMic()
+{
+    HRESULT hr = device_enum->GetDefaultAudioEndpoint(
+                              eCapture, eMultimedia, &mic_dev);
+    if( hr )
+    {
+        qDebug() << "updateDefualtMic Failed" << hr;
+        return;
+    }
 }
 
 void MmSound::volumeUp()
@@ -250,7 +313,7 @@ void MmSound::volumeDown()
 
     IAudioEndpointVolume *endpointVolume = NULL;
     hr = spkr_dev->Activate(__uuidof(IAudioEndpointVolume),
-                              CLSCTX_INPROC_SERVER, NULL, (LPVOID *)&endpointVolume);
+                    CLSCTX_INPROC_SERVER, NULL, (LPVOID *)&endpointVolume);
 
     float volume = 0;
     hr = endpointVolume->GetMasterVolumeLevelScalar(&volume);
@@ -267,5 +330,14 @@ void MmSound::volumeDown()
     endpointVolume->SetMasterVolumeLevelScalar(volume, NULL);
 
     endpointVolume->Release();
+}
 
+void MmSound::setVolume(IMMDevice *spkr_dev, int volume)
+{
+    float volume_f = volume/100.0;
+    IAudioEndpointVolume *endpointVolume = NULL;
+    spkr_dev->Activate(__uuidof(IAudioEndpointVolume),
+                    CLSCTX_INPROC_SERVER, NULL, (LPVOID *)&endpointVolume);
+    endpointVolume->SetMasterVolumeLevelScalar(volume_f, NULL);
+    endpointVolume->Release();
 }

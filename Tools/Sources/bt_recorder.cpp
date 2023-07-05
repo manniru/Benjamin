@@ -54,7 +54,7 @@ void BtRecorder::openMic()
     }
     else
     {
-        qDebug() << ">>>>>>>opening default";
+        qDebug() << "Opening system default microphone";
         pa_err = Pa_OpenDefaultStream(&pa_stream, 1, 0, paInt16
                              , BT_REC_RATE, 0, PaCallback, this);
     }
@@ -75,8 +75,8 @@ PaError BtRecorder::openMic(QString mic_name)
     int id = getMicId(mic_name);
     if( id>=0 )
     {
-        qDebug() << ">>>>>>>Opening Device" << id
-                 << ":" << mic_name;
+//        qDebug() << "Opening device" << id
+//                 << ":" << mic_name;
         //    deviceInfo = Pa_GetDeviceInfo(i);
         inputParameters.device = id;
         inputParameters.channelCount = 1;
@@ -94,7 +94,7 @@ PaError BtRecorder::openMic(QString mic_name)
     // opening mic_name failed, now we open default microphone
     ret = Pa_OpenDefaultStream(&pa_stream, 1, 0, paInt16
                          , BT_REC_RATE, 0, PaCallback, this);
-    qDebug() << ">>>>>>>opening default";
+    qDebug() << "Opening system default microphone";
     return ret;
 }
 
@@ -112,14 +112,16 @@ int BtRecorder::getMicId(QString mic_name )
             continue;
         }
         QString dev_name = deviceInfo->name;
-        qDebug() << "Device" << i
-                 << ":" << dev_name;
+//        qDebug() << "Device" << i
+//                 << ":" << dev_name;
         if( QString(dev_name).contains(mic_name) )
         {
-            qDebug() << "Found" << dev_name;
+//            qDebug() << "Found" << dev_name;
             return i;
         }
     }
+    qDebug() << "Error 141: Cannot find" << mic_name
+             << "in the microphone list";
     return -1;
 }
 

@@ -15,6 +15,7 @@ typedef struct TaINI TaINI;
 TaINI*  ini_load(const char *filename);
 void    ini_free(TaINI *ini);
 char   *ini_get(TaINI *ini, const char *section, const char *key);
-int     ini_sget(TaINI *ini, const char *section, const char *key, const char *scanfmt, void *dst);
+int     ini_sget(TaINI *ini, const char *section, const char *key,
+                 const char *scanfmt, void *dst);
 
 #endif

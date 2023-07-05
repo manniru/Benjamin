@@ -5,7 +5,8 @@ MmChapar::MmChapar(QObject *root, QObject *parent) : QObject(parent)
 {
     mon   = new MmMonitor(root);
     virt  = new MmVirt;
-    sound = new MmSound;
+    state = new MmState();
+    sound = new MmSound(state);
     bar   = new MmBar(root, virt, sound);
     key   = new MmKeyboard(virt, sound);
 
