@@ -29,12 +29,14 @@ SOURCES += Sources/main.cpp \
            Sources/mm_nt_user.cpp \
            Sources/mm_parser.cpp \
            Sources/mm_sound.cpp \
+           Sources/mm_state.cpp \
            Sources/mm_usage.cpp \
            Sources/mm_virt.cpp \
            Sources/mm_watcher.cpp \
            Sources/mm_win32.cpp \
            Sources/mm_win32_win.cpp \
-           Sources/mm_win_manager.cpp
+           Sources/mm_win_manager.cpp \
+           Sources/ta_ini.cpp
 
 win32:LIBS += -L../PNN/libs \
              -lKernel32 -lUser32 -lole32 \
@@ -70,6 +72,7 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_nt_user.h \
            Sources/mm_parser.h \
            Sources/mm_sound.h \
+           Sources/mm_state.h \
            Sources/mm_usage.h \
            Sources/mm_virt.h \
            Sources/mm_watcher.h \
@@ -77,4 +80,5 @@ HEADERS += Sources/mm_config.h \
            Sources/mm_win32_const.h \
            Sources/mm_win32_win.h \
            Sources/mm_win_manager.h \
+           Sources/ta_ini.h \
            Sources/win_policy.h
