@@ -19,16 +19,12 @@
 #include <vector>
 #include <QString>
 #include <QDebug>
+#include <type_traits>
 
-#include "tiny_dnn/lossfunctions/loss_function.h"
 //#include "tiny_dnn/nodes.h"
 #include "td_sequential.h"
+#include "tiny_dnn/lossfunctions/loss_function.h"
 #include "tiny_dnn/util/util.h"
-
-class TdNetwork;
-
-template <typename Layer>
-TdNetwork &operator<<(TdNetwork &n, Layer &&l);
 
 class TdNetwork : public QObject
 {
@@ -78,8 +74,6 @@ public:
                     const std::vector<tiny_dnn::tensor_t> &t);
     size_t layerSize();
     size_t depth();
-    tiny_dnn::layer *operator[](size_t index);
-    template <typename T> T &at(size_t index);
     size_t outDataSize();
     size_t inDataSize();
     template <typename WeightInit>
@@ -87,9 +81,11 @@ public:
     template <typename BiasInit>
     TdNetwork &biasInit(const BiasInit &f);
     void load(const std::string &filename);
-    void save(const std::string &filename);
-    void toArchive(cereal::BinaryOutputArchive &ar);
-    void fromArchive(cereal::BinaryInputArchive &ar);
+    void save(const std::string &filename) const;
+    template <typename OutputArchive>
+    void toArchive(OutputArchive &ar) const;
+    template <typename InputArchive>
+    void fromArchive(InputArchive &ar);
     bool fit(tiny_dnn::adagrad &optimizer,
              const std::vector<tiny_dnn::tensor_t> &inputs,
              const std::vector<tiny_dnn::tensor_t> &desired_outputs,
@@ -105,6 +101,17 @@ public:
                          std::vector<tiny_dnn::tensor_t> &normalized);
     void normalizeTensor(const std::vector<tiny_dnn::label_t> &inputs,
                           std::vector<tiny_dnn::tensor_t> &normalized);
+    float_t fprop_max(const tiny_dnn::vec_t &in);
+    tiny_dnn::label_t fprop_max_index(const tiny_dnn::vec_t &in);
+    TdNetwork* addFC(int in_dim, int out_dim);
+    TdNetwork* addLeakyRelu();
+    TdNetwork* addConv(int in_width, int in_height, int window_width,
+                 int window_height, int in_channels,
+                 int out_channels);
+    TdNetwork* addAvePool(int in_width, int in_height, int in_channels,
+                    int pool_size_x, int pool_size_y, int stride_x,
+                    int stride_y);
+    TdNetwork* addSoftMax();
 
     TdSequential net;
     typedef typename std::vector<tiny_dnn::layer *>::iterator iterator;
@@ -117,14 +124,6 @@ public:
 signals:
     void onBatchEnumerate();
     void OnEpochEnumerate();
-
-protected:
-    float_t fprop_max(const tiny_dnn::vec_t &in);
-
-    tiny_dnn::label_t fprop_max_index(const tiny_dnn::vec_t &in);
-
-    template <typename Layer>
-    friend TdNetwork &operator<<(TdNetwork &n, Layer &&l);
 
 private:
     void train_once(tiny_dnn::adagrad &optimizer,
@@ -154,13 +153,6 @@ private:
     const tiny_dnn::tensor_t *getTargetCostSamplePointer(
             const std::vector<tiny_dnn::tensor_t> &t_cost, size_t i);
 };
-
-template <typename Layer>
-TdNetwork &operator <<(TdNetwork &n, Layer &&l)
-{
-    n.net.add(std::forward<Layer>(l));
-    return n;
-}
 
 template <typename Char, typename CharTraits>
 std::basic_ostream<Char, CharTraits> &operator<<(

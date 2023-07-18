@@ -2,7 +2,7 @@
 #include "tiny_dnn/util/target_cost.h"
 
 using namespace tiny_dnn::activation;
-using namespace tiny_dnn::layers;
+//using namespace tiny_dnn::layers;
 
 timer nn_t;
 int nn_epoch;
@@ -50,7 +50,7 @@ void EnnNetwork::save()
     QString mdl_path = "Models/";
     mdl_path += dataset->m_name;
     mdl_path += ".mdl";
-    net->save(mdl_path.toStdString().c_str());
+//    net->save(mdl_path.toStdString().c_str());
 }
 
 // return true if need training
@@ -59,10 +59,11 @@ bool EnnNetwork::load()
     QString model_path = "Models/";
     model_path += dataset->m_name;
     model_path += ".mdl";
-    if( QFile::exists(model_path) )
+//    if( QFile::exists(model_path) )
+    if( 0 )
     {
         // load model
-        net->load(model_path.toStdString());
+//        net->load(model_path.toStdString());
 
         // chack the loss
         float loss = calcLoss();
@@ -106,12 +107,12 @@ void EnnNetwork::createNNet()
 #else
     int f1 = 20;
     int f2 = f1 + 10;
-    (*net) << conv(40, 40, 5, 40, 1, f1)      << activation::leaky_relu() // 40x5 kernel, 1 channel, 10 filter
-           << ave_pool(36, 1, f1, 2, 1, 2, 1) << activation::leaky_relu() // pool 2x1, stride 2x1
-           << conv(18, 1, 3, 1, f1, f2)       << activation::leaky_relu() // 40x5 kernel, 20 channel, 10 filter
-           << ave_pool(16, 1, f2, 2, 1, 2, 1) << activation::leaky_relu()
-           << conv(8, 1, 8, 1, f2, 60)        << activation::leaky_relu() // flatten conv
-           << fc(60, 2)                       << activation::softmax();
+    net->addAvePool(36, 1, f1, 2, 1, 2, 1)  ->addLeakyRelu();
+    net->addConv(40, 40, 5, 40, 1, f1)      ->addLeakyRelu();
+    net->addConv(18, 1, 3, 1, f1, f2)       ->addLeakyRelu();
+    net->addAvePool(16, 1, f2, 2, 1, 2, 1)  ->addLeakyRelu();
+    net->addConv(8, 1, 8, 1, f2, 60)        ->addLeakyRelu();
+    net->addFC(60, 2)                       ->addSoftMax();
 #endif
     last_loss = 9999;
 }
