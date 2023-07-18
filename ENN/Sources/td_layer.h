@@ -47,9 +47,6 @@ public:
     TdLayer(TdLayer &&) = default;
     ~TdLayer() = default;
 
-    TdLayer &operator=(const TdLayer &) = default;
-    TdLayer &operator=(TdLayer &&) = default;
-
     void setParallelize(bool parallelize);
     void setBackend(std::shared_ptr<tiny_dnn::core::backend> b);
     void setBackendType(tiny_dnn::core::backend_t bt);
@@ -112,11 +109,6 @@ public:
     TdLayer &weightInit(std::shared_ptr<WeightInit> f);
     template <typename BiasInit>
     TdLayer &biasInit(std::shared_ptr<BiasInit> f);
-    virtual void save(std::ostream &os,
-        const int precision = std::numeric_limits<float_t>::digits10 + 2) const;
-    virtual void load(std::istream &is,
-        const int precision = std::numeric_limits<float_t>::digits10 + 2);
-    virtual void load(const std::vector<float_t> &src, int &idx);
     /**
      * @param in_data  input vectors of this layer (data, weight, bias)
      * @param out_data output vectors

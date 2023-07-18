@@ -11,8 +11,8 @@
 TdLayer::TdLayer(const std::vector<tiny_dnn::vector_type> &in_type,
                  const std::vector<tiny_dnn::vector_type> &out_type,
                  QObject *parent) : QObject(parent),
-                                    node(in_type.size(),
-                                         out_type.size())
+    node(in_type.size(),
+         out_type.size())
 {
     initialized = false;
     parallelized = true;
@@ -117,8 +117,8 @@ size_t TdLayer::outDataSize() const
         return out_type[i] == tiny_dnn::vector_type::data;
     }, [](const tiny_dnn::shape3d &s)
     {
-        return s.size();
-    });
+    return s.size();
+});
 }
 
 std::vector<tiny_dnn::shape3d> TdLayer::inDataShape()
@@ -377,48 +377,6 @@ size_t TdLayer::fan_out_size(size_t) const
     return fan_out_size();  // fallback to single weight matrix
 }
 
-/*by default, we want there to be enough precision*/
-void TdLayer::save(std::ostream &os, const int precision) const
-{
-    os << std::setprecision(precision);
-    auto all_weights = weights();
-    for( auto &weight:all_weights )
-    {
-        for( auto w:*weight )
-        {
-            os << w << " ";
-        }
-    }
-}
-
-/*by default, we want there to be enough precision*/
-void TdLayer::load(std::istream &is, const int precision)
-{  // NOLINT
-    is >> std::setprecision(precision);
-    auto all_weights = weights();
-    for( auto &weight:all_weights )
-    {
-        for( auto &w:*weight )
-        {
-            is >> w;
-        }
-    }
-    initialized = true;
-}
-
-void TdLayer::load(const std::vector<float_t> &src, int &idx)
-{  // NOLINT
-    auto all_weights = weights();
-    for( auto &weight:all_weights )
-    {
-        for( auto &w:*weight )
-        {
-            w = src[idx++];
-        }
-    }
-    initialized = true;
-}
-
 // called afrer updating weight
 void TdLayer::postUpdate()
 {
@@ -435,23 +393,23 @@ void TdLayer::setContext(tiny_dnn::net_phase ctx)
 
 std::vector<tiny_dnn::tensor_t> TdLayer::backward(const std::vector<tiny_dnn::tensor_t> &out_grads)
 {  // for test
-  setup(false);
+    setup(false);
 
-  std::vector<std::vector<const tiny_dnn::vec_t *>> grads2;
-  grads2.resize(out_grads.size());
-  for( size_t i=0 ; i<out_grads.size() ; ++i )
-  {
-    grads2[i].resize(out_grads[i].size());
-    for( size_t j=0 ; j<out_grads[i].size() ; ++j )
+    std::vector<std::vector<const tiny_dnn::vec_t *>> grads2;
+    grads2.resize(out_grads.size());
+    for( size_t i=0 ; i<out_grads.size() ; ++i )
     {
-      grads2[i][j] = &out_grads[i][j];
+        grads2[i].resize(out_grads[i].size());
+        for( size_t j=0 ; j<out_grads[i].size() ; ++j )
+        {
+            grads2[i][j] = &out_grads[i][j];
+        }
     }
-  }
 
-  setOutGrads(&grads2[0], grads2.size());
-  backward();
-  return tiny_dnn::map_<tiny_dnn::tensor_t>(inputs(),
-                        [](tiny_dnn::edgeptr_t e) { return *e->get_gradient(); });
+    setOutGrads(&grads2[0], grads2.size());
+    backward();
+    return tiny_dnn::map_<tiny_dnn::tensor_t>(inputs(),
+                                              [](tiny_dnn::edgeptr_t e) { return *e->get_gradient(); });
 }
 
 /* @brief The purpose of this method is to forward the data from the
@@ -538,7 +496,7 @@ void TdLayer::backward()
  */
 void TdLayer::setup(bool reset_weight)
 {
-     /* The input shape (width x height x depth) must be equal to the number
+    /* The input shape (width x height x depth) must be equal to the number
       * of input channels a.k.a the number of incoming vectors or 'edges' in
       * the computational nomenclature. Same is applied to output shape and
       * numbers of output edges.*/

@@ -118,7 +118,7 @@ void EnnChapar::testMode()
     QString model_name = "echo";
     QString input_name = "five" ;
     EnnNetwork net(model_name, -1); //id -1 works all the time
-    net.load();
+//    net.load();
     EnnTest    in(input_name);
     vec_t out = net.test(&(in.image));
     qDebug() << "Load:" << in.img_address;

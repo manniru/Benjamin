@@ -33,6 +33,7 @@ HEADERS += \
     Sources/enn_network.h \
     Sources/enn_test.h \
 #    Sources/td_layer.h \
+    Sources/td_layer.h \
     Sources/td_network.h \
     Sources/td_sequential.h
 
@@ -45,6 +46,7 @@ SOURCES += \
     Sources/enn_test.cpp \
     Sources/main.cpp \
 #    Sources/td_layer.cpp \
+    Sources/td_layer.cpp \
     Sources/td_network.cpp \
     Sources/td_sequential.cpp
 
