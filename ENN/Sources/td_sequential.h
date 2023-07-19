@@ -9,11 +9,17 @@
 #include <QObject>
 #include <QDebug>
 
-#include <cereal/types/tuple.hpp>
-#include <cereal/types/utility.hpp>
 #include "tiny_dnn/layers/layer.h"
 #include "tiny_dnn/optimizers/optimizer.h"
 #include "tiny_dnn/util/util.h"
+
+//////////////////////////
+#include "tiny_dnn/layers/average_pooling_layer.h"
+#include "tiny_dnn/layers/convolutional_layer.h"
+#include "tiny_dnn/layers/fully_connected_layer.h"
+#include "tiny_dnn/activations/leaky_relu_layer.h"
+#include "tiny_dnn/activations/softmax_layer.h"
+/////////////////////////
 
 /** this class holds list of pointer of Node, and provides entry point of
  * forward / backward operations.
@@ -45,40 +51,20 @@ public:
     void backward(const std::vector<tiny_dnn::tensor_t> &first);
     std::vector<tiny_dnn::tensor_t> forward(
             const std::vector<tiny_dnn::tensor_t> &first);
-    template <typename T> void add(T &&layer);
+    void add(tiny_dnn::layer *layer);
     void checkConnectivity();
-    template <typename InputArchive> void loadConnections(InputArchive &ia);
-    template <typename OutputArchive> void saveConnections(OutputArchive &);
     void updateWeights(tiny_dnn::optimizer *opt);
     void setup(bool reset_weight);
     void clearGrads();
-    size_t size();
-    iterator begin();
-    iterator end();
-    const_iterator begin() const;
-    const_iterator end() const;
-    tiny_dnn::layer *operator[](size_t index);
     size_t inDataSize();
     size_t outDataSize() const;
-    template <typename T> T &at(size_t index);
 
     float_t targetValueMin(int out_channel = 0) const;
     float_t targetValueMax(int out_channel = 0) const;
-    void save(std::ostream &os);
-    void load(std::istream &is);
-    void load(const std::vector<float_t> &vec);
     void label2vec(const tiny_dnn::label_t *t, size_t num,
                    std::vector<tiny_dnn::vec_t> &vec);
     void label2vec(const std::vector<tiny_dnn::label_t> &labels,
                    std::vector<tiny_dnn::vec_t> &vec);
-    template <typename OutputArchive> void saveModel(OutputArchive &oa);
-    template <typename InputArchive> void loadModel(InputArchive &ia);
-    template <typename OutputArchive> void saveWeights(OutputArchive &oa);
-    template <typename InputArchive> void loadWeights(InputArchive &ia);
-
-protected:
-    template <typename T> void pushBack(T &&node);
-    template <typename T> void pushBack(std::shared_ptr<T> node);
 
     // transform indexing so that it's more suitable for per-layer operations
     // input:  [sample][channel][feature]
@@ -86,17 +72,14 @@ protected:
     void reorderForLayerwiseProcessing(
         const std::vector<tiny_dnn::tensor_t> &input,
         std::vector<std::vector<const tiny_dnn::vec_t *>> &output);
-    template <typename T> void pushBackImpl(T &&node, std::true_type);
-    template <typename T> void pushBackImpl(T &&node, std::false_type);
 
-    /* Nodes which this class has ownership */
-    std::vector<std::shared_ptr<tiny_dnn::layer>> own_nodes;
-    /* List of all nodes which includes own_nodes */
-    std::vector<tiny_dnn::layer *> nodes;
+    std::vector<tiny_dnn::layer *> nod;
+    std::vector<tiny_dnn::layer *> nodes2;
 
 private:
     std::vector<tiny_dnn::tensor_t> normalizeOut(
       const std::vector<const tiny_dnn::tensor_t *> &out);
+    void connectHeadToTail();
 };
 
 #endif // TD_NODES_H

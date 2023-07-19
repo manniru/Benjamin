@@ -28,6 +28,14 @@ int main(int argc, char *argv[])
             {
                 commands << "kick";
             }
+            else if( input[i]=="f" )
+            {
+                commands << "fox";
+            }
+            else if( input[i]=="i" )
+            {
+                commands << "india";
+            }
             else if( input[i]=="s" )
             {
                 commands << "super";
