@@ -13,14 +13,6 @@
 #include "tiny_dnn/optimizers/optimizer.h"
 #include "tiny_dnn/util/util.h"
 
-//////////////////////////
-#include "tiny_dnn/layers/average_pooling_layer.h"
-#include "tiny_dnn/layers/convolutional_layer.h"
-#include "tiny_dnn/layers/fully_connected_layer.h"
-#include "tiny_dnn/activations/leaky_relu_layer.h"
-#include "tiny_dnn/activations/softmax_layer.h"
-/////////////////////////
-
 /** this class holds list of pointer of Node, and provides entry point of
  * forward / backward operations.
  * this is a computational unit of tiny-dnn (for example, convolution).
@@ -73,8 +65,7 @@ public:
         const std::vector<tiny_dnn::tensor_t> &input,
         std::vector<std::vector<const tiny_dnn::vec_t *>> &output);
 
-    std::vector<tiny_dnn::layer *> nod;
-    std::vector<tiny_dnn::layer *> nodes2;
+    QVector<tiny_dnn::layer *> nod;
 
 private:
     std::vector<tiny_dnn::tensor_t> normalizeOut(

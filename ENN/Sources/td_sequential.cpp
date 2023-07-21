@@ -179,7 +179,7 @@ std::vector<tiny_dnn::tensor_t> TdSequential::normalizeOut(
 void TdSequential::add(tiny_dnn::layer *layer)
 {
     nod.push_back(layer);
-//    connectHeadToTail();
+    connectHeadToTail();
 }
 
 void TdSequential::connectHeadToTail()
