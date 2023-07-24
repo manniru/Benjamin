@@ -1,11 +1,55 @@
 #include "td_leaky_relu.h"
 
-
 TdLeakyRelu::TdLeakyRelu(const float_t epsilon)
-    : tiny_dnn::activation_layer(tiny_dnn::shape3d(0, 0, 0)),
-      epsilon_(epsilon)
+    : tiny_dnn::layer({tiny_dnn::vector_type::data},
+                        {tiny_dnn::vector_type::data})
 {
+    epsilon_ = epsilon;
+    in_shape_ = tiny_dnn::shape3d(0, 0, 0);
+}
 
+
+std::vector<tiny_dnn::shape3d> TdLeakyRelu::in_shape() const
+{
+    return {in_shape_};
+}
+
+std::vector<tiny_dnn::shape3d> TdLeakyRelu::out_shape() const
+{
+    return {in_shape_};
+}
+
+void TdLeakyRelu::set_in_shape(const tiny_dnn::shape3d &in_shape)
+{
+    this->in_shape_ = in_shape;
+}
+
+void TdLeakyRelu::forward_propagation(
+        const std::vector<tiny_dnn::tensor_t *> &in_data,
+        std::vector<tiny_dnn::tensor_t *> &out_data)
+{
+    const tiny_dnn::tensor_t &x = *in_data[0];
+    tiny_dnn::tensor_t &y       = *out_data[0];
+    tiny_dnn::for_i(x.size(), [&](size_t i)
+    {
+        forward_activation(x[i], y[i]);
+    });
+}
+
+void TdLeakyRelu::back_propagation(
+        const std::vector<tiny_dnn::tensor_t *> &in_data,
+        const std::vector<tiny_dnn::tensor_t *> &out_data,
+        std::vector<tiny_dnn::tensor_t *> &out_grad,
+        std::vector<tiny_dnn::tensor_t *> &in_grad)
+{
+    tiny_dnn::tensor_t &dx       = *in_grad[0];
+    const tiny_dnn::tensor_t &dy = *out_grad[0];
+    const tiny_dnn::tensor_t &x  = *in_data[0];
+    const tiny_dnn::tensor_t &y  = *out_data[0];
+    tiny_dnn::for_i(x.size(), [&](size_t i)
+    {
+        backward_activation(x[i], y[i], dx[i], dy[i]);
+    });
 }
 
 std::string TdLeakyRelu::layer_type() const

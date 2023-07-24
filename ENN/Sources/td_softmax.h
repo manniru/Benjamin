@@ -3,24 +3,38 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
-#include "tiny_dnn/activations/activation_layer.h"
 #include "tiny_dnn/layers/layer.h"
+#include "tiny_dnn/util/util.h"
 
-class TdSoftmax : public tiny_dnn::activation_layer
+class TdSoftmax : public tiny_dnn::layer
 {
 public:
+    explicit TdSoftmax();
+
     std::string layer_type() const override;
-
+    std::vector<tiny_dnn::shape3d> in_shape() const override;
+    std::vector<tiny_dnn::shape3d> out_shape() const override;
+    void set_in_shape(const tiny_dnn::shape3d &in_shape) override;
+    void forward_propagation(
+            const std::vector<tiny_dnn::tensor_t *> &in_data,
+            std::vector<tiny_dnn::tensor_t *> &out_data) override;
+    void back_propagation(
+            const std::vector<tiny_dnn::tensor_t *> &in_data,
+            const std::vector<tiny_dnn::tensor_t *> &out_data,
+            std::vector<tiny_dnn::tensor_t *> &out_grad,
+            std::vector<tiny_dnn::tensor_t *> &in_grad) override;
     void forward_activation(const tiny_dnn::vec_t &x,
-                            tiny_dnn::vec_t &y) override;
-
+                            tiny_dnn::vec_t &y);
     void backward_activation(const tiny_dnn::vec_t &x,
                              const tiny_dnn::vec_t &y,
                              tiny_dnn::vec_t &dx,
-                             const tiny_dnn::vec_t &dy) override;
+                             const tiny_dnn::vec_t &dy);
+    std::pair<float_t, float_t> scale() const;
 
-    std::pair<float_t, float_t> scale() const override;
+private:
+    tiny_dnn::shape3d in_shape_;
 };
 
 #endif // TDSOFTMAX_H

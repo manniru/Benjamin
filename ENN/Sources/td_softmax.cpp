@@ -1,5 +1,11 @@
 #include "td_softmax.h"
 
+TdSoftmax::TdSoftmax() : tiny_dnn::layer({tiny_dnn::vector_type::data},
+                            {tiny_dnn::vector_type::data})
+{
+    in_shape_ = tiny_dnn::shape3d(0, 0, 0);
+}
+
 std::string TdSoftmax::layer_type() const
 {
     return "softmax-activation";
@@ -50,7 +56,50 @@ void TdSoftmax::backward_activation(const tiny_dnn::vec_t &x,
     }
 }
 
+void TdSoftmax::set_in_shape(const tiny_dnn::shape3d &in_shape)
+{
+    this->in_shape_ = in_shape;
+}
+
+std::vector<tiny_dnn::shape3d> TdSoftmax::in_shape() const
+{
+    return {in_shape_};
+}
+
+std::vector<tiny_dnn::shape3d> TdSoftmax::out_shape() const
+{
+    return {in_shape_};
+}
+
 std::pair<float_t, float_t> TdSoftmax::scale() const
 {
     return std::make_pair(float_t(0), float_t(1));
+}
+
+void TdSoftmax::forward_propagation(
+        const std::vector<tiny_dnn::tensor_t *> &in_data,
+        std::vector<tiny_dnn::tensor_t *> &out_data)
+{
+    const tiny_dnn::tensor_t &x = *in_data[0];
+    tiny_dnn::tensor_t &y       = *out_data[0];
+    tiny_dnn::for_i(x.size(), [&](size_t i)
+    {
+        forward_activation(x[i], y[i]);
+    });
+}
+
+void TdSoftmax::back_propagation(
+        const std::vector<tiny_dnn::tensor_t *> &in_data,
+        const std::vector<tiny_dnn::tensor_t *> &out_data,
+        std::vector<tiny_dnn::tensor_t *> &out_grad,
+        std::vector<tiny_dnn::tensor_t *> &in_grad)
+{
+    tiny_dnn::tensor_t &dx       = *in_grad[0];
+    const tiny_dnn::tensor_t &dy = *out_grad[0];
+    const tiny_dnn::tensor_t &x  = *in_data[0];
+    const tiny_dnn::tensor_t &y  = *out_data[0];
+    tiny_dnn::for_i(x.size(), [&](size_t i)
+    {
+        backward_activation(x[i], y[i], dx[i], dy[i]);
+    });
 }
