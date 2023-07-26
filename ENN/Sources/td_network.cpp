@@ -63,7 +63,7 @@ void TdNetwork::updateWeights(tiny_dnn::optimizer *opt)
     int len = net.nod.size();
     for( int i=0 ; i<len ; i++ )
     {
-        net.nod[i]->update_weight(opt);
+        net.nod[i]->updateWeight(opt);
     }
 }
 
@@ -518,7 +518,7 @@ TdNetwork &TdNetwork::weightInit(const WeightInit &f)
     int len = net.nod.size();
     for( int i=0 ; i<len ; i++ )
     {
-        net.nod[i]->weight_init(ptr);
+        net.nod[i]->weightInit(ptr);
     }
     return *this;
 }
@@ -549,7 +549,7 @@ bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
     int len = net.nod.size();
     for( int i=0 ; i<len ; i++ )
     {
-        net.nod[i]->set_parallelize(true);
+        net.nod[i]->setParallelize(true);
     }
     optimizer.reset();
     stop_training = false;
@@ -605,16 +605,14 @@ void TdNetwork::normalizeTensor(
 
 TdNetwork* TdNetwork::addFC(int in_dim, int out_dim)
 {
-    tiny_dnn::fully_connected_layer *fc = new
-            tiny_dnn::fully_connected_layer(in_dim, out_dim);
+    TdFC *fc = new TdFC(in_dim, out_dim);
     net.add(fc);
     return this;
 }
 
 TdNetwork* TdNetwork::addLeakyRelu()
 {
-    tiny_dnn::leaky_relu_layer *lr = new
-            tiny_dnn::leaky_relu_layer();
+    TdLeakyRelu *lr = new TdLeakyRelu();
     net.add(lr);
     return this;
 }
@@ -623,8 +621,7 @@ TdNetwork* TdNetwork::addConv(int in_width, int in_height,
                         int window_width, int window_height,
                         int in_channels, int out_channels)
 {
-    tiny_dnn::convolutional_layer *conv = new
-            tiny_dnn::convolutional_layer(in_width, in_height,
+    TdConvolution *conv = new TdConvolution(in_width, in_height,
                       window_width, window_height, in_channels,
                       out_channels);
     net.add(conv);
@@ -635,8 +632,7 @@ TdNetwork* TdNetwork::addAvePool(int in_width, int in_height, int in_channels,
                 int pool_size_x, int pool_size_y, int stride_x,
                 int stride_y)
 {
-    tiny_dnn::average_pooling_layer *ap = new
-            tiny_dnn::average_pooling_layer(in_width, in_height,
+    TdAvePool *ap = new TdAvePool(in_width, in_height,
                 in_channels, pool_size_x, pool_size_y, stride_x,
                 stride_y);
     net.add(ap);
@@ -645,8 +641,7 @@ TdNetwork* TdNetwork::addAvePool(int in_width, int in_height, int in_channels,
 
 TdNetwork* TdNetwork::addSoftMax()
 {
-    tiny_dnn::softmax_layer *sm = new
-            tiny_dnn::softmax_layer();
+    TdSoftmax *sm = new TdSoftmax;
     net.add(sm);
     return this;
 }

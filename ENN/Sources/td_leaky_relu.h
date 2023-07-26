@@ -5,10 +5,10 @@
 #include <utility>
 #include <vector>
 
-#include "tiny_dnn/layers/layer.h"
+#include "td_layer.h"
 #include "tiny_dnn/util/util.h"
 
-class TdLeakyRelu : public tiny_dnn::layer
+class TdLeakyRelu : public TdLayer
 {
 public:
     explicit TdLeakyRelu(const float_t epsilon = 0.01);

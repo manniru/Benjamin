@@ -25,6 +25,11 @@
 #include "td_sequential.h"
 #include "tiny_dnn/lossfunctions/loss_function.h"
 #include "tiny_dnn/util/util.h"
+#include "td_fc.h"
+#include "td_convolution.h"
+#include "td_avepool.h"
+#include "td_leaky_relu.h"
+#include "td_softmax.h"
 
 class TdNetwork : public QObject
 {
@@ -114,8 +119,6 @@ public:
     TdNetwork* addSoftMax();
 
     TdSequential net;
-    typedef typename std::vector<tiny_dnn::layer *>::iterator iterator;
-    typedef typename std::vector<tiny_dnn::layer *>::const_iterator const_iterator;
     std::vector<tiny_dnn::tensor_t> in_batch;
     std::vector<tiny_dnn::tensor_t> t_batch;
     QString net_name;

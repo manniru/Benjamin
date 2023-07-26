@@ -13,7 +13,7 @@ void TdSequential::backward(
     reorderForLayerwiseProcessing(first, reordered_grad);
     assert(reordered_grad.size() == 1);
 
-    nod.back()->set_out_grads(&reordered_grad[0], 1);
+    nod.back()->setOutGrads(&reordered_grad[0], 1);
 
     int len = nod.size();
     for( int i=0 ; i<len ; i++ )
@@ -30,7 +30,7 @@ std::vector<tiny_dnn::tensor_t> TdSequential::forward(
     reorderForLayerwiseProcessing(first, reordered_data);
     assert(reordered_data.size() == 1);
 
-    nod.front()->set_in_data(&reordered_data[0], 1);
+    nod.front()->setInData(&reordered_data[0], 1);
 
     int len = nod.size();
     for( int i=0 ; i<len ; i++ )
@@ -66,7 +66,7 @@ void TdSequential::updateWeights(tiny_dnn::optimizer *opt)
     int len = nod.size();
     for( int i=0 ; i<len ; i++ )
     {
-        nod[i]->update_weight(opt);
+        nod[i]->updateWeight(opt);
     }
 }
 
@@ -89,18 +89,18 @@ void TdSequential::clearGrads()
     int len = nod.size();
     for( int i=0 ; i<len ; i++ )
     {
-        nod[i]->clear_grads();
+        nod[i]->clearGrads();
     }
 }
 
 size_t TdSequential::inDataSize()
 {
-    return nod.front()->in_data_size();
+    return nod.front()->inDataSize();
 }
 
 size_t TdSequential::outDataSize() const
 {
-    return nod.back()->out_data_size();
+    return nod.back()->outDataSize();
 }
 
 float_t TdSequential::targetValueMin(int out_channel) const
@@ -176,7 +176,7 @@ std::vector<tiny_dnn::tensor_t> TdSequential::normalizeOut(
     return normalized_output;
 }
 
-void TdSequential::add(tiny_dnn::layer *layer)
+void TdSequential::add(TdLayer *layer)
 {
     nod.push_back(layer);
     connectHeadToTail();
@@ -186,9 +186,9 @@ void TdSequential::connectHeadToTail()
 {
     if( nod.size()!=1 )
     {
-        auto head = nod[nod.size() - 2];
-        auto tail = nod[nod.size() - 1];
-        tiny_dnn::connect(head, tail, 0, 0);
+        TdLayer *head = nod[nod.size() - 2];
+        TdLayer *tail = nod[nod.size() - 1];
+        td_connectLayer(head, tail, 0, 0);
         auto out = head->outputs();
         auto in  = tail->inputs();
     }

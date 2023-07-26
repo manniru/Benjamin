@@ -1,7 +1,7 @@
 #include "td_leaky_relu.h"
 
 TdLeakyRelu::TdLeakyRelu(const float_t epsilon)
-    : tiny_dnn::layer({tiny_dnn::vector_type::data},
+    : TdLayer({tiny_dnn::vector_type::data},
                         {tiny_dnn::vector_type::data})
 {
     epsilon_ = epsilon;

@@ -1,6 +1,6 @@
 #include "td_softmax.h"
 
-TdSoftmax::TdSoftmax() : tiny_dnn::layer({tiny_dnn::vector_type::data},
+TdSoftmax::TdSoftmax() : TdLayer({tiny_dnn::vector_type::data},
                             {tiny_dnn::vector_type::data})
 {
     in_shape_ = tiny_dnn::shape3d(0, 0, 0);

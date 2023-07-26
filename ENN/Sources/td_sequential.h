@@ -9,9 +9,10 @@
 #include <QObject>
 #include <QDebug>
 
-#include "tiny_dnn/layers/layer.h"
+//#include "tiny_dnn/layers/layer.h"
 #include "tiny_dnn/optimizers/optimizer.h"
 #include "tiny_dnn/util/util.h"
+#include "td_layer.h"
 
 /** this class holds list of pointer of Node, and provides entry point of
  * forward / backward operations.
@@ -37,13 +38,13 @@ class TdSequential : public QObject
 public:
     explicit TdSequential(QObject *parent = nullptr);
 
-    typedef std::vector<tiny_dnn::layer *>::iterator iterator;
-    typedef std::vector<tiny_dnn::layer *>::const_iterator const_iterator;
+    typedef std::vector<TdLayer *>::iterator iterator;
+    typedef std::vector<TdLayer *>::const_iterator const_iterator;
 
     void backward(const std::vector<tiny_dnn::tensor_t> &first);
     std::vector<tiny_dnn::tensor_t> forward(
             const std::vector<tiny_dnn::tensor_t> &first);
-    void add(tiny_dnn::layer *layer);
+    void add(TdLayer *layer);
     void checkConnectivity();
     void updateWeights(tiny_dnn::optimizer *opt);
     void setup(bool reset_weight);
@@ -65,7 +66,7 @@ public:
         const std::vector<tiny_dnn::tensor_t> &input,
         std::vector<std::vector<const tiny_dnn::vec_t *>> &output);
 
-    QVector<tiny_dnn::layer *> nod;
+    QVector<TdLayer *> nod;
 
 private:
     std::vector<tiny_dnn::tensor_t> normalizeOut(
