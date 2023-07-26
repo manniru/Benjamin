@@ -9,11 +9,10 @@
  *
  **/
 TdLayer::TdLayer(const std::vector<tiny_dnn::vector_type> &in_type,
-                 const std::vector<tiny_dnn::vector_type> &out_type,
-                 QObject *parent) : QObject(parent),
-    node(in_type.size(),
-         out_type.size())
+                 const std::vector<tiny_dnn::vector_type> &out_type)
 {
+    prev_.resize(in_type.size());
+    next_.resize(out_type.size());
     initialized = false;
     parallelized = true;
     in_channels = in_type.size();
@@ -40,11 +39,6 @@ void TdLayer::setBackendType(tiny_dnn::core::backend_t bt)
     backend_type = bt;
 }
 
-bool TdLayer::parallelize()
-{
-    return parallelized;
-}
-
 tiny_dnn::core::backend_t TdLayer::getBackendType()
 {
     return backend->type();
@@ -55,12 +49,13 @@ tiny_dnn::core::backend_t TdLayer::getEngine()
     return backend_type;
 }
 
-std::string TdLayer::kernelFile()
+std::string TdLayer::kernel_file() const
 {
     return std::string("empty_kernel_str");
 }
 
-std::string TdLayer::kernelHeader()
+
+std::string TdLayer::kernel_header() const
 {
     return std::string();
 }
@@ -70,36 +65,26 @@ void TdLayer::createOp()
 
 }
 
-void TdLayer::setDevice(const tiny_dnn::Device &device)
-{
-    device_ptr = const_cast<tiny_dnn::Device *>(&device);
-}
-
-tiny_dnn::Device *TdLayer::getDevice()
-{
-    return device_ptr;
-}
-
 std::shared_ptr<tiny_dnn::core::backend> TdLayer::getBackend()
 {
     return backend;
 }
 
 ///< number of incoming edges in this layer
-size_t TdLayer::inChannels()
+size_t TdLayer::inChannels() const
 {
     return in_channels;
 }
 
 ///< number of outgoing edges in this layer
-size_t TdLayer::outChannels()
+size_t TdLayer::outChannels() const
 {
     return out_channels;
 }
 
 size_t TdLayer::inDataSize() const
 {
-    return sumif(inShape(),
+    return sumif(in_shape(),
                  [&](size_t i)
     {  // NOLINT
         return in_type[i] == tiny_dnn::vector_type::data;
@@ -111,7 +96,7 @@ size_t TdLayer::inDataSize() const
 
 size_t TdLayer::outDataSize() const
 {
-    return sumif(outShape(),
+    return sumif(out_shape(),
                  [&](size_t i)
     {  // NOLINT
         return out_type[i] == tiny_dnn::vector_type::data;
@@ -123,7 +108,7 @@ size_t TdLayer::outDataSize() const
 
 std::vector<tiny_dnn::shape3d> TdLayer::inDataShape()
 {
-    return filter(inShape(), [&](size_t i)
+    return filter(in_shape(), [&](size_t i)
     {  // NOLINT
         return in_type[i] == tiny_dnn::vector_type::data;
     });
@@ -131,7 +116,7 @@ std::vector<tiny_dnn::shape3d> TdLayer::inDataShape()
 
 std::vector<tiny_dnn::shape3d> TdLayer::outDataShape()
 {
-    return filter(outShape(), [&](size_t i)
+    return filter(out_shape(), [&](size_t i)
     {  // NOLINT
         return out_type[i] == tiny_dnn::vector_type::data;
     });
@@ -188,9 +173,9 @@ std::vector<tiny_dnn::tensor_t *> TdLayer::weightsGrads()
     return v;
 }
 
-std::vector<tiny_dnn::edgeptr_t> TdLayer::inputs()
+std::vector<TdEdge *> TdLayer::inputs()
 {
-    std::vector<tiny_dnn::edgeptr_t> nodes(in_channels);
+    std::vector<TdEdge *> nodes(in_channels);
     for( size_t i=0 ; i<in_channels ; i++ )
     {
         nodes[i] = ith_in_node(i);
@@ -198,9 +183,9 @@ std::vector<tiny_dnn::edgeptr_t> TdLayer::inputs()
     return nodes;
 }
 
-std::vector<tiny_dnn::edgeptr_t> TdLayer::outputs()
+std::vector<TdEdge *> TdLayer::outputs()
 {
-    std::vector<tiny_dnn::edgeptr_t> nodes(out_channels);
+    std::vector<TdEdge *> nodes(out_channels);
     for( size_t i=0 ; i<out_channels ; i++ )
     {
         nodes[i] = ith_out_node(i);
@@ -208,9 +193,9 @@ std::vector<tiny_dnn::edgeptr_t> TdLayer::outputs()
     return nodes;
 }
 
-std::vector<tiny_dnn::edgeptr_t> TdLayer::outputs() const
+std::vector<TdEdge *> TdLayer::outputs() const
 {
-    std::vector<tiny_dnn::edgeptr_t> nodes(out_channels);
+    std::vector<TdEdge *> nodes(out_channels);
     for( size_t i=0 ; i<out_channels ; i++ )
     {
         nodes[i] = const_cast<TdLayer *>(this)->ith_out_node(i);
@@ -323,7 +308,7 @@ bool TdLayer::getTrainable() const
  *layer
  * override properly if the layer is intended to be used as output layer
  **/
-std::pair<float_t, float_t> TdLayer::outValueRange() const
+std::pair<float_t, float_t> TdLayer::out_value_range() const
 {
     return {float_t{0.0}, float_t{1.0}};
 }
@@ -331,7 +316,7 @@ std::pair<float_t, float_t> TdLayer::outValueRange() const
 /**
  * set input shape of a layer (only used internally while shape inferring)
  */
-void TdLayer::setInShape(const tiny_dnn::shape3d &in_shape) {
+void TdLayer::set_in_shape(const tiny_dnn::shape3d &in_shape) {
     CNN_UNREFERENCED_PARAMETER(in_shape);
     qDebug() << "Can't set shape. Shape inferring not applicable for this "
                 "layer (yet).";
@@ -346,15 +331,15 @@ void TdLayer::setInShape(const tiny_dnn::shape3d &in_shape) {
  *is
  *important
  **/
-size_t TdLayer::fanInSize() const
+size_t TdLayer::fan_in_size() const
 {
-    return inShape()[0].width_;
+    return in_shape()[0].width_;
 }
 
 // override to allow initialization of multiple size weight matrices.
-size_t TdLayer::fanInSize(size_t) const
+size_t TdLayer::fan_in_size(size_t) const
 {
-    return fanInSize();  // fallback to single weight matrix.
+    return fan_in_size();  // fallback to single weight matrix.
 }
 
 /**
@@ -368,7 +353,7 @@ size_t TdLayer::fanInSize(size_t) const
  **/
 size_t TdLayer::fan_out_size() const
 {
-    return outShape()[0].width_;
+    return out_shape()[0].width_;
 }
 
 // override to allow initialization of multiple size weight vectors.
@@ -378,7 +363,7 @@ size_t TdLayer::fan_out_size(size_t) const
 }
 
 // called afrer updating weight
-void TdLayer::postUpdate()
+void TdLayer::post_update()
 {
 
 }
@@ -386,7 +371,7 @@ void TdLayer::postUpdate()
 /**
  * notify changing context (train <=> test)
  **/
-void TdLayer::setContext(tiny_dnn::net_phase ctx)
+void TdLayer::set_context(tiny_dnn::net_phase ctx)
 {
     CNN_UNREFERENCED_PARAMETER(ctx);
 }
@@ -409,7 +394,8 @@ std::vector<tiny_dnn::tensor_t> TdLayer::backward(const std::vector<tiny_dnn::te
     setOutGrads(&grads2[0], grads2.size());
     backward();
     return tiny_dnn::map_<tiny_dnn::tensor_t>(inputs(),
-                                              [](tiny_dnn::edgeptr_t e) { return *e->get_gradient(); });
+             [](TdEdge *e)
+             { return *e->get_gradient(); });
 }
 
 /* @brief The purpose of this method is to forward the data from the
@@ -448,7 +434,7 @@ void TdLayer::forward()
 
     // resize outs and stuff to have room for every input sample in
     // the batch
-    setSampleCount(fwd_in_data[0]->size());
+    set_sample_count(fwd_in_data[0]->size());
 
     // Internally ith_out_node() will create a connection/edge to the
     // computational graph and will allocate memory in case that it's not
@@ -461,7 +447,7 @@ void TdLayer::forward()
     }
 
     // call the forward computation kernel/routine
-    forwardPropagation(fwd_in_data, fwd_out_data);
+    forward_propagation(fwd_in_data, fwd_out_data);
 }
 
 void TdLayer::backward()
@@ -484,7 +470,7 @@ void TdLayer::backward()
         bwd_out_data[i] = nd->get_data();
         bwd_out_grad[i] = nd->get_gradient();
     }
-    backPropagation(bwd_in_data, bwd_out_data, bwd_out_grad, bwd_in_grad);
+    back_propagation(bwd_in_data, bwd_out_data, bwd_out_grad, bwd_in_grad);
 }
 
 /* @brief Allocates data in the computational graph and reset weights if
@@ -500,8 +486,8 @@ void TdLayer::setup(bool reset_weight)
       * of input channels a.k.a the number of incoming vectors or 'edges' in
       * the computational nomenclature. Same is applied to output shape and
       * numbers of output edges.*/
-    if( inShape().size()!=in_channels ||
-            outShape().size()!=out_channels )
+    if( in_shape().size()!=in_channels ||
+            out_shape().size()!=out_channels )
     {
         qDebug() << "Connection mismatch at setup layer";
         exit(0);
@@ -520,8 +506,8 @@ void TdLayer::setup(bool reset_weight)
         {
             // connection edge doesn't exist, so we proceed to allocate the
             // necessary memory.
-            next_[i] = std::make_shared<tiny_dnn::edge>(this, outShape()[i],
-                                                        out_type[i]);
+            next_[i] = new TdEdge(this, out_shape()[i],
+                                  out_type[i]);
         }
     }
 
@@ -563,12 +549,12 @@ void TdLayer::initWeight()
         {
         // fill vectors of weight type
         case tiny_dnn::vector_type::weight:
-            weight_init->fill(getWeightData(i), fanInSize(i),
+            weight_init->fill(getWeightData(i), fan_in_size(i),
                               fan_out_size(i));
             break;
             // fill vector of bias type
         case tiny_dnn::vector_type::bias:
-            bias_init->fill(getWeightData(i), fanInSize(i), fan_out_size(i));
+            bias_init->fill(getWeightData(i), fan_in_size(i), fan_out_size(i));
             break;
         default: break;
         }
@@ -608,7 +594,7 @@ void TdLayer::updateWeight(tiny_dnn::optimizer *o)
         }
     }
     clearGrads();
-    postUpdate();
+    post_update();
 }
 
 bool TdLayer::hasSameWeights(const TdLayer &rhs, float_t eps) const
@@ -638,7 +624,7 @@ bool TdLayer::hasSameWeights(const TdLayer &rhs, float_t eps) const
     return true;
 }
 
-void TdLayer::setSampleCount(size_t sample_count)
+void TdLayer::set_sample_count(size_t sample_count)
 {
     // increase the size if necessary - but do not decrease
     auto resize = [sample_count](tiny_dnn::tensor_t *tensor)
@@ -663,6 +649,88 @@ void TdLayer::setSampleCount(size_t sample_count)
         }
         resize(ith_out_node(i)->get_gradient());
     }
+}
+
+void TdLayer::alloc_input(size_t i) const
+{
+    // the created incoming edge won't have a previous connection,
+    // for this reason first parameter is a nullptr.
+    prev_[i] = new TdEdge(nullptr, tiny_dnn::shape3d(0,0,0),
+                          in_type[i]);
+}
+
+void TdLayer::alloc_output(size_t i) const
+{
+    // the created outcoming will have the current layer as the
+    // previous node.
+    next_[i] = new TdEdge(this, tiny_dnn::shape3d(0,0,0),
+                          out_type[i]);
+}
+
+TdEdge *TdLayer::ith_in_node(size_t i)
+{
+    // in case that the  edge doesn't exist, we create it
+    if( !prev_[i] )
+    {
+        alloc_input(i);
+    }
+    return prev()[i];
+}
+
+TdEdge *TdLayer::ith_out_node(size_t i)
+{
+    // in case that the  edge doesn't exist, we create it
+    if( !next_[i] )
+    {
+        alloc_output(i);
+    }
+    return next()[i];
+}
+
+TdEdge *TdLayer::ith_out_node(size_t i) const
+{
+    return next()[i];
+}
+
+tiny_dnn::vec_t *TdLayer::getWeightData(size_t i)
+{
+    assert(is_trainable_weight(in_type_[i]));
+    return &(*(ith_in_node(i)->get_data()))[0];
+}
+
+const tiny_dnn::vec_t *TdLayer::getWeightData(size_t i) const
+{
+    assert(is_trainable_weight(in_type_[i]));
+    return &(*(const_cast<TdLayer *>(this)->ith_in_node(i)->get_data()))[0];
+}
+
+void td_connectLayer(TdLayer *head, TdLayer *tail,
+                     size_t head_index, size_t tail_index)
+{
+    auto out_shape = head->out_shape()[head_index];
+    auto in_shape  = tail->in_shape()[tail_index];
+
+    head->setup(false);
+
+    // todo (karandesai) enable shape inferring for all layers
+    // currently only possible for activation layers.
+    if (in_shape.size() == 0) {
+        tail->set_in_shape(out_shape);
+        in_shape = out_shape;
+    }
+
+    if (out_shape.size() != in_shape.size()) {
+        //    connection_mismatch(*head, *tail);
+    }
+
+    if( !head->next_[head_index] )
+    {
+        qDebug() << "output edge must not be null";
+        exit(0);
+    }
+
+    tail->prev_[tail_index] = head->next_[head_index];
+    tail->prev_[tail_index]->add_next_node(tail);
 }
 
 template<typename WeightInit>
@@ -691,4 +759,79 @@ TdLayer &TdLayer::biasInit(std::shared_ptr<BiasInit> f)
 {
     bias_init = f;
     return *this;
+}
+
+void data_mismatch(TdLayer *layer, const tiny_dnn::vec_t &data)
+{
+    std::ostringstream os;
+
+    os << std::endl;
+    os << "data dimension:    " << data.size() << "\n";
+    os << "network dimension: " << layer->inDataSize() << "("
+       << layer->layer_type() << ":" << layer->in_shape() << ")\n";
+
+    std::string detail_info = os.str();
+
+    throw qDebug() << "input dimension mismatch!" << &detail_info;
+}
+
+template<typename T, typename Func>
+void TdLayer::for_i(T size, Func f, size_t grainsize)
+{
+    tiny_dnn::for_i(parallelized, size, f, grainsize);
+}
+
+std::vector<TdLayer *> TdLayer::prev_nodes() const
+{
+    std::vector<TdLayer *> vecs;
+    int len = prev_.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( prev_[i] && prev_[i]->prev() )
+        {
+            vecs.push_back(prev_[i]->prev());
+        }
+    }
+    return vecs;
+}
+
+std::vector<TdLayer *> TdLayer::next_nodes() const
+{
+    std::vector<TdLayer *> vecs;
+    int len = next_.size();
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( next_[i] )
+        {
+            std::vector<TdLayer *> n = next_[i]->next();
+            vecs.insert(vecs.end(), n.begin(), n.end());
+        }
+    }
+    return vecs;
+}
+
+size_t TdLayer::prev_port(const TdEdge &e) const
+{
+    auto it = std::find_if(prev_.begin(), prev_.end(),
+                            [&](TdEdge *ep)
+                            { return ep == &e; });
+    return (size_t)std::distance(prev_.begin(), it);
+}
+
+size_t TdLayer::next_port(const TdEdge &e) const
+{
+    auto it = std::find_if(next_.begin(), next_.end(),
+                           [&](TdEdge *ep)
+                           { return ep == &e; });
+    return (size_t)std::distance(next_.begin(), it);
+}
+
+const std::vector<TdEdge *> &TdLayer::prev() const
+{
+    return prev_;
+}
+
+const std::vector<TdEdge *> &TdLayer::next() const
+{
+    return next_;
 }
