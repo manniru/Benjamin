@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "tiny_dnn/core/kernels/conv2d_op.h"
-#include "tiny_dnn/layers/layer.h"
+#include "td_layer.h"
 #include "tiny_dnn/util/util.h"
 #include "tiny_dnn/core/backend.h"
 
-class TdConvolution : public tiny_dnn::layer
+class TdConvolution : public TdLayer
 {
 public:
     TdConvolution(size_t in_width,
@@ -27,7 +27,7 @@ public:
                   size_t h_stride              = 1,
                   size_t w_dilation            = 1,
                   size_t h_dilation            = 1,
-                  tiny_dnn::core::backend_t backend_type =
+                  tiny_dnn::core::backend_t bt =
             tiny_dnn::core::backend_t::avx);
 
     size_t fan_in_size() const override;

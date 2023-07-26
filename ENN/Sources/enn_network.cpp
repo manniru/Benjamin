@@ -1,9 +1,6 @@
 #include "enn_network.h"
 #include "tiny_dnn/util/target_cost.h"
 
-using namespace tiny_dnn::activation;
-//using namespace tiny_dnn::layers;
-
 timer nn_t;
 int nn_epoch;
 
@@ -107,12 +104,12 @@ void EnnNetwork::createNNet()
 #else
     int f1 = 20;
     int f2 = f1 + 10;
-    net->addAvePool(36, 1, f1, 2, 1, 2, 1)  ->addLeakyRelu();
-    net->addConv(40, 40, 5, 40, 1, f1)      ->addLeakyRelu();
-    net->addConv(18, 1, 3, 1, f1, f2)       ->addLeakyRelu();
-    net->addAvePool(16, 1, f2, 2, 1, 2, 1)  ->addLeakyRelu();
-    net->addConv(8, 1, 8, 1, f2, 60)        ->addLeakyRelu();
-    net->addFC(60, 2)                       ->addSoftMax();
+//    net->addAvePool(36, 1, f1, 2, 1, 2, 1)  ->addLeakyRelu();
+//    net->addConv(40, 40, 5, 40, 1, f1)      ->addLeakyRelu();
+//    net->addConv(18, 1, 3, 1, f1, f2)       ->addLeakyRelu();
+//    net->addAvePool(16, 1, f2, 2, 1, 2, 1)  ->addLeakyRelu();
+//    net->addConv(8, 1, 8, 1, f2, 60)        ->addLeakyRelu();
+    net->addFC(60, 2)                       /*->addSoftMax()*/;
 #endif
     last_loss = 9999;
 }

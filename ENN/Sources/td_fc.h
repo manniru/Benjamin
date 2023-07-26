@@ -7,17 +7,16 @@
 #include <utility>
 #include <vector>
 
-#include "tiny_dnn/layers/layer.h"
-
+#include "td_layer.h"
 #include "tiny_dnn/core/kernels/fully_connected_op.h"
 
-class TdFC : public tiny_dnn::layer
+class TdFC : public TdLayer
 {
 public:
     TdFC(size_t in_dim,
          size_t out_dim,
          bool has_bias = true,
-         tiny_dnn::core::backend_t backend_type =
+         tiny_dnn::core::backend_t bt =
             tiny_dnn::core::backend_t::avx);
 
     // move constructor

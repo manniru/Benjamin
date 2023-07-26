@@ -32,10 +32,14 @@ HEADERS += \
     Sources/enn_dataset_image.h \
     Sources/enn_network.h \
     Sources/enn_test.h \
-#    Sources/td_layer.h \
+    Sources/td_avepool.h \
+    Sources/td_convolution.h \
+    Sources/td_fc.h \
     Sources/td_layer.h \
+    Sources/td_leaky_relu.h \
     Sources/td_network.h \
-    Sources/td_sequential.h
+    Sources/td_sequential.h \
+    Sources/td_softmax.h
 
 SOURCES += \
     Sources/backend.cpp \
@@ -45,9 +49,13 @@ SOURCES += \
     Sources/enn_network.cpp \
     Sources/enn_test.cpp \
     Sources/main.cpp \
-#    Sources/td_layer.cpp \
+    Sources/td_avepool.cpp \
+    Sources/td_convolution.cpp \
+    Sources/td_fc.cpp \
     Sources/td_layer.cpp \
+    Sources/td_leaky_relu.cpp \
     Sources/td_network.cpp \
-    Sources/td_sequential.cpp
+    Sources/td_sequential.cpp \
+    Sources/td_softmax.cpp
 
 win32:SOURCES += ../PNN/aj_dllgen.cpp

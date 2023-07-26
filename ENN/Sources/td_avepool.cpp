@@ -5,7 +5,7 @@ TdAvePool::TdAvePool(size_t in_width, size_t in_height,
                      size_t pool_size_y, size_t stride_x,
                      size_t stride_y, bool ceil_mode,
                      tiny_dnn::padding pad_type)
-    : tiny_dnn::layer(tiny_dnn::std_input_order(in_channels > 0),
+    : TdLayer(tiny_dnn::std_input_order(in_channels > 0),
         {tiny_dnn::vector_type::data}),
       stride_x_(stride_x),
       stride_y_(stride_y),
@@ -96,7 +96,7 @@ void TdAvePool::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
         std::vector<tiny_dnn::tensor_t *> &out_data)
 {
-    tiny_average_pooling_kernel(parallelize_, in_data, out_data, out_,
+    tiny_average_pooling_kernel(parallelized, in_data, out_data, out_,
                                 TdAvePool::scale_factor_,
                                 TdAvePool::out2wi_);
 }
@@ -108,7 +108,7 @@ void TdAvePool::back_propagation(
         std::vector<tiny_dnn::tensor_t *> &in_grad)
 {
     tiny_average_pooling_back_kernel(
-                parallelize_, in_data, out_data, out_grad,
+                parallelized, in_data, out_data, out_grad,
                 in_grad, in_,
                 TdAvePool::scale_factor_,
                 TdAvePool::weight2io_,

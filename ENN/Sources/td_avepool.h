@@ -6,10 +6,10 @@
 #include <utility>
 #include <vector>
 
-#include "tiny_dnn/layers/layer.h"
+#include "td_layer.h"
 #include "tiny_dnn/util/util.h"
 
-class TdAvePool : public tiny_dnn::layer
+class TdAvePool : public TdLayer
 {
 public:
     TdAvePool(size_t in_width,

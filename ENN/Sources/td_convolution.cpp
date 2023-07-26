@@ -6,8 +6,8 @@ TdConvolution::TdConvolution(size_t in_width, size_t in_height,
                              tiny_dnn::padding pad_type, bool has_bias,
                              size_t w_stride, size_t h_stride,
                              size_t w_dilation, size_t h_dilation,
-                             tiny_dnn::core::backend_t backend_type)
-    : tiny_dnn::layer(tiny_dnn::std_input_order(has_bias),
+                             tiny_dnn::core::backend_t bt)
+    : TdLayer(tiny_dnn::std_input_order(has_bias),
         {tiny_dnn::vector_type::data})
 {
     conv_set_params(tiny_dnn::shape3d(in_width, in_height, in_channels),
@@ -16,7 +16,7 @@ TdConvolution::TdConvolution(size_t in_width, size_t in_height,
                     h_stride, w_dilation, h_dilation,
                     tiny_dnn::core::connection_table());
     init_backend(backend_type);
-    set_backend_type(backend_type);
+    backend_type = bt;
 }
 
 size_t TdConvolution::fan_in_size() const
@@ -45,8 +45,8 @@ void TdConvolution::forward_propagation(
 
     // forward convolutional op context
     fwd_ctx_.set_in_out(fwd_in_data_, out_data);
-    fwd_ctx_.setParallelize(tiny_dnn::layer::parallelize());
-    fwd_ctx_.setEngine(tiny_dnn::layer::engine());
+    fwd_ctx_.setParallelize(parallelized);
+    fwd_ctx_.setEngine(getEngine());
 
     // launch convolutional kernel
     kernel_fwd_->compute(fwd_ctx_);
@@ -73,7 +73,7 @@ void TdConvolution::back_propagation(
                         bwd_in_grad_);
     bwd_ctx_.setParams(&params_);
     //    bwd_ctx_.setParallelize(layer::parallelize());
-    bwd_ctx_.setEngine(tiny_dnn::layer::engine());
+    bwd_ctx_.setEngine(getEngine());
 
     // launch convolutional kernel
     kernel_back_->compute(bwd_ctx_);
@@ -85,7 +85,7 @@ void TdConvolution::back_propagation(
 
 void TdConvolution::set_sample_count(size_t sample_count)
 {
-    tiny_dnn::layer::set_sample_count(sample_count);
+    TdLayer::set_sample_count(sample_count);
     cws_.prev_delta_padded_.resize(sample_count,
                                    tiny_dnn::vec_t(
                                        params_.in_padded.size(),
@@ -223,7 +223,7 @@ size_t TdConvolution::conv_out_dim(size_t in_width, size_t in_height,
 
 void TdConvolution::createOp()
 {
-    init_backend(tiny_dnn::layer::engine());
+    init_backend(getEngine());
 }
 
 void TdConvolution::init_backend(
