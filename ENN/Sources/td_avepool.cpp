@@ -5,14 +5,8 @@ TdAvePool::TdAvePool(size_t in_width, size_t in_height,
                      size_t pool_size_y, size_t stride_x,
                      size_t stride_y, bool ceil_mode,
                      tiny_dnn::padding pad_type)
-    : tiny_dnn::partial_connected_layer(
-          in_width * in_height * in_channels,
-          pool_out_length(in_width, pool_size_x, stride_x,
-                          ceil_mode, pad_type) *
-          pool_out_length(in_height, pool_size_y, stride_y,
-                          ceil_mode, pad_type) *
-          in_channels, in_channels, in_channels,
-          float_t(1) / (pool_size_x * pool_size_y)),
+    : tiny_dnn::layer(tiny_dnn::std_input_order(in_channels > 0),
+        {tiny_dnn::vector_type::data}),
       stride_x_(stride_x),
       stride_y_(stride_y),
       pool_size_x_(pool_size_x),
@@ -21,16 +15,28 @@ TdAvePool::TdAvePool(size_t in_width, size_t in_height,
       ceil_mode_(ceil_mode),
       in_(in_width, in_height, in_channels),
       out_( pool_out_length(in_width, pool_size_x, stride_x,
-                          ceil_mode, pad_type),
-          pool_out_length(in_height, pool_size_y, stride_y,
-                          ceil_mode, pad_type),
-          in_channels),
+                            ceil_mode, pad_type),
+            pool_out_length(in_height, pool_size_y, stride_y,
+                            ceil_mode, pad_type),
+            in_channels),
       w_(pool_size_x, pool_size_y, in_channels)
 {
+    int in_dim = in_width * in_height * in_channels;
+    int out_dim = pool_out_length(in_width, pool_size_x, stride_x, ceil_mode, pad_type);
+    out_dim *= pool_out_length(in_height, pool_size_y, stride_y, ceil_mode, pad_type);
+    out_dim *= in_channels;
+
+    scale_factor_ = float_t(1) / (pool_size_x * pool_size_y);
+    in2wo_.resize(in_dim);
+    out2wi_.resize(out_dim);
+    out2bias_.resize(out_dim);
+    weight2io_.resize(in_channels);
+    bias2out_.resize(in_channels);
+
     if( (in_width%pool_size_x) || (in_height%pool_size_y) )
     {
-//      pooling_size_mismatch(in_width, in_height,
-//        pool_size_x, pool_size_y);
+        //      pooling_size_mismatch(in_width, in_height,
+        //        pool_size_x, pool_size_y);
     }
 
     init_connection(pool_size_x, pool_size_y);
@@ -46,9 +52,44 @@ std::vector<tiny_dnn::index3d<size_t> > TdAvePool::out_shape() const
     return {out_};
 }
 
+size_t TdAvePool::param_size() const
+{
+    size_t total_param = 0;
+    for (auto w : weight2io_)
+        if (w.size() > 0)
+            total_param++;
+    for (auto b : bias2out_)
+        if (b.size() > 0)
+            total_param++;
+    return total_param;
+}
+
+size_t TdAvePool::fan_in_size() const
+{
+    return tiny_dnn::max_size(out2wi_);
+}
+
+size_t TdAvePool::fan_out_size() const
+{
+    return tiny_dnn::max_size(in2wo_);
+}
+
 std::string TdAvePool::layer_type() const
 {
     return "ave-pool";
+}
+
+void TdAvePool::connect_weight(size_t input_index, size_t output_index, size_t weight_index)
+{
+    weight2io_[weight_index].emplace_back(input_index, output_index);
+    out2wi_[output_index].emplace_back(weight_index, input_index);
+    in2wo_[input_index].emplace_back(weight_index, output_index);
+}
+
+void TdAvePool::connect_bias(size_t bias_index, size_t output_index)
+{
+    out2bias_[output_index] = bias_index;
+    bias2out_[bias_index].push_back(output_index);
 }
 
 void TdAvePool::forward_propagation(
@@ -56,8 +97,8 @@ void TdAvePool::forward_propagation(
         std::vector<tiny_dnn::tensor_t *> &out_data)
 {
     tiny_average_pooling_kernel(parallelize_, in_data, out_data, out_,
-                tiny_dnn::partial_connected_layer::scale_factor_,
-                tiny_dnn::partial_connected_layer::out2wi_);
+                                TdAvePool::scale_factor_,
+                                TdAvePool::out2wi_);
 }
 
 void TdAvePool::back_propagation(
@@ -69,10 +110,10 @@ void TdAvePool::back_propagation(
     tiny_average_pooling_back_kernel(
                 parallelize_, in_data, out_data, out_grad,
                 in_grad, in_,
-                tiny_dnn::partial_connected_layer::scale_factor_,
-                tiny_dnn::partial_connected_layer::weight2io_,
-                tiny_dnn::partial_connected_layer::in2wo_,
-                tiny_dnn::partial_connected_layer::bias2out_);
+                TdAvePool::scale_factor_,
+                TdAvePool::weight2io_,
+                TdAvePool::in2wo_,
+                TdAvePool::bias2out_);
 }
 
 std::pair<size_t, size_t> TdAvePool::pool_size() const
@@ -111,7 +152,7 @@ void TdAvePool::init_connection(size_t pooling_size_x,
         {
             for( size_t x=0 ; x<out_.width_ ; ++x )
             {
-                this->connect_bias(c, out_.get_index(x, y, c));
+                connect_bias(c, out_.get_index(x, y, c));
             }
         }
     }
@@ -130,17 +171,17 @@ void TdAvePool::connect_kernel(size_t pooling_size_x,
     {
         for( size_t dx=0 ; dx<dxmax; ++dx )
         {
-            this->connect_weight(in_.get_index(x + dx, y + dy, inc),
-                                 outidx, inc);
+            connect_weight(in_.get_index(x + dx, y + dy, inc),
+                           outidx, inc);
         }
     }
 }
 
 void tiny_average_pooling_kernel(bool parallelize,
-            const std::vector<tiny_dnn::tensor_t *> &in_data,
-            std::vector<tiny_dnn::tensor_t *> &out_data,
-            const tiny_dnn::shape3d &out_dim, float_t scale_factor,
-            std::vector<tiny_dnn::partial_connected_layer::
+                                 const std::vector<tiny_dnn::tensor_t *> &in_data,
+                                 std::vector<tiny_dnn::tensor_t *> &out_data,
+                                 const tiny_dnn::shape3d &out_dim, float_t scale_factor,
+                                 std::vector<TdAvePool::
                                  wi_connections> &out2wi)
 {
     tiny_dnn::for_i(parallelize, in_data[0]->size(), [&](size_t sample)
@@ -175,16 +216,16 @@ void tiny_average_pooling_kernel(bool parallelize,
 }
 
 void tiny_average_pooling_back_kernel(bool parallelize,
-        const std::vector<tiny_dnn::tensor_t *> &in_data,
-        const std::vector<tiny_dnn::tensor_t *> &out_data,
-        std::vector<tiny_dnn::tensor_t *> &out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad,
-        const tiny_dnn::shape3d &in_dim, float_t scale_factor,
-        std::vector<tiny_dnn::partial_connected_layer::
+                                      const std::vector<tiny_dnn::tensor_t *> &in_data,
+                                      const std::vector<tiny_dnn::tensor_t *> &out_data,
+                                      std::vector<tiny_dnn::tensor_t *> &out_grad,
+                                      std::vector<tiny_dnn::tensor_t *> &in_grad,
+                                      const tiny_dnn::shape3d &in_dim, float_t scale_factor,
+                                      std::vector<TdAvePool::
                                       io_connections> &weight2io,
-        std::vector<tiny_dnn::partial_connected_layer::
+                                      std::vector<TdAvePool::
                                       wo_connections> &in2wo,
-        std::vector<std::vector<size_t> > &bias2out)
+                                      std::vector<std::vector<size_t> > &bias2out)
 {
     CNN_UNREFERENCED_PARAMETER(out_data);
     tiny_dnn::for_i(parallelize, in_data[0]->size(), [&](size_t sample)
