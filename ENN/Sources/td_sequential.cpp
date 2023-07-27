@@ -1,6 +1,6 @@
 #include "td_sequential.h"
 
-TdSequential::TdSequential(QObject *parent) : QObject(parent)
+TdSequential::TdSequential()
 {
 
 }
@@ -178,6 +178,7 @@ std::vector<tiny_dnn::tensor_t> TdSequential::normalizeOut(
 
 void TdSequential::add(TdLayer *layer)
 {
+    qDebug() << "ADD";
     nod.push_back(layer);
     connectHeadToTail();
 }

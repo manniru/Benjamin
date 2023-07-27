@@ -511,30 +511,6 @@ float_t TdNetwork::getLoss(const std::vector<T> &in,
     return sum_loss;
 }
 
-template<typename WeightInit>
-TdNetwork &TdNetwork::weightInit(const WeightInit &f)
-{
-    auto ptr = std::make_shared<WeightInit>(f);
-    int len = net.nod.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        net.nod[i]->weightInit(ptr);
-    }
-    return *this;
-}
-
-template<typename BiasInit>
-TdNetwork &TdNetwork::biasInit(const BiasInit &f)
-{
-    auto ptr = std::make_shared<BiasInit>(f);
-    int len = net.nod.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        net.nod[i]->bias_init(ptr);
-    }
-    return *this;
-}
-
 bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
                 const std::vector<tiny_dnn::tensor_t> &inputs,
                 const std::vector<tiny_dnn::tensor_t> &desired_outputs,
@@ -606,6 +582,7 @@ void TdNetwork::normalizeTensor(
 TdNetwork* TdNetwork::addFC(int in_dim, int out_dim)
 {
     TdFC *fc = new TdFC(in_dim, out_dim);
+//    TdFC *fc = nullptr;
     net.add(fc);
     return this;
 }

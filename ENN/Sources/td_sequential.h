@@ -6,40 +6,16 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <QObject>
 #include <QDebug>
 
-//#include "tiny_dnn/layers/layer.h"
 #include "tiny_dnn/optimizers/optimizer.h"
 #include "tiny_dnn/util/util.h"
 #include "td_layer.h"
 
-/** this class holds list of pointer of Node, and provides entry point of
- * forward / backward operations.
- * this is a computational unit of tiny-dnn (for example, convolution).
- * this can accept lvalue, rvalue and shared_ptr forms of node.
- * If given type is rvalue or shared_ptr, nodes create shared_ptr<node> to keep
- * given node alive. If given type is lvalue, tiny-dnn holds raw-pointer only
- * (to avoid double-free).
- *     sequential s;
- *     s.add(fc(100, 200));                          // rvalue, moved into nodes
- *     s.add(std::make_shared<fc>(200, 100));        // shared_ptr, shared by
- *nodes
- *     fc out(100, 10);
- *     softmax sft();
- *     s.add(out);                                   // lvalue, hold raw-pointer
- *only
- *
- * single-input, single-output feedforward network
- **/
-class TdSequential : public QObject
+class TdSequential
 {
-    Q_OBJECT
 public:
-    explicit TdSequential(QObject *parent = nullptr);
-
-    typedef std::vector<TdLayer *>::iterator iterator;
-    typedef std::vector<TdLayer *>::const_iterator const_iterator;
+    explicit TdSequential();
 
     void backward(const std::vector<tiny_dnn::tensor_t> &first);
     std::vector<tiny_dnn::tensor_t> forward(
@@ -66,7 +42,7 @@ public:
         const std::vector<tiny_dnn::tensor_t> &input,
         std::vector<std::vector<const tiny_dnn::vec_t *>> &output);
 
-    QVector<TdLayer *> nod;
+    std::vector<TdLayer *> nod;
 
 private:
     std::vector<tiny_dnn::tensor_t> normalizeOut(

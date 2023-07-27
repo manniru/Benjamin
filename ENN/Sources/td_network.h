@@ -81,10 +81,6 @@ public:
     size_t depth();
     size_t outDataSize();
     size_t inDataSize();
-    template <typename WeightInit>
-    TdNetwork &weightInit(const WeightInit &f);
-    template <typename BiasInit>
-    TdNetwork &biasInit(const BiasInit &f);
     void load(const std::string &filename);
     void save(const std::string &filename) const;
     template <typename OutputArchive>
