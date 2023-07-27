@@ -35,8 +35,10 @@ TdAvePool::TdAvePool(size_t in_width, size_t in_height,
 
     if( (in_width%pool_size_x) || (in_height%pool_size_y) )
     {
-        //      pooling_size_mismatch(in_width, in_height,
-        //        pool_size_x, pool_size_y);
+        qDebug() << "width/height not multiple of pooling size WxH:" << in_width
+                 << "x" << in_height << "pooling-size:" << pool_size_x << "x"
+                 << pool_size_y;
+        exit(0);
     }
 
     init_connection(pool_size_x, pool_size_y);
@@ -263,19 +265,15 @@ void tiny_average_pooling_back_kernel(bool parallelize,
 
         for( size_t i=0 ; i<bias2out.size() ; i++ )
         {
+            const std::vector<size_t> &outs = bias2out[i];
+            float_t diff{0};
 
-            for( size_t i=0 ; i<bias2out.size() ; i++ )
+            for( auto o:outs )
             {
-                const std::vector<size_t> &outs = bias2out[i];
-                float_t diff{0};
-
-                for( auto o:outs )
-                {
-                    diff += curr_delta[o];
-                }
-
-                db[i] += diff;
+                diff += curr_delta[o];
             }
+
+            db[i] += diff;
         }
     });
 }

@@ -1,7 +1,10 @@
 #include <QGuiApplication>
 #include "enn_chapar.h"
-#include "../PNN/aj_dllgen.h"
 #include <QCommandLineParser>
+
+#ifdef WIN32
+    #include "../PNN/aj_dllgen.h"
+#endif
 
 EnnCmdOptions* parseClOptions(QCoreApplication *app);
 

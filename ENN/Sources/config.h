@@ -2,6 +2,7 @@
 #define BT_CONFIG_H
 
 #define KAL_NATO_DIR    "../Nato/"
+#define KAL_AU_DIR      KAL_NATO_DIR "audio/"
 #define BT_WORDS_PATH   KAL_NATO_DIR "word_list"
 
 #define ENN_EPOCH_LOG   25
