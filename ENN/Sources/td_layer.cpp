@@ -1,42 +1,25 @@
 #include "td_layer.h"
+#include <QString>
 
-/**
- * @brief Defaul layer constructor that instantiates a N-input, M-output
- *layer
- *
- * @param in_type[N] type of input vector (data, weight, bias...)
- * @param out_type[M] type of output vector
- *
- **/
-TdLayer::TdLayer(const std::vector<tiny_dnn::vector_type> &in_type,
-                 const std::vector<tiny_dnn::vector_type> &out_type)
+TdLayer::TdLayer(std::vector<tiny_dnn::vector_type> in_t,
+                 std::vector<tiny_dnn::vector_type> out_t)
 {
-    prev_.resize(in_type.size());
-    next_.resize(out_type.size());
+    prev_.resize(in_t.size());
+    next_.resize(out_t.size());
     initialized = false;
     parallelized = true;
-    in_channels = in_type.size();
-    out_channels = out_type.size();
-    this->in_type = in_type;
-    this->out_type = out_type;
-    weight_init = std::make_shared<tiny_dnn::weight_init::xavier>();
-    bias_init   = std::make_shared<tiny_dnn::weight_init::constant>();
+    in_channels = in_t.size();
+    out_channels = out_t.size();
+    in_type = in_t;
+    out_type = out_t;
+    weight_init = new tiny_dnn::weight_init::xavier;
+    bias_init   = new tiny_dnn::weight_init::constant;
     trainable   = true;
 }
 
 void TdLayer::setParallelize(bool parallelize)
 {
     parallelized = parallelize;
-}
-
-void TdLayer::setBackend(std::shared_ptr<tiny_dnn::core::backend> b)
-{
-    backend = b;
-}
-
-void TdLayer::setBackendType(tiny_dnn::core::backend_t bt)
-{
-    backend_type = bt;
 }
 
 tiny_dnn::core::backend_t TdLayer::getBackendType()
@@ -63,11 +46,6 @@ std::string TdLayer::kernel_header() const
 void TdLayer::createOp()
 {
 
-}
-
-std::shared_ptr<tiny_dnn::core::backend> TdLayer::getBackend()
-{
-    return backend;
 }
 
 ///< number of incoming edges in this layer
@@ -651,20 +629,18 @@ void TdLayer::set_sample_count(size_t sample_count)
     }
 }
 
-void TdLayer::alloc_input(size_t i) const
+void TdLayer::alloc_input(size_t i)
 {
     // the created incoming edge won't have a previous connection,
     // for this reason first parameter is a nullptr.
-    prev_[i] = new TdEdge(nullptr, tiny_dnn::shape3d(0,0,0),
-                          in_type[i]);
+    prev_[i] = new TdEdge(nullptr, in_shape()[i], in_type[i]);
 }
 
-void TdLayer::alloc_output(size_t i) const
+void TdLayer::alloc_output(size_t i)
 {
     // the created outcoming will have the current layer as the
     // previous node.
-    next_[i] = new TdEdge(this, tiny_dnn::shape3d(0,0,0),
-                          out_type[i]);
+    next_[i] = new TdEdge(this, out_shape()[i], out_type[i]);
 }
 
 TdEdge *TdLayer::ith_in_node(size_t i)
@@ -733,46 +709,13 @@ void td_connectLayer(TdLayer *head, TdLayer *tail,
     tail->prev_[tail_index]->add_next_node(tail);
 }
 
-template<typename WeightInit>
-TdLayer &TdLayer::weightInit(const WeightInit &f)
-{
-    weight_init = std::make_shared<WeightInit>(f);
-    return *this;
-}
-
-template<typename BiasInit>
-TdLayer &TdLayer::biasInit(const BiasInit &f)
-{
-    bias_init = std::make_shared<BiasInit>(f);
-    return *this;
-}
-
-template<typename WeightInit>
-TdLayer &TdLayer::weightInit(std::shared_ptr<WeightInit> f)
-{
-    weight_init = f;
-    return *this;
-}
-
-template<typename BiasInit>
-TdLayer &TdLayer::biasInit(std::shared_ptr<BiasInit> f)
-{
-    bias_init = f;
-    return *this;
-}
-
 void data_mismatch(TdLayer *layer, const tiny_dnn::vec_t &data)
 {
-    std::ostringstream os;
-
-    os << std::endl;
-    os << "data dimension:    " << data.size() << "\n";
-    os << "network dimension: " << layer->inDataSize() << "("
-       << layer->layer_type() << ":" << layer->in_shape() << ")\n";
-
-    std::string detail_info = os.str();
-
-    throw qDebug() << "input dimension mismatch!" << &detail_info;
+    std::string lt = layer->layer_type();
+    qDebug() << "input dimension mismatch! data dimension:"
+             << data.size() << "network dimension:"
+             << layer->inDataSize() << "(" << lt.c_str() << ")";//":"
+//             << layer->in_shape(). << ")";
 }
 
 template<typename T, typename Func>

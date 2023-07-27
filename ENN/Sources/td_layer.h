@@ -17,7 +17,6 @@
 #include <QDebug>
 
 #include "tiny_dnn/core/backend.h"
-#include "tiny_dnn/node.h"
 
 #include "tiny_dnn/util/parallel_for.h"
 #include "tiny_dnn/util/product.h"
@@ -31,20 +30,17 @@ class TdEdge;
 class TdLayer
 {
 public:
-    explicit TdLayer(const std::vector<tiny_dnn::vector_type> &in_type,
-                     const std::vector<tiny_dnn::vector_type> &out_type);
+    explicit TdLayer(std::vector<tiny_dnn::vector_type> in_type,
+                     std::vector<tiny_dnn::vector_type> out_type);
     virtual ~TdLayer() = default;
 
     void setParallelize(bool parallelize);
-    void setBackend(std::shared_ptr<tiny_dnn::core::backend> b);
-    void setBackendType(tiny_dnn::core::backend_t bt);
     friend void connection_mismatch(const TdLayer &from, const TdLayer &to);
     tiny_dnn::core::backend_t getBackendType();
     tiny_dnn::core::backend_t getEngine();
     virtual std::string kernel_file() const;
     virtual std::string kernel_header() const;
     virtual void createOp();
-    std::shared_ptr<tiny_dnn::core::backend> getBackend();
     size_t inChannels() const;
     size_t outChannels() const;
     size_t inDataSize() const;
@@ -79,14 +75,6 @@ public:
     virtual size_t fan_in_size(size_t) const;
     virtual size_t fan_out_size() const;
     virtual size_t fan_out_size(size_t) const;
-    template <typename WeightInit>
-    TdLayer &weightInit(const WeightInit &f);
-    template <typename BiasInit>
-    TdLayer &biasInit(const BiasInit &f);
-    template <typename WeightInit>
-    TdLayer &weightInit(std::shared_ptr<WeightInit> f);
-    template <typename BiasInit>
-    TdLayer &biasInit(std::shared_ptr<BiasInit> f);
     virtual void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
                                      std::vector<tiny_dnn::tensor_t *> &out_data) = 0;
     virtual void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
@@ -116,7 +104,6 @@ public:
     std::vector<TdEdge *> prev_;
     std::vector<TdEdge *> next_;
 
-protected:
     template <typename T, typename Func>
     inline void for_i(T size, Func f, size_t grainsize = 100);
 
@@ -135,15 +122,19 @@ protected:
     /** The current backend type for operations */
     tiny_dnn::core::backend_t backend_type;
     /** The backend instance (deprecated) */
-    std::shared_ptr<tiny_dnn::core::backend> backend;
+    tiny_dnn::core::backend *backend;
     /** Used in update_weight method. Kept as a member variable to reduce
      * frequent
      * memory allocation */
     tiny_dnn::vec_t weights_diff;
+    /** Pointer to the function for weights initialization */
+    tiny_dnn::weight_init::function *weight_init;
+    /** Pointer to the function for biases initialization */
+    tiny_dnn::weight_init::function *bias_init;
 
 private:
-    void alloc_input(size_t i) const;
-    void alloc_output(size_t i) const;
+    void alloc_input(size_t i);
+    void alloc_output(size_t i);
     TdEdge* ith_in_node(size_t i);
     TdEdge* ith_out_node(size_t i);
     TdEdge* ith_out_node(size_t i) const;
@@ -152,11 +143,6 @@ private:
 
     /** Flag indicating whether the layer/node parameters are trainable */
     bool trainable;
-    /** Pointer to the function for weights initialization */
-    std::shared_ptr<tiny_dnn::weight_init::function> weight_init;
-    /** Pointer to the function for biases initialization */
-    std::shared_ptr<tiny_dnn::weight_init::function> bias_init;
-
     std::vector<tiny_dnn::tensor_t *> fwd_in_data;
     std::vector<tiny_dnn::tensor_t *> fwd_out_data;
     std::vector<tiny_dnn::tensor_t *> bwd_in_data;
@@ -165,12 +151,9 @@ private:
     std::vector<tiny_dnn::tensor_t *> bwd_out_grad;
 };
 
-inline void td_connectLayer(TdLayer *head,
-                            TdLayer *tail,
-                            size_t head_index = 0,
-                            size_t tail_index = 0);
-inline void data_mismatch(TdLayer *layer,
-                          const tiny_dnn::vec_t &data);
+void td_connectLayer(TdLayer *head, TdLayer *tail,
+                     size_t head_index = 0, size_t tail_index = 0);
+void data_mismatch(TdLayer *layer, const tiny_dnn::vec_t &data);
 
 class TdEdge
 {
