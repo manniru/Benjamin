@@ -178,7 +178,6 @@ std::vector<tiny_dnn::tensor_t> TdSequential::normalizeOut(
 
 void TdSequential::add(TdLayer *layer)
 {
-    qDebug() << "ADD";
     nod.push_back(layer);
     connectHeadToTail();
 }

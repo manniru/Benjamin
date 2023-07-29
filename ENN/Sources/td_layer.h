@@ -36,11 +36,9 @@ public:
 
     void setParallelize(bool parallelize);
     friend void connection_mismatch(const TdLayer &from, const TdLayer &to);
-    tiny_dnn::core::backend_t getBackendType();
-    tiny_dnn::core::backend_t getEngine();
+    int getEngine();
     virtual std::string kernel_file() const;
     virtual std::string kernel_header() const;
-    virtual void createOp();
     size_t inChannels() const;
     size_t outChannels() const;
     size_t inDataSize() const;
@@ -120,9 +118,7 @@ public:
     /** Vector containing the type of data for outputs */
     std::vector<tiny_dnn::vector_type> out_type;
     /** The current backend type for operations */
-    tiny_dnn::core::backend_t backend_type;
-    /** The backend instance (deprecated) */
-    tiny_dnn::core::backend *backend;
+    int backend_type;
     /** Used in update_weight method. Kept as a member variable to reduce
      * frequent
      * memory allocation */

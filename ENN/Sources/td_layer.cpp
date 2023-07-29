@@ -15,6 +15,11 @@ TdLayer::TdLayer(std::vector<tiny_dnn::vector_type> in_t,
     weight_init = new tiny_dnn::weight_init::xavier;
     bias_init   = new tiny_dnn::weight_init::constant;
     trainable   = true;
+#ifdef CNN_USE_AVX
+    backend_type = BACKEND_AVX;
+#else
+    backend_type = BACKEND_INTERNAL;
+#endif
 }
 
 void TdLayer::setParallelize(bool parallelize)
@@ -22,12 +27,7 @@ void TdLayer::setParallelize(bool parallelize)
     parallelized = parallelize;
 }
 
-tiny_dnn::core::backend_t TdLayer::getBackendType()
-{
-    return backend->type();
-}
-
-tiny_dnn::core::backend_t TdLayer::getEngine()
+int TdLayer::getEngine()
 {
     return backend_type;
 }
@@ -37,15 +37,9 @@ std::string TdLayer::kernel_file() const
     return std::string("empty_kernel_str");
 }
 
-
 std::string TdLayer::kernel_header() const
 {
     return std::string();
-}
-
-void TdLayer::createOp()
-{
-
 }
 
 ///< number of incoming edges in this layer
@@ -203,7 +197,8 @@ void TdLayer::setOutGrads(const std::vector<const tiny_dnn::vec_t *> *grad, size
     }
 }
 
-void TdLayer::setInData(const std::vector<const tiny_dnn::vec_t *> *data, size_t cnt)
+void TdLayer::setInData(
+        const std::vector<const tiny_dnn::vec_t *> *data, size_t cnt)
 {
     CNN_UNREFERENCED_PARAMETER(cnt);
     size_t n = 0;
@@ -224,7 +219,12 @@ void TdLayer::setInData(const std::vector<const tiny_dnn::vec_t *> *data, size_t
 
         for( size_t j=0 ; j<sz ; ++j )
         {
-            assert(src_data[j]->size() == in_size);  // checking if training data is consistent with layer shape
+            if( src_data[j]->size() != in_size )
+            {
+                qDebug() << "Data Size and Layer Size Not Matched!"
+                         << src_data[j]->size() << in_size;
+                exit(1);
+            }
             dst_data[j] = *src_data[j];
         }
     }
@@ -670,13 +670,11 @@ TdEdge *TdLayer::ith_out_node(size_t i) const
 
 tiny_dnn::vec_t *TdLayer::getWeightData(size_t i)
 {
-    assert(is_trainable_weight(in_type_[i]));
     return &(*(ith_in_node(i)->get_data()))[0];
 }
 
 const tiny_dnn::vec_t *TdLayer::getWeightData(size_t i) const
 {
-    assert(is_trainable_weight(in_type_[i]));
     return &(*(const_cast<TdLayer *>(this)->ith_in_node(i)->get_data()))[0];
 }
 
