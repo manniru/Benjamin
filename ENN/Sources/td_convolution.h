@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "tiny_dnn/core/kernels/conv2d_op.h"
+#include "tiny_dnn/core/kernels/conv2d_grad_op.h"
 #include "td_layer.h"
 #include "tiny_dnn/util/util.h"
 #include "tiny_dnn/core/backend.h"
@@ -26,9 +27,7 @@ public:
                   size_t w_stride              = 1,
                   size_t h_stride              = 1,
                   size_t w_dilation            = 1,
-                  size_t h_dilation            = 1,
-                  tiny_dnn::core::backend_t bt =
-            tiny_dnn::core::backend_t::avx);
+                  size_t h_dilation            = 1);
 
     size_t fan_in_size() const override;
 
@@ -96,9 +95,7 @@ private:
                         size_t h_dilation,
                         tiny_dnn::padding pad_type) const;
 
-    void createOp() override;
-
-    void init_backend(const tiny_dnn::core::backend_t backend_type);
+    void init_backend();
 
 private:
     /* The convolution parameters */

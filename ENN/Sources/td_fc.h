@@ -9,18 +9,14 @@
 
 #include "td_layer.h"
 #include "tiny_dnn/core/kernels/fully_connected_op.h"
+#include "tiny_dnn/core/kernels/fully_connected_grad_op.h"
 
 class TdFC : public TdLayer
 {
 public:
     TdFC(size_t in_dim,
          size_t out_dim,
-         bool has_bias = true,
-         tiny_dnn::core::backend_t bt =
-            tiny_dnn::core::backend_t::avx);
-
-    // move constructor
-    TdFC(TdFC &&other);
+         bool has_bias = true);
 
     size_t fan_in_size() const override;
 
@@ -44,7 +40,7 @@ public:
     void set_params(const size_t in_size,
                     const size_t out_size, bool has_bias);
 
-    void init_backend(tiny_dnn::core::backend_t backend_type);
+    void init_backend();
 
     private:
     /* The layer parameters */

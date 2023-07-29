@@ -5,18 +5,16 @@ TdConvolution::TdConvolution(size_t in_width, size_t in_height,
                              size_t in_channels, size_t out_channels,
                              tiny_dnn::padding pad_type, bool has_bias,
                              size_t w_stride, size_t h_stride,
-                             size_t w_dilation, size_t h_dilation,
-                             tiny_dnn::core::backend_t bt)
+                             size_t w_dilation, size_t h_dilation)
     : TdLayer(tiny_dnn::std_input_order(has_bias),
-        {tiny_dnn::vector_type::data})
+{tiny_dnn::vector_type::data})
 {
     conv_set_params(tiny_dnn::shape3d(in_width, in_height, in_channels),
                     window_width, window_height, out_channels,
                     pad_type, has_bias, w_stride,
                     h_stride, w_dilation, h_dilation,
                     tiny_dnn::core::connection_table());
-    init_backend(backend_type);
-    backend_type = bt;
+    init_backend();
 }
 
 size_t TdConvolution::fan_in_size() const
@@ -147,10 +145,10 @@ tiny_dnn::tensor_t *TdConvolution::in_data_padded(
 }
 
 void TdConvolution::conv_set_params(const tiny_dnn::shape3d &in,
-    size_t w_width, size_t w_height, size_t outc,
-    tiny_dnn::padding ptype, bool has_bias, size_t w_stride,
-    size_t h_stride, size_t w_dilation, size_t h_dilation,
-    const tiny_dnn::core::connection_table &tbl)
+                                    size_t w_width, size_t w_height, size_t outc,
+                                    tiny_dnn::padding ptype, bool has_bias, size_t w_stride,
+                                    size_t h_stride, size_t w_dilation, size_t h_dilation,
+                                    const tiny_dnn::core::connection_table &tbl)
 {
     params_.in = in;
     params_.in_padded =
@@ -217,22 +215,15 @@ size_t TdConvolution::conv_out_dim(size_t in_width, size_t in_height,
 {
     return conv_out_length(in_width, window_width, w_stride,
                            w_dilation, pad_type) *
-           conv_out_length(in_height, window_height, h_stride,
-                           h_dilation, pad_type);
+            conv_out_length(in_height, window_height, h_stride,
+                            h_dilation, pad_type);
 }
 
-void TdConvolution::createOp()
-{
-    init_backend(getEngine());
-}
-
-void TdConvolution::init_backend(
-        const tiny_dnn::core::backend_t backend_type)
+void TdConvolution::init_backend()
 {
     tiny_dnn::core::OpKernelConstruction ctx =
             tiny_dnn::core::OpKernelConstruction(&params_);
 
     kernel_fwd_.reset(new tiny_dnn::Conv2dOp(ctx));
-    return;
-
+    kernel_back_.reset(new tiny_dnn::Conv2dGradOp(ctx));
 }

@@ -1,22 +1,12 @@
 #include "td_fc.h"
 
-TdFC::TdFC(size_t in_dim, size_t out_dim, bool has_bias,
-           tiny_dnn::core::backend_t bt)
+TdFC::TdFC(size_t in_dim, size_t out_dim, bool has_bias)
     : TdLayer(tiny_dnn::std_input_order(has_bias),
       {tiny_dnn::vector_type::data})
 {
     set_params(in_dim, out_dim, has_bias);
-    init_backend(backend_type);
-    backend_type = bt;
-}
-
-TdFC::TdFC(TdFC &&other)
-    : TdLayer(std::move(other)),
-      params_(std::move(other.params_)),
-      kernel_fwd_(std::move(other.kernel_fwd_)),
-      kernel_back_(std::move(other.kernel_back_))
-{
-    init_backend(std::move(other.getEngine()));
+    qDebug() << "backend_type" << backend_type;
+    init_backend();
 }
 
 size_t TdFC::fan_in_size() const
@@ -87,10 +77,11 @@ void TdFC::set_params(const size_t in_size,
     params_.has_bias_ = has_bias;
 }
 
-void TdFC::init_backend(tiny_dnn::core::backend_t backend_type)
+void TdFC::init_backend()
 {
     tiny_dnn::core::OpKernelConstruction ctx =
             tiny_dnn::core::OpKernelConstruction(&params_);
 
     kernel_fwd_.reset(new tiny_dnn::FullyConnectedOp(ctx));
+    kernel_back_.reset(new tiny_dnn::FullyConnectedGradOp(ctx));
 }
