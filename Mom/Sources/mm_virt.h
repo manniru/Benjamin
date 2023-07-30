@@ -175,6 +175,7 @@ public:
     // way to check other wise seg fault will result
     int current_desktop;
 
+    void  setFocus();
     void  sendKey(int key_val);
     void  pressKey(int key_val);
     void  releaseKey(int key_val);
@@ -184,7 +185,6 @@ public:
 
 private:
     void updateGUID();
-    void setFocus();
 
     int isCurrentActive();
 

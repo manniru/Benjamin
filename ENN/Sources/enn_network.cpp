@@ -201,7 +201,7 @@ float EnnNetwork::calcLoss()
         vec_t predicted = net->predict(dataset->train_datas[i]);
         float s_loss = cross_entropy::f(predicted, label_tensor[i][0]);
 
-        if( s_loss>10 )
+        if( s_loss>ENN_WRONG_LOSS )
         {
             wrong_sum += s_loss;
             wrong_i.push_back(i);
@@ -219,7 +219,7 @@ float EnnNetwork::calcLoss()
     {
         last_loss = loss;
     }
-    if( loss>400 || std::isnan(loss) )
+    if( loss>70 || std::isnan(loss) )
     {
         EnnResult acc_train = getAcc(dataset->train_datas,
                                   dataset->train_labels);

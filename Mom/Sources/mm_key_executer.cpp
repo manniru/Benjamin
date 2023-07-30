@@ -103,6 +103,7 @@ void MmKeyExec::delayedExec()
         key_buf.remove(0, 4);
         int work_id = key_buf.toInt();
         virt->setDesktop(work_id-1);
+        virt->setFocus();
     }
     else if( key_buf.contains("move") ) // Super+Shift+#
     {

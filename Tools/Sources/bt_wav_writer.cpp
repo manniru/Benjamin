@@ -73,6 +73,7 @@ BtWavWriter::BtWavWriter(BtCyclic *buffer, BtState *state)
     exemption_list << "edge";
     exemption_list << "drag";
     exemption_list << "canals";
+    exemption_list << "double";
 }
 
 BtWavWriter::~BtWavWriter()

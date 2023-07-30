@@ -44,6 +44,13 @@ void MmAppLauncher::focusOpen(QString shortcut, int desktop_id)
             QThread::msleep(50);
         }
         mm_launchLnk(shortcut);
+
+        while( app.hwnd==NULL )
+        {
+            QThread::msleep(50);
+            app = getApplication(shortcut, "");
+        }
+        mm_focusWindow(app.hwnd);
     }
 }
 
