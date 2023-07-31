@@ -1,4 +1,5 @@
 #include <QGuiApplication>
+#include <QtQml/QQmlApplicationEngine>
 #include "enn_chapar.h"
 #include <QCommandLineParser>
 
@@ -14,12 +15,22 @@ int main(int argc, char *argv[])
 #ifdef WIN32
     aj_dllGen();
 #endif
+    app.setOrganizationName("Binaee");
+    app.setOrganizationDomain("Binaee.com");
+    app.setApplicationName("ENN");
+
     qDebug() << "thread support"
              << std::thread::hardware_concurrency();
-    EnnCmdOptions *options = parseClOptions(&app);
-    EnnChapar chapar(options);
 
-    return 0;
+    EnnCmdOptions *options = parseClOptions(&app);
+
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    QObject *root = engine.rootObjects().first();
+
+    EnnChapar chapar(root, options);
+
+    return app.exec();
 }
 
 EnnCmdOptions* parseClOptions(QCoreApplication *app)

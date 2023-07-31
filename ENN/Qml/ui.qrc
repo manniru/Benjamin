@@ -1,0 +1,32 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>AbStatus.qml</file>
+        <file>AbConst.qml</file>
+        <file>AbButton.qml</file>
+        <file>AbConsole.qml</file>
+        <file>AbTimeBar.qml</file>
+        <file>AbStatusLabel.qml</file>
+        <file>AbButtons.qml</file>
+        <file>AbRecDelete.qml</file>
+        <file>AbRecPlay.qml</file>
+        <file>AbTopBar.qml</file>
+        <file alias="AbDialog.qml">Queries/AbDialog.qml</file>
+        <file alias="AbDialogWsl.qml">Queries/AbDialogWsl.qml</file>
+        <file alias="AbDiffAccept.qml">Queries/AbDiffAccept.qml</file>
+        <file alias="AbHelpWindow.qml">Queries/AbHelpWindow.qml</file>
+        <file alias="AbMessage.qml">Queries/AbMessage.qml</file>
+        <file alias="AbQuery.qml">Queries/AbQuery.qml</file>
+        <file alias="AbQueryLine.qml">Queries/AbQueryLine.qml</file>
+        <file alias="AbLerStat.qml">Queries/AbLerStat.qml</file>
+        <file alias="AbESampleQuery.qml">Queries/AbESampleQuery.qml</file>
+        <file alias="AbVerifyEFalse.qml">Queries/AbVerifyEFalse.qml</file>
+        <file alias="AbTrainEnnQuery.qml">Queries/AbTrainEnnQuery.qml</file>
+        <file alias="AbLerLine.qml">Queries/AbLerLine.qml</file>
+        <file alias="AbEnnWord.qml">Queries/AbEnnWord.qml</file>
+        <file>EnnSamples.qml</file>
+        <file>EnnSample.qml</file>
+        <file>EnnWordList.qml</file>
+        <file>EnnWordLine.qml</file>
+    </qresource>
+</RCC>

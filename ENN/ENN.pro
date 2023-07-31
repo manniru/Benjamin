@@ -1,5 +1,8 @@
 TEMPLATE = app
 
+QT += multimedia \
+      quick
+
 CONFIG += console
 
 INCLUDEPATH += ../PNN
@@ -26,8 +29,10 @@ QMAKE_LFLAGS_RELEASE -= -O1
 MOC_DIR = Build/.moc
 RCC_DIR = Build/.rcc
 OBJECTS_DIR = Build/.obj
+QMLCACHE_DIR = ./Build
 
 HEADERS += \
+    Sources/enn_scene.h \
     Sources/backend.h \
     Sources/config.h \
     Sources/enn_chapar.h \
@@ -45,6 +50,7 @@ HEADERS += \
     Sources/td_softmax.h
 
 SOURCES += \
+    Sources/enn_scene.cpp \
     Sources/backend.cpp \
     Sources/enn_chapar.cpp \
     Sources/enn_dataset.cpp \
@@ -62,3 +68,13 @@ SOURCES += \
     Sources/td_softmax.cpp
 
 win32:SOURCES += ../PNN/aj_dllgen.cpp
+
+RESOURCES += \
+             Qml/ui.qrc \
+             Resources/fonts.qrc
+
+OTHER_FILES += Qml/*.qml \
+               Qml/Queries/*.qml
+
+QML_IMPORT_PATH += Qml/
+win32:RC_ICONS += icon.ico

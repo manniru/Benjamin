@@ -184,3 +184,7 @@ Arbade/debug/
 Arbade/object_script.Arbade
 
 ENN/object_script.ENN
+
+ENN/ENN_resource.rc
+
+ENN/Build/.rcc/
