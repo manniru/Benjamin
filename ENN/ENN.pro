@@ -8,14 +8,16 @@ INCLUDEPATH += ../PNN
 #linux:LIBS += -lgio-2.0
 win32:LIBS += -lole32 -luuid
 
-DEFINES += CNN_USE_SSE #\
+DEFINES += CNN_USE_SSE \
+           NDEBUG
 #           CNN_USE_AVX #\
-#           NDEBUG
 #           HAVE_CXXABI_H
 #           DNN_USE_IMAGE_API
 
+Release:DEFINES += CNN_USE_AVX;
+
 QMAKE_CXXFLAGS += -std=gnu++14 -m64 -mavx -msse3
-win32:QMAKE_CXXFLAGS += -Wa,-mbig-obj
+#win32:QMAKE_CXXFLAGS += -Wa,-mbig-obj
 QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3
 

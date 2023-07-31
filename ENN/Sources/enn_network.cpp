@@ -199,7 +199,7 @@ float EnnNetwork::calcLoss()
     for( int i=0 ; i<len ; i++ )
     {
         vec_t predicted = net->predict(dataset->train_datas[i]);
-        float s_loss = cross_entropy::f(predicted, label_tensor[i][0]);
+        float s_loss = mse::f(predicted, label_tensor[i][0]);
 
         if( s_loss>ENN_WRONG_LOSS )
         {

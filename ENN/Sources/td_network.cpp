@@ -27,7 +27,7 @@ void TdNetwork::bprop(const std::vector<tiny_dnn::tensor_t> &out,
                       const std::vector<tiny_dnn::tensor_t> &t_cost)
 {
     std::vector<tiny_dnn::tensor_t> delta;
-    delta = tiny_dnn::gradient<tiny_dnn::cross_entropy>(out, t,
+    delta = tiny_dnn::gradient<tiny_dnn::mse>(out, t,
                                                         t_cost);
     net.backward(delta);
 }
@@ -132,7 +132,7 @@ float_t TdNetwork::getLoss(const std::vector<tiny_dnn::vec_t> &in,
         const tiny_dnn::vec_t predicted = predict(in[i]);
         for( size_t j=0 ; j<1 ; j++ )
         {
-            sum_loss += tiny_dnn::cross_entropy::f(predicted,
+            sum_loss += tiny_dnn::mse::f(predicted,
                                     label_tensor[i][j]);
         }
     }
@@ -147,7 +147,7 @@ float_t TdNetwork::getLoss(const std::vector<tiny_dnn::vec_t> &in,
     for( size_t i=0 ; i<in.size() ; i++ )
     {
         const tiny_dnn::vec_t predicted = predict(in[i]);
-        sum_loss += tiny_dnn::cross_entropy::f(predicted, t[i]);
+        sum_loss += tiny_dnn::mse::f(predicted, t[i]);
     }
     return sum_loss;
 }
@@ -268,12 +268,20 @@ void TdNetwork::train_onebatch(tiny_dnn::adagrad &optimizer,
     CNN_UNREFERENCED_PARAMETER(num_tasks);
     std::copy(&in[0], &in[0] + batch_size, &in_batch[0]);
     std::copy(&t[0], &t[0] + batch_size, &t_batch[0]);
-    std::vector<tiny_dnn::tensor_t> t_cost_batch =
-            t_cost ? std::vector<tiny_dnn::tensor_t>(&t_cost[0],
-            &t_cost[0] + batch_size)
-            : std::vector<tiny_dnn::tensor_t>();
+    std::vector<tiny_dnn::tensor_t> t_cost_batch;
+    if( t_cost )
+    {
+        t_cost_batch = std::vector<tiny_dnn::tensor_t>(&t_cost[0],
+            &t_cost[0] + batch_size);
+    }
+    else
+    {
+        t_cost_batch = std::vector<tiny_dnn::tensor_t>();
+    }
 
-    bprop(predict(in_batch), t_batch, t_cost_batch);
+    std::vector<tiny_dnn::tensor_t> o_batch;
+    o_batch = net.forward(in_batch);
+    bprop(o_batch, t_batch, t_cost_batch);
     net.updateWeights(&optimizer);
 }
 
@@ -399,98 +407,6 @@ const tiny_dnn::tensor_t *TdNetwork::getTargetCostSamplePointer(
     }
 }
 
-/**
-* trains the network for a fixed number of epochs to generate desired
-* output.
-*
-* This method executes fixed number of training steps and invoke callbacks
-* for
-* each mini-batch/epochs.
-* The network is trained to minimize given loss function(specified by
-* template
-* parameter).
-*
-* Shape of inputs and desired_outputs must be same to network inputs. For
-* example, if your network
-* has 2 input layers that takes N dimensional array, for each element of
-* inputs must be [2xN]
-* array.
-*
-* @code
-* network<sequential> net;
-* adagrad opt;
-*
-* net << layers::fc(2, 3) << activation::tanh()
-*     << layers::fc(3, 1) << activation::relu();
-*
-* // 2training data, each data is float_t[2]
-* std::vector<vec_t> data { { 1, 0 }, { 0, 2 } };
-* std::vector<vec_t> out  {    { 2 },    { 1 } };
-*
-* net.fit<mse>(opt, data, out, 1, 1);
-*
-* // 2training data, each data is float_t[1][2]
-* // this form is also valid
-* std::vector<tensor_t> data2{ { { 1, 0 } }, { { 0, 2 } } };
-* std::vector<tensor_t> out2 { {    { 2 } }, {    { 1 } } };
-*
-* net.fit<mse>(opt, data2, out2, 1, 1);
-* @endcode
-*
-*
-* @param optimizer          optimizing algorithm for training
-* @param inputs             array of input data
-* @param desired_outputs    array of desired output
-* @param batch_size         number of samples per parameter update
-* @param epoch              number of training epochs
-* @param on_batch_enumerate callback for each mini-batch enumerate
-* @param on_epoch_enumerate callback for each epoch
-* @param reset_weights      set true if reset current network weights
-* @param n_threads          number of tasks
-* @param t_cost             target costs (leave to nullptr in order to
-* assume
-* equal cost for every target)
-*/
-template<typename T, typename U>
-bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
-                    const std::vector<T> &inputs,
-                    const std::vector<U> &desired_outputs,
-                    size_t batch_size, int epoch,
-                    const bool reset_weights, const int n_threads,
-                    const std::vector<U> &t_cost)
-{
-    std::vector<tiny_dnn::tensor_t> input_tensor, output_tensor,
-            t_cost_tensor;
-    normalizeTensor(inputs, input_tensor);
-    normalizeTensor(desired_outputs, output_tensor);
-    if( !t_cost.empty() )
-    {
-        normalizeTensor(t_cost, t_cost_tensor);
-    }
-
-    return fit(optimizer, input_tensor, output_tensor, batch_size, epoch,
-               reset_weights, n_threads, t_cost_tensor);
-}
-
-/**
-* @param optimizer          optimizing algorithm for training
-* @param inputs             array of input data
-* @param desired_outputs    array of desired output
-* @param batch_size         number of samples per parameter update
-* @param epoch              number of training epochs
-**/
-template<typename T, typename U>
-bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
-                    const std::vector<T> &inputs,
-                    const std::vector<U> &desired_outputs,
-                    size_t batch_size, int epoch)
-{
-    return fit<tiny_dnn::cross_entropy>(optimizer, inputs,
-                                        desired_outputs, batch_size,
-                                        epoch, tiny_dnn::nop,
-                                        tiny_dnn::nop);
-}
-
 template<typename T>
 float_t TdNetwork::getLoss(const std::vector<T> &in,
                            const std::vector<tiny_dnn::tensor_t> &t)
@@ -504,7 +420,7 @@ float_t TdNetwork::getLoss(const std::vector<T> &in,
         const tiny_dnn::tensor_t predicted = predict(in_tensor[i]);
         for( size_t j=0 ; j<predicted.size() ; j++ )
         {
-            sum_loss += tiny_dnn::cross_entropy::f(predicted[j],
+            sum_loss += tiny_dnn::mse::f(predicted[j],
                                                    t[i][j]);
         }
     }

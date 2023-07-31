@@ -8,7 +8,6 @@ TdSequential::TdSequential()
 void TdSequential::backward(
         const std::vector<tiny_dnn::tensor_t> &first)
 {
-    qDebug() << "BACKWARD";
     std::vector<std::vector<const tiny_dnn::vec_t *>> reordered_grad;
     reorderForLayerwiseProcessing(first, reordered_grad);
     assert(reordered_grad.size() == 1);
@@ -25,7 +24,6 @@ void TdSequential::backward(
 std::vector<tiny_dnn::tensor_t> TdSequential::forward(
         const std::vector<tiny_dnn::tensor_t> &first)
 {
-    qDebug() << "FORWARD";
     std::vector<std::vector<const tiny_dnn::vec_t *>> reordered_data;
     reorderForLayerwiseProcessing(first, reordered_data);
     assert(reordered_data.size() == 1);
@@ -62,7 +60,6 @@ void TdSequential::checkConnectivity()
 
 void TdSequential::updateWeights(tiny_dnn::optimizer *opt)
 {
-    qDebug() << "WEIGHT";
     int len = nod.size();
     for( int i=0 ; i<len ; i++ )
     {
@@ -75,7 +72,6 @@ void TdSequential::updateWeights(tiny_dnn::optimizer *opt)
  **/
 void TdSequential::setup(bool reset_weight)
 {
-    qDebug() << "SETUP";
     int len = nod.size();
     for( int i=0 ; i<len ; i++ )
     {
@@ -85,7 +81,6 @@ void TdSequential::setup(bool reset_weight)
 
 void TdSequential::clearGrads()
 {
-    qDebug() << "CLEAR";
     int len = nod.size();
     for( int i=0 ; i<len ; i++ )
     {

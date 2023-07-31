@@ -14,6 +14,8 @@ int main(int argc, char *argv[])
 #ifdef WIN32
     aj_dllGen();
 #endif
+    qDebug() << "thread support"
+             << std::thread::hardware_concurrency();
     EnnCmdOptions *options = parseClOptions(&app);
     EnnChapar chapar(options);
 

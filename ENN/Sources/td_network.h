@@ -51,21 +51,6 @@ public:
     float_t predictMaxValue(const tiny_dnn::vec_t &in);
     tiny_dnn::label_t predictLabel(const tiny_dnn::vec_t &in);
 
-    template <typename T, typename U>
-    bool fit(tiny_dnn::adagrad &optimizer,
-             const std::vector<T> &inputs,
-             const std::vector<U> &desired_outputs,
-             size_t batch_size,
-             int epoch,
-             const bool reset_weights     = false,
-             const int n_threads          = CNN_TASK_SIZE,
-             const std::vector<U> &t_cost = std::vector<U>());
-    template <typename T, typename U>
-    bool fit(tiny_dnn::adagrad &optimizer,
-             const std::vector<T> &inputs,
-             const std::vector<U> &desired_outputs,
-             size_t batch_size = 1,
-             int epoch         = 1);
     void setNetPhase(tiny_dnn::net_phase phase);
     void stopOngoingTraining();
     std::vector<tiny_dnn::vec_t> test(
