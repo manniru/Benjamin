@@ -32,6 +32,7 @@ OBJECTS_DIR = Build/.obj
 QMLCACHE_DIR = ./Build
 
 HEADERS += \
+    Sources/enn_sample_link.h \
     Sources/enn_scene.h \
     Sources/backend.h \
     Sources/config.h \
@@ -50,6 +51,7 @@ HEADERS += \
     Sources/td_softmax.h
 
 SOURCES += \
+    Sources/enn_sample_link.cpp \
     Sources/enn_scene.cpp \
     Sources/backend.cpp \
     Sources/enn_chapar.cpp \
