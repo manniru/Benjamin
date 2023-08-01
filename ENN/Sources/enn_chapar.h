@@ -3,6 +3,7 @@
 
 #include "backend.h"
 #include "enn_network.h"
+#include "enn_scene.h"
 
 #define ENN_LEARN_MODE 1
 #define ENN_TEST_MODE  2
@@ -16,10 +17,12 @@ typedef struct EnnCmdOptions
     QString word;
 }EnnCmdOptions;
 
-class EnnChapar
+class EnnChapar : public QObject
 {
+    Q_OBJECT
 public:
-    EnnChapar(EnnCmdOptions *options);
+    explicit EnnChapar(QObject *ui, EnnCmdOptions *options,
+                       QObject *parent = nullptr);
     ~EnnChapar();
 
     void testMode();
@@ -29,6 +32,9 @@ public:
     void singleMode(float l_rate, QString l_word);
 
 private:
+    EnnScene *scene;
+    QObject *root;       // root qml object
+    QObject *sample_viewer;   //rec list qml object
 };
 
 #endif // ENenn_listDirs_H

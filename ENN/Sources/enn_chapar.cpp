@@ -1,8 +1,13 @@
 #include "enn_chapar.h"
 #include "enn_test.h"
 
-EnnChapar::EnnChapar(EnnCmdOptions *options)
+EnnChapar::EnnChapar(QObject *ui, EnnCmdOptions *options,
+                     QObject *parent) : QObject(parent)
 {
+    root = ui;
+    scene = new EnnScene(root);
+    return;
+
     if( options->mode==ENN_LEARN_MODE )
     {
         if( options->word.length() )

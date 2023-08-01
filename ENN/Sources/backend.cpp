@@ -188,6 +188,31 @@ QString ab_getWslPath()
     return "";
 }
 
+QVector<QString> ab_listFiles(QString path)
+{
+    QVector<QString> ret;
+    QDir cat_dir(path);
+
+    if( !cat_dir.exists() )
+    {
+        qDebug() << "Warning: Directory doesn't Exist,"
+                 << "cannot generate statistics.";
+        return ret;
+    }
+
+    QFileInfoList file_list = cat_dir.entryInfoList(QDir::Files,
+                              QDir::Time | QDir::Reversed);
+
+    int len = file_list.size();
+
+    for( int i=0 ; i<len ; i++ )
+    {
+        ret.push_back(file_list[i].absoluteFilePath());
+    }
+
+    return ret;
+}
+
 QString ab_getAudioPath()
 {
 #ifdef WIN32

@@ -18,4 +18,5 @@ QStringList bt_parseLexicon(QString filename);
 void enn_readENN(QString path, tiny_dnn::vec_t *out);
 QString ab_getWslPath();
 QString ab_getAudioPath();
+QVector<QString> ab_listFiles(QString path);
 #endif // BACKEND_H
