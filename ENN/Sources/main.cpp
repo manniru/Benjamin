@@ -1,7 +1,6 @@
 #include <QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 #include "enn_chapar.h"
-#include "enn_sample_link.h"
 #include <QCommandLineParser>
 
 #ifdef WIN32
@@ -24,21 +23,19 @@ int main(int argc, char *argv[])
              << std::thread::hardware_concurrency();
 
     EnnCmdOptions *options = parseClOptions(&app);
+    EnnChapar chapar(&app, options);
 
-    QQmlApplicationEngine engine;
-    engine.addImageProvider("samples", new EnnSampleLink);
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    QObject *root = engine.rootObjects().first();
-
-    EnnChapar chapar(root, options);
-
-    return app.exec();
+    return 0;
 }
 
 EnnCmdOptions* parseClOptions(QCoreApplication *app)
 {
     QCommandLineParser parser;
     EnnCmdOptions *ret_opt = new EnnCmdOptions;
+
+    // -u UI_MODE
+    QCommandLineOption ui_mode("u", "Set UI Mode");
+    parser.addOption(ui_mode);
 
     // -t TEST_MODE
     QCommandLineOption test_mode("t", "Set Test Mode");
@@ -72,6 +69,10 @@ EnnCmdOptions* parseClOptions(QCoreApplication *app)
     if( parser.isSet(test_mode) )
     {
         ret_opt->mode = ENN_TEST_MODE;
+    }
+    else if( parser.isSet(ui_mode) )
+    {
+        ret_opt->mode = ENN_UI_MODE;
     }
     else if( parser.isSet(test_full_mode) )
     {

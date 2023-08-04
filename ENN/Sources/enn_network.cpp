@@ -8,11 +8,14 @@ EnnNetwork::EnnNetwork(QString word, int id,
                        QObject *parent) : QObject(parent)
 {
     dataset = new EnnDataset(word, id);
-    n_minibatch = 64;
+    n_minibatch = 1;
     n_train_epochs = ENN_MAX_EPOCH;
     is_wrong = 0;
 
     setbuf(stdout,NULL); //to work out printf
+
+    net = new TdNetwork();
+    connect(net, SIGNAL(OnEpochEnumerate()), this, SLOT(epochLog()));
     need_train = load();
 }
 
@@ -87,7 +90,6 @@ bool EnnNetwork::load()
     }
     else // create new
     {
-        net = new TdNetwork();
         createNNet();
     }
     return true;
@@ -140,7 +142,6 @@ void EnnNetwork::train(float l_rate)
     net->fit(optim, input_tensor, output_tensor,
                  n_minibatch, n_train_epochs, false, CNN_TASK_SIZE,
                  t_cost_tensor);
-    connect(net, SIGNAL(OnEpochEnumerate()), this, SLOT(epochLog()));
 
     if( is_wrong!=2 )
     {

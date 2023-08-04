@@ -7,7 +7,7 @@
 
 #define ENN_EPOCH_LOG   25
 //#define ENN_TARGET_LOSS 0.04
-#define ENN_TARGET_LOSS 10
+#define ENN_TARGET_LOSS .5
 #define ENN_WRONG_LOSS  1
 #define ENN_MAX_EPOCH   200
 #define ENN_LEARN_RATE  "0.001"

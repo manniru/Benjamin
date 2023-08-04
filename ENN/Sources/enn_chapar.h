@@ -1,14 +1,17 @@
 #ifndef ENN_CHAPAR_H
 #define ENN_CHAPAR_H
 
+#include <QGuiApplication>
 #include "backend.h"
 #include "enn_network.h"
 #include "enn_scene.h"
+#include "enn_sample_link.h"
 
 #define ENN_LEARN_MODE 1
 #define ENN_TEST_MODE  2
 #define ENN_TF_MODE    3
 #define ENN_FILE_MODE  4
+#define ENN_UI_MODE    5
 
 typedef struct EnnCmdOptions
 {
@@ -21,7 +24,7 @@ class EnnChapar : public QObject
 {
     Q_OBJECT
 public:
-    explicit EnnChapar(QObject *ui, EnnCmdOptions *options,
+    explicit EnnChapar(QGuiApplication *app, EnnCmdOptions *options,
                        QObject *parent = nullptr);
     ~EnnChapar();
 

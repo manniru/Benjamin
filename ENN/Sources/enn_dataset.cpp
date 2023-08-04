@@ -19,6 +19,7 @@ EnnDataset::EnnDataset(QString word, int id, int test)
         true_counter = 0;
         parseTrues(enn_dir);
         parseFalses(enn_dir);
+        createFTest();
     }
 
     shuffleData();
@@ -53,6 +54,7 @@ void EnnDataset::parseFalses(QString path)
     false_dirs.removeAt(t_index);
 
     int fd_len = false_dirs.size();
+    false_counter = true_counter*10/fd_len;
 //    int m_name_len = 1;
 
     for( int i=0 ; i<fd_len ; i++ )
@@ -102,11 +104,10 @@ void EnnDataset::addDataT(QString path, int i)
 void EnnDataset::addDataF(QString path, int i, int j)
 {
     vec_t vec;
-    int false_count = qRound(true_counter/10.0);
-    int false_count_ft = 2*false_count;
-    if( j<false_count )
+    int false_count_ft = 2*false_counter;
+    if( j<false_counter )
     {
-        train_size = false_count*0.5;
+        train_size = false_counter*0.5;
         enn_readENN(path, &vec);
         if( j<train_size )
         {
@@ -114,17 +115,40 @@ void EnnDataset::addDataF(QString path, int i, int j)
             train_labels.push_back(0);
             train_path.push_back(path); // for debug purposes
         }
-        else if( i%6==0 )
-        {
-            test_datas.push_back(vec);
-            test_labels.push_back(0);
-        }
     }
     else if( j<false_count_ft )
     {
         // for testFullMode
         enn_readENN(path, &vec);
         false_datas.push_back(vec);
+    }
+}
+
+void EnnDataset::createFTest()
+{
+    int len = train_datas.size();
+
+    QVector<int> copy_ids;
+    int f_counter = 0;
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( train_labels[i]==0 )
+        {
+            f_counter++;
+            if( f_counter%10==0 )
+            {
+                copy_ids.push_back(i);
+            }
+        }
+    }
+
+    len = copy_ids.length();
+    for( int i=0 ; i<len ; i++ )
+    {
+        test_datas.push_back(train_datas[copy_ids[i]-i]);
+        test_labels.push_back(train_labels[copy_ids[i]-i]);
+        train_datas.erase(train_datas.begin() + copy_ids[i]-i);
+        train_labels.erase(train_labels.begin() + copy_ids[i]-i);
     }
 }
 

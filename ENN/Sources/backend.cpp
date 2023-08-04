@@ -201,7 +201,7 @@ QVector<QString> ab_listFiles(QString path)
     }
 
     QFileInfoList file_list = cat_dir.entryInfoList(QDir::Files,
-                              QDir::Time | QDir::Reversed);
+                              QDir::Name);
 
     int len = file_list.size();
 

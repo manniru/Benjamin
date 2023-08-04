@@ -29,7 +29,9 @@ public:
 
     QString m_name; //model name
     int     model_id; //model word id
+
 private:
+    void createFTest();
     void parseTrues(QString path);
     void parseFalses(QString path);
     bool isSuperFalse(QString filename);
@@ -39,6 +41,7 @@ private:
     void shuffleData();
 
     int true_counter;
+    int false_counter;
     int train_size;
 };
 

@@ -1,13 +1,10 @@
 #include "enn_chapar.h"
 #include "enn_test.h"
+#include <QtQml/QQmlApplicationEngine>
 
-EnnChapar::EnnChapar(QObject *ui, EnnCmdOptions *options,
+EnnChapar::EnnChapar(QGuiApplication *app, EnnCmdOptions *options,
                      QObject *parent) : QObject(parent)
 {
-    root = ui;
-    scene = new EnnScene(root);
-    return;
-
     if( options->mode==ENN_LEARN_MODE )
     {
         if( options->word.length() )
@@ -30,6 +27,16 @@ EnnChapar::EnnChapar(QObject *ui, EnnCmdOptions *options,
     else if( options->mode==ENN_FILE_MODE )
     {
         fileMode();
+    }
+    else if( options->mode==ENN_UI_MODE )
+    {
+        QQmlApplicationEngine engine;
+        engine.addImageProvider("samples", new EnnSampleLink);
+        engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+        root = engine.rootObjects().first();
+        scene = new EnnScene(root);
+
+        app->exec();
     }
 }
 
