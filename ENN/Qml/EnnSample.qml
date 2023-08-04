@@ -10,19 +10,29 @@ Rectangle
 {
     id: wordline
     width: 200
-    height: 200
+    height: 240
+    visible: word_id>=0
+    color: "transparent"
+
     property int    word_id: 0
     property string word_text: ""
-    visible: word_id>=0
+    property string path: ""
 
     Rectangle
     {
         id: sample_image
-        width: parent.width
-        height: parent.height
         anchors.top: parent.top
         anchors.left: parent.left
+        width: parent.width
+        height: parent.height - 40
         color: "#666666"
+
+        Image
+        {
+            source: "image://samples/" +
+                        root.enn_category + "/" + path
+            anchors.fill: parent
+        }
     }
 
     Label

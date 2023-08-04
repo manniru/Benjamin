@@ -11,14 +11,13 @@ Rectangle
     visible: true
     color: "transparent"
 
-    property string category: ""
     property int ed_height: height
     property int focused_line: -1
     property int index: 0
     property int count: 0
     property string title_str:
     {
-        "Sample Viewer - Word: \"" + category + "\""
+        "Sample Viewer - Word: \"" + root.enn_category + "\""
     }
 
     signal sampleAdded(int id)
@@ -74,14 +73,15 @@ Rectangle
         flow: GridLayout.LeftToRight
     }
 
-    function addSample(sample_name)
+    function addSample(sample_name, sample_path)
     {
         var word_i = sample_grid.children.length;
         var comp_name = "Sample" + word_i;
         var comp = Qt.createComponent("EnnSample.qml");
         comp.createObject(sample_grid, {word_id: word_i,
                           word_text: sample_name,
-                          objectName: comp_name});
+                          objectName: comp_name,
+                          path: sample_path});
         sampleAdded(word_i);
     }
 }

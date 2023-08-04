@@ -207,7 +207,7 @@ QVector<QString> ab_listFiles(QString path)
 
     for( int i=0 ; i<len ; i++ )
     {
-        ret.push_back(file_list[i].absoluteFilePath());
+        ret.push_back(file_list[i].fileName());
     }
 
     return ret;

@@ -51,6 +51,7 @@ ApplicationWindow
     property real ab_rec_pause: 1.0
     property real ab_verify_pause: 0.5
     property real ab_power: 0
+    property string enn_category: ""
 
     signal startPauseV()
     signal delVerifyFile()
@@ -68,6 +69,7 @@ ApplicationWindow
     signal trainWithWord(int word_id)
     signal updateRecList()
     signal positionUpdated(int direction)
+    signal loadEnnSamples(string cat)
 
     Component.onCompleted:
     {
@@ -92,10 +94,14 @@ ApplicationWindow
         }
     }
 
+    onEnn_categoryChanged:
+    {
+        loadEnnSamples(enn_category);
+    }
+
     Settings
     {
         property alias totalcount:      root.ab_total_count
-        property alias category_name:   sample_box.category
         property alias rectime:         root.ab_rec_time
         property alias numwords:        root.ab_num_words
         property alias pausetime:       root.ab_rec_pause
@@ -187,7 +193,7 @@ ApplicationWindow
         {
             if( title===category_title )
             {
-                sample_box.category = value.toLowerCase();
+                root.enn_category = value.toLowerCase();
                 setCategory();
             }
             else if( title===cnt_title )

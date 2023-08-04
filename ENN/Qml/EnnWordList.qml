@@ -15,9 +15,14 @@ Rectangle
     property int focus_index: -1
 
     signal wordAdded(int index)
-    signal loadEnnSamples(int index)
 
-    onFocus_indexChanged: loadEnnSamples(focus_index);
+    onFocus_indexChanged:
+    {
+        if( focus_index>=0 && focus_index<getChildLen() )
+        {
+            root.enn_category = reclist_cl.children[focus_index].sample_text;
+        }
+    }
 
     Rectangle
     {
@@ -100,7 +105,6 @@ Rectangle
         reclist_cl.height = (len+1)*30;
         wordAdded(len);
         focus_index = 0;
-        sample_box.category = reclist_cl.children[focus_index].sample_text;
     }
 
     function getChildLen()
@@ -118,6 +122,6 @@ Rectangle
         {
             focus_index--;
         }
-        sample_box.category = reclist_cl.children[focus_index].sample_text;
+        root.enn_category = reclist_cl.children[focus_index].sample_text;
     }
 }
