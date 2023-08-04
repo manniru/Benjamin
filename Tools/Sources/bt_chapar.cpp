@@ -4,6 +4,7 @@
 
 BtChapar::BtChapar(BtState *st, QObject *parent) : QObject(parent)
 {
+    test = NULL;
     if( st->state==BT_TEST_MODE )
     {
         test = new BtTest(KAL_WAV_DIR, st);
@@ -53,8 +54,9 @@ void BtChapar::createEnn(QString dir, BtState *st)
 
 BtChapar::~BtChapar()
 {
-#ifdef BT_TEST_MODE
-    delete test;
-#else
-#endif
+    if( test )
+    {
+        delete test;
+        test = NULL;
+    }
 }

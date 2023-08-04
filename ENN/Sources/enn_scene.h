@@ -12,20 +12,19 @@ class EnnScene : public QObject
 public:
     explicit EnnScene(QObject *ui, QObject *parent = nullptr);
 
-    void loadFiles(QString word);
-
 signals:
 
 private slots:
+    void loadFiles(QString word);
     void sampleAdded(int id);
     void updatePosition(int direction);
-    void loadEnnSamples(int id);
 
 private:
     void initSampleGrid();
     void loadWordList();
-    QString convertName(QString file_path);
+    QString convertName(QString file_name);
     QString idToWord(int id);
+    void writeSample(QString name, QString path, int w_id, int i);
 
     QVector<QObject *> sample_vector;
     QObject *root;            // root qml object

@@ -336,6 +336,8 @@ void BtEnn::writeSample(QString filename,
                 p = p_round;
             }
 
+            // calculate mean from left and right samples
+            // in cepstrum because of scaling
             int p_right = qCeil(p);
             int p_left  = qFloor(p);
             double d = p-p_left;

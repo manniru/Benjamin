@@ -22,9 +22,11 @@ void EnnScene::initSampleGrid()
     for( int i=0 ; i<SAMPLE_GRID_SIZE ; i++)
     {
         QVariant sample_v("");
+        QVariant path_v("");
         QGenericArgument arg_sample = Q_ARG(QVariant, sample_v);
+        QGenericArgument arg_path = Q_ARG(QVariant, path_v);
         QMetaObject::invokeMethod(sample_viewer, "addSample",
-                                  arg_sample);
+                                  arg_sample, arg_path);
     }
 }
 
@@ -32,8 +34,9 @@ void EnnScene::loadWordList()
 {
     word_list = bt_parseLexicon(BT_WORDS_PATH);
     wordlist_panel = root->findChild<QObject *>("wordList");
-    connect(wordlist_panel, SIGNAL(loadEnnSamples(int)),
-            this, SLOT(loadEnnSamples(int)));
+    qDebug() << "connection";
+    connect(root, SIGNAL(loadEnnSamples(QString)),
+            this, SLOT(loadFiles(QString)));
     int len=word_list.size();
     for( int i=0 ; i<len ; i++ )
     {
@@ -42,14 +45,10 @@ void EnnScene::loadWordList()
         QMetaObject::invokeMethod(wordlist_panel, "addLine",
                                   arg_word);
     }
-}
-
-void EnnScene::loadEnnSamples(int id)
-{
-    if( id>=0 && id<word_list.size() )
-    {
-        loadFiles(idToWord(id));
-    }
+//    if( len )
+//    {
+//        QQmlProperty::write(root, "enn_category", word_list[0]);
+//    }
 }
 
 void EnnScene::loadFiles(QString word)
@@ -67,20 +66,18 @@ void EnnScene::loadFiles(QString word)
         min_len = SAMPLE_GRID_SIZE;
     }
 
+
     for( int i=0 ; i<min_len ; i++ )
     {
         QString sample_name = convertName(files_list[i]);
-        QQmlProperty::write(sample_vector[i], "word_text",
-                            sample_name);
-        QQmlProperty::write(sample_vector[i], "word_id", i);
+        writeSample(sample_name, files_list[i], i, i);
     }
 
     if( min_len<SAMPLE_GRID_SIZE )
     {
         for( int i=min_len ; i<SAMPLE_GRID_SIZE ; i++ )
         {
-            QQmlProperty::write(sample_vector[i], "word_text", "");
-            QQmlProperty::write(sample_vector[i], "word_id", -1);
+            writeSample("", "", -1, i);
         }
     }
     QQmlProperty::write(sample_viewer, "index", min_len);
@@ -112,18 +109,14 @@ void EnnScene::updatePosition(int direction)
         {
             int sample_ui_id = i-first_id;
             QString sample_name = convertName(files_list[i]);
-            QQmlProperty::write(sample_vector[sample_ui_id],
-                                "word_text", sample_name);
-            QQmlProperty::write(sample_vector[sample_ui_id],
-                                "word_id", i);
+            writeSample(sample_name, files_list[i], i, sample_ui_id);
         }
 
         if( min_len<first_id+SAMPLE_GRID_SIZE )
         {
             for( int i=min_len-first_id ; i<SAMPLE_GRID_SIZE ; i++ )
             {
-                QQmlProperty::write(sample_vector[i], "word_text", "");
-                QQmlProperty::write(sample_vector[i], "word_id", -1);
+                writeSample("", "", -1, i);
             }
         }
         QQmlProperty::write(sample_viewer, "index", min_len);
@@ -135,14 +128,11 @@ void EnnScene::updatePosition(int direction)
             return;
         }
         first_id -= SAMPLE_GRID_SIZE;
-        for( int i=first_id ; i<SAMPLE_GRID_SIZE ; i++ )
+        for( int i=first_id ; i<first_id+SAMPLE_GRID_SIZE ; i++ )
         {
             int sample_ui_id = i-first_id;
             QString sample_name = convertName(files_list[i]);
-            QQmlProperty::write(sample_vector[sample_ui_id],
-                                "word_text", sample_name);
-            QQmlProperty::write(sample_vector[sample_ui_id],
-                                "word_id", i);
+            writeSample(sample_name, files_list[i], i, sample_ui_id);
         }
         QQmlProperty::write(sample_viewer, "index",
                             first_id+SAMPLE_GRID_SIZE);
@@ -161,51 +151,46 @@ void EnnScene::sampleAdded(int id)
             findChild<QObject *>(object_name);
 }
 
-QString EnnScene::convertName(QString file_path)
+QString EnnScene::convertName(QString full_name)
 {
-    QFile file(file_path);
-    QFileInfo file_info(file);
-    QString file_name = file_info.fileName();
-
-    QStringList name_split = file_name.split(".", Qt::SkipEmptyParts);
-    QString first_part = name_split[0];
-    int dot_split_size = name_split.size();
-    if( dot_split_size<2 ) // name and extension
+    QString file_name;
+    if( full_name.indexOf(".enn")>=0 )
     {
-        qDebug() << "Error 100: Bade file name" << file_name;
+        file_name = full_name.remove(".enn");
+    }
+    else
+    {
+        qDebug() << "Error 99: wrong file extension" << full_name;
         return "";
     }
 
-    QString num;
-    int focus = -1;
-    if( name_split[1]!="enn" )                // number and focus
-    {
-        QStringList num_split = name_split[1].split("_", Qt::SkipEmptyParts);
-        if( num_split.size()<1 )
-        {
-            qDebug() << "Error 100-2: Bade file name" << file_name;
-            return "";
-        }
+    QStringList focus_split = file_name.split("_", Qt::SkipEmptyParts);
+    QString focus_str = focus_split.last();
+    int focus = focus_str.toInt();
+    focus_split.removeLast();
+    QString name_nofocus = focus_split.join("_");
 
-        if( num_split.size()>1 )
-        {
-            focus = num_split[1].toInt();
-        }
-        num = "." + num_split[0];
+    QStringList name_split = name_nofocus.split(".", Qt::SkipEmptyParts);
+    QString first_part = name_split[0];
+    int dot_split_size = name_split.size();
+    QString num;
+    if( dot_split_size==2 )
+    {
+        num = "." + name_split[1];
     }
 
     QStringList first_part_split = first_part.split("_", Qt::SkipEmptyParts);
     int len_split = first_part_split.size();
     if( len_split<2 ) // category + at least one word
     {
-        qDebug() << "Error 100-1: Bade file name" << file_name;
+        qDebug() << "Error 100-1: Bade file name" << full_name;
         return "";
     }
-
     QString category = first_part_split[0];
     category.truncate(3); // first 3 characters
     QString ret = category + "/";
-    for( int i=1 ; i<len_split ; i++ )       // words
+
+    for( int i=1 ; i<len_split ; i++ )
     {
         int id = first_part_split[i].toInt();
         if( i-1==focus )
@@ -217,6 +202,7 @@ QString EnnScene::convertName(QString file_path)
             ret += idToWord(id) + "_";
         }
     }
+
     ret.chop(1); // remove extra "_"
     ret += num;
     return ret;
@@ -232,4 +218,11 @@ QString EnnScene::idToWord(int id)
     {
         return "<Unknown>";
     }
+}
+
+void EnnScene::writeSample(QString name, QString path, int w_id, int i)
+{
+    QQmlProperty::write(sample_vector[i], "word_text", name);
+    QQmlProperty::write(sample_vector[i], "path", path);
+    QQmlProperty::write(sample_vector[i], "word_id", w_id);
 }

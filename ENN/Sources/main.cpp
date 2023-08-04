@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 #include "enn_chapar.h"
+#include "enn_sample_link.h"
 #include <QCommandLineParser>
 
 #ifdef WIN32
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
     EnnCmdOptions *options = parseClOptions(&app);
 
     QQmlApplicationEngine engine;
+    engine.addImageProvider("samples", new EnnSampleLink);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     QObject *root = engine.rootObjects().first();
 
