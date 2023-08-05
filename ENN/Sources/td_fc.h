@@ -53,9 +53,8 @@ public:
     tiny_dnn::core::OpKernelContext bwd_ctx_;
 
     /* Forward and backward ops */
-    std::shared_ptr<tiny_dnn::core::OpKernel> kernel_fwd_;
-    std::shared_ptr<tiny_dnn::core::OpKernel> kernel_back_;
-
+    tiny_dnn::FullyConnectedOp     *kernel_fwd_;
+    tiny_dnn::FullyConnectedGradOp *kernel_back_;
 };
 
 #endif // TD_FC_H

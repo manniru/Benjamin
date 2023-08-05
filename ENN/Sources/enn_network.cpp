@@ -8,7 +8,7 @@ EnnNetwork::EnnNetwork(QString word, int id,
                        QObject *parent) : QObject(parent)
 {
     dataset = new EnnDataset(word, id);
-    n_minibatch = 1;
+    n_minibatch = 64;
     n_train_epochs = ENN_MAX_EPOCH;
     is_wrong = 0;
 
@@ -114,6 +114,7 @@ void EnnNetwork::createNNet()
     net->addConv(8, 1, 8, 1, f2, 60)        ->addLeakyRelu();
     net->addFC(60, 2)                       ->addSoftMax();
 #endif
+    net->initWeightBias();
     last_loss = 9999;
 }
 
@@ -140,7 +141,7 @@ void EnnNetwork::train(float l_rate)
     net->normalizeTensor(target_cost, t_cost_tensor);
 
     net->fit(optim, input_tensor, output_tensor,
-                 n_minibatch, n_train_epochs, false, CNN_TASK_SIZE,
+                 n_minibatch, n_train_epochs, false,
                  t_cost_tensor);
 
     if( is_wrong!=2 )
@@ -220,7 +221,7 @@ float EnnNetwork::calcLoss()
     {
         last_loss = loss;
     }
-    if( loss>70 || std::isnan(loss) )
+    if( loss>500 || std::isnan(loss) )
     {
         EnnResult acc_train = getAcc(dataset->train_datas,
                                   dataset->train_labels);

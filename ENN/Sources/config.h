@@ -5,7 +5,7 @@
 #define KAL_AU_DIR      KAL_NATO_DIR "audio/"
 #define BT_WORDS_PATH   KAL_NATO_DIR "word_list"
 
-#define ENN_EPOCH_LOG   25
+#define ENN_EPOCH_LOG   5
 //#define ENN_TARGET_LOSS 0.04
 #define ENN_TARGET_LOSS .5
 #define ENN_WRONG_LOSS  1

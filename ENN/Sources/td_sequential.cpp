@@ -15,9 +15,9 @@ void TdSequential::backward(
     nod.back()->setOutGrads(&reordered_grad[0], 1);
 
     int len = nod.size();
-    for( int i=0 ; i<len ; i++ )
+    for( int i=len ; i>0 ; i-- )
     {
-        nod[i]->backward();
+        nod[i-1]->backward();
     }
 }
 
@@ -93,7 +93,7 @@ size_t TdSequential::inDataSize()
     return nod.front()->inDataSize();
 }
 
-size_t TdSequential::outDataSize() const
+size_t TdSequential::outDataSize()
 {
     return nod.back()->outDataSize();
 }
@@ -122,13 +122,6 @@ void TdSequential::label2vec(const tiny_dnn::label_t *t, size_t num,
         vec.emplace_back(outdim, targetValueMin());
         vec.back()[t[i]] = targetValueMax();
     }
-}
-
-void TdSequential::label2vec(
-        const std::vector<tiny_dnn::label_t> &labels,
-        std::vector<tiny_dnn::vec_t> &vec)
-{
-    return label2vec(&labels[0], labels.size(), vec);
 }
 
 void TdSequential::reorderForLayerwiseProcessing(

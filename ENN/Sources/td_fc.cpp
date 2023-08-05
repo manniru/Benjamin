@@ -82,6 +82,6 @@ void TdFC::init_backend()
     tiny_dnn::core::OpKernelConstruction ctx =
             tiny_dnn::core::OpKernelConstruction(&params_);
 
-    kernel_fwd_.reset(new tiny_dnn::FullyConnectedOp(ctx));
-    kernel_back_.reset(new tiny_dnn::FullyConnectedGradOp(ctx));
+    kernel_fwd_  = new tiny_dnn::FullyConnectedOp(ctx);
+    kernel_back_ = new tiny_dnn::FullyConnectedGradOp(ctx);
 }
