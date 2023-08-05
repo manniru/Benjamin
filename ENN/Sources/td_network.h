@@ -37,7 +37,7 @@ class TdNetwork : public QObject
 public:
     explicit TdNetwork(QString name = "", QObject *parent = nullptr);
 
-    void initWeight();
+    void initWeightBias();
     void bprop(const std::vector<tiny_dnn::vec_t> &out,
                const std::vector<tiny_dnn::vec_t> &t,
                const std::vector<tiny_dnn::vec_t> &t_cost);
@@ -78,7 +78,6 @@ public:
              size_t batch_size,
              int epoch,
              const bool reset_weights            = false,
-             const int n_threads                 = CNN_TASK_SIZE,
              const std::vector<tiny_dnn::tensor_t> &t_cost =
                    std::vector<tiny_dnn::tensor_t>());
     void normalizeTensor(const std::vector<tiny_dnn::tensor_t> &inputs,
@@ -112,15 +111,12 @@ signals:
 private:
     void train_once(tiny_dnn::adagrad &optimizer,
                     const tiny_dnn::tensor_t *in,
-                    const tiny_dnn::tensor_t *t,
-                    int size,
-                    const int nbThreads,
+                    const tiny_dnn::tensor_t *t, int size,
                     const tiny_dnn::tensor_t *t_cost);
     void train_onebatch(tiny_dnn::adagrad &optimizer,
                         const tiny_dnn::tensor_t *in,
                         const tiny_dnn::tensor_t *t,
                         int batch_size,
-                        const int num_tasks,
                         const tiny_dnn::tensor_t *t_cost);
     bool calcDelta(const std::vector<tiny_dnn::tensor_t> &in,
                     const std::vector<tiny_dnn::tensor_t> &v,

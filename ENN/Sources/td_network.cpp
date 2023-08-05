@@ -7,7 +7,7 @@ TdNetwork::TdNetwork(QString name, QObject *parent) :
     stop_training = 0;
 }
 
-void TdNetwork::initWeight()
+void TdNetwork::initWeightBias()
 {
      net.setup(true);
 }
@@ -28,7 +28,7 @@ void TdNetwork::bprop(const std::vector<tiny_dnn::tensor_t> &out,
 {
     std::vector<tiny_dnn::tensor_t> delta;
     delta = tiny_dnn::gradient<tiny_dnn::mse>(out, t,
-                                                        t_cost);
+                                              t_cost);
     net.backward(delta);
 }
 
@@ -175,45 +175,6 @@ size_t TdNetwork::inDataSize()
     return net.inDataSize();
 }
 
-void TdNetwork::load(const std::string &filename)
-{
-    std::ifstream ifs(filename.c_str(),
-                      std::ios::binary | std::ios::in);
-    if( ifs.fail() || ifs.bad() )
-    {
-        qDebug() << "failed to open:" << &filename;
-    }
-    cereal::BinaryInputArchive bi(ifs);
-    fromArchive(bi);
-}
-
-void TdNetwork::save(const std::string &filename) const
-{
-    std::ofstream ofs(filename.c_str(), std::ios::binary |
-                      std::ios::out);
-    if( ofs.fail() || ofs.bad() )
-    {
-        qDebug() << "failed to open:" << &filename;
-        exit(0);
-    }
-    cereal::BinaryOutputArchive bo(ofs);
-    toArchive(bo);
-}
-
-template <typename OutputArchive>
-void TdNetwork::toArchive(OutputArchive &ar) const
-{
-//    net.saveModel(ar);
-//    net.saveWeights(ar);
-}
-
-template <typename InputArchive>
-void TdNetwork::fromArchive(InputArchive &ar)
-{
-//    net.loadModel(ar);
-//    net.loadWeights(ar);
-}
-
 float_t TdNetwork::fprop_max(const tiny_dnn::vec_t &in)
 {
     const tiny_dnn::vec_t &prediction = predict(in);
@@ -235,8 +196,7 @@ tiny_dnn::label_t TdNetwork::fprop_max_index(
 void TdNetwork::train_once(tiny_dnn::adagrad &optimizer,
                            const tiny_dnn::tensor_t *in,
                            const tiny_dnn::tensor_t *t,
-                           int size, const int nbThreads,
-                           const tiny_dnn::tensor_t *t_cost)
+                           int size, const tiny_dnn::tensor_t *t_cost)
 {
     if( size==1 )
     {
@@ -246,7 +206,7 @@ void TdNetwork::train_once(tiny_dnn::adagrad &optimizer,
     }
     else
     {
-        train_onebatch(optimizer, in, t, size, nbThreads, t_cost);
+        train_onebatch(optimizer, in, t, size, t_cost);
     }
 }
 
@@ -262,10 +222,9 @@ void TdNetwork::train_once(tiny_dnn::adagrad &optimizer,
 void TdNetwork::train_onebatch(tiny_dnn::adagrad &optimizer,
                                const tiny_dnn::tensor_t *in,
                                const tiny_dnn::tensor_t *t,
-                               int batch_size, const int num_tasks,
+                               int batch_size,
                                const tiny_dnn::tensor_t *t_cost)
 {
-    CNN_UNREFERENCED_PARAMETER(num_tasks);
     std::copy(&in[0], &in[0] + batch_size, &in_batch[0]);
     std::copy(&t[0], &t[0] + batch_size, &t_batch[0]);
     std::vector<tiny_dnn::tensor_t> t_cost_batch;
@@ -431,7 +390,7 @@ bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
                 const std::vector<tiny_dnn::tensor_t> &inputs,
                 const std::vector<tiny_dnn::tensor_t> &desired_outputs,
                 size_t batch_size, int epoch,
-                const bool reset_weights, const int n_threads,
+                const bool reset_weights,
                 const std::vector<tiny_dnn::tensor_t> &t_cost)
 {
     checkTargetCostMatrix(desired_outputs, t_cost);
@@ -457,7 +416,7 @@ bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
             const tiny_dnn::tensor_t *cost =
                     getTargetCostSamplePointer(t_cost, i);
             train_once(optimizer, &inputs[i], &desired_outputs[i],
-                       min_size, n_threads, cost);
+                       min_size, cost);
 
             emit onBatchEnumerate();
         }
@@ -491,14 +450,13 @@ void TdNetwork::normalizeTensor(
 {
     std::vector<tiny_dnn::vec_t> vec;
     normalized.reserve(inputs.size());
-    net.label2vec(inputs, vec);
+    net.label2vec(&inputs[0], inputs.size(), vec);
     normalizeTensor(vec, normalized);
 }
 
 TdNetwork* TdNetwork::addFC(int in_dim, int out_dim)
 {
     TdFC *fc = new TdFC(in_dim, out_dim);
-//    TdFC *fc = nullptr;
     net.add(fc);
     return this;
 }

@@ -139,7 +139,7 @@ std::vector<tiny_dnn::tensor_t *> TdLayer::weightsGrads()
     {
         if( is_trainable_weight(in_type[i]) )
         {
-            v.push_back(ith_in_node(i)->get_gradient());
+            v.push_back(&(ith_in_node(i)->grad_));
         }
     }
     return v;
@@ -175,7 +175,9 @@ std::vector<TdEdge *> TdLayer::outputs() const
     return nodes;
 }
 
-void TdLayer::setOutGrads(const std::vector<const tiny_dnn::vec_t *> *grad, size_t cnt) {
+void TdLayer::setOutGrads(const std::vector<const tiny_dnn::vec_t *> *grad,
+                          size_t cnt)
+{
     CNN_UNREFERENCED_PARAMETER(cnt);
     size_t n = 0;
     for( size_t i=0 ; i<out_channels ; i++ )
@@ -184,7 +186,7 @@ void TdLayer::setOutGrads(const std::vector<const tiny_dnn::vec_t *> *grad, size
         {
             continue;
         }
-        tiny_dnn::tensor_t &dst_grad = *ith_out_node(i)->get_gradient();
+        tiny_dnn::tensor_t &dst_grad = ith_out_node(i)->grad_;
         assert(n < cnt);
         const auto &src_grad = grad[n++];
         size_t sz            = src_grad.size();
@@ -354,28 +356,6 @@ void TdLayer::set_context(tiny_dnn::net_phase ctx)
     CNN_UNREFERENCED_PARAMETER(ctx);
 }
 
-std::vector<tiny_dnn::tensor_t> TdLayer::backward(const std::vector<tiny_dnn::tensor_t> &out_grads)
-{  // for test
-    setup(false);
-
-    std::vector<std::vector<const tiny_dnn::vec_t *>> grads2;
-    grads2.resize(out_grads.size());
-    for( size_t i=0 ; i<out_grads.size() ; ++i )
-    {
-        grads2[i].resize(out_grads[i].size());
-        for( size_t j=0 ; j<out_grads[i].size() ; ++j )
-        {
-            grads2[i][j] = &out_grads[i][j];
-        }
-    }
-
-    setOutGrads(&grads2[0], grads2.size());
-    backward();
-    return tiny_dnn::map_<tiny_dnn::tensor_t>(inputs(),
-             [](TdEdge *e)
-             { return *e->get_gradient(); });
-}
-
 /* @brief The purpose of this method is to forward the data from the
  * computational graph to the layer interface.
  *
@@ -440,15 +420,19 @@ void TdLayer::backward()
     {
         const auto &nd = ith_in_node(i);
         bwd_in_data[i] = nd->get_data();
-        bwd_in_grad[i] = nd->get_gradient();
+        bwd_in_grad[i] = &(nd->grad_);
     }
     for( size_t i = 0; i < out_channels; i++ )
     {
         const auto &nd  = ith_out_node(i);
         bwd_out_data[i] = nd->get_data();
-        bwd_out_grad[i] = nd->get_gradient();
+        bwd_out_grad[i] = &(nd->grad_);
     }
-    back_propagation(bwd_in_data, bwd_out_data, bwd_out_grad, bwd_in_grad);
+    back_propagation(bwd_in_data, bwd_out_data,
+                     bwd_out_grad, bwd_in_grad);
+//    qDebug() << "bwd_out_grad[0][0][0]"
+//             << (*bwd_out_grad[0])[0][0]
+//             << layer_type().c_str();
 }
 
 /* @brief Allocates data in the computational graph and reset weights if
@@ -552,7 +536,7 @@ void TdLayer::clearGrads()
 
 void TdLayer::updateWeight(tiny_dnn::optimizer *o)
 {
-    auto &diff = weights_diff;
+    tiny_dnn::vec_t &diff = weights_diff;
     for( size_t i=0; i<in_type.size() ; i++ )
     {
         if( getTrainable() && is_trainable_weight(in_type[i]) )
@@ -569,6 +553,11 @@ void TdLayer::updateWeight(tiny_dnn::optimizer *o)
             // thread spawning overhead.
             bool parallelized = (target.size() >= 512);
             o->update(diff, target, parallelized);
+        }
+        else
+        {
+//            qDebug() << "we r fucked dude!"
+//                     << getTrainable();
         }
     }
     clearGrads();
@@ -616,7 +605,8 @@ void TdLayer::set_sample_count(size_t sample_count)
         {
             resize(ith_in_node(i)->get_data());
         }
-        resize(ith_in_node(i)->get_gradient());
+        auto def_val = ith_in_node(i)->grad_[0];
+        ith_in_node(i)->grad_.resize(sample_count, def_val);
     }
 
     for( size_t i=0 ; i<out_channels ; i++ )
@@ -625,7 +615,9 @@ void TdLayer::set_sample_count(size_t sample_count)
         {
             resize(ith_out_node(i)->get_data());
         }
-        resize(ith_out_node(i)->get_gradient());
+        auto def_val = ith_out_node(i)->grad_[0];
+        ith_out_node(i)->grad_.resize(sample_count, def_val);
+
     }
 }
 

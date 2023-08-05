@@ -81,8 +81,6 @@ public:
                                   std::vector<tiny_dnn::tensor_t *> &in_grad) = 0;
     virtual void post_update();
     virtual void set_context(tiny_dnn::net_phase ctx);
-    std::vector<tiny_dnn::tensor_t> backward(
-            const std::vector<tiny_dnn::tensor_t> &out_grads);
     void forward();
     void backward();
     void setup(bool reset_weight);
@@ -199,14 +197,6 @@ public:
     {
         return &data_;
     }
-    tiny_dnn::tensor_t *get_gradient()
-    {
-        return &grad_;
-    }
-    const tiny_dnn::tensor_t *get_gradient() const
-    {
-        return &grad_;
-    }
     const std::vector<TdLayer *> &next() const
     {
         return next_;
@@ -232,11 +222,12 @@ public:
         next_.push_back(next);
     }
 
+    tiny_dnn::tensor_t grad_;
+
 private:
     tiny_dnn::shape3d shape_;
     tiny_dnn::vector_type vtype_;
     tiny_dnn::tensor_t data_;
-    tiny_dnn::tensor_t grad_;
     TdLayer *prev_;                // previous node, "producer" of this tensor
     std::vector<TdLayer *> next_;  // next nodes, "consumers" of this tensor
 };

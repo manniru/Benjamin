@@ -26,13 +26,11 @@ public:
     void setup(bool reset_weight);
     void clearGrads();
     size_t inDataSize();
-    size_t outDataSize() const;
+    size_t outDataSize();
 
     float_t targetValueMin(int out_channel = 0) const;
     float_t targetValueMax(int out_channel = 0) const;
     void label2vec(const tiny_dnn::label_t *t, size_t num,
-                   std::vector<tiny_dnn::vec_t> &vec);
-    void label2vec(const std::vector<tiny_dnn::label_t> &labels,
                    std::vector<tiny_dnn::vec_t> &vec);
 
     // transform indexing so that it's more suitable for per-layer operations
