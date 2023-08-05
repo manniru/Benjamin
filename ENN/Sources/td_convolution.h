@@ -41,7 +41,7 @@ public:
             const std::vector<tiny_dnn::tensor_t *> &in_data,
             const std::vector<tiny_dnn::tensor_t *> &out_data,
             std::vector<tiny_dnn::tensor_t *> &out_grad,
-           std::vector<tiny_dnn::tensor_t *> &in_grad) override;
+            std::vector<tiny_dnn::tensor_t *> &in_grad) override;
 
     void set_sample_count(size_t sample_count) override;
 
@@ -59,18 +59,77 @@ private:
             const std::vector<tiny_dnn::tensor_t *> &in);
 
     void conv_set_params(
-        const tiny_dnn::shape3d &in,
-        size_t w_width,
-        size_t w_height,
-        size_t outc,
-        tiny_dnn::padding ptype,
-        bool has_bias,
-        size_t w_stride,
-        size_t h_stride,
-        size_t w_dilation,
-        size_t h_dilation,
-        const tiny_dnn::core::connection_table &tbl =
+            const tiny_dnn::shape3d &in,
+            size_t w_width,
+            size_t w_height,
+            size_t outc,
+            tiny_dnn::padding ptype,
+            bool has_bias,
+            size_t w_stride,
+            size_t h_stride,
+            size_t w_dilation,
+            size_t h_dilation,
+            const tiny_dnn::core::connection_table &tbl =
             tiny_dnn::core::connection_table());
+
+    template <typename Allocator>
+    void avx_5x5_forward_kernel(
+            const tiny_dnn::core::conv_params &params,
+            const std::vector<float, Allocator> &in,
+            const std::vector<float, Allocator> &W,
+            const std::vector<float, Allocator> &bias,
+            std::vector<float, Allocator> &a);
+
+    void avx_op_forward(const tiny_dnn::tensor_t &in_data,
+                        const tiny_dnn::vec_t &W,
+                        const tiny_dnn::vec_t &bias,
+                        tiny_dnn::tensor_t &out_data,
+                        const tiny_dnn::core::conv_params &params);
+
+    void op_forward(const tiny_dnn::tensor_t &in_data,
+                    const tiny_dnn::vec_t &W,
+                    const tiny_dnn::vec_t &bias,
+                    tiny_dnn::tensor_t &out_data,
+                    const tiny_dnn::core::conv_params &params);
+
+    template <typename tensor_t, typename vec_t>
+    void op_backward(const tensor_t &prev_out,
+                     const vec_t &W,
+                     tensor_t &dW,
+                     tensor_t &db,
+                     tensor_t &curr_delta,
+                     tensor_t &prev_delta,
+                     const tiny_dnn::core::conv_params &params);
+
+    void avx_op_backward(const tiny_dnn::tensor_t &prev_out,
+                         const tiny_dnn::vec_t &W,
+                         tiny_dnn::tensor_t &dW,
+                         tiny_dnn::tensor_t &db,
+                         tiny_dnn::tensor_t &curr_delta,
+                         tiny_dnn::tensor_t &prev_delta,
+                         const tiny_dnn::core::conv_params &params);
+
+    template <typename Allocator>
+    void avx_accumulate_db(const tiny_dnn::index3d<size_t> &out,
+                           const std::vector<float, Allocator> &curr_delta,
+                           std::vector<float, Allocator> &db);
+
+    template <typename Allocator>
+    void avx_accumulate_dw(const tiny_dnn::core::conv_params &params,
+                           const std::vector<float, Allocator> &prev_out,
+                           const std::vector<float, Allocator> &curr_delta,
+                           std::vector<float, Allocator> &dW,
+                           std::vector<float, Allocator> &db);
+
+    template <typename Allocator>
+    void avx_5x5_backward_kernel(
+            const tiny_dnn::core::conv_params &params,
+            const std::vector<float, Allocator> &prev_out,
+            const std::vector<float, Allocator> &W,
+            std::vector<float, Allocator> &dW,
+            std::vector<float, Allocator> &db,
+            std::vector<float, Allocator> &curr_delta,
+            std::vector<float, Allocator> *prev_delta);
 
     size_t in_length(size_t in_length,
                      size_t window_size,
