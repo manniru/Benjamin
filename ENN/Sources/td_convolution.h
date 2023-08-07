@@ -7,8 +7,13 @@
 #include <utility>
 #include <vector>
 
-#include "tiny_dnn/core/kernels/conv2d_op.h"
-#include "tiny_dnn/core/kernels/conv2d_grad_op.h"
+#include "tiny_dnn/core/framework/op_kernel.h"
+#include "tiny_dnn/core/params/conv_params.h"
+
+#ifdef CNN_USE_AVX
+#include "tiny_dnn/core/kernels/avx_kernel_common.h"
+#endif
+
 #include "td_layer.h"
 #include "tiny_dnn/util/util.h"
 #include "tiny_dnn/core/backend.h"
@@ -154,24 +159,12 @@ private:
                         size_t h_dilation,
                         tiny_dnn::padding pad_type) const;
 
-    void init_backend();
-
 private:
     /* The convolution parameters */
     tiny_dnn::core::conv_params params_;
 
     /* Padding operation */
     tiny_dnn::core::Conv2dPadding padding_op_;
-
-    /* forward op context */
-    tiny_dnn::core::OpKernelContext fwd_ctx_;
-
-    /* backward op context */
-    tiny_dnn::core::OpKernelContext bwd_ctx_;
-
-    /* Forward and backward ops */
-    std::shared_ptr<tiny_dnn::core::OpKernel> kernel_fwd_;
-    std::shared_ptr<tiny_dnn::core::OpKernel> kernel_back_;
 
     std::vector<tiny_dnn::tensor_t *> fwd_in_data_;
     std::vector<tiny_dnn::tensor_t *> bwd_in_data_;
