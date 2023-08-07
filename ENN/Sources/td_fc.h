@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "tiny_dnn/core/params/fully_params.h"
 #include "td_layer.h"
 #include "tiny_dnn/util/product.h"
 

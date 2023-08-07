@@ -5,7 +5,6 @@ TdFC::TdFC(size_t in_dim, size_t out_dim, bool has_bias)
       {tiny_dnn::vector_type::data})
 {
     set_params(in_dim, out_dim, has_bias);
-    qDebug() << "backend_type" << backend_type;
 }
 
 size_t TdFC::fan_in_size() const

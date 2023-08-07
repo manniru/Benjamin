@@ -15,21 +15,11 @@ TdLayer::TdLayer(std::vector<tiny_dnn::vector_type> in_t,
     weight_init = new tiny_dnn::weight_init::xavier;
     bias_init   = new tiny_dnn::weight_init::constant;
     trainable   = true;
-#ifdef CNN_USE_AVX
-    backend_type = BACKEND_AVX;
-#else
-    backend_type = BACKEND_INTERNAL;
-#endif
 }
 
 void TdLayer::setParallelize(bool parallelize)
 {
     parallelized = parallelize;
-}
-
-int TdLayer::getEngine()
-{
-    return backend_type;
 }
 
 std::string TdLayer::kernel_file() const

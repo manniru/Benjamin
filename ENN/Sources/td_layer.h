@@ -16,8 +16,6 @@
 #include <QObject>
 #include <QDebug>
 
-#include "tiny_dnn/core/backend.h"
-
 #include "tiny_dnn/util/parallel_for.h"
 #include "tiny_dnn/util/product.h"
 #include "tiny_dnn/util/util.h"
@@ -36,7 +34,6 @@ public:
 
     void setParallelize(bool parallelize);
     friend void connection_mismatch(const TdLayer &from, const TdLayer &to);
-    int getEngine();
     virtual std::string kernel_file() const;
     virtual std::string kernel_header() const;
     size_t inChannels() const;
@@ -115,8 +112,6 @@ public:
     std::vector<tiny_dnn::vector_type> in_type;
     /** Vector containing the type of data for outputs */
     std::vector<tiny_dnn::vector_type> out_type;
-    /** The current backend type for operations */
-    int backend_type;
     /** Used in update_weight method. Kept as a member variable to reduce
      * frequent
      * memory allocation */

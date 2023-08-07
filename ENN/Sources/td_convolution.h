@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "tiny_dnn/core/framework/op_kernel.h"
 #include "tiny_dnn/core/params/conv_params.h"
 
 #ifdef CNN_USE_AVX
@@ -16,7 +15,6 @@
 
 #include "td_layer.h"
 #include "tiny_dnn/util/util.h"
-#include "tiny_dnn/core/backend.h"
 
 class TdConvolution : public TdLayer
 {
