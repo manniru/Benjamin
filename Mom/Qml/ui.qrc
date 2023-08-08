@@ -4,5 +4,6 @@
         <file>MmLabel.qml</file>
         <file>MmBar.qml</file>
         <file>MmDateLabel.qml</file>
+        <file>MmBarWindow.qml</file>
     </qresource>
 </RCC>

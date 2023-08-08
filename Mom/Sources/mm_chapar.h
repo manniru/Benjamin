@@ -20,16 +20,17 @@ public:
     MmKeyboard *key;
 
 private:
-    void Register();
-    void UnRegister();
-    BOOL SetSide();
+    void UnRegister(HWND hWnd);
+    BOOL barRegister(HWND hWnd);
+    void barPlacement();
 
     MmBar *bar;
     MmMonitor  *mon;
     MmState    *state;
     MmVirt     *virt;
     MmSound    *sound;
-    HWND hWnd;
+    QObject    *ui;
+    QVector<HWND> hwnds;
 };
 
 #endif // MM_CHAPAR_H
