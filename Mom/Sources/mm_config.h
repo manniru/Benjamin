@@ -7,7 +7,7 @@
 #define MM_DEFAULT_FG  "#dfdfdf"
 #define BPB_DEFAULT_UL "#dfdfdf"
 
-#define BB_BAR_HEIGHT  30
+#define MM_BAR_HEIGHT  30
 #define MM_BAR_TIMEOUT 100
 
 #define MM_WATCHER_TIMER 5000 // ms

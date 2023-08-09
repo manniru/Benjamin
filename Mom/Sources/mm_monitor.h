@@ -18,10 +18,11 @@ public:
     explicit MmMonitor(QObject *root, QObject *parent = nullptr);
     ~MmMonitor();
 
+    int monitorNum();
+
 private:
     void adjustSetting();
     void QueryDisplay();
-    void SetSide();
 
     int state;
     QVector<QString> mon_names;

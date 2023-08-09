@@ -5,9 +5,10 @@ import Qt.labs.settings 1.0
 
 Window
 {
+    id: bar_root
     property int   focus_back: 0
     property color bg_color: "#000000"
-    id: root
+
 
     visible: true
     height: 30

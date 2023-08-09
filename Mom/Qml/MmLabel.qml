@@ -67,7 +67,7 @@ Rectangle
                 labelClicked(label_action_m);
             }
 
-            root.focus_back = 1;
+            bar_root.focus_back = 1;
         }
 
         onWheel:

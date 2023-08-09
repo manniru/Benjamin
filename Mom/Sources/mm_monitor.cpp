@@ -25,11 +25,16 @@ MmMonitor::MmMonitor(QObject *root, QObject *parent) : QObject(parent)
 {
     EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, NULL);
     QueryDisplay();
-    adjustSetting();
+//    adjustSetting();
 }
 
 MmMonitor::~MmMonitor()
 {
+}
+
+int MmMonitor::monitorNum()
+{
+    return mon_names.size();
 }
 
 void MmMonitor::QueryDisplay()
@@ -52,7 +57,8 @@ void MmMonitor::QueryDisplay()
     modes.resize(modeCount);
 
     // Get all active paths and their modes
-    isError = QueryDisplayConfig(flags, &pathCount, paths.data(), &modeCount, modes.data(), nullptr);
+    isError = QueryDisplayConfig(flags, &pathCount, paths.data(),
+                                 &modeCount, modes.data(), nullptr);
 
     // The function may have returned fewer paths/modes than estimated
     paths.resize(pathCount);
@@ -143,10 +149,4 @@ void MmMonitor::adjustSetting()
 //    devmode.dmPelsHeight = 1080; //take last item maximum value
 
 //    long result = ChangeDisplaySettings(&devmode, DM_PELSWIDTH | DM_PELSHEIGHT);
-}
-
-//BOOL AppBar_SetSide(HWND hwnd)
-void MmMonitor::SetSide()
-{
-
 }

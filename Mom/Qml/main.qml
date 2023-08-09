@@ -5,15 +5,17 @@ import Qt.labs.settings 1.0
 
 Item
 {
-    id: name
+    id: root
 
     MmBarWindow
     {
+        id: bar1
         objectName: "bar1"
     }
 
     MmBarWindow
     {
+        id: bar2
         objectName: "bar2"
     }
 }
