@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <strsafe.h>
+#include <QScreen>
 
 class MmChapar : public QObject
 {
@@ -21,10 +22,10 @@ public:
 
 private:
     void UnRegister(HWND hWnd);
-    BOOL barRegister(HWND hWnd);
+    BOOL barRegister(HWND hWnd, QRect screen);
     void barPlacement();
 
-    MmBar *bar;
+    QVector<MmBar *> bars;
     MmMonitor  *mon;
     MmState    *state;
     MmVirt     *virt;

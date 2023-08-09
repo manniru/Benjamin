@@ -1,7 +1,6 @@
 #include "mm_chapar.h"
-#include <QWindow>
+#include <QQuickWindow>
 #include <QGuiApplication>
-#include <QScreen>
 
 MmChapar::MmChapar(QObject *root, QObject *parent):
     QObject(parent)
@@ -11,7 +10,6 @@ MmChapar::MmChapar(QObject *root, QObject *parent):
     virt  = new MmVirt;
     state = new MmState();
     sound = new MmSound(state);
-    bar   = new MmBar(ui, virt, sound);
     key   = new MmKeyboard(virt, sound);
 
     mm_setKeyboard(key);
@@ -45,25 +43,31 @@ void MmChapar::UnRegister(HWND hWnd)
 void MmChapar::barPlacement()
 {
     // Set screen width
-    QScreen *screen = QGuiApplication::primaryScreen();
-    int width = screen->geometry().width();
-
-    int len = 1;
+    QList<QScreen *> screens = QGuiApplication::screens();
+    int len = screens.size();
     for( int i=0 ; i<len ; i++ )
     {
+        int width = screens[i]->geometry().width();
+        int x = screens[i]->geometry().x();
+        int y = screens[i]->geometry().y();
+
         QString object_name = "bar" + QString::number(i+1);
         QWindow *window = ui->findChild<QWindow *>(object_name);
-        qDebug() << object_name << width;
         QQmlProperty::write(window, "width", width);
+        QQmlProperty::write(window, "x", x);
+        QQmlProperty::write(window, "x", y);
+        window->show();
+
+        MmBar *bar = new MmBar(window, virt, sound);
+        bars.push_back(bar);
 
         HWND hWnd = (HWND)(window->winId());
         hwnds.push_back(hWnd);
-        barRegister(hWnd);
+        barRegister(hWnd, screens[i]->geometry());
     }
 }
 
-//BOOL AppBar_SetSide(HWND hwnd)
-BOOL MmChapar::barRegister(HWND hWnd)
+BOOL MmChapar::barRegister(HWND hWnd, QRect screen)
 {
     // create new bar
     APPBARDATA abd;
@@ -71,14 +75,15 @@ BOOL MmChapar::barRegister(HWND hWnd)
     abd.hWnd = hWnd;
 
     int is_Registered = SHAppBarMessage(ABM_NEW, &abd);
-    qDebug() << is_Registered;
+    qDebug() << "reg" << is_Registered;
 
     // set app bar position
     RECT rc;
-    rc.top = 0;
-    rc.left = 0;
-    rc.right = GetSystemMetrics(SM_CXSCREEN);
-    rc.bottom = BB_BAR_HEIGHT;
+    rc.top = screen.y();
+    rc.left = screen.x();
+    rc.right = rc.left + screen.width();
+    rc.bottom = rc.top + MM_BAR_HEIGHT;
+//    qDebug() << "coord>>" << rc.top << rc.bottom << rc.left << rc.right;
 
     // Fill out the APPBARDATA struct and save the edge we're moving to
     // in the appbar OPTIONS struct.
