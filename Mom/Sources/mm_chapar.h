@@ -24,6 +24,7 @@ private:
     void UnRegister(HWND hWnd);
     BOOL barRegister(HWND hWnd, QRect screen);
     void barPlacement();
+    void placeWindow(HWND hwnd, QRect screen);
 
     QVector<QWindow *> windows;
     MmMonitor  *mon;

@@ -50,22 +50,25 @@ void MmChapar::barPlacement()
     windows.resize(len);
     for( int i=0 ; i<len ; i++ )
     {
-        int width = screens[i]->geometry().width();
-        int x = screens[i]->geometry().x();
-        int y = screens[i]->geometry().y();
-
         QString object_name = "bar" + QString::number(i+1);
         QWindow *window = ui->findChild<QWindow *>(object_name);
-        QQmlProperty::write(window, "width", width);
-        QQmlProperty::write(window, "x", x);
-        QQmlProperty::write(window, "y", y);
         window->show();
         windows[i] = window;
 
         HWND hWnd = (HWND)(window->winId());
         hwnds.push_back(hWnd);
+        placeWindow(hWnd, screens[i]->geometry());
         barRegister(hWnd, screens[i]->geometry());
     }
+}
+
+void MmChapar::placeWindow(HWND hwnd, QRect screen)
+{
+   int x = screen.left();
+   int y = screen.top();
+   int w = screen.width();
+
+   SetWindowPos(hwnd, HWND_TOP, x, y, w, MM_BAR_HEIGHT, 0);
 }
 
 BOOL MmChapar::barRegister(HWND hWnd, QRect screen)

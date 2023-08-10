@@ -154,13 +154,9 @@ int MmBar::updateWorkSpace()
     parser->parse(lbl_val, &out);
 
     int len = out.length();
-    int len_lbars = left_bars.size();
     for(int i=0 ; i<len ; i++ )
     {
-        for( int j=0 ; j<len_lbars ; j++ )
-        {
-            updateLabel(left_bars[j], i, &(out[i]));
-        }
+        updateLabel(left_bars[0], i, out[i]);
     }
 
     return len;
@@ -175,13 +171,9 @@ int MmBar::addRWidget()
     parser->parse(music_val, &out_music);
 
     int len = out_music.length();
-    int len_rbars = right_bars.length();
     for(int i=0 ; i<len ; i++ )
     {
-        for( int j=0 ; j<len_rbars ; j++ )
-        {
-            updateLabel(right_bars[j], i, &(out_music[i]));
-        }
+        updateLabel(right_bars[0], i, out_music[i]);
     }
     ret = len;
 
@@ -193,10 +185,7 @@ int MmBar::addRWidget()
     len = out_usage.length();
     for(int i=0 ; i<len ; i++ )
     {
-        for( int j=0 ; j<len_rbars ; j++ )
-        {
-            updateLabel(right_bars[j], i+ret, &(out_usage[i]));
-        }
+        updateLabel(right_bars[0], i+ret, out_usage[i]);
     }
     ret += len;
 
@@ -208,10 +197,7 @@ int MmBar::addRWidget()
     len = out_sound.length();
     for(int i=0 ; i<len ; i++ )
     {
-        for( int j=0 ; j<len_rbars ; j++ )
-        {
-            updateLabel(right_bars[j], i+ret, &(out_sound[i]));
-        }
+        updateLabel(right_bars[0], i+ret, out_sound[i]);
     }
     ret += len;
 
@@ -268,13 +254,9 @@ int MmBar::proccessFile(QVector<QObject *>bars, int s_id, QString path)
     parser->parse(data, &out);
 
     int len = out.length();
-    int len_bars = bars.size();
     for(int i=s_id ; i<s_id+len ; i++ )
     {
-        for( int j=0 ; j<len_bars ; j++ )
-        {
-            updateLabel(bars[j], i, &(out[i-s_id]));
-        }
+        updateLabel(bars[0], i, out[i-s_id]);
     }
 
     file.close();
@@ -282,69 +264,83 @@ int MmBar::proccessFile(QVector<QObject *>bars, int s_id, QString path)
     return len;
 }
 
-void MmBar::addLabel(QObject *bar, MmLabel *label)
+void MmBar::addLabel(QObject *bar, MmLabel label)
 {
-    QQmlProperty::write(bar, "labelBg", label->prop.bg);
-    QQmlProperty::write(bar, "labelFg", label->prop.fg);
-    QQmlProperty::write(bar, "labelUl", label->prop.ul);
-    QQmlProperty::write(bar, "labelUlEn", label->prop.ul_en);
-    QQmlProperty::write(bar, "labelVal", label->val);
-    QQmlProperty::write(bar, "labelActionL", label->prop.action_l);
-    QQmlProperty::write(bar, "labelActionR", label->prop.action_r);
-    QQmlProperty::write(bar, "labelActionM", label->prop.action_m);
-    QQmlProperty::write(bar, "labelActionU", label->prop.action_u);
-    QQmlProperty::write(bar, "labelActionD", label->prop.action_d);
-    QMetaObject::invokeMethod(bar, "addLabel");
-
+    QVector<QObject *> bars;
     int is_left = QQmlProperty::read(bar, "isLeft").toInt();
     if( is_left )
     {
-        l_labels.append(*label);
+        l_labels.append(label);
+        bars = left_bars;
     }
     else
     {
-        r_labels.append(*label);
+        r_labels.append(label);
+        bars = right_bars;
+    }
+
+    int len_bars = bars.size();
+    for( int i=0 ; i<len_bars ; i++ )
+    {
+        QQmlProperty::write(bars[i], "labelBg", label.prop.bg);
+        QQmlProperty::write(bars[i], "labelFg", label.prop.fg);
+        QQmlProperty::write(bars[i], "labelUl", label.prop.ul);
+        QQmlProperty::write(bars[i], "labelUlEn", label.prop.ul_en);
+        QQmlProperty::write(bars[i], "labelVal", label.val);
+        QQmlProperty::write(bars[i], "labelActionL", label.prop.action_l);
+        QQmlProperty::write(bars[i], "labelActionR", label.prop.action_r);
+        QQmlProperty::write(bars[i], "labelActionM", label.prop.action_m);
+        QQmlProperty::write(bars[i], "labelActionU", label.prop.action_u);
+        QQmlProperty::write(bars[i], "labelActionD", label.prop.action_d);
+        QMetaObject::invokeMethod(bars[i], "addLabel");
     }
 }
 
-void MmBar::updateUILabel(QObject *bar, int id, MmLabel *label)
+void MmBar::updateUILabel(QObject *bar, int id, MmLabel label)
 {
-    QQmlProperty::write(bar, "labelID", id);
-    QQmlProperty::write(bar, "labelBg", label->prop.bg);
-    QQmlProperty::write(bar, "labelFg", label->prop.fg);
-    QQmlProperty::write(bar, "labelUl", label->prop.ul);
-    QQmlProperty::write(bar, "labelUlEn", label->prop.ul_en);
-    QQmlProperty::write(bar, "labelVal", label->val);
-    QQmlProperty::write(bar, "labelActionL", label->prop.action_l);
-    QQmlProperty::write(bar, "labelActionR", label->prop.action_r);
-    QQmlProperty::write(bar, "labelActionM", label->prop.action_m);
-    QQmlProperty::write(bar, "labelActionU", label->prop.action_u);
-    QQmlProperty::write(bar, "labelActionD", label->prop.action_d);
-    QMetaObject::invokeMethod(bar, "updateLabel");
-
     QVector<MmLabel> *c_labels;
+    QVector<QObject *> bars;
     int is_left = QQmlProperty::read(bar, "isLeft").toInt();
     if( is_left )
     {
         c_labels = &l_labels;
+        bars = left_bars;
     }
     else
     {
         c_labels = &r_labels;
+        bars = right_bars;
     }
-    (*c_labels)[id].val = label->val;
-    (*c_labels)[id].prop.bg = label->prop.bg;
-    (*c_labels)[id].prop.fg = label->prop.fg;
-    (*c_labels)[id].prop.ul = label->prop.ul;
-    (*c_labels)[id].prop.ul_en = label->prop.ul_en;
-    (*c_labels)[id].prop.action_l = label->prop.action_l;
-    (*c_labels)[id].prop.action_r = label->prop.action_r;
-    (*c_labels)[id].prop.action_m = label->prop.action_m;
-    (*c_labels)[id].prop.action_u = label->prop.action_u;
-    (*c_labels)[id].prop.action_d = label->prop.action_d;
+    (*c_labels)[id].val = label.val;
+    (*c_labels)[id].prop.bg = label.prop.bg;
+    (*c_labels)[id].prop.fg = label.prop.fg;
+    (*c_labels)[id].prop.ul = label.prop.ul;
+    (*c_labels)[id].prop.ul_en = label.prop.ul_en;
+    (*c_labels)[id].prop.action_l = label.prop.action_l;
+    (*c_labels)[id].prop.action_r = label.prop.action_r;
+    (*c_labels)[id].prop.action_m = label.prop.action_m;
+    (*c_labels)[id].prop.action_u = label.prop.action_u;
+    (*c_labels)[id].prop.action_d = label.prop.action_d;
+
+    int len_bars = bars.size();
+    for( int i=0 ; i<len_bars ; i++ )
+    {
+        QQmlProperty::write(bars[i], "labelID", id);
+        QQmlProperty::write(bars[i], "labelBg", label.prop.bg);
+        QQmlProperty::write(bars[i], "labelFg", label.prop.fg);
+        QQmlProperty::write(bars[i], "labelUl", label.prop.ul);
+        QQmlProperty::write(bars[i], "labelUlEn", label.prop.ul_en);
+        QQmlProperty::write(bars[i], "labelVal", label.val);
+        QQmlProperty::write(bars[i], "labelActionL", label.prop.action_l);
+        QQmlProperty::write(bars[i], "labelActionR", label.prop.action_r);
+        QQmlProperty::write(bars[i], "labelActionM", label.prop.action_m);
+        QQmlProperty::write(bars[i], "labelActionU", label.prop.action_u);
+        QQmlProperty::write(bars[i], "labelActionD", label.prop.action_d);
+        QMetaObject::invokeMethod(bars[i], "updateLabel");
+    }
 }
 
-void MmBar::updateLabel(QObject *bar, int index, MmLabel *new_lbl)
+void MmBar::updateLabel(QObject *bar, int index, MmLabel new_lbl)
 {
     int count = QQmlProperty::read(bar, "labelCount").toInt();
     int is_left = QQmlProperty::read(bar, "isLeft").toInt();
@@ -365,7 +361,7 @@ void MmBar::updateLabel(QObject *bar, int index, MmLabel *new_lbl)
         curr_label = &(r_labels[index]);
     }
 
-    if( isChanged(curr_label, new_lbl) )
+    if( isChanged(curr_label, &new_lbl) )
     {
         updateUILabel(bar, index, new_lbl);
     }

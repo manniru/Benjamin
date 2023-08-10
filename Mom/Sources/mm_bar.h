@@ -30,10 +30,10 @@ private:
     int updateWorkSpace(); // add workspace ID
     int addRWidget();  // add sound widget
     QString getWorkStr(int index);
-    void    addLabel(QObject *bar, MmLabel *label);
-    void    updateUILabel(QObject *bar, int id, MmLabel *label);
+    void    addLabel(QObject *bar, MmLabel label);
+    void    updateUILabel(QObject *bar, int id, MmLabel label);
     int     proccessFile(QVector<QObject *> bars, int s_id, QString path);
-    void    updateLabel(QObject *bar, int index, MmLabel *new_lbl);
+    void    updateLabel(QObject *bar, int index, MmLabel new_lbl);
     int     isChanged(MmLabel *label1, MmLabel *label2);
 
     QVector<QObject *> left_bars;
