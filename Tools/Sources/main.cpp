@@ -1,7 +1,9 @@
 #include <QGuiApplication>
 #include "bt_chapar.h"
 #include "bt_state.h"
+#ifdef WIN32
 #include "../PNN/aj_dllgen.h"
+#endif
 
 int main(int argc, char *argv[])
 {

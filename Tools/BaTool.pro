@@ -8,7 +8,7 @@ INCLUDEPATH += ../PNN
 win32:INCLUDEPATH += ../PNN/lua
 
 linux:LIBS += -pthread -lm -ldl \
-              -LKaldi/Libs -lportaudio -lasound -lrt -ljack -lfst
+              -L../PNN/libs -lportaudio -lasound -lrt -ljack -lfst
 win32:LIBS += -L../PNN/libs -lFstWin64 -lPortAudio -lwinmm -llua54
 win32:LIBS += -lole32 -luuid #for dll gen
 

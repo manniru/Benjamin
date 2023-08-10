@@ -82,7 +82,7 @@ void BtCaptain::exec(QString words)
     }
 #else
     cmd = KAL_SI_DIR"main_l.sh \"";
-    cmd += word;
+    cmd += words;
     cmd += "\"";
     system(cmd.toStdString().c_str());
 #endif

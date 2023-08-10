@@ -44,7 +44,7 @@ win32:LIBS += -L../PNN/libs \
              -lDwmapi -lPsapi -lSetupapi \
              -lPowrProf -llua54 -lPdh
 
-win32:INCLUDEPATH += ../PNN/lua
+INCLUDEPATH += ../PNN/lua
 
 RESOURCES += \
              Resources/fonts.qrc \
