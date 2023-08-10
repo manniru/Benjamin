@@ -2,6 +2,7 @@
 #define MM_BAR_H
 
 #include <QObject>
+#include <QWindow>
 #include "mm_config.h"
 #include "mm_music.h"
 #include "mm_parser.h"
@@ -14,7 +15,7 @@ class MmBar : public QObject
 {
     Q_OBJECT
 public:
-    explicit MmBar(QObject *root, MmVirt *vi, MmSound *snd,
+    explicit MmBar(QVector<QWindow *> windows, MmVirt *vi, MmSound *snd,
                    QObject *parent = nullptr);
 
 signals:
@@ -26,18 +27,17 @@ private slots:
 
 private:
     void    parseProps(QString raw, MmProperty *properties);
-    int addWorkID(); // add workspace ID
+    int updateWorkSpace(); // add workspace ID
     int addRWidget();  // add sound widget
     QString getWorkStr(int index);
-    void    addLabel(MmLabel *label);
-    void    updateUI(int id, MmLabel *label);
-    int     proccessFile(int s_id, QString path);
-    void    updateLabel(int id, MmLabel *new_lbl);
+    void    addLabel(QObject *bar, MmLabel *label);
+    void    updateUILabel(QObject *bar, int id, MmLabel *label);
+    int     proccessFile(QVector<QObject *> bars, int s_id, QString path);
+    void    updateLabel(QObject *bar, int index, MmLabel *new_lbl);
     int     isChanged(MmLabel *label1, MmLabel *label2);
 
-    QObject *left_bar;
-    QObject *right_bar;
-    QObject *side;
+    QVector<QObject *> left_bars;
+    QVector<QObject *> right_bars;
 
     int l_id; //left  id
     int r_id; //right id
@@ -48,9 +48,9 @@ private:
     MmSound   *sound;
     MmUsage   *usage;
     MmMusic   *music;
-    QObject   *ui;
     MmChannel *channel;
     QThread   *channel_thread;
+    QVector<QWindow *> wins;
 
     // These are buffers to help reduce number of updates
     // requests need

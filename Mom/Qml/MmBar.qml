@@ -14,6 +14,8 @@ Flickable
     property string labelActionM: ""
     property string labelActionU: ""
     property string labelActionD: ""
+    property int    labelCount: 0
+    property int    isLeft: 0
 
     // Cpp Signals
     signal executeAction(string m_action)
@@ -58,6 +60,7 @@ Flickable
         {
             lm.remove(i);
         }
+        labelCount = 0;
     }
 
     function addLabel()
@@ -74,6 +77,7 @@ Flickable
                       "labelActionU": labelActionU,
                       "labelActionD": labelActionD
                   });
+        labelCount++;
     }
 
     function updateLabel()

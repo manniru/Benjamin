@@ -14,6 +14,8 @@ MmChapar::MmChapar(QObject *root, QObject *parent):
 
     mm_setKeyboard(key);
     barPlacement();
+
+    bar = new MmBar(windows, virt, sound);
 }
 
 MmChapar::~MmChapar()
@@ -45,6 +47,7 @@ void MmChapar::barPlacement()
     // Set screen width
     QList<QScreen *> screens = QGuiApplication::screens();
     int len = screens.size();
+    windows.resize(len);
     for( int i=0 ; i<len ; i++ )
     {
         int width = screens[i]->geometry().width();
@@ -55,11 +58,9 @@ void MmChapar::barPlacement()
         QWindow *window = ui->findChild<QWindow *>(object_name);
         QQmlProperty::write(window, "width", width);
         QQmlProperty::write(window, "x", x);
-        QQmlProperty::write(window, "x", y);
+        QQmlProperty::write(window, "y", y);
         window->show();
-
-        MmBar *bar = new MmBar(window, virt, sound);
-        bars.push_back(bar);
+        windows[i] = window;
 
         HWND hWnd = (HWND)(window->winId());
         hwnds.push_back(hWnd);

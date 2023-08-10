@@ -25,10 +25,11 @@ private:
     BOOL barRegister(HWND hWnd, QRect screen);
     void barPlacement();
 
-    QVector<MmBar *> bars;
+    QVector<QWindow *> windows;
     MmMonitor  *mon;
     MmState    *state;
     MmVirt     *virt;
+    MmBar      *bar;
     MmSound    *sound;
     QObject    *ui;
     QVector<HWND> hwnds;

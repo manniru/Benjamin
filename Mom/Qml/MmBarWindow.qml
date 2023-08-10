@@ -9,14 +9,13 @@ Window
     property int   focus_back: 0
     property color bg_color: "#000000"
 
-
     visible: true
     height: 30
     x: 0
     y: 0
     title: "PolyBar"
     color: bg_color
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    flags: Qt.FramelessWindowHint// | Qt.WindowStaysOnTopHint
 
     // Fonts
     FontLoader
@@ -67,6 +66,7 @@ Window
         anchors.right: date_label.left
         anchors.top: parent.top
         objectName: "LeftBar"
+        isLeft: 1
     }
 
     MmBar
@@ -76,5 +76,6 @@ Window
         anchors.right: parent.right
         anchors.top: parent.top
         objectName: "RightBar"
+        isLeft: 0
     }
 }
