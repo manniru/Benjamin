@@ -2,9 +2,12 @@
 #define CH_CHAR_H
 
 #include <QObject>
-#include <windows.h> // for key codes
 #include "backend.h"
 #include "config.h"
+
+#ifdef WIN32
+#include <windows.h> // for key codes
+#endif
 
 class ChChar : public QObject
 {

@@ -5,7 +5,9 @@
 #include <QString>
 #include <QVector>
 
+#ifdef WIN32
 #include <Windows.h>
+#endif
 
 class ChScreenshot : public QObject
 {
@@ -20,10 +22,12 @@ public:
     void sendToClipboard();
 
 private:
+#ifdef WIN32
     HDC screenDC;
     HDC memDC;
     HBITMAP bitmap;
     HBITMAP oldBitmap;
+#endif
 };
 
 #endif // CH_SCREENSHOT_H

@@ -24,7 +24,6 @@ win32:LIBS += -lUser32 -lPsapi -lGdi32
 SOURCES += \
     Sources/backend.cpp \
     Sources/ch_char.cpp \
-    Sources/ch_keyboard_w.cpp \
     Sources/ch_monitor.cpp \
     Sources/ch_screenshot.cpp \
     Sources/main.cpp \
@@ -33,7 +32,6 @@ SOURCES += \
 HEADERS += \
     Sources/backend.h \
     Sources/ch_char.h \
-    Sources/ch_keyboard_w.h \
     Sources/ch_monitor.h \
     Sources/ch_screenshot.h \
     Sources/config.h \
@@ -46,6 +44,7 @@ linux:HEADERS += \
 win32:HEADERS += \
     Sources/ch_channel_w.h \
     Sources/ch_exec_w.h \
+    Sources/ch_keyboard_w.h \
     Sources/ch_processor_w.h
 
 linux:SOURCES += \
@@ -55,6 +54,7 @@ linux:SOURCES += \
 win32:SOURCES += \
     Sources/ch_channel_w.cpp \
     Sources/ch_exec_w.cpp \
+    Sources/ch_keyboard_w.cpp \
     Sources/ch_processor_w.cpp
 
 MOC_DIR = Build/.moc

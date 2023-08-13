@@ -14,6 +14,7 @@ ChScreenshot::~ChScreenshot()
 void ChScreenshot::takeShot(int shot_x, int shot_y,
                             int shot_w, int shot_h)
 {
+#ifdef WIN32
     // Get screen device context
     screenDC = GetDC(NULL);
     if( screenDC==NULL )
@@ -50,12 +51,12 @@ void ChScreenshot::takeShot(int shot_x, int shot_y,
     DeleteObject(bitmap);
     DeleteDC(memDC);
     ReleaseDC(NULL, screenDC);
-
-    return;
+#endif
 }
 
 void ChScreenshot::sendToClipboard()
 {
+#ifdef WIN32
     OpenClipboard(NULL);
     EmptyClipboard();
 
@@ -64,4 +65,5 @@ void ChScreenshot::sendToClipboard()
 
     // Close the clipboard
     CloseClipboard();
+#endif
 }

@@ -23,8 +23,13 @@ signals:
     void run();
 
 private:
+#ifdef WIN32
     ChChannelW *channel;
     ChProcessorW *processor;
+#else
+    ChChannelL *channel;
+    ChProcessorL *processor;
+#endif
 };
 
 #endif // CH_CHAPAR_H
