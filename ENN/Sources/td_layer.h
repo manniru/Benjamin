@@ -44,7 +44,6 @@ public:
     std::vector<tiny_dnn::shape3d> outDataShape();
     size_t inSize() const;
     size_t outSize() const;
-    std::vector<const tiny_dnn::vec_t *> weights() const;
     std::vector<tiny_dnn::vec_t *> weights();
     std::vector<tiny_dnn::tensor_t *> weightsGrads();
     std::vector<TdEdge *> inputs();
@@ -59,7 +58,6 @@ public:
     std::vector<tiny_dnn::vector_type> getInTypes() const;
     std::vector<tiny_dnn::vector_type> getOutTypes() const;
     void setTrainable(bool tr);
-    bool getTrainable() const;
 
     virtual std::pair<float_t, float_t> out_value_range() const;
     virtual std::vector<tiny_dnn::shape3d> in_shape() const = 0;
@@ -84,15 +82,13 @@ public:
     void initWeight();
     void clearGrads();
     void updateWeight(tiny_dnn::optimizer *o);
-    bool hasSameWeights(const TdLayer &rhs, float_t eps) const;
     virtual void set_sample_count(size_t sample_count);
 
     std::vector<TdLayer *> prev_nodes() const;  // @todo refactor and remove this method
     std::vector<TdLayer *> next_nodes() const;  // @todo refactor and remove this method
     size_t prev_port(const TdEdge &e) const;
     size_t next_port(const TdEdge &e) const;
-    const std::vector<TdEdge *> &prev() const;
-    const std::vector<TdEdge *> &next() const;
+    tiny_dnn::vec_t *getData(size_t i);
 
     std::vector<TdEdge *> prev_;
     std::vector<TdEdge *> next_;
@@ -120,6 +116,8 @@ public:
     tiny_dnn::weight_init::function *weight_init;
     /** Pointer to the function for biases initialization */
     tiny_dnn::weight_init::function *bias_init;
+    /** Flag indicating whether the layer/node parameters are trainable */
+    bool trainable;
 
 private:
     void alloc_input(size_t i);
@@ -127,11 +125,7 @@ private:
     TdEdge* ith_in_node(size_t i);
     TdEdge* ith_out_node(size_t i);
     TdEdge* ith_out_node(size_t i) const;
-    tiny_dnn::vec_t *getWeightData(size_t i);
-    const tiny_dnn::vec_t *getWeightData(size_t i) const;
 
-    /** Flag indicating whether the layer/node parameters are trainable */
-    bool trainable;
     std::vector<tiny_dnn::tensor_t *> fwd_in_data;
     std::vector<tiny_dnn::tensor_t *> fwd_out_data;
     std::vector<tiny_dnn::tensor_t *> bwd_in_data;
@@ -184,14 +178,6 @@ public:
             vectorize::fill(&g[0], g.size(), float_t{0});
         }
     }
-    tiny_dnn::tensor_t *get_data()
-    {
-        return &data_;
-    }
-    const tiny_dnn::tensor_t *get_data() const
-    {
-        return &data_;
-    }
     const std::vector<TdLayer *> &next() const
     {
         return next_;
@@ -218,11 +204,11 @@ public:
     }
 
     tiny_dnn::tensor_t grad_;
+    tiny_dnn::tensor_t data_;
 
 private:
     tiny_dnn::shape3d shape_;
     tiny_dnn::vector_type vtype_;
-    tiny_dnn::tensor_t data_;
     TdLayer *prev_;                // previous node, "producer" of this tensor
     std::vector<TdLayer *> next_;  // next nodes, "consumers" of this tensor
 };

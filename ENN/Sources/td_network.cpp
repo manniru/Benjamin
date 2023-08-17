@@ -12,16 +12,6 @@ void TdNetwork::initWeightBias()
      net.setup(true);
 }
 
-// convenience wrapper for the function below
-void TdNetwork::bprop(const std::vector<tiny_dnn::vec_t> &out,
-                      const std::vector<tiny_dnn::vec_t> &t,
-                      const std::vector<tiny_dnn::vec_t> &t_cost)
-{
-    bprop(std::vector<tiny_dnn::tensor_t>{out},
-          std::vector<tiny_dnn::tensor_t>{t},
-          std::vector<tiny_dnn::tensor_t>{t_cost});
-}
-
 void TdNetwork::bprop(const std::vector<tiny_dnn::tensor_t> &out,
                       const std::vector<tiny_dnn::tensor_t> &t,
                       const std::vector<tiny_dnn::tensor_t> &t_cost)
@@ -200,8 +190,16 @@ void TdNetwork::train_once(tiny_dnn::adagrad &optimizer,
 {
     if( size==1 )
     {
-        bprop(predict(in[0]), t[0],
-                t_cost ? t_cost[0] : tiny_dnn::tensor_t());
+        std::vector<tiny_dnn::tensor_t> out = {predict(in[0])};
+        std::vector<tiny_dnn::tensor_t> t_tensor = {t[0]};
+        if( t_cost )
+        {
+            bprop(out, t_tensor, {t_cost[0]});
+        }
+        else
+        {
+            bprop(out, t_tensor, {tiny_dnn::tensor_t()});
+        }
         net.updateWeights(&optimizer);
     }
     else
@@ -242,66 +240,6 @@ void TdNetwork::train_onebatch(tiny_dnn::adagrad &optimizer,
     o_batch = net.forward(in_batch);
     bprop(o_batch, t_batch, t_cost_batch);
     net.updateWeights(&optimizer);
-}
-
-bool TdNetwork::calcDelta(const std::vector<tiny_dnn::tensor_t> &in,
-                    const std::vector<tiny_dnn::tensor_t> &v,
-                           tiny_dnn::vec_t &w, tiny_dnn::tensor_t &dw,
-                           size_t check_index, double eps)
-{
-    static const float_t delta =
-            std::sqrt(std::numeric_limits<float_t>::epsilon());
-
-    assert(in.size() == v.size());
-
-    const size_t sample_count = in.size();
-
-    assert(sample_count > 0);
-
-    // at the moment, channel count must be 1
-    assert(in[0].size() == 1);
-    assert(v[0].size() == 1);
-
-    // clear previous results, if any
-    int len = dw.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        tiny_dnn::vec_t &dw_sample = dw[i];
-        vectorize::fill(&dw_sample[0], dw_sample.size(),
-                float_t(0));
-    }
-
-    // calculate dw/dE by numeric
-    float_t prev_w = w[check_index];
-
-    float_t f_p    = float_t(0);
-    w[check_index] = prev_w + delta;
-    for( size_t i=0 ; i<sample_count ; i++ )
-    {
-        f_p += getLoss(in[i], v[i]);
-    }
-
-    float_t f_m    = float_t(0);
-    w[check_index] = prev_w - delta;
-    for( size_t i=0; i<sample_count ; i++ )
-    {
-        f_m += getLoss(in[i], v[i]);
-    }
-
-    float_t delta_by_numerical = (f_p - f_m) / (float_t(2) * delta);
-    w[check_index] = prev_w;
-
-    // calculate dw/dE by bprop
-    bprop(predict(in), v, std::vector<tiny_dnn::tensor_t>());
-
-    float_t delta_by_bprop = 0;
-    for( size_t sample=0 ; sample<sample_count ; ++sample )
-    {
-        delta_by_bprop += dw[sample][check_index];
-    }
-    net.clearGrads();
-
-    return std::abs(delta_by_bprop - delta_by_numerical) <= eps;
 }
 
 void TdNetwork::checkTargetCostMatrix(

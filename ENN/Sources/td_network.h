@@ -38,9 +38,6 @@ public:
     explicit TdNetwork(QString name = "", QObject *parent = nullptr);
 
     void initWeightBias();
-    void bprop(const std::vector<tiny_dnn::vec_t> &out,
-               const std::vector<tiny_dnn::vec_t> &t,
-               const std::vector<tiny_dnn::vec_t> &t_cost);
     void bprop(const std::vector<tiny_dnn::tensor_t> &out,
                const std::vector<tiny_dnn::tensor_t> &t,
                const std::vector<tiny_dnn::tensor_t> &t_cost);
@@ -118,12 +115,6 @@ private:
                         const tiny_dnn::tensor_t *t,
                         int batch_size,
                         const tiny_dnn::tensor_t *t_cost);
-    bool calcDelta(const std::vector<tiny_dnn::tensor_t> &in,
-                    const std::vector<tiny_dnn::tensor_t> &v,
-                    tiny_dnn::vec_t &w,
-                    tiny_dnn::tensor_t &dw,
-                    size_t check_index,
-                    double eps);
     void checkTargetCostMatrix(const std::vector<tiny_dnn::tensor_t> &t,
                                const std::vector<tiny_dnn::tensor_t> &t_cost);
     void checkTargetCostElement(const tiny_dnn::vec_t &t,
