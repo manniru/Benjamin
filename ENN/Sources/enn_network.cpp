@@ -10,11 +10,12 @@ EnnNetwork::EnnNetwork(QString word, int id,
     dataset = new EnnDataset(word, id);
     n_minibatch = 64;
     n_train_epochs = ENN_MAX_EPOCH;
-    is_wrong = 0;
+    net_state = ENN_NETWORK_NORMAL;
 
     setbuf(stdout,NULL); //to work out printf
 
     net = new TdNetwork();
+    parser = new EnnParse(net);
     connect(net, SIGNAL(OnEpochEnumerate()), this, SLOT(epochLog()));
     need_train = load();
 }
@@ -49,8 +50,8 @@ void EnnNetwork::save()
 
     QString mdl_path = "Models/";
     mdl_path += dataset->m_name;
-    mdl_path += ".mdl";
-//    net->save(mdl_path.toStdString().c_str());
+    mdl_path += ".enn";
+    parser->save(mdl_path);
 }
 
 // return true if need training
@@ -58,12 +59,11 @@ bool EnnNetwork::load()
 {
     QString model_path = "Models/";
     model_path += dataset->m_name;
-    model_path += ".mdl";
-//    if( QFile::exists(model_path) )
-    if( 0 )
+    model_path += ".enn";
+    if( QFile::exists(model_path) )
     {
         // load model
-//        net->load(model_path.toStdString());
+        parser->load(model_path);
 
         // chack the loss
         float loss = calcLoss();
@@ -71,17 +71,17 @@ bool EnnNetwork::load()
         {
             return false;
         }
-        if( is_wrong==1 )
+        if( net_state==ENN_NETWORK_NEGATIVE )
         {
             return false; //model contain non converge sample
         }
-        else if( is_wrong==2 )
+        else if( net_state==ENN_NETWORK_LOCKED )
         {
             net = new TdNetwork(); // reset network
-//            net = network<sequential>(); // reset network
+            parser->net = net;
             createNNet();
             qDebug() << "Reset from scratch";
-            is_wrong = 0;
+            net_state = ENN_NETWORK_NORMAL;
             return true;
         }
         qDebug() << "model " << dataset->model_id
@@ -105,16 +105,24 @@ void EnnNetwork::createNNet()
         << conv(8, 1, 8, 1, 20, 60)        << activation::leaky_relu() // flatten conv
         << fc(60, 2)                       << activation::softmax();
 #else
-    int f1 = 20;
-    int f2 = f1 + 10;
-    net->addConv(40, 40, 5, 40, 1, f1)      ->addLeakyRelu();
-    net->addAvePool(36, 1, f1, 2, 1, 2, 1)  ->addLeakyRelu();
-    net->addConv(18, 1, 3, 1, f1, f2)       ->addLeakyRelu();
-    net->addAvePool(16, 1, f2, 2, 1, 2, 1)  ->addLeakyRelu();
-    net->addConv(8, 1, 8, 1, f2, 60)        ->addLeakyRelu();
-    net->addFC(60, 2)                       ->addSoftMax();
+//    int f1 = 20;
+//    int f2 = f1 + 10;
+//    net->addConv(40, 40, 5, 40, 1, f1)      ->addLeakyRelu();
+//    net->addAvePool(36, 1, f1, 2, 1, 2, 1)  ->addLeakyRelu();
+//    net->addConv(18, 1, 3, 1, f1, f2)       ->addLeakyRelu();
+//    net->addAvePool(16, 1, f2, 2, 1, 2, 1)  ->addLeakyRelu();
+//    net->addConv(8, 1, 8, 1, f2, 60)        ->addLeakyRelu();
+//    net->addFC(60, 2)                       ->addSoftMax();
+
+    QString network;
+    network += "Conv(40, 40, 5, 40, 1, 20)\nLeakyRelu\n";
+    network += "AvePool(36, 1, 20, 2, 1, 2, 1)\nLeakyRelu\n";
+    network += "Conv(18, 1, 3, 1, 20, 30)\nLeakyRelu\n";
+    network += "AvePool(16, 1, 30, 2, 1, 2, 1)\nLeakyRelu\n";
+    network += "Conv(8, 1, 8, 1, 30, 60)\nLeakyRelu\n";
+    network += "FC(60, 2)\nSoftMax";
 #endif
-    net->initWeightBias();
+    parser->parseNetwork(network);
     last_loss = 9999;
 }
 
@@ -144,7 +152,7 @@ void EnnNetwork::train(float l_rate)
                  n_minibatch, n_train_epochs, false,
                  t_cost_tensor);
 
-    if( is_wrong!=2 )
+    if( net_state!=ENN_NETWORK_LOCKED )
     {
         save();
     }
@@ -221,7 +229,7 @@ float EnnNetwork::calcLoss()
     {
         last_loss = loss;
     }
-    if( loss>500 || std::isnan(loss) )
+    if( loss>ENN_EXPLODE_LOSS || std::isnan(loss) )
     {
         EnnResult acc_train = getAcc(dataset->train_datas,
                                   dataset->train_labels);
@@ -235,7 +243,7 @@ float EnnNetwork::calcLoss()
                      << dataset->m_name
                      << " ==========";
             net->stopOngoingTraining();
-            is_wrong = 2;
+            net_state = ENN_NETWORK_LOCKED;
         }
     }
 
@@ -317,7 +325,7 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
     if( diff<ENN_TARGET_LOSS && wrong_i.length()<5 )
     {
         net->stopOngoingTraining();
-        is_wrong = 1;
+        net_state = ENN_NETWORK_NEGATIVE;
 
         EnnResult acc_test = getAcc(dataset->test_datas,
                                   dataset->test_labels);
@@ -329,3 +337,4 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
                  << "loss(diff)" << diff;
     }
 }
+

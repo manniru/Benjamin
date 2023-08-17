@@ -6,13 +6,19 @@
 #include <QtDebug>
 #include <QObject>
 #include "td_network.h"
-
+#include "enn_parse.h"
 #include <tiny_dnn/tiny_dnn.h>
 #ifdef ENN_IMAGE_DATASET
 #include "enn_dataset_image.h"
 #else
 #include "enn_dataset.h"
 #endif
+
+#define ENN_NETWORK_NORMAL      0
+#define ENN_NETWORK_NEGATIVE    1 // train loss is increasing
+#define ENN_NETWORK_LOCKED      2 // network loss exploded
+
+#define ENN_EXPLODE_LOSS        500
 
 using namespace tiny_dnn;
 
@@ -54,12 +60,12 @@ private:
                       QVector<float> &wrong_loss);
 
     TdNetwork *net;
-//    network<sequential> net;
+    EnnParse *parser;
     adagrad optim;
 
     int n_minibatch;
     int n_train_epochs;
-    int is_wrong;
+    int net_state; // network state
     bool need_train;
 };
 

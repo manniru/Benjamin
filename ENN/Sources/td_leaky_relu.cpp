@@ -6,6 +6,7 @@ TdLeakyRelu::TdLeakyRelu(const float_t epsilon)
 {
     epsilon_ = epsilon;
     in_shape_ = tiny_dnn::shape3d(0, 0, 0);
+    trainable = false;
 }
 
 
