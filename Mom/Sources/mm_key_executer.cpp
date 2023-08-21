@@ -80,7 +80,7 @@ void MmKeyExec::delayedExec()
     }
     else if( key_buf=="-" ) //down
     {
-        manager->restore();
+        manager->minimise();
     }
     else if( key_buf=="*" ) //right
     {

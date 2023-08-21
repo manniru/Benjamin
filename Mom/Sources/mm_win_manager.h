@@ -16,6 +16,7 @@ public:
 
     void restore();
     void maximise();
+    void minimise();
     void putLeft();
     void putRight();
 

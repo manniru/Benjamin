@@ -91,14 +91,11 @@ void MmBar::loadLabels()
     fmt.append("*.lbl");
     QStringList file_list = p_dir.entryList(fmt, QDir::Files);
 
-    l_id = 0;
-    r_id = 0;
-
     //add workspace widget
-    l_id += updateWorkSpace();
+    int l_id = updateWorkSpace();
 
     //add soundbar widget
-    r_id += addRWidget();
+    int r_id = addRWidget();
 
     for( int i=0 ; i<file_list.length() ; i++ )
     {
@@ -129,9 +126,9 @@ void MmBar::loadLabels()
     for( int i=0 ; i<len ; i++ )
     {
         QQmlProperty::write(left_bars[i], "labelID", l_id);
-        QMetaObject::invokeMethod(left_bars[i], "clearLabels");
+        QMetaObject::invokeMethod(left_bars[i], "rmSpurLabels");
         QQmlProperty::write(right_bars[i], "labelID", r_id);
-        QMetaObject::invokeMethod(right_bars[i], "clearLabels");
+        QMetaObject::invokeMethod(right_bars[i], "rmSpurLabels");
 
         // update bg color
         if( QFile::exists(MM_LABEL_DIR"r2_status.lbl") )
@@ -241,7 +238,8 @@ QString MmBar::getWorkStr(int index)
     return ret;
 }
 
-int MmBar::proccessFile(QVector<QObject *>bars, int s_id, QString path)
+int MmBar::proccessFile(QVector<QObject *>bars, int s_id,
+                        QString path)
 {
     QFile file(path);
     if( !file.open(QIODevice::ReadOnly) )
@@ -358,14 +356,13 @@ void MmBar::updateLabel(QObject *bar, int index, MmLabel new_lbl)
     }
     else
     {
-        curr_label = &(r_labels[index]);
+       curr_label = &(r_labels[index]);
     }
 
     if( isChanged(curr_label, &new_lbl) )
     {
         updateUILabel(bar, index, new_lbl);
     }
-
 }
 
 int MmBar::isChanged(MmLabel *label1, MmLabel *label2)

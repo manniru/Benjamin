@@ -54,13 +54,13 @@ Flickable
         }
     }
 
-    function clearLabels()
+    function rmSpurLabels()
     {
         for( var i=labelID ; i<lm.count ; )
         {
             lm.remove(i);
         }
-        labelCount = 0;
+        labelCount = labelID;
     }
 
     function addLabel()

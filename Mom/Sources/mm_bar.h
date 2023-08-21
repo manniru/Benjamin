@@ -39,9 +39,6 @@ private:
     QVector<QObject *> left_bars;
     QVector<QObject *> right_bars;
 
-    int l_id; //left  id
-    int r_id; //right id
-
     QTimer    *timer;
     MmParser  *parser;
     MmVirt    *virt;

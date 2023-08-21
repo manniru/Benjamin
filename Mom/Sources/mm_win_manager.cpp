@@ -24,7 +24,26 @@ void MmWinManager::restore()
 void MmWinManager::maximise()
 {
     HWND hwnd = GetForegroundWindow();
-    PostMessage(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+//    PostMessage(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+
+    HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO info;
+    info.cbSize = sizeof(MONITORINFO);
+    GetMonitorInfo(monitor, &info);
+    int monitor_width = info.rcWork.right - info.rcWork.left;
+    int monitor_height = info.rcWork.bottom - info.rcWork.top;
+
+    int x = info.rcWork.left;
+    int y = info.rcWork.top;
+    int w = monitor_width;
+
+    SetWindowPos(hwnd, HWND_TOP, x, y, w, monitor_height, 0);
+}
+
+void MmWinManager::minimise()
+{
+    HWND hwnd = GetForegroundWindow();
+    PostMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 }
 
 void MmWinManager::putLeft()
