@@ -36,9 +36,8 @@ public:
 
     size_t fan_out_size() const override;
 
-    void forward_propagation(
-            const std::vector<tiny_dnn::tensor_t *> &in_data,
-            std::vector<tiny_dnn::tensor_t *> &out_data) override;
+    void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
+            std::vector<tiny_dnn::tensor_t *> &out_data, int s_index, int e_index) override;
 
     void back_propagation(
             const std::vector<tiny_dnn::tensor_t *> &in_data,
@@ -93,7 +92,8 @@ private:
                     const tiny_dnn::vec_t &W,
                     const tiny_dnn::vec_t &bias,
                     tiny_dnn::tensor_t &out_data,
-                    const tiny_dnn::core::conv_params &params);
+                    const tiny_dnn::core::conv_params &params,
+                    int s_index, int e_index);
 
     template <typename tensor_t, typename vec_t>
     void op_backward(const tensor_t &prev_out,

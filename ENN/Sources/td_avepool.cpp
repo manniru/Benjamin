@@ -96,11 +96,12 @@ void TdAvePool::connect_bias(size_t bias_index, size_t output_index)
 
 void TdAvePool::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        std::vector<tiny_dnn::tensor_t *> &out_data)
+        std::vector<tiny_dnn::tensor_t *> &out_data, int s_index,
+        int e_index)
 {
     tiny_average_pooling_kernel(parallelized, in_data, out_data, out_,
                                 TdAvePool::scale_factor_,
-                                TdAvePool::out2wi_);
+                                TdAvePool::out2wi_, s_index, e_index);
 }
 
 void TdAvePool::back_propagation(
@@ -180,18 +181,19 @@ void TdAvePool::connect_kernel(size_t pooling_size_x,
 }
 
 void tiny_average_pooling_kernel(bool parallelize,
-                                 const std::vector<tiny_dnn::tensor_t *> &in_data,
-                                 std::vector<tiny_dnn::tensor_t *> &out_data,
-                                 const tiny_dnn::shape3d &out_dim, float_t scale_factor,
-                                 std::vector<TdAvePool::
-                                 wi_connections> &out2wi)
+     const std::vector<tiny_dnn::tensor_t *> &in_data,
+     std::vector<tiny_dnn::tensor_t *> &out_data,
+     const tiny_dnn::shape3d &out_dim, float_t scale_factor,
+     std::vector<TdAvePool::wi_connections> &out2wi, int s_index,
+     int e_index)
 {
-    tiny_dnn::for_i(parallelize, in_data[0]->size(), [&](size_t sample)
+//    tiny_dnn::for_i(parallelize, in_data[0]->size(), [&](size_t sample)
+    for( int i=s_index ; i<e_index ; i++ )
     {
-        const tiny_dnn::vec_t &in = (*in_data[0])[sample];
+        const tiny_dnn::vec_t &in = (*in_data[0])[i];
         const tiny_dnn::vec_t &W  = (*in_data[1])[0];
         const tiny_dnn::vec_t &b  = (*in_data[2])[0];
-        tiny_dnn::vec_t &out      = (*out_data[0])[sample];
+        tiny_dnn::vec_t &out      = (*out_data[0])[i];
 
         auto oarea = out_dim.area();
         size_t idx = 0;
@@ -214,7 +216,7 @@ void tiny_average_pooling_kernel(bool parallelize,
         }
 
         assert(out.size() == out2wi.size());
-    });
+    }
 }
 
 void tiny_average_pooling_back_kernel(bool parallelize,

@@ -30,14 +30,14 @@ size_t TdConvolution::fan_out_size() const
 }
 
 void TdConvolution::op_forward(const tiny_dnn::tensor_t &in_data,
-                               const tiny_dnn::vec_t &W,
-                               const tiny_dnn::vec_t &bias,
-                               tiny_dnn::tensor_t &out_data,
-                               const tiny_dnn::core::conv_params &params)
+       const tiny_dnn::vec_t &W, const tiny_dnn::vec_t &bias,
+       tiny_dnn::tensor_t &out_data,
+       const tiny_dnn::core::conv_params &params, int s_index,
+       int e_index)
 {
     int parallelized = true;
-    tiny_dnn::for_(parallelized, 0u, in_data.size(),
-                   [&](const tiny_dnn::blocked_range &r)
+//    tiny_dnn::for_(parallelized, 0u, in_data.size(),
+//                   [&](const tiny_dnn::blocked_range &r)
     {
         size_t out_area    = params.out.area();
         size_t iw          = params.in_padded.width_;
@@ -51,7 +51,7 @@ void TdConvolution::op_forward(const tiny_dnn::tensor_t &in_data,
         size_t h_dilation  = params.h_dilation;
         size_t elem_stride = params.w_stride;
         size_t line_stride = iw * params.h_stride;
-        for (size_t sample = r.begin(); sample < r.end(); sample++)
+        for( int sample=s_index; sample<e_index; sample++ )
         {
             const tiny_dnn::vec_t &in = in_data[sample];
             tiny_dnn::vec_t &a        = out_data[sample];
@@ -102,7 +102,7 @@ void TdConvolution::op_forward(const tiny_dnn::tensor_t &in_data,
                 }
             }
         }
-    }, 0u);
+    }//, 0u);
 }
 
 template <typename tensor_t, typename vec_t>
@@ -249,12 +249,17 @@ void TdConvolution::op_backward(const tensor_t &prev_out,
 
 void TdConvolution::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in,
-        std::vector<tiny_dnn::tensor_t *> &out)
+        std::vector<tiny_dnn::tensor_t *> &out, int s_index,
+        int e_index)
 {
     // apply padding to the input tensor
-    padding_op_.copy_and_pad_input(*in[0], cws_.prev_out_padded_);
+    padding_op_.copy_and_pad_input(*in[0],
+            cws_.prev_out_padded_);
 
-    fwd_in_data_.resize(in.size());
+    if( fwd_in_data_.size()!=in.size() )
+    {
+        fwd_in_data_.resize(in.size());
+    }
     std::copy(in.begin(), in.end(), fwd_in_data_.begin());
     fwd_in_data_[0] = in_data_padded(in);
 
@@ -272,11 +277,12 @@ void TdConvolution::forward_propagation(
 
 #ifdef CNN_USE_AVX
     avx_op_forward(in_data, W[0], bias[0],
-            out_data, params);
+            out_data, params, s_index, e_index);
 //    tiny_dnn::kernels::conv2d_op_avx(in_data, W[0], bias[0],
 //            out_data, params, true);
 #else
-    op_forward(in_data, W[0], bias[0], out_data, params);
+    op_forward(in_data, W[0], bias[0], out_data, params, s_index,
+            e_index);
 #endif
 }
 
@@ -328,9 +334,9 @@ void TdConvolution::set_sample_count(size_t sample_count)
 {
     TdLayer::set_sample_count(sample_count);
     cws_.prev_delta_padded_.resize(sample_count,
-                                   tiny_dnn::vec_t(
-                                       params_.in_padded.size(),
-                                       float_t(0)));
+                       tiny_dnn::vec_t(
+                           params_.in_padded.size(),
+                           float_t(0)));
 }
 
 std::vector<tiny_dnn::index3d<size_t> > TdConvolution::in_shape() const
