@@ -130,14 +130,14 @@ void EnnParse::save(QString filename)
     out << net_str;
 
     // save network weights and bias
-    int len = net->net.nod.size();
+    int len = net->nod.size();
     for( int i=0 ; i<len ; i++ )
     {
-        if( net->net.nod[i]->trainable==false ) // skip activation layers
+        if( net->nod[i]->trainable==false ) // skip activation layers
         {
             continue;
         }
-        tiny_dnn::vec_t weights = *net->net.nod[i]->getData(1);
+        tiny_dnn::vec_t weights = *net->nod[i]->getData(1);
         int w_len = weights.size();
         QVector<float> w_f(w_len);
         for( int j=0 ; j<w_len ; j++ )
@@ -146,7 +146,7 @@ void EnnParse::save(QString filename)
         }
         out << w_f;
 
-        tiny_dnn::vec_t bias = *net->net.nod[i]->getData(2);
+        tiny_dnn::vec_t bias = *net->nod[i]->getData(2);
         int b_len = bias.size();
         QVector<float> b_f(w_len);
         for( int j=0 ; j<b_len ; j++ )
@@ -175,14 +175,14 @@ void EnnParse::load(QString filename)
     parseNetwork(net_str);
 
     // save network weights and bias
-    int len = net->net.nod.size();
+    int len = net->nod.size();
     for( int i=0 ; i<len ; i++ )
     {
-        if( !net->net.nod[i]->trainable ) // skip activation layers
+        if( !net->nod[i]->trainable ) // skip activation layers
         {
             continue;
         }
-        tiny_dnn::vec_t *weights = net->net.nod[i]->getData(1);
+        tiny_dnn::vec_t *weights = net->nod[i]->getData(1);
         int w_len = weights->size();
         QVector<float> w_f;
         in >> w_f;
@@ -191,7 +191,7 @@ void EnnParse::load(QString filename)
             (*weights)[j] = w_f[j];
         }
 
-        tiny_dnn::vec_t *bias = net->net.nod[i]->getData(2);
+        tiny_dnn::vec_t *bias = net->nod[i]->getData(2);
         int b_len = bias->size();
         QVector<float> b_f(w_len);
         in >> b_f;

@@ -177,53 +177,29 @@ void TdLayer::setOutGrads(const std::vector<const tiny_dnn::vec_t *> *grad,
 }
 
 void TdLayer::setInData(
-        const std::vector<const tiny_dnn::vec_t *> *data, size_t cnt)
+        const std::vector<tiny_dnn::tensor_t> &data)
 {
-    CNN_UNREFERENCED_PARAMETER(cnt);
-    size_t n = 0;
-    for( size_t i=0 ; i<in_channels ; i++ )
+    for( size_t ch=0 ; ch<in_channels ; ch++ )
     {
-        if( in_type[i]!=tiny_dnn::vector_type::data )
+        if( in_type[ch]!=tiny_dnn::vector_type::data )
         {
             continue;
         }
-        tiny_dnn::tensor_t &dst_data = ith_in_node(i)->data_;
-        size_t in_size     = ith_in_node(i)->shape().size();
-        assert(n < cnt);
-        const auto &src_data = data[n++];
-        size_t sz = src_data.size();
-        dst_data.resize(sz);
+        tiny_dnn::tensor_t &dst_data = ith_in_node(ch)->data_;
+        size_t in_size     = ith_in_node(ch)->shape().size();
+        size_t sample_size = data.size();
+        dst_data.resize(sample_size);
 
-        CNN_UNREFERENCED_PARAMETER(in_size);
-
-        for( size_t j=0 ; j<sz ; ++j )
+        for( size_t i=0 ; i<sample_size ; i++ )
         {
-            if( src_data[j]->size() != in_size )
+            if( data[i][ch].size()!=in_size )
             {
                 qDebug() << "Data Size and Layer Size Not Matched!"
-                         << src_data[j]->size() << in_size;
+                         << data[i][ch].size() << in_size;
                 exit(1);
             }
-            dst_data[j] = *src_data[j];
+            dst_data[i] = data[i][ch];
         }
-    }
-}
-
-void TdLayer::setInData(float *data, int len)
-{
-    if (in_type[0]!=tiny_dnn::vector_type::data)
-        return;
-    tiny_dnn::tensor_t &dst_data = ith_in_node(0)->data_;
-    size_t in_size     = ith_in_node(0)->shape().size();
-    dst_data.resize(1);
-
-    CNN_UNREFERENCED_PARAMETER(in_size);
-
-    // checking if training data is consistent with layer shape
-    assert(len==in_size);
-    for( int i=0 ; i<len ; i++ )
-    {
-        dst_data[0][i] = data[i];
     }
 }
 

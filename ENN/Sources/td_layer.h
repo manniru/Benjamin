@@ -51,9 +51,7 @@ public:
     std::vector<TdEdge *> outputs() const;
     void setOutGrads(const std::vector<const tiny_dnn::vec_t *> *grad,
                      size_t cnt);
-    void setInData(const std::vector<const tiny_dnn::vec_t *> *data,
-                   size_t cnt);
-    void setInData(float *data, int len);
+    void setInData(const std::vector<tiny_dnn::tensor_t> &data);
     void output(std::vector<const tiny_dnn::tensor_t *> &out) const;
     std::vector<tiny_dnn::vector_type> getInTypes() const;
     std::vector<tiny_dnn::vector_type> getOutTypes() const;

@@ -48,7 +48,7 @@ HEADERS += \
     Sources/td_layer.h \
     Sources/td_leaky_relu.h \
     Sources/td_network.h \
-    Sources/td_sequential.h \
+    Sources/td_nodes.h \
     Sources/td_softmax.h
 
 SOURCES += \
@@ -68,7 +68,7 @@ SOURCES += \
     Sources/td_layer.cpp \
     Sources/td_leaky_relu.cpp \
     Sources/td_network.cpp \
-    Sources/td_sequential.cpp \
+    Sources/td_nodes.cpp \
     Sources/td_softmax.cpp
 
 win32:SOURCES += ../PNN/aj_dllgen.cpp
