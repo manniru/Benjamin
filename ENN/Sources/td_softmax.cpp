@@ -79,14 +79,16 @@ std::pair<float_t, float_t> TdSoftmax::scale() const
 
 void TdSoftmax::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        std::vector<tiny_dnn::tensor_t *> &out_data)
+        std::vector<tiny_dnn::tensor_t *> &out_data, int s_index,
+        int e_index)
 {
     const tiny_dnn::tensor_t &x = *in_data[0];
     tiny_dnn::tensor_t &y       = *out_data[0];
-    tiny_dnn::for_i(x.size(), [&](size_t i)
+//    tiny_dnn::for_i(x.size(), [&](size_t i)
+    for( int i=s_index ; i<e_index ; i++ )
     {
         forward_activation(x[i], y[i]);
-    });
+    }
 }
 
 void TdSoftmax::back_propagation(

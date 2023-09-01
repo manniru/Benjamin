@@ -177,14 +177,15 @@ void TdFC::op_forward(const tiny_dnn::tensor_t &in_data,
                 const tiny_dnn::vec_t &W,
                 const tiny_dnn::vec_t &bias,
                 tiny_dnn::tensor_t &out_data,
-                const tiny_dnn::core::fully_params &params)
+                const tiny_dnn::core::fully_params &params,
+                int s_index, int e_index)
 {
-    int parallelize = true;
-    tiny_dnn::for_i( parallelize, in_data.size(),
-                     [&](size_t sample)
+//    tiny_dnn::for_i( parallelize, in_data.size(),
+//                     [&](size_t sample);
+    for( int i=s_index ; i<e_index ; i++ )
     {
-        const tiny_dnn::vec_t &in = in_data[sample];
-        tiny_dnn::vec_t &out      = out_data[sample];
+        const tiny_dnn::vec_t &in = in_data[i];
+        tiny_dnn::vec_t &out      = out_data[i];
 
         for( size_t i=0 ; i<params.out_size_ ; i++ )
         {
@@ -199,7 +200,7 @@ void TdFC::op_forward(const tiny_dnn::tensor_t &in_data,
                 out[i] += bias[i];
             }
         }
-    });
+    };
 }
 
 void TdFC::op_backward(const tiny_dnn::tensor_t &prev_out,
@@ -248,7 +249,8 @@ void TdFC::op_backward(const tiny_dnn::tensor_t &prev_out,
 
 void TdFC::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in,
-        std::vector<tiny_dnn::tensor_t *> &out)
+        std::vector<tiny_dnn::tensor_t *> &out, int s_index,
+        int e_index)
 {
     // launch fully connected kernel
     auto params = params_.fully();
@@ -263,10 +265,11 @@ void TdFC::forward_propagation(
     tiny_dnn::fill_tensor(out_data_0, float_t{0});
 
 #ifdef CNN_USE_AVX
-   avx_op_forward(in_data_0, W[0], bias[0],
-            out_data_0, params);
+    avx_op_forward(in_data_0, W[0], bias[0],
+            out_data_0, params, s_index, e_index);
 #else
-    op_forward(in_data_0, W[0], bias[0], out_data_0, params);
+    op_forward(in_data_0, W[0], bias[0], out_data_0, params, s_index,
+            e_index);
 #endif
 }
 
