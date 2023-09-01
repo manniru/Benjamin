@@ -49,9 +49,9 @@ public:
     std::vector<TdEdge *> inputs();
     std::vector<TdEdge *> outputs();
     std::vector<TdEdge *> outputs() const;
-    void setOutGrads(const std::vector<const tiny_dnn::vec_t *> *grad,
-                     size_t cnt);
-    void setInData(const std::vector<tiny_dnn::tensor_t> &data);
+    void setOutGrads(std::vector<tiny_dnn::tensor_t> &grad);
+    void setInData(const std::vector<tiny_dnn::tensor_t> &data, int batch_size, int offset);
+    void setInData(tiny_dnn::vec_t &data);
     void output(std::vector<const tiny_dnn::tensor_t *> &out) const;
     std::vector<tiny_dnn::vector_type> getInTypes() const;
     std::vector<tiny_dnn::vector_type> getOutTypes() const;
@@ -66,20 +66,22 @@ public:
     virtual size_t fan_in_size(size_t) const;
     virtual size_t fan_out_size() const;
     virtual size_t fan_out_size(size_t) const;
-    virtual void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-                                     std::vector<tiny_dnn::tensor_t *> &out_data) = 0;
+    virtual void forward_propagation(
+            const std::vector<tiny_dnn::tensor_t *> &in_data,
+            std::vector<tiny_dnn::tensor_t *> &out_data, int s_index,
+            int e_index) = 0;
     virtual void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
                                   const std::vector<tiny_dnn::tensor_t *> &out_data,
                                   std::vector<tiny_dnn::tensor_t *> &out_grad,
                                   std::vector<tiny_dnn::tensor_t *> &in_grad) = 0;
     virtual void post_update();
     virtual void set_context(tiny_dnn::net_phase ctx);
-    void forward();
+    void forward(int s_index, int e_index);
     void backward();
     void setup(bool reset_weight);
     void initWeight();
-    void clearGrads();
-    void updateWeight(tiny_dnn::optimizer *o);
+    void clearGrads(int batch_size);
+    void updateWeight(tiny_dnn::optimizer *o, int batch_size);
     virtual void set_sample_count(size_t sample_count);
 
     std::vector<TdLayer *> prev_nodes() const;  // @todo refactor and remove this method
@@ -154,8 +156,8 @@ public:
     {
         assert(!grad_.empty());
         const auto &grad_head = grad_[0];
-        size_t sz = grad_head.size();
-        dst->resize(sz);
+        size_t size = grad_head.size();
+        dst->resize(size);
         float_t *pdst = &(*dst)[0];
         // dst = grad_[0]
         std::copy(grad_head.begin(), grad_head.end(), pdst);
@@ -164,37 +166,18 @@ public:
         for( size_t sample=1 ; sample<sample_count ; ++sample )
         {
             // dst += grad_[sample]
-            vectorize::reduce<float_t>(&grad_[sample][0], sz, pdst);
+            vectorize::reduce<float_t>(&grad_[sample][0], size, pdst);
         }
     }
-    void clear_grads()
+
+    void clear_grads(int s_index, int e_index)
     {
-        size_t sample_count = grad_.size();
-        for( size_t sample=0 ; sample < sample_count ; ++sample )
+//        size_t sample_count = grad_.size();
+        for( int sample=s_index ; sample<e_index ; sample++ )
         {
             auto &g = grad_[sample];
             vectorize::fill(&g[0], g.size(), float_t{0});
         }
-    }
-    const std::vector<TdLayer *> &next() const
-    {
-        return next_;
-    }
-    TdLayer* prev()
-    {
-        return prev_;
-    }
-    const TdLayer* prev() const
-    {
-        return prev_;
-    }
-    const tiny_dnn::shape3d &shape() const
-    {
-        return shape_;
-    }
-    tiny_dnn::vector_type vtype() const
-    {
-        return vtype_;
     }
     void add_next_node(TdLayer* next)
     {
@@ -203,8 +186,6 @@ public:
 
     tiny_dnn::tensor_t grad_;
     tiny_dnn::tensor_t data_;
-
-private:
     tiny_dnn::shape3d shape_;
     tiny_dnn::vector_type vtype_;
     TdLayer *prev_;                // previous node, "producer" of this tensor

@@ -152,32 +152,26 @@ std::vector<TdEdge *> TdLayer::outputs() const
     return nodes;
 }
 
-void TdLayer::setOutGrads(const std::vector<const tiny_dnn::vec_t *> *grad,
-                          size_t cnt)
+void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad)
 {
-    CNN_UNREFERENCED_PARAMETER(cnt);
-    size_t n = 0;
-    for( size_t i=0 ; i<out_channels ; i++ )
+    for( size_t ch=0 ; ch<out_channels ; ch++ )
     {
-        if( out_type[i]!=tiny_dnn::vector_type::data )
+        if( out_type[ch]!=tiny_dnn::vector_type::data )
         {
             continue;
         }
-        tiny_dnn::tensor_t &dst_grad = ith_out_node(i)->grad_;
-        assert(n < cnt);
-        const auto &src_grad = grad[n++];
-        size_t sz            = src_grad.size();
-        dst_grad.resize(sz);
-        for( size_t j=0 ; j<sz ; ++j )
+        tiny_dnn::tensor_t &dst_grad = ith_out_node(ch)->grad_;
+        int sample_size = grad.size();
+        dst_grad.resize(sample_size);
+        for( int i=0 ; i<sample_size ; i++ )
         {
-            assert(dst_grad[j].size() == src_grad[j]->size());
-            dst_grad[j] = *src_grad[j];
+            dst_grad[i] = grad[i][ch];
         }
     }
 }
 
-void TdLayer::setInData(
-        const std::vector<tiny_dnn::tensor_t> &data)
+void TdLayer::setInData(const std::vector<tiny_dnn::tensor_t> &data,
+                        int batch_size, int offset)
 {
     for( size_t ch=0 ; ch<in_channels ; ch++ )
     {
@@ -186,11 +180,10 @@ void TdLayer::setInData(
             continue;
         }
         tiny_dnn::tensor_t &dst_data = ith_in_node(ch)->data_;
-        size_t in_size     = ith_in_node(ch)->shape().size();
-        size_t sample_size = data.size();
-        dst_data.resize(sample_size);
+        size_t in_size     = ith_in_node(ch)->shape_.size();
+        dst_data.resize(batch_size);
 
-        for( size_t i=0 ; i<sample_size ; i++ )
+        for( int i=offset ; i<(offset+batch_size) ; i++ )
         {
             if( data[i][ch].size()!=in_size )
             {
@@ -198,9 +191,26 @@ void TdLayer::setInData(
                          << data[i][ch].size() << in_size;
                 exit(1);
             }
-            dst_data[i] = data[i][ch];
+            dst_data[i-offset] = data[i][ch];
         }
     }
+}
+
+void TdLayer::setInData(tiny_dnn::vec_t &data)
+{
+    // 0 -> ch
+    tiny_dnn::tensor_t &dst_data = ith_in_node(0)->data_;
+    size_t in_size     = ith_in_node(0)->shape_.size();
+    size_t sample_size = 1;
+    dst_data.resize(sample_size);
+
+    if( data.size()!=in_size )
+    {
+        qDebug() << "Data Size and Layer Size Not Matched!"
+                 << data.size() << in_size;
+        exit(1);
+    }
+    dst_data[0] = data;
 }
 
 void TdLayer::output(std::vector<const tiny_dnn::tensor_t *> &out) const
@@ -318,7 +328,7 @@ void TdLayer::set_context(tiny_dnn::net_phase ctx)
  * batches storage in one single vector with contiguous data.
  *
  */
-void TdLayer::forward()
+void TdLayer::forward(int s_index, int e_index)
 {
     // the computational graph
     fwd_in_data.resize(in_channels);
@@ -344,11 +354,11 @@ void TdLayer::forward()
     for( size_t i=0 ; i<out_channels ; i++ )
     {
         fwd_out_data[i] = &ith_out_node(i)->data_;
-        ith_out_node(i)->clear_grads();
+        ith_out_node(i)->clear_grads(s_index, e_index);
     }
 
     // call the forward computation kernel/routine
-    forward_propagation(fwd_in_data, fwd_out_data);
+    forward_propagation(fwd_in_data, fwd_out_data, s_index, e_index);
 }
 
 void TdLayer::backward()
@@ -373,9 +383,6 @@ void TdLayer::backward()
     }
     back_propagation(bwd_in_data, bwd_out_data,
                      bwd_out_grad, bwd_in_grad);
-//    qDebug() << "bwd_out_grad[0][0][0]"
-//             << (*bwd_out_grad[0])[0][0]
-//             << layer_type().c_str();
 }
 
 /* @brief Allocates data in the computational graph and reset weights if
@@ -469,36 +476,35 @@ void TdLayer::initWeight()
     initialized = true;
 }
 
-void TdLayer::clearGrads()
+void TdLayer::clearGrads(int batch_size)
 {
     for( size_t i=0 ; i<in_type.size() ; i++ )
     {
-        ith_in_node(i)->clear_grads();
+        ith_in_node(i)->clear_grads(0, batch_size);
     }
 }
 
-void TdLayer::updateWeight(tiny_dnn::optimizer *o)
+void TdLayer::updateWeight(tiny_dnn::optimizer *o, int batch_size)
 {
-    tiny_dnn::vec_t &diff = weights_diff;
     for( size_t i=0; i<in_type.size() ; i++ )
     {
         if( trainable && is_trainable_weight(in_type[i]) )
         {
             tiny_dnn::vec_t &target = *getData(i);
-            ith_in_node(i)->merge_grads(&diff);
+            ith_in_node(i)->merge_grads(&weights_diff);
             float_t rcp_batch_size =
                     float_t(1.0) / float_t((&ith_in_node(i)->data_)->size());
-            for( size_t j=0 ; j<diff.size() ; ++j )
+            for( size_t j=0 ; j<weights_diff.size() ; ++j )
             {
-                diff[j] *= rcp_batch_size;
+                weights_diff[j] *= rcp_batch_size;
             }
             // parallelize only when target size is big enough to mitigate
             // thread spawning overhead.
             bool parallelized = (target.size() >= 512);
-            o->update(diff, target, parallelized);
+            o->update(weights_diff, target, parallelized);
         }
     }
-    clearGrads();
+    clearGrads(batch_size);
     post_update();
 }
 
@@ -626,9 +632,9 @@ std::vector<TdLayer *> TdLayer::prev_nodes() const
     int len = prev_.size();
     for( int i=0 ; i<len ; i++ )
     {
-        if( prev_[i] && prev_[i]->prev() )
+        if( prev_[i] && prev_[i]->prev_ )
         {
-            vecs.push_back(prev_[i]->prev());
+            vecs.push_back(prev_[i]->prev_);
         }
     }
     return vecs;
@@ -642,7 +648,7 @@ std::vector<TdLayer *> TdLayer::next_nodes() const
     {
         if( next_[i] )
         {
-            std::vector<TdLayer *> n = next_[i]->next();
+            std::vector<TdLayer *> n = next_[i]->next_;
             vecs.insert(vecs.end(), n.begin(), n.end());
         }
     }
