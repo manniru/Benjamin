@@ -12,42 +12,6 @@ void TdNetwork::initWeightBias()
      setup(true);
 }
 
-tiny_dnn::vec_t TdNetwork::predict(const tiny_dnn::vec_t &in)
-{
-    if( in.size()!=(size_t)inDataSize() )
-    {
-        data_mismatch(nod[0], in);
-    }
-    // a workaround to reduce memory consumption by skipping wrapper
-    // function
-    std::vector<tiny_dnn::tensor_t> a(1);
-    a[0].emplace_back(in);
-    return forward(a)[0][0];
-}
-
-void TdNetwork::updateWeights(tiny_dnn::optimizer *opt)
-{
-    int len = nod.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        nod[i]->updateWeight(opt);
-    }
-}
-
-float_t TdNetwork::predictMaxValue(const tiny_dnn::vec_t &in)
-{
-    return fprop_max(in);
-}
-
-/**
-* executes forward-propagation and returns maximum output index
-**/
-tiny_dnn::label_t TdNetwork::predictLabel(
-        const tiny_dnn::vec_t &in)
-{
-    return fprop_max_index(in);
-}
-
 /**
 * set the netphase to train or test
 * @param phase phase of network, could be train or test
@@ -74,51 +38,6 @@ void TdNetwork::stopOngoingTraining()
     stop_training = true;
 }
 
-std::vector<tiny_dnn::vec_t> TdNetwork::test(
-        const std::vector<tiny_dnn::vec_t> &in)
-{
-    std::vector<tiny_dnn::vec_t> test_result(in.size());
-    setNetPhase(tiny_dnn::net_phase::test);
-    for( size_t i=0 ; i<in.size() ; i++ )
-    {
-        test_result[i] = predict(in[i]);
-    }
-    return test_result;
-}
-
-float_t TdNetwork::getLoss(const std::vector<tiny_dnn::vec_t> &in,
-                     const std::vector<tiny_dnn::label_t> &t)
-{
-    float_t sum_loss = float_t(0);
-
-    std::vector<tiny_dnn::tensor_t> label_tensor;
-    normalizeTensor(t, label_tensor);
-
-    for( size_t i=0 ; i<in.size() ; i++ )
-    {
-        const tiny_dnn::vec_t predicted = predict(in[i]);
-        for( size_t j=0 ; j<1 ; j++ )
-        {
-            sum_loss += tiny_dnn::mse::f(predicted,
-                                    label_tensor[i][j]);
-        }
-    }
-    return sum_loss;
-}
-
-float_t TdNetwork::getLoss(const std::vector<tiny_dnn::vec_t> &in,
-                     const std::vector<tiny_dnn::vec_t> &t)
-{
-    float_t sum_loss = float_t(0);
-
-    for( size_t i=0 ; i<in.size() ; i++ )
-    {
-        const tiny_dnn::vec_t predicted = predict(in[i]);
-        sum_loss += tiny_dnn::mse::f(predicted, t[i]);
-    }
-    return sum_loss;
-}
-
 size_t TdNetwork::layerSize()
 {
     return nod.size();
@@ -132,49 +51,59 @@ size_t TdNetwork::depth()
     return layerSize();
 }
 
-float_t TdNetwork::fprop_max(const tiny_dnn::vec_t &in)
-{
-    const tiny_dnn::vec_t &prediction = predict(in);
-    return *std::max_element(std::begin(prediction),
-                             std::end(prediction));
-}
-
-tiny_dnn::label_t TdNetwork::fprop_max_index(
-        const tiny_dnn::vec_t &in)
-{
-    return tiny_dnn::label_t(max_index(predict(in)));
-}
-
 /**
 * train on one minibatch
 *
 * @param size is the number of data points to use in this batch
 */
 void TdNetwork::trainMiniBatch(tiny_dnn::adagrad &optimizer,
-                           const tiny_dnn::tensor_t *in,
+                           std::vector<tiny_dnn::tensor_t> &in,
                            const tiny_dnn::tensor_t *t,
-                           int size, const tiny_dnn::tensor_t *t_cost)
+                           int batch_size,
+                           const tiny_dnn::tensor_t *t_cost,
+                           int offset)
 {
-    std::vector<tiny_dnn::tensor_t> in_batch;
     std::vector<tiny_dnn::tensor_t> t_batch;
-    in_batch.resize(size);
-    t_batch.resize(size);
+    t_batch.resize(batch_size);
 
-    std::copy(&in[0], &in[0] + size, &in_batch[0]);
-    std::copy(&t[0], &t[0] + size, &t_batch[0]);
+    std::copy(&t[0], &t[0] + batch_size, &t_batch[0]);
     std::vector<tiny_dnn::tensor_t> t_cost_batch;
     t_cost_batch = std::vector<tiny_dnn::tensor_t>(&t_cost[0],
-        &t_cost[0] + size);
+        &t_cost[0] + batch_size);
 
     std::vector<tiny_dnn::tensor_t> o_batch;
-    o_batch = forward(in_batch);
+    nod.front()->setInData(in, batch_size, offset);
 
+    int nod_len = nod.size();
+    int thread_num = 16;
+    int data_per_thread = batch_size/thread_num;
+    if( data_per_thread==0 )
+    {
+        data_per_thread = 1;
+    }
+
+    // should call resize for all layers before !for!
+    for( int i=0 ; i<batch_size ; i+=data_per_thread )
+    {
+        o_batch = forward(i, i+data_per_thread);
+    }
     // back propagation
     std::vector<tiny_dnn::tensor_t> delta;
     delta = tiny_dnn::gradient<tiny_dnn::mse>(o_batch, t_batch,
-                                              t_cost_batch);
-    backward(delta);
-    updateWeights(&optimizer);
+              t_cost_batch);
+
+    // backward
+    nod.back()->setOutGrads(delta);
+    for( int i=nod_len ; i>0 ; i-- )
+    {
+        nod[i-1]->backward();
+    }
+
+    // update weights
+    for( int i=0 ; i<nod_len ; i++ )
+    {
+        nod[i]->updateWeight(&optimizer, batch_size);
+    }
 }
 
 void TdNetwork::checkTargetCostMatrix(
@@ -225,30 +154,8 @@ void TdNetwork::checkTargetCostElement(const tiny_dnn::tensor_t &t,
     }
 }
 
-template<typename T>
-float_t TdNetwork::getLoss(const std::vector<T> &in,
-                           const std::vector<tiny_dnn::tensor_t> &t)
-{
-    float_t sum_loss = float_t(0);
-    std::vector<tiny_dnn::tensor_t> in_tensor;
-    normalizeTensor(in, in_tensor);
-
-    for( size_t i=0 ; i<in.size() ; i++ )
-    {
-        tiny_dnn::tensor_t predicted;
-        std::vector<tiny_dnn::tensor_t> ten = {in_tensor[i]};
-        predicted = forward(ten)[0];
-        for( size_t j=0 ; j<predicted.size() ; j++ )
-        {
-            sum_loss += tiny_dnn::mse::f(predicted[j],
-                                                   t[i][j]);
-        }
-    }
-    return sum_loss;
-}
-
 bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
-                const std::vector<tiny_dnn::tensor_t> &inputs,
+                std::vector<tiny_dnn::tensor_t> &inputs,
                 const std::vector<tiny_dnn::tensor_t> &desired_outputs,
                 size_t batch_size, int epoch,
                 const bool reset_weights,
@@ -272,8 +179,8 @@ bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
              i+=batch_size )
         {
             int min_size = std::min(batch_size, inputs.size() - i);
-            trainMiniBatch(optimizer, &inputs[i], &desired_outputs[i],
-                       min_size, &(t_cost[i]));
+            trainMiniBatch(optimizer, inputs, &desired_outputs[i],
+                       min_size, &(t_cost[i]), i);
 
             emit onBatchEnumerate();
         }
@@ -376,31 +283,13 @@ TdNetwork* TdNetwork::addSoftMax()
     return this;
 }
 
-void TdNetwork::backward(
-        const std::vector<tiny_dnn::tensor_t> &first)
-{
-    std::vector<std::vector<const tiny_dnn::vec_t *>> reordered_grad;
-    td_reorder(first, reordered_grad);
-    assert(reordered_grad.size() == 1);
-
-    nod.back()->setOutGrads(&reordered_grad[0], 1);
-
-    int len = nod.size();
-    for( int i=len ; i>0 ; i-- )
-    {
-        nod[i-1]->backward();
-    }
-}
-
 std::vector<tiny_dnn::tensor_t> TdNetwork::forward(
-        const std::vector<tiny_dnn::tensor_t> &first)
+        int s_index, int e_index)
 {
-    nod.front()->setInData(first);
-
     int len = nod.size();
     for( int i=0 ; i<len ; i++ )
     {
-        nod[i]->forward();
+        nod[i]->forward(s_index, e_index);
     }
 
     std::vector<const tiny_dnn::tensor_t *> out;
@@ -409,20 +298,11 @@ std::vector<tiny_dnn::tensor_t> TdNetwork::forward(
     return td_normalizeOut(out);
 }
 
-tiny_dnn::vec_t TdNetwork::forward(tiny_dnn::vec_t &first)
+tiny_dnn::vec_t TdNetwork::predict(tiny_dnn::vec_t &first)
 {
     nod.front()->setInData(first);
 
-    int len = nod.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        nod[i]->forward();
-    }
-
-    std::vector<const tiny_dnn::tensor_t *> out;
-    nod.back()->output(out);
-
-    return td_normalizeOut(out);
+    return forward(0, 1)[0][0];
 }
 
 /**
@@ -434,15 +314,6 @@ void TdNetwork::setup(bool reset_weight)
     for( int i=0 ; i<len ; i++ )
     {
         nod[i]->setup(reset_weight);
-    }
-}
-
-void TdNetwork::clearGrads()
-{
-    int len = nod.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        nod[i]->clearGrads();
     }
 }
 

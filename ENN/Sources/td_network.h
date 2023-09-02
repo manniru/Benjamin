@@ -40,22 +40,9 @@ public:
     explicit TdNetwork(QString name = "", QObject *parent = nullptr);
 
     void initWeightBias();
-    tiny_dnn::vec_t predict(const tiny_dnn::vec_t &in);
-    void updateWeights(tiny_dnn::optimizer *opt);
-    float_t predictMaxValue(const tiny_dnn::vec_t &in);
-    tiny_dnn::label_t predictLabel(const tiny_dnn::vec_t &in);
 
     void setNetPhase(tiny_dnn::net_phase phase);
     void stopOngoingTraining();
-    std::vector<tiny_dnn::vec_t> test(
-            const std::vector<tiny_dnn::vec_t> &in);
-    float_t getLoss(const std::vector<tiny_dnn::vec_t> &in,
-                     const std::vector<tiny_dnn::label_t> &t);
-    float_t getLoss(const std::vector<tiny_dnn::vec_t> &in,
-                     const std::vector<tiny_dnn::vec_t> &t);
-    template <typename T>
-    float_t getLoss(const std::vector<T> &in,
-                    const std::vector<tiny_dnn::tensor_t> &t);
     size_t layerSize();
     size_t depth();
     size_t outDataSize();
@@ -67,7 +54,7 @@ public:
     template <typename InputArchive>
     void fromArchive(InputArchive &ar);
     bool fit(tiny_dnn::adagrad &optimizer,
-             const std::vector<tiny_dnn::tensor_t> &inputs,
+             std::vector<tiny_dnn::tensor_t> &inputs,
              const std::vector<tiny_dnn::tensor_t> &desired_outputs,
              size_t batch_size,
              int epoch,
@@ -80,8 +67,6 @@ public:
                          std::vector<tiny_dnn::tensor_t> &normalized);
     void normalizeTensor(const std::vector<tiny_dnn::label_t> &inputs,
                           std::vector<tiny_dnn::tensor_t> &normalized);
-    float_t fprop_max(const tiny_dnn::vec_t &in);
-    tiny_dnn::label_t fprop_max_index(const tiny_dnn::vec_t &in);
     TdNetwork* addFC(int in_dim, int out_dim);
     TdNetwork* addLeakyRelu();
     TdNetwork* addConv(int in_width, int in_height, int window_width,
@@ -91,6 +76,9 @@ public:
                     int pool_size_x, int pool_size_y, int stride_x,
                     int stride_y);
     TdNetwork* addSoftMax();
+
+    std::vector<tiny_dnn::tensor_t> forward(int s_index, int e_index);
+    tiny_dnn::vec_t predict(tiny_dnn::vec_t &first);
 
     QString net_name;
     int     stop_training;
@@ -102,9 +90,9 @@ signals:
 
 private:
     void trainMiniBatch(tiny_dnn::adagrad &optimizer,
-                    const tiny_dnn::tensor_t *in,
-                    const tiny_dnn::tensor_t *t, int size,
-                    const tiny_dnn::tensor_t *t_cost);
+                    std::vector<tiny_dnn::tensor_t> &in,
+                    const tiny_dnn::tensor_t *t, int batch_size,
+                    const tiny_dnn::tensor_t *t_cost, int offset);
     void checkTargetCostMatrix(const std::vector<tiny_dnn::tensor_t> &t,
                                const std::vector<tiny_dnn::tensor_t> &t_cost);
     void checkTargetCostElement(const tiny_dnn::vec_t &t,
@@ -113,13 +101,7 @@ private:
                                 const tiny_dnn::tensor_t &t_cost);
     void label2vec(const tiny_dnn::label_t *t, size_t num,
                                 std::vector<tiny_dnn::vec_t> &vec);
-
-    void backward(const std::vector<tiny_dnn::tensor_t> &first);
-    std::vector<tiny_dnn::tensor_t> forward(
-            const std::vector<tiny_dnn::tensor_t> &first);
-    tiny_dnn::vec_t forward(tiny_dnn::vec_t &first);
     void setup(bool reset_weight);
-    void clearGrads();
 };
 
 #endif // TD_NETWORK_H
