@@ -39,11 +39,11 @@ public:
     void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
             std::vector<tiny_dnn::tensor_t *> &out_data, int s_index, int e_index) override;
 
-    void back_propagation(
-            const std::vector<tiny_dnn::tensor_t *> &in_data,
+    void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
             const std::vector<tiny_dnn::tensor_t *> &out_data,
             std::vector<tiny_dnn::tensor_t *> &out_grad,
-            std::vector<tiny_dnn::tensor_t *> &in_grad) override;
+            std::vector<tiny_dnn::tensor_t *> &in_grad,
+            int s_index, int e_index) override;
 
     void set_sample_count(size_t sample_count) override;
 
@@ -102,7 +102,8 @@ private:
                      tensor_t &db,
                      tensor_t &curr_delta,
                      tensor_t &prev_delta,
-                     const tiny_dnn::core::conv_params &params);
+                     const tiny_dnn::core::conv_params &params,
+                     int s_index, int e_index);
 
     void avx_op_backward(const tiny_dnn::tensor_t &prev_out,
                          const tiny_dnn::vec_t &W,

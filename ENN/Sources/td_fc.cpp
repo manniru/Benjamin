@@ -209,9 +209,10 @@ void TdFC::op_backward(const tiny_dnn::tensor_t &prev_out,
                        tiny_dnn::tensor_t &db,
                        tiny_dnn::tensor_t &curr_delta,
                        tiny_dnn::tensor_t &prev_delta,
-                       const tiny_dnn::core::fully_params &params)
+                       const tiny_dnn::core::fully_params &params,
+                       int s_index, int e_index)
 {
-    for( size_t sample=0 ; sample<prev_out.size() ; sample++ )
+    for( int sample=s_index ; sample<e_index ; sample++ )
     {
         for( size_t c=0 ; c<params.in_size_ ; c++ )
         {
@@ -277,7 +278,8 @@ void TdFC::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
         const std::vector<tiny_dnn::tensor_t *> &out_data,
         std::vector<tiny_dnn::tensor_t *> &out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad)
+        std::vector<tiny_dnn::tensor_t *> &in_grad, int s_index,
+        int e_index)
 {
     // launch fully connected kernel
     auto params = params_.fully();
@@ -298,7 +300,7 @@ void TdFC::back_propagation(
             prev_delta, params);
 #else
     op_backward(prev_out, W[0], dW, db, curr_delta,
-            prev_delta, params);
+            prev_delta, params, s_index, e_index);
 #endif
 }
 

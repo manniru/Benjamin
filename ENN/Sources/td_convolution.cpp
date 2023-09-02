@@ -107,17 +107,17 @@ void TdConvolution::op_forward(const tiny_dnn::tensor_t &in_data,
 
 template <typename tensor_t, typename vec_t>
 void TdConvolution::op_backward(const tensor_t &prev_out,
-                                const vec_t &W,
-                                tensor_t &dW,
-                                tensor_t &db,
-                                tensor_t &curr_delta,
-                                tensor_t &prev_delta,
-                                const tiny_dnn::core::conv_params &params)
+    const vec_t &W, tensor_t &dW, tensor_t &db,
+    tensor_t &curr_delta, tensor_t &prev_delta,
+    const tiny_dnn::core::conv_params &params,
+    int s_index, int e_index)
 {
     typedef typename vec_t::value_type float_t;
 
     int parallelized = true;
-    tiny_dnn::for_i(parallelized, prev_out.size(), [&](size_t sample)
+
+//    tiny_dnn::for_i(parallelized, prev_out.size(), [&](size_t sample)
+    for( int sample=s_index ; sample<e_index ; sample++ )
     {
         // propagate delta to previous layer
         for (size_t inc = 0; inc < params.in.depth_; inc++)
@@ -244,7 +244,7 @@ void TdConvolution::op_backward(const tensor_t &prev_out,
                 db[sample][outc] += std::accumulate(delta, deltaa, float_t{0});
             }
         }
-    });
+    }
 }
 
 void TdConvolution::forward_propagation(
@@ -290,7 +290,8 @@ void TdConvolution::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
         const std::vector<tiny_dnn::tensor_t *> &out_data,
         std::vector<tiny_dnn::tensor_t *> &out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad)
+        std::vector<tiny_dnn::tensor_t *> &in_grad,
+        int s_index, int e_index)
 {
     bwd_in_data_.resize(in_data.size());
     std::copy(in_data.begin(), in_data.end(), bwd_in_data_.begin());
@@ -322,7 +323,7 @@ void TdConvolution::back_propagation(
             curr_delta, prev_delta, params);
 #else
     op_backward(prev_out, W[0], dW,
-            db, curr_delta, prev_delta, params);
+            db, curr_delta, prev_delta, params, s_index, e_index);
 #endif
 
     // unpad deltas

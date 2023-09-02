@@ -108,7 +108,8 @@ void TdAvePool::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
         const std::vector<tiny_dnn::tensor_t *> &out_data,
         std::vector<tiny_dnn::tensor_t *> &out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad)
+        std::vector<tiny_dnn::tensor_t *> &in_grad, int s_index,
+        int e_index)
 {
     tiny_average_pooling_back_kernel(
                 parallelized, in_data, out_data, out_grad,
@@ -116,7 +117,7 @@ void TdAvePool::back_propagation(
                 TdAvePool::scale_factor_,
                 TdAvePool::weight2io_,
                 TdAvePool::in2wo_,
-                TdAvePool::bias2out_);
+                TdAvePool::bias2out_, s_index, e_index);
 }
 
 std::pair<size_t, size_t> TdAvePool::pool_size() const
@@ -220,19 +221,21 @@ void tiny_average_pooling_kernel(bool parallelize,
 }
 
 void tiny_average_pooling_back_kernel(bool parallelize,
-                                      const std::vector<tiny_dnn::tensor_t *> &in_data,
-                                      const std::vector<tiny_dnn::tensor_t *> &out_data,
-                                      std::vector<tiny_dnn::tensor_t *> &out_grad,
-                                      std::vector<tiny_dnn::tensor_t *> &in_grad,
-                                      const tiny_dnn::shape3d &in_dim, float_t scale_factor,
-                                      std::vector<TdAvePool::
-                                      io_connections> &weight2io,
-                                      std::vector<TdAvePool::
-                                      wo_connections> &in2wo,
-                                      std::vector<std::vector<size_t> > &bias2out)
+              const std::vector<tiny_dnn::tensor_t *> &in_data,
+              const std::vector<tiny_dnn::tensor_t *> &out_data,
+              std::vector<tiny_dnn::tensor_t *> &out_grad,
+              std::vector<tiny_dnn::tensor_t *> &in_grad,
+              const tiny_dnn::shape3d &in_dim, float_t scale_factor,
+              std::vector<TdAvePool::
+              io_connections> &weight2io,
+              std::vector<TdAvePool::
+              wo_connections> &in2wo,
+              std::vector<std::vector<size_t> > &bias2out,
+              int s_index, int e_index)
 {
     CNN_UNREFERENCED_PARAMETER(out_data);
-    tiny_dnn::for_i(parallelize, in_data[0]->size(), [&](size_t sample)
+//    tiny_dnn::for_i(parallelize, in_data[0]->size(), [&](size_t sample)
+    for( int sample=s_index ; sample<e_index ; sample++ )
     {
         const tiny_dnn::vec_t &prev_out = (*in_data[0])[sample];
         const tiny_dnn::vec_t &W        = (*in_data[1])[0];
@@ -277,5 +280,5 @@ void tiny_average_pooling_back_kernel(bool parallelize,
 
             db[i] += diff;
         }
-    });
+    }
 }

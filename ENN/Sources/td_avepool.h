@@ -38,7 +38,8 @@ public:
     void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
                   const std::vector<tiny_dnn::tensor_t *> &out_data,
                   std::vector<tiny_dnn::tensor_t *> &out_grad,
-                  std::vector<tiny_dnn::tensor_t *> &in_grad) override;
+                  std::vector<tiny_dnn::tensor_t *> &in_grad,
+                  int s_index, int e_index) override;
     std::pair<size_t, size_t> pool_size() const;
 
     typedef std::vector<std::pair<size_t, size_t>> io_connections;
@@ -86,8 +87,7 @@ inline void tiny_average_pooling_kernel(bool parallelize,
         int s_index, int e_index);
 
 // back_propagation
-inline void tiny_average_pooling_back_kernel(
-        bool parallelize,
+inline void tiny_average_pooling_back_kernel(bool parallelize,
         const std::vector<tiny_dnn::tensor_t *> &in_data,
         const std::vector<tiny_dnn::tensor_t *> &out_data,
         std::vector<tiny_dnn::tensor_t *> &out_grad,
@@ -96,6 +96,7 @@ inline void tiny_average_pooling_back_kernel(
         float_t scale_factor,
         std::vector<typename TdAvePool::io_connections> &weight2io,
         std::vector<typename TdAvePool::wo_connections> &in2wo,
-        std::vector<std::vector<size_t>> &bias2out);
+        std::vector<std::vector<size_t>> &bias2out,
+        int s_index, int e_index);
 
 #endif // TDAVEPOOL_H

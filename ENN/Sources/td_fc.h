@@ -32,7 +32,7 @@ public:
     void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
                       const std::vector<tiny_dnn::tensor_t *> &out_data,
                       std::vector<tiny_dnn::tensor_t *> &out_grad,
-                      std::vector<tiny_dnn::tensor_t *> &in_grad) override;
+                      std::vector<tiny_dnn::tensor_t *> &in_grad, int s_index, int e_index) override;
 
     std::string layer_type() const override;
 
@@ -70,7 +70,8 @@ public:
                     tiny_dnn::tensor_t &db,
                     tiny_dnn::tensor_t &curr_delta,
                     tiny_dnn::tensor_t &prev_delta,
-                    const tiny_dnn::core::fully_params &params);
+                    const tiny_dnn::core::fully_params &params,
+                    int s_index, int e_index);
 
     /* The layer parameters */
     tiny_dnn::core::fully_params params_;
