@@ -43,16 +43,18 @@ void TdLeakyRelu::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
         const std::vector<tiny_dnn::tensor_t *> &out_data,
         std::vector<tiny_dnn::tensor_t *> &out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad)
+        std::vector<tiny_dnn::tensor_t *> &in_grad, int s_index,
+        int e_index)
 {
     tiny_dnn::tensor_t &dx       = *in_grad[0];
     const tiny_dnn::tensor_t &dy = *out_grad[0];
     const tiny_dnn::tensor_t &x  = *in_data[0];
     const tiny_dnn::tensor_t &y  = *out_data[0];
-    tiny_dnn::for_i(x.size(), [&](size_t i)
+//    tiny_dnn::for_i(x.size(), [&](size_t i)
+    for( int i=s_index ; i<e_index ; i++ )
     {
         backward_activation(x[i], y[i], dx[i], dy[i]);
-    });
+    }
 }
 
 std::string TdLeakyRelu::layer_type() const
@@ -84,7 +86,14 @@ void TdLeakyRelu::backward_activation(const tiny_dnn::vec_t &x,
     for( size_t j=0 ; j<x.size() ; j++ )
     {
         // dx = dy * (gradient of leaky relu)
-        dx[j] = dy[j] * (y[j] > float_t(0) ? float_t(1) : epsilon_);
+        if( y[j]>0 )
+        {
+            dx[j] = dy[j];
+        }
+        else
+        {
+            dx[j] = dy[j] * epsilon_;
+        }
     }
 }
 

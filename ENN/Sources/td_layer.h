@@ -49,7 +49,8 @@ public:
     std::vector<TdEdge *> inputs();
     std::vector<TdEdge *> outputs();
     std::vector<TdEdge *> outputs() const;
-    void setOutGrads(std::vector<tiny_dnn::tensor_t> &grad);
+    void setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
+                     int s_index, int e_index);
     void setInData(const std::vector<tiny_dnn::tensor_t> &data, int batch_size, int offset);
     void setInData(tiny_dnn::vec_t &data);
     void output(std::vector<const tiny_dnn::tensor_t *> &out) const;
@@ -73,11 +74,12 @@ public:
     virtual void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
                                   const std::vector<tiny_dnn::tensor_t *> &out_data,
                                   std::vector<tiny_dnn::tensor_t *> &out_grad,
-                                  std::vector<tiny_dnn::tensor_t *> &in_grad) = 0;
+                                  std::vector<tiny_dnn::tensor_t *> &in_grad,
+                                  int s_index, int e_index) = 0;
     virtual void post_update();
     virtual void set_context(tiny_dnn::net_phase ctx);
     void forward(int s_index, int e_index);
-    void backward();
+    void backward(int s_index, int e_index);
     void setup(bool reset_weight);
     void initWeight();
     void clearGrads(int batch_size);

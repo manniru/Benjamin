@@ -23,7 +23,8 @@ public:
             const std::vector<tiny_dnn::tensor_t *> &in_data,
             const std::vector<tiny_dnn::tensor_t *> &out_data,
             std::vector<tiny_dnn::tensor_t *> &out_grad,
-            std::vector<tiny_dnn::tensor_t *> &in_grad) override;
+            std::vector<tiny_dnn::tensor_t *> &in_grad,
+            int s_index, int e_index) override;
     void forward_activation(const tiny_dnn::vec_t &x,
                             tiny_dnn::vec_t &y);
     void backward_activation(const tiny_dnn::vec_t &x,

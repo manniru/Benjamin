@@ -95,16 +95,16 @@ void TdSoftmax::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
         const std::vector<tiny_dnn::tensor_t *> &out_data,
         std::vector<tiny_dnn::tensor_t *> &out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad)
+        std::vector<tiny_dnn::tensor_t *> &in_grad,
+        int s_index, int e_index)
 {
     const tiny_dnn::tensor_t &x  = *in_data[0];
     const tiny_dnn::tensor_t &y  = *out_data[0];
     const tiny_dnn::tensor_t &dy = *out_grad[0];
     tiny_dnn::tensor_t &dx       = *in_grad[0];
 
-    int len = x.size();
-    for( int i=0 ; i<len ; i++ )
+    for( int i=s_index ; i<e_index ; i++ )
     {
         backward_activation(x[i], y[i], dx[i], dy[i]);
-    };
+    }
 }

@@ -152,7 +152,8 @@ std::vector<TdEdge *> TdLayer::outputs() const
     return nodes;
 }
 
-void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad)
+void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
+                          int s_index, int e_index)
 {
     for( size_t ch=0 ; ch<out_channels ; ch++ )
     {
@@ -163,7 +164,7 @@ void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad)
         tiny_dnn::tensor_t &dst_grad = ith_out_node(ch)->grad_;
         int sample_size = grad.size();
         dst_grad.resize(sample_size);
-        for( int i=0 ; i<sample_size ; i++ )
+        for( int i=s_index ; i<e_index ; i++ )
         {
             dst_grad[i] = grad[i][ch];
         }
@@ -361,7 +362,7 @@ void TdLayer::forward(int s_index, int e_index)
     forward_propagation(fwd_in_data, fwd_out_data, s_index, e_index);
 }
 
-void TdLayer::backward()
+void TdLayer::backward(int s_index, int e_index)
 {
     bwd_in_data.resize(in_channels);
     bwd_in_grad.resize(in_channels);
@@ -381,8 +382,8 @@ void TdLayer::backward()
         bwd_out_data[i] = &nd->data_;
         bwd_out_grad[i] = &(nd->grad_);
     }
-    back_propagation(bwd_in_data, bwd_out_data,
-                     bwd_out_grad, bwd_in_grad);
+    back_propagation(bwd_in_data, bwd_out_data, bwd_out_grad,
+                     bwd_in_grad, s_index, e_index);
 }
 
 /* @brief Allocates data in the computational graph and reset weights if

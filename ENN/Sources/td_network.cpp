@@ -85,19 +85,24 @@ void TdNetwork::trainMiniBatch(tiny_dnn::adagrad &optimizer,
     // should call resize for all layers before !for!
     for( int i=0 ; i<batch_size ; i+=data_per_thread )
     {
+        if( i+data_per_thread>=batch_size )
+        {
+            data_per_thread = batch_size - i;
+        }
         o_batch = forward(i, i+data_per_thread);
-    }
-    // back propagation
-    std::vector<tiny_dnn::tensor_t> delta;
-    delta = tiny_dnn::gradient<tiny_dnn::mse>(o_batch, t_batch,
-              t_cost_batch);
+        // back propagation
+        std::vector<tiny_dnn::tensor_t> delta;
+        delta = tiny_dnn::gradient<tiny_dnn::mse>(o_batch, t_batch,
+                  t_cost_batch, i, i+data_per_thread);
+        // backward
+        nod.back()->setOutGrads(delta, i, i+data_per_thread);
 
-    // backward
-    nod.back()->setOutGrads(delta);
-    for( int i=nod_len ; i>0 ; i-- )
-    {
-        nod[i-1]->backward();
+        for( int j=nod_len ; j>0 ; j-- )
+        {
+            nod[j-1]->backward(i, i+data_per_thread);
+        }
     }
+
 
     // update weights
     for( int i=0 ; i<nod_len ; i++ )
