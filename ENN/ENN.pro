@@ -49,7 +49,8 @@ HEADERS += \
     Sources/td_leaky_relu.h \
     Sources/td_network.h \
     Sources/td_nodes.h \
-    Sources/td_softmax.h
+    Sources/td_softmax.h \
+    Sources/td_worker.h
 
 SOURCES += \
     Sources/enn_parse.cpp \
@@ -69,7 +70,8 @@ SOURCES += \
     Sources/td_leaky_relu.cpp \
     Sources/td_network.cpp \
     Sources/td_nodes.cpp \
-    Sources/td_softmax.cpp
+    Sources/td_softmax.cpp \
+    Sources/td_worker.cpp
 
 win32:SOURCES += ../PNN/aj_dllgen.cpp
 
