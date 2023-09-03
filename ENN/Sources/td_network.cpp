@@ -1,9 +1,10 @@
 #include "td_network.h"
+#include <QGuiApplication>
 
-TdNetwork::TdNetwork(QString name, QObject *parent) :
+TdNetwork::TdNetwork(int bs, QObject *parent) :
     QObject(parent)
 {
-    net_name = name;
+    setBatchSize(bs);
     stop_training = 0;
 }
 
@@ -56,59 +57,56 @@ size_t TdNetwork::depth()
 *
 * @param size is the number of data points to use in this batch
 */
-void TdNetwork::trainMiniBatch(tiny_dnn::adagrad &optimizer,
-                           std::vector<tiny_dnn::tensor_t> &in,
-                           const tiny_dnn::tensor_t *t,
-                           int batch_size,
-                           const tiny_dnn::tensor_t *t_cost,
+void TdNetwork::trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
+                           tiny_dnn::tensor_t *t,
+                           int data_size,
+                           tiny_dnn::tensor_t *t_cost,
                            int offset)
 {
-    std::vector<tiny_dnn::tensor_t> t_batch;
-    t_batch.resize(batch_size);
-
-    std::copy(&t[0], &t[0] + batch_size, &t_batch[0]);
-    std::vector<tiny_dnn::tensor_t> t_cost_batch;
+    std::copy(&t[0], &t[0] + data_size, &t_batch[0]);
     t_cost_batch = std::vector<tiny_dnn::tensor_t>(&t_cost[0],
-        &t_cost[0] + batch_size);
-
-    std::vector<tiny_dnn::tensor_t> o_batch;
-    nod.front()->setInData(in, batch_size, offset);
+        &t_cost[0] + data_size);
+    nod.front()->setInData(in, data_size, offset);
 
     int nod_len = nod.size();
-    int thread_num = 16;
-    int data_per_thread = batch_size/thread_num;
+    for( int i=0 ; i<nod_len ; i++ )
+    {
+        // resize outs and stuff to have room for every input sample in
+        // the batch
+        nod[i]->set_sample_count(data_size);
+        int ch_len = nod[i]->out_channels;
+        for(int j=0 ; j<ch_len ; j++ )
+        {
+            tiny_dnn::tensor_t &dst_grad = nod[i]->ith_out_node(j)->grad_;
+            dst_grad.resize(data_size);
+        }
+    }
+
+    int thread_num = TD_THREAD_NUM;
+    int data_per_thread = data_size/thread_num;
     if( data_per_thread==0 )
     {
         data_per_thread = 1;
     }
 
+    worker_len = data_size;
+    worker_done = 0;
+
     // should call resize for all layers before !for!
-    for( int i=0 ; i<batch_size ; i+=data_per_thread )
+    for( int i=0 ; i<workers.length() ; i++ )
     {
-        if( i+data_per_thread>=batch_size )
+        if( i<data_size )
         {
-            data_per_thread = batch_size - i;
+            workers[i]->setRange(i*data_per_thread,
+                                 (i+1)*data_per_thread);
+            workers[i]->enabled = true;
         }
-        o_batch = forward(i, i+data_per_thread);
-        // back propagation
-        std::vector<tiny_dnn::tensor_t> delta;
-        delta = tiny_dnn::gradient<tiny_dnn::mse>(o_batch, t_batch,
-                  t_cost_batch, i, i+data_per_thread);
-        // backward
-        nod.back()->setOutGrads(delta, i, i+data_per_thread);
-
-        for( int j=nod_len ; j>0 ; j-- )
+        else
         {
-            nod[j-1]->backward(i, i+data_per_thread);
+            workers[i]->enabled = false;
         }
     }
-
-
-    // update weights
-    for( int i=0 ; i<nod_len ; i++ )
-    {
-        nod[i]->updateWeight(&optimizer, batch_size);
-    }
+    emit startWorkers();
 }
 
 void TdNetwork::checkTargetCostMatrix(
@@ -134,7 +132,7 @@ void TdNetwork::checkTargetCostMatrix(
 
 // regression
 void TdNetwork::checkTargetCostElement(const tiny_dnn::vec_t &t,
-                                       const tiny_dnn::vec_t &t_cost)
+                        const tiny_dnn::vec_t &t_cost)
 {
     if( t.size()!=t_cost.size() )
     {
@@ -145,7 +143,7 @@ void TdNetwork::checkTargetCostElement(const tiny_dnn::vec_t &t,
 }
 
 void TdNetwork::checkTargetCostElement(const tiny_dnn::tensor_t &t,
-                                       const tiny_dnn::tensor_t &t_cost)
+                        const tiny_dnn::tensor_t &t_cost)
 {
     if( t.size()!=t_cost.size() )
     {
@@ -159,12 +157,10 @@ void TdNetwork::checkTargetCostElement(const tiny_dnn::tensor_t &t,
     }
 }
 
-bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
-                std::vector<tiny_dnn::tensor_t> &inputs,
-                const std::vector<tiny_dnn::tensor_t> &desired_outputs,
-                size_t batch_size, int epoch,
-                const bool reset_weights,
-                const std::vector<tiny_dnn::tensor_t> &t_cost)
+void TdNetwork::fit(std::vector<tiny_dnn::tensor_t> &inputs,
+                std::vector<tiny_dnn::tensor_t> &desired_outputs,
+                int epoch, bool reset_weights,
+                std::vector<tiny_dnn::tensor_t> &t_cost)
 {
     checkTargetCostMatrix(desired_outputs, t_cost);
     setNetPhase(tiny_dnn::net_phase::train);
@@ -183,16 +179,72 @@ bool TdNetwork::fit(tiny_dnn::adagrad &optimizer,
         for( int i=0 ; i<len_input && !stop_training ;
              i+=batch_size )
         {
-            int min_size = std::min(batch_size, inputs.size() - i);
-            trainMiniBatch(optimizer, inputs, &desired_outputs[i],
+            int min_size = std::min((size_t)batch_size,
+                                    inputs.size() - i);
+            trainMiniBatch(inputs, &desired_outputs[i],
                        min_size, &(t_cost[i]), i);
+            while( worker_done<runningWorkersNum() )
+            {
+                QThread::msleep(10);
+                QGuiApplication::processEvents();
+            }
+            int nod_len = nod.size();
+            // update weights
+            for( int i=0 ; i<nod_len ; i++ )
+            {
+                nod[i]->updateWeight(&optimizer, worker_len);
+            }
 
             emit onBatchEnumerate();
         }
         emit OnEpochEnumerate();
     }
     setNetPhase(tiny_dnn::net_phase::test);
-    return true;
+}
+
+void TdNetwork::setBatchSize(int bs)
+{
+    int ws_len = workers.size();
+    batch_size = bs;
+
+    t_batch.resize(batch_size);
+
+    int thread_num = TD_THREAD_NUM;
+
+    for( int i=ws_len ; i<thread_num ; i++ )
+    {
+        TdWorker *new_worker = new TdWorker(&nod, &t_batch,
+                                            &t_cost_batch);
+        QThread *thread = new QThread;
+        new_worker->moveToThread(thread);
+        thread->start();
+        connect(new_worker, SIGNAL(finished()),
+                this, SLOT(workerFinished()));
+        connect(this, SIGNAL(startWorkers()),
+                new_worker, SLOT(run()));
+        workers.push_back(new_worker);
+        workers_th.push_back(thread);
+    }
+}
+
+void TdNetwork::workerFinished()
+{
+    worker_done++;
+//    qDebug() << "worker returned" << worker_done;
+}
+
+int TdNetwork::runningWorkersNum()
+{
+    int len = workers.size();
+    int counter = 0;
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( workers[i]->enabled )
+        {
+            counter++;
+        }
+    }
+    return counter;
 }
 
 void TdNetwork::normalizeTensor(
@@ -288,26 +340,14 @@ TdNetwork* TdNetwork::addSoftMax()
     return this;
 }
 
-std::vector<tiny_dnn::tensor_t> TdNetwork::forward(
-        int s_index, int e_index)
-{
-    int len = nod.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        nod[i]->forward(s_index, e_index);
-    }
-
-    std::vector<const tiny_dnn::tensor_t *> out;
-    nod.back()->output(out);
-
-    return td_normalizeOut(out);
-}
-
 tiny_dnn::vec_t TdNetwork::predict(tiny_dnn::vec_t &first)
 {
     nod.front()->setInData(first);
 
-    return forward(0, 1)[0][0];
+    TdWorker test_worker(&nod, NULL, NULL);
+    test_worker.setRange(0, 1);
+
+    return test_worker.forward()[0][0];
 }
 
 /**
