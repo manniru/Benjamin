@@ -19,6 +19,7 @@
 #define ENN_NETWORK_LOCKED      2 // network loss exploded
 
 #define ENN_EXPLODE_LOSS        500
+#define ENN_BATCH_SIZE          32
 
 using namespace tiny_dnn;
 
@@ -61,9 +62,7 @@ private:
 
     TdNetwork *net;
     EnnParse *parser;
-    adagrad optim;
 
-    int n_minibatch;
     int n_train_epochs;
     int net_state; // network state
     bool need_train;

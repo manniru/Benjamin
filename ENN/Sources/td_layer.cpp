@@ -8,8 +8,16 @@ TdLayer::TdLayer(std::vector<tiny_dnn::vector_type> in_t,
     next_.resize(out_t.size());
     initialized = false;
     parallelized = true;
+
     in_channels = in_t.size();
     out_channels = out_t.size();
+    fwd_in_data.resize(in_channels);
+    fwd_out_data.resize(out_channels);
+    bwd_in_data.resize(in_channels);
+    bwd_in_grad.resize(in_channels);
+    bwd_out_data.resize(out_channels);
+    bwd_out_grad.resize(out_channels);
+
     in_type = in_t;
     out_type = out_t;
     weight_init = new tiny_dnn::weight_init::xavier;
@@ -162,8 +170,6 @@ void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
             continue;
         }
         tiny_dnn::tensor_t &dst_grad = ith_out_node(ch)->grad_;
-        int sample_size = grad.size();
-        dst_grad.resize(sample_size);
         for( int i=s_index ; i<e_index ; i++ )
         {
             dst_grad[i] = grad[i][ch];
@@ -331,10 +337,6 @@ void TdLayer::set_context(tiny_dnn::net_phase ctx)
  */
 void TdLayer::forward(int s_index, int e_index)
 {
-    // the computational graph
-    fwd_in_data.resize(in_channels);
-    fwd_out_data.resize(out_channels);
-
     // Organize input/output vectors from storage (computational graph).
     // Internally ith_in_node() will create a connection/edge in the
     // computational graph and will allocate memory in case that it's not
@@ -343,10 +345,6 @@ void TdLayer::forward(int s_index, int e_index)
     {
         fwd_in_data[i] = &ith_in_node(i)->data_;
     }
-
-    // resize outs and stuff to have room for every input sample in
-    // the batch
-    set_sample_count(fwd_in_data[0]->size());
 
     // Internally ith_out_node() will create a connection/edge to the
     // computational graph and will allocate memory in case that it's not
@@ -364,11 +362,6 @@ void TdLayer::forward(int s_index, int e_index)
 
 void TdLayer::backward(int s_index, int e_index)
 {
-    bwd_in_data.resize(in_channels);
-    bwd_in_grad.resize(in_channels);
-    bwd_out_data.resize(out_channels);
-    bwd_out_grad.resize(out_channels);
-
     // organize input/output vectors from storage
     for( size_t i = 0; i < in_channels; i++ )
     {
@@ -524,7 +517,10 @@ void TdLayer::set_sample_count(size_t sample_count)
             resize(&ith_in_node(i)->data_);
         }
         auto def_val = ith_in_node(i)->grad_[0];
-        ith_in_node(i)->grad_.resize(sample_count, def_val);
+        if( ith_in_node(i)->grad_.size()!=sample_count )
+        {
+            ith_in_node(i)->grad_.resize(sample_count, def_val);
+        }
     }
 
     for( size_t i=0 ; i<out_channels ; i++ )

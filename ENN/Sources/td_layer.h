@@ -92,6 +92,10 @@ public:
     size_t next_port(const TdEdge &e) const;
     tiny_dnn::vec_t *getData(size_t i);
 
+    TdEdge* ith_in_node(size_t i);
+    TdEdge* ith_out_node(size_t i);
+    TdEdge* ith_out_node(size_t i) const;
+
     std::vector<TdEdge *> prev_;
     std::vector<TdEdge *> next_;
 
@@ -124,9 +128,6 @@ public:
 private:
     void alloc_input(size_t i);
     void alloc_output(size_t i);
-    TdEdge* ith_in_node(size_t i);
-    TdEdge* ith_out_node(size_t i);
-    TdEdge* ith_out_node(size_t i) const;
 
     std::vector<tiny_dnn::tensor_t *> fwd_in_data;
     std::vector<tiny_dnn::tensor_t *> fwd_out_data;

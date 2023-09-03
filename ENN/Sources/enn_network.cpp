@@ -8,13 +8,13 @@ EnnNetwork::EnnNetwork(QString word, int id,
                        QObject *parent) : QObject(parent)
 {
     dataset = new EnnDataset(word, id);
-    n_minibatch = 64;
     n_train_epochs = ENN_MAX_EPOCH;
     net_state = ENN_NETWORK_NORMAL;
 
     setbuf(stdout,NULL); //to work out printf
 
-    net = new TdNetwork();
+    int batch_size = ENN_BATCH_SIZE;
+    net = new TdNetwork(batch_size);
     parser = new EnnParse(net);
     connect(net, SIGNAL(OnEpochEnumerate()), this, SLOT(epochLog()));
     need_train = load();
@@ -77,7 +77,8 @@ bool EnnNetwork::load()
         }
         else if( net_state==ENN_NETWORK_LOCKED )
         {
-            net = new TdNetwork(); // reset network
+            int batch_size = ENN_BATCH_SIZE;
+            net = new TdNetwork(batch_size); // reset network
             parser->net = net;
             createNNet();
             qDebug() << "Reset from scratch";
@@ -137,7 +138,7 @@ void EnnNetwork::train(float l_rate)
         return;
     }
 
-    optim.alpha = l_rate; // learning rate = 1E-4
+    net->optimizer.alpha = l_rate; // learning rate = 1E-4
     nn_epoch = 0;
 
     std::vector<vec_t> target_cost;
@@ -148,8 +149,7 @@ void EnnNetwork::train(float l_rate)
     net->normalizeTensor(dataset->train_labels, output_tensor);
     net->normalizeTensor(target_cost, t_cost_tensor);
 
-    net->fit(optim, input_tensor, output_tensor,
-                 n_minibatch, n_train_epochs, false,
+    net->fit(input_tensor, output_tensor, n_train_epochs, false,
                  t_cost_tensor);
 
     if( net_state!=ENN_NETWORK_LOCKED )
@@ -180,14 +180,14 @@ void EnnNetwork::epochLog()
 
         qDebug() << nn_epoch << t_elapsed
                  << acc_train.msg << "test" << acc_test.msg << "loss:"
-                 << loss << "alpha" << optim.alpha*1000;
+                 << loss << "alpha" << net->optimizer.alpha*1000;
 
         if( loss<ENN_TARGET_LOSS )
         {
             net->stopOngoingTraining();
         }
 
-        optim.alpha = optim.alpha * 0.95;
+        net->optimizer.alpha = net->optimizer.alpha * 0.95;
         nn_t.restart();
     }
 }
