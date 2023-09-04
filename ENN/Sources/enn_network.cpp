@@ -16,7 +16,7 @@ EnnNetwork::EnnNetwork(QString word, int id,
     int batch_size = ENN_BATCH_SIZE;
     net = new TdNetwork(batch_size);
     parser = new EnnParse(net);
-    connect(net, SIGNAL(OnEpochEnumerate()), this, SLOT(epochLog()));
+    connect(net, SIGNAL(onEpochEnumerate()), this, SLOT(epochLog()));
     need_train = load();
 }
 

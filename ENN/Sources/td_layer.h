@@ -89,7 +89,6 @@ public:
     std::vector<TdLayer *> next_nodes() const;  // @todo refactor and remove this method
     size_t prev_port(const TdEdge &e) const;
     size_t next_port(const TdEdge &e) const;
-    tiny_dnn::vec_t *getData(size_t i);
 
     TdEdge* ith_in_node(size_t i);
     TdEdge* ith_out_node(size_t i);

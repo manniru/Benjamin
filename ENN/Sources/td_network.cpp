@@ -10,7 +10,7 @@ TdNetwork::TdNetwork(int bs, QObject *parent) :
     connect(worker, SIGNAL(onEpochEnumerate()),
             this, SLOT(epochEnumerate()));
     connect(worker, SIGNAL(epochFinished()),
-            this, SLOT());
+            this, SLOT(workerFinished()));
     worker_finished = false;
 }
 
@@ -117,7 +117,7 @@ void TdNetwork::fit(std::vector<tiny_dnn::tensor_t> &inputs,
         nod[i]->setParallelize(true);
     }
     worker_finished = false;
-    worker->fit(inputs, desired_outputs, epoch, t_cost);
+    worker->fit(&inputs, &desired_outputs, epoch, &t_cost);
     while( !worker_finished )
     {
         QThread::msleep(10);

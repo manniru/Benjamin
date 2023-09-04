@@ -137,7 +137,7 @@ void EnnParse::save(QString filename)
         {
             continue;
         }
-        tiny_dnn::vec_t weights = *net->nod[i]->getData(1);
+        tiny_dnn::vec_t weights = net->nod[i]->ith_in_node(1)->data_[0];
         int w_len = weights.size();
         QVector<float> w_f(w_len);
         for( int j=0 ; j<w_len ; j++ )
@@ -146,7 +146,7 @@ void EnnParse::save(QString filename)
         }
         out << w_f;
 
-        tiny_dnn::vec_t bias = *net->nod[i]->getData(2);
+        tiny_dnn::vec_t bias = net->nod[i]->ith_in_node(2)->data_[0];
         int b_len = bias.size();
         QVector<float> b_f(w_len);
         for( int j=0 ; j<b_len ; j++ )
@@ -182,7 +182,7 @@ void EnnParse::load(QString filename)
         {
             continue;
         }
-        tiny_dnn::vec_t *weights = net->nod[i]->getData(1);
+        tiny_dnn::vec_t *weights = &net->nod[i]->ith_in_node(1)->data_[0];
         int w_len = weights->size();
         QVector<float> w_f;
         in >> w_f;
@@ -191,7 +191,7 @@ void EnnParse::load(QString filename)
             (*weights)[j] = w_f[j];
         }
 
-        tiny_dnn::vec_t *bias = net->nod[i]->getData(2);
+        tiny_dnn::vec_t *bias = &net->nod[i]->ith_in_node(2)->data_[0];
         int b_len = bias->size();
         QVector<float> b_f(w_len);
         in >> b_f;

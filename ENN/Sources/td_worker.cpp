@@ -87,18 +87,18 @@ void TdWorker::trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
     emit startMiniWorkers();
 }
 
-void TdWorker::fit(std::vector<tiny_dnn::tensor_t> &inputs,
-        std::vector<tiny_dnn::tensor_t> &desired_outputs,
-        int epoch, std::vector<tiny_dnn::tensor_t> &t_cost)
+void TdWorker::fit(std::vector<tiny_dnn::tensor_t> *inputs,
+        std::vector<tiny_dnn::tensor_t> *desired_outputs,
+        int epoch, std::vector<tiny_dnn::tensor_t> *t_cost)
 {
     stop_training = false;
     optimizer.reset();
 
     iter_cnt = 0;
     total_epoch = epoch;
-    in_vec = &inputs;
-    outputs = &desired_outputs;
-    cost = &t_cost;
+    in_vec = inputs;
+    outputs = desired_outputs;
+    cost = t_cost;
     trainEpoch();
 }
 
@@ -136,6 +136,11 @@ void TdWorker::trainBatch()
 void TdWorker::miniWorkerFinished()
 {
     worker_done++;
+//    qDebug() << worker_done << "worker returned";
+    if( worker_done<runningWorkersNum() )
+    {
+        return;
+    }
     int nod_len = nod->size();
     // update weights
     for( int i=0 ; i<nod_len ; i++ )

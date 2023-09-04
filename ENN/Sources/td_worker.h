@@ -14,10 +14,10 @@ public:
     explicit TdWorker(std::vector<TdLayer *> *nodes,
                       QObject *parent = nullptr);
 
-    void fit(std::vector<tiny_dnn::tensor_t> &inputs,
-                    std::vector<tiny_dnn::tensor_t> &desired_outputs,
+    void fit(std::vector<tiny_dnn::tensor_t> *inputs,
+                    std::vector<tiny_dnn::tensor_t> *desired_outputs,
                     int epoch,
-                    std::vector<tiny_dnn::tensor_t> &t_cost);
+                    std::vector<tiny_dnn::tensor_t> *t_cost);
     void trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
                                tiny_dnn::tensor_t *t,
                                int data_size,

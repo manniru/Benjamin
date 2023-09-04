@@ -111,7 +111,7 @@ std::vector<tiny_dnn::vec_t *> TdLayer::weights()
     {
         if( is_trainable_weight(in_type[i]) )
         {
-            v.push_back(getData(i));
+            v.push_back(&(ith_in_node(i)->data_)[0]);
         }
     }
     return v;
@@ -443,16 +443,21 @@ void TdLayer::initWeight()
     // input/output unit.
     for( size_t i=0 ; i<in_channels ; i++ )
     {
+        if( !prev_[i] )
+        {
+            alloc_input(i);
+        }
         switch( in_type[i] )
         {
         // fill vectors of weight type
         case tiny_dnn::vector_type::weight:
-            weight_init->fill(getData(i), fan_in_size(i),
+            weight_init->fill(&(ith_in_node(i)->data_)[0], fan_in_size(i),
                               fan_out_size(i));
             break;
             // fill vector of bias type
         case tiny_dnn::vector_type::bias:
-            bias_init->fill(getData(i), fan_in_size(i), fan_out_size(i));
+            bias_init->fill(&(ith_in_node(i)->data_)[0], fan_in_size(i),
+                    fan_out_size(i));
             break;
         default: break;
         }
@@ -476,7 +481,7 @@ void TdLayer::updateWeight(tiny_dnn::optimizer *o, int batch_size)
     {
         if( trainable && is_trainable_weight(in_type[i]) )
         {
-            tiny_dnn::vec_t &target = *getData(i);
+            tiny_dnn::vec_t &target = ith_in_node(i)->data_[0];
             ith_in_node(i)->merge_grads(&weights_diff);
             float_t rcp_batch_size =
                     float_t(1.0) / float_t((&ith_in_node(i)->data_)->size());
@@ -496,17 +501,12 @@ void TdLayer::updateWeight(tiny_dnn::optimizer *o, int batch_size)
 
 void TdLayer::set_sample_count(size_t sample_count)
 {
-    // increase the size if necessary - but do not decrease
-    auto resize = [sample_count](tiny_dnn::tensor_t *tensor)
-    {
-        tensor->resize(sample_count, (*tensor)[0]);
-    };
-
     for( size_t i=0 ; i<in_channels ; i++ )
     {
         if( !is_trainable_weight(in_type[i]) )
         {
-            resize(&ith_in_node(i)->data_);
+            ith_in_node(i)->data_.resize(sample_count,
+                        ith_in_node(i)->data_[0]);
         }
         auto def_val = ith_in_node(i)->grad_[0];
         if( ith_in_node(i)->grad_.size()!=sample_count )
@@ -519,7 +519,8 @@ void TdLayer::set_sample_count(size_t sample_count)
     {
         if( !is_trainable_weight(out_type[i]) )
         {
-            resize(&ith_out_node(i)->data_);
+            ith_out_node(i)->data_.resize(sample_count,
+                        ith_out_node(i)->data_[0]);
         }
         auto def_val = ith_out_node(i)->grad_[0];
         ith_out_node(i)->grad_.resize(sample_count, def_val);
@@ -544,10 +545,6 @@ void TdLayer::alloc_output(size_t i)
 TdEdge *TdLayer::ith_in_node(size_t i)
 {
     // in case that the  edge doesn't exist, we create it
-    if( !prev_[i] )
-    {
-        alloc_input(i);
-    }
     return prev_[i];
 }
 
@@ -564,11 +561,6 @@ TdEdge *TdLayer::ith_out_node(size_t i)
 TdEdge *TdLayer::ith_out_node(size_t i) const
 {
     return next_[i];
-}
-
-tiny_dnn::vec_t *TdLayer::getData(size_t i)
-{
-    return &(ith_in_node(i)->data_)[0];
 }
 
 void td_connectLayer(TdLayer *head, TdLayer *tail,
