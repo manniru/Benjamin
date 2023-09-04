@@ -1,5 +1,4 @@
 #include "td_worker.h"
-#include <QGuiApplication>
 
 TdWorker::TdWorker(std::vector<TdLayer *> *nodes,
                    QObject *parent) : QObject(parent)
@@ -30,12 +29,6 @@ void TdWorker::setBatchSize(int bs)
         workers.push_back(new_worker);
         workers_th.push_back(thread);
     }
-}
-
-void TdWorker::miniWorkerFinished()
-{
-    worker_done++;
-//    qDebug() << "worker returned" << worker_done;
 }
 
 /**
@@ -94,38 +87,65 @@ void TdWorker::trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
     emit startMiniWorkers();
 }
 
-void TdWorker::trainEpoch(std::vector<tiny_dnn::tensor_t> &inputs,
-                    std::vector<tiny_dnn::tensor_t> &desired_outputs,
-                    int epoch, std::vector<tiny_dnn::tensor_t> &t_cost)
+void TdWorker::fit(std::vector<tiny_dnn::tensor_t> &inputs,
+        std::vector<tiny_dnn::tensor_t> &desired_outputs,
+        int epoch, std::vector<tiny_dnn::tensor_t> &t_cost)
 {
     stop_training = false;
-    int len_input = inputs.size();
     optimizer.reset();
 
-    for( int iter=0 ; iter<epoch && !stop_training ; iter++ )
+    iter_cnt = 0;
+    total_epoch = epoch;
+    in_vec = &inputs;
+    outputs = &desired_outputs;
+    cost = &t_cost;
+    trainEpoch();
+}
+
+void TdWorker::trainEpoch()
+{
+    if( iter_cnt<total_epoch && !stop_training )
     {
-        for( int i=0 ; i<len_input && !stop_training ;
-             i+=batch_size )
-        {
-            int min_size = std::min((size_t)batch_size,
-                                    inputs.size() - i);
-            trainMiniBatch(inputs, &desired_outputs[i],
-                       min_size, &(t_cost[i]), i);
-            while( worker_done<runningWorkersNum() )
-            {
-                QThread::msleep(10);
-                QGuiApplication::processEvents();
-            }
-            int nod_len = nod->size();
-            // update weights
-            for( int i=0 ; i<nod_len ; i++ )
-            {
-                (*nod)[i]->updateWeight(&optimizer, worker_len);
-            }
-        }
-        emit OnEpochEnumerate();
+        batch_cnt = 0;
+        trainBatch();
+    }
+    else
+    {
+        emit epochFinished();
     }
 }
+
+void TdWorker::trainBatch()
+{
+    int len_input = in_vec->size();
+    if( batch_cnt<len_input && !stop_training )
+    {
+        int min_size = std::min((size_t)batch_size,
+                                in_vec->size() - batch_cnt);
+        trainMiniBatch(*in_vec, &(*outputs)[batch_cnt],
+                   min_size, &((*cost)[batch_cnt]), batch_cnt);
+    }
+    else
+    {
+        emit onEpochEnumerate();
+        iter_cnt++;
+        trainEpoch();
+    }
+}
+
+void TdWorker::miniWorkerFinished()
+{
+    worker_done++;
+    int nod_len = nod->size();
+    // update weights
+    for( int i=0 ; i<nod_len ; i++ )
+    {
+        (*nod)[i]->updateWeight(&optimizer, worker_len);
+    }
+    batch_cnt += batch_size;
+    trainBatch();
+}
+
 
 int TdWorker::runningWorkersNum()
 {

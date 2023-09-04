@@ -78,10 +78,11 @@ public:
 
 signals:
     void trainFinished();
-    void OnEpochEnumerate();
+    void onEpochEnumerate();
 
 public slots:
     void epochEnumerate();
+    void workerFinished();
 
 private:
     void checkTargetCostMatrix(const std::vector<tiny_dnn::tensor_t> &t,
@@ -95,6 +96,7 @@ private:
     void setup(bool reset_weight);
 
     int batch_size;
+    int worker_finished;
 };
 
 #endif // TD_NETWORK_H

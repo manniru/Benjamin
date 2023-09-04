@@ -7,8 +7,11 @@ TdNetwork::TdNetwork(int bs, QObject *parent) :
     worker->stop_training = false;
     setBatchSize(bs);
 
-    connect(worker, SIGNAL(OnEpochEnumerate()),
+    connect(worker, SIGNAL(onEpochEnumerate()),
             this, SLOT(epochEnumerate()));
+    connect(worker, SIGNAL(epochFinished()),
+            this, SLOT());
+    worker_finished = false;
 }
 
 void TdNetwork::initWeightBias()
@@ -31,7 +34,12 @@ void TdNetwork::stopOngoingTraining()
 
 void TdNetwork::epochEnumerate()
 {
-    emit OnEpochEnumerate();
+    emit onEpochEnumerate();
+}
+
+void TdNetwork::workerFinished()
+{
+    worker_finished = true;
 }
 
 size_t TdNetwork::layerSize()
@@ -108,8 +116,13 @@ void TdNetwork::fit(std::vector<tiny_dnn::tensor_t> &inputs,
     {
         nod[i]->setParallelize(true);
     }
-
-    worker->trainEpoch(inputs, desired_outputs, epoch, t_cost);
+    worker_finished = false;
+    worker->fit(inputs, desired_outputs, epoch, t_cost);
+    while( !worker_finished )
+    {
+        QThread::msleep(10);
+        QGuiApplication::processEvents();
+    }
 }
 
 void TdNetwork::setBatchSize(int bs)

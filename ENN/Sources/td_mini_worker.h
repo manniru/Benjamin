@@ -6,7 +6,7 @@
 #include "td_nodes.h"
 #include "tiny_dnn/lossfunctions/loss_function.h"
 
-#define TD_THREAD_NUM 16
+#define TD_THREAD_NUM 8
 
 // Helper Class for Parallelization
 class TdMiniWorker : public QObject

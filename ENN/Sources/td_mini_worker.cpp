@@ -27,23 +27,18 @@ void TdMiniWorker::run()
 
     int nod_len = nod->size();
     std::vector<tiny_dnn::tensor_t> o_batch;
-//    qDebug() << "forward" << s_index << e_index;
     o_batch = forward();
     // back propagation
     std::vector<tiny_dnn::tensor_t> delta;
-//    qDebug() << "gradient" << s_index << e_index;
     delta = tiny_dnn::gradient<tiny_dnn::mse>(o_batch, *t_batch,
               *t_cost_batch, s_index, e_index);
     // backward
-//    qDebug() << "setOutGrads" << s_index << e_index;
     nod->back()->setOutGrads(delta, s_index, e_index);
 
-//    qDebug() << "backward" << s_index << e_index;
     for( int j=nod_len ; j>0 ; j-- )
     {
         (*nod)[j-1]->backward(s_index, e_index);
     }
-//    qDebug() << "finished" << s_index << e_index;
     emit finished();
 }
 
