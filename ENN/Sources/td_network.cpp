@@ -174,6 +174,7 @@ void TdNetwork::fit(std::vector<tiny_dnn::tensor_t> &inputs,
     optimizer.reset();
     stop_training = false;
     int len_input = inputs.size();
+
     for( int iter=0 ; iter<epoch && !stop_training ; iter++ )
     {
         for( int i=0 ; i<len_input && !stop_training ;

@@ -86,7 +86,8 @@ private:
                         const tiny_dnn::vec_t &W,
                         const tiny_dnn::vec_t &bias,
                         tiny_dnn::tensor_t &out_data,
-                        const tiny_dnn::core::conv_params &params);
+                        const tiny_dnn::core::conv_params &params,
+                        int s_index, int e_index);
 
     void op_forward(const tiny_dnn::tensor_t &in_data,
                     const tiny_dnn::vec_t &W,
@@ -111,7 +112,8 @@ private:
                          tiny_dnn::tensor_t &db,
                          tiny_dnn::tensor_t &curr_delta,
                          tiny_dnn::tensor_t &prev_delta,
-                         const tiny_dnn::core::conv_params &params);
+                         const tiny_dnn::core::conv_params &params,
+                         int s_index, int e_index);
 
     template <typename Allocator>
     void avx_accumulate_db(const tiny_dnn::index3d<size_t> &out,

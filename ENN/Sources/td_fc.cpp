@@ -45,7 +45,8 @@ void TdFC::avx_op_forward(
         const std::vector<float, Allocator> &W,
         const std::vector<float, Allocator> &bias,
         std::vector<std::vector<float, Allocator>> &out_data,
-        const tiny_dnn::core::fully_params &params)
+        const tiny_dnn::core::fully_params &params,
+        int s_index, int e_index)
 {
     size_t nblocks  = params.out_size_ / 8;
     size_t nremains = params.out_size_ & 7;
@@ -58,7 +59,8 @@ void TdFC::avx_op_forward(
         __m256i imask =
                 _mm256_loadu_si256((__m256i const *)
                                    (mask_src + 8 - nremains));
-        tiny_dnn::for_i(parallelized, in_data.size(), [&](size_t sample)
+//        tiny_dnn::for_i(parallelized, in_data.size(), [&](size_t sample)
+        for( int sample=s_index ; sample<e_index ; sample++ )
         {
             const auto &in = in_data[sample];
             auto &out      = out_data[sample];
@@ -100,11 +102,12 @@ void TdFC::avx_op_forward(
                 sum = madd256_ps(w, in_val, sum);
                 _mm256_maskstore_ps(&out[8 * nblocks], imask, sum);
             }
-        });
+        }
     }
     else
     {
-        tiny_dnn::for_i(parallelized, in_data.size(), [&](size_t sample)
+//        tiny_dnn::for_i(parallelized, in_data.size(), [&](size_t sample)
+        for( int sample=s_index ; sample<e_index ; sample++ )
         {
             const auto &in = in_data[sample];
             auto &out      = out_data[sample];
@@ -125,7 +128,7 @@ void TdFC::avx_op_forward(
                     _mm256_storeu_ps(&out[8 * i], sum);
                 }
             }
-        });
+        }
     }
 }
 
@@ -137,9 +140,10 @@ void TdFC::avx_op_backward(
         std::vector<std::vector<float, Allocator>> &db,
         std::vector<std::vector<float, Allocator>> &curr_delta,
         std::vector<std::vector<float, Allocator>> &prev_delta,
-        const tiny_dnn::core::fully_params &params)
+        const tiny_dnn::core::fully_params &params, int s_index,
+        int e_index)
 {
-    for( size_t sample=0 ; sample<prev_out.size() ; sample++ )
+    for( int sample=s_index ; sample<e_index ; sample++ )
     {
         auto &prev_delta2 = prev_delta[sample];
         auto &curr_delta2 = curr_delta[sample];
@@ -297,7 +301,7 @@ void TdFC::back_propagation(
 
 #ifdef CNN_USE_AVX
     avx_op_backward( prev_out, W[0], dW, db, curr_delta,
-            prev_delta, params);
+            prev_delta, params, s_index, e_index);
 #else
     op_backward(prev_out, W[0], dW, db, curr_delta,
             prev_delta, params, s_index, e_index);

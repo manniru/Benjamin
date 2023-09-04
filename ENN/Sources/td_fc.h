@@ -48,7 +48,8 @@ public:
             const std::vector<float, Allocator> &W,
             const std::vector<float, Allocator> &bias,
             std::vector<std::vector<float, Allocator> > &out_data,
-            const tiny_dnn::core::fully_params &params);
+            const tiny_dnn::core::fully_params &params, int s_index,
+            int e_index);
     template <typename Allocator>
     void avx_op_backward(
             const std::vector<std::vector<float, Allocator>> &prev_out,
@@ -57,7 +58,8 @@ public:
             std::vector<std::vector<float, Allocator>> &db,
             std::vector<std::vector<float, Allocator>> &curr_delta,
             std::vector<std::vector<float, Allocator>> &prev_delta,
-            const tiny_dnn::core::fully_params &params);
+            const tiny_dnn::core::fully_params &params, int s_index,
+            int e_index);
     void op_forward(const tiny_dnn::tensor_t &in_data,
                     const tiny_dnn::vec_t &W,
                     const tiny_dnn::vec_t &bias,

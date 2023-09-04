@@ -320,7 +320,7 @@ void TdConvolution::back_propagation(
 
 #ifdef CNN_USE_AVX
     avx_op_backward(prev_out, W[0], dW, db,
-            curr_delta, prev_delta, params);
+            curr_delta, prev_delta, params, s_index, e_index);
 #else
     op_backward(prev_out, W[0], dW,
             db, curr_delta, prev_delta, params, s_index, e_index);
@@ -764,20 +764,22 @@ void TdConvolution::avx_op_forward(const tiny_dnn::tensor_t &in_data,
                                    const tiny_dnn::vec_t &W,
                                    const tiny_dnn::vec_t &bias,
                                    tiny_dnn::tensor_t &out_data,
-                                   const tiny_dnn::core::conv_params &params)
+                                   const tiny_dnn::core::conv_params &params,
+                                   int s_index, int e_index)
 {
-    int parallelized = true;
+//    int parallelized = true;
     if( params.weight.height_==5 && params.weight.width_==5 )
     {
         // @todo consider better parallelization
-        tiny_dnn::for_i( parallelized, in_data.size(), [&](size_t i)
+//        tiny_dnn::for_i( parallelized, in_data.size(), [&](size_t i)
+        for( int i=s_index ; i<e_index ; i++ )
         {
             avx_5x5_forward_kernel(params, in_data[i], W, bias,
                                    out_data[i]);
-        });
+        }
         return;
     }
-    op_forward(in_data, W, bias, out_data, params);
+    op_forward(in_data, W, bias, out_data, params, s_index, e_index);
 }
 
 // float ver
@@ -1701,20 +1703,23 @@ void TdConvolution::avx_op_backward(const tiny_dnn::tensor_t &prev_out,
                                     tiny_dnn::tensor_t &db,
                                     tiny_dnn::tensor_t &curr_delta,
                                     tiny_dnn::tensor_t &prev_delta,
-                                    const tiny_dnn::core::conv_params &params)
+                                    const tiny_dnn::core::conv_params &params,
+                                    int s_index, int e_index)
 {
     if( params.weight.height_==5 && params.weight.width_==5 )
     {
-        int parallelized = true;
-        tiny_dnn::for_i(parallelized, prev_out.size(), [&](size_t sample)
+//        int parallelized = true;
+//        tiny_dnn::for_i(parallelized, prev_out.size(), [&](size_t sample)
+        for( int sample=s_index ; sample<e_index ; sample++ )
         {
             avx_5x5_backward_kernel(params, prev_out[sample], W,
                                     dW[sample], db[sample],
                                     curr_delta[sample],
                                     &prev_delta[sample]);
-        });
+        }
         return;
     }
-    op_backward(prev_out, W, dW, db, curr_delta, prev_delta, params);
+    op_backward(prev_out, W, dW, db, curr_delta, prev_delta, params,
+                s_index, e_index);
 }
 #endif
