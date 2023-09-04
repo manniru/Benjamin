@@ -77,7 +77,6 @@ public:
                                   std::vector<tiny_dnn::tensor_t *> &in_grad,
                                   int s_index, int e_index) = 0;
     virtual void post_update();
-    virtual void set_context(tiny_dnn::net_phase ctx);
     void forward(int s_index, int e_index);
     void backward(int s_index, int e_index);
     void setup(bool reset_weight);

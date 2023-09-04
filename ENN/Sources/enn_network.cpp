@@ -138,7 +138,7 @@ void EnnNetwork::train(float l_rate)
         return;
     }
 
-    net->optimizer.alpha = l_rate; // learning rate = 1E-4
+    net->worker->optimizer.alpha = l_rate; // learning rate = 1E-4
     nn_epoch = 0;
 
     std::vector<vec_t> target_cost;
@@ -180,14 +180,15 @@ void EnnNetwork::epochLog()
 
         qDebug() << nn_epoch << t_elapsed
                  << acc_train.msg << "test" << acc_test.msg << "loss:"
-                 << loss << "alpha" << net->optimizer.alpha*1000;
+                 << loss << "alpha"
+                 << net->worker->optimizer.alpha*1000;
 
         if( loss<ENN_TARGET_LOSS )
         {
             net->stopOngoingTraining();
         }
 
-        net->optimizer.alpha = net->optimizer.alpha * 0.95;
+        net->worker->optimizer.alpha *= 0.95;
         nn_t.restart();
     }
 }

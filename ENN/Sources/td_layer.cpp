@@ -308,14 +308,6 @@ void TdLayer::post_update()
 
 }
 
-/**
- * notify changing context (train <=> test)
- **/
-void TdLayer::set_context(tiny_dnn::net_phase ctx)
-{
-    CNN_UNREFERENCED_PARAMETER(ctx);
-}
-
 /* @brief The purpose of this method is to forward the data from the
  * computational graph to the layer interface.
  *

@@ -47,6 +47,7 @@ HEADERS += \
     Sources/td_fc.h \
     Sources/td_layer.h \
     Sources/td_leaky_relu.h \
+    Sources/td_mini_worker.h \
     Sources/td_network.h \
     Sources/td_nodes.h \
     Sources/td_softmax.h \
@@ -68,6 +69,7 @@ SOURCES += \
     Sources/td_fc.cpp \
     Sources/td_layer.cpp \
     Sources/td_leaky_relu.cpp \
+    Sources/td_mini_worker.cpp \
     Sources/td_network.cpp \
     Sources/td_nodes.cpp \
     Sources/td_softmax.cpp \
