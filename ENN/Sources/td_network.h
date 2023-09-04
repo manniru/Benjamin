@@ -20,10 +20,8 @@
 #include <QString>
 #include <QDebug>
 #include <type_traits>
-#include <QThread>
 
 #include "td_nodes.h"
-#include "tiny_dnn/optimizers/optimizer.h"
 #include "tiny_dnn/util/util.h"
 #include "td_fc.h"
 #include "td_convolution.h"
@@ -41,7 +39,6 @@ public:
 
     void initWeightBias();
 
-    void setNetPhase(tiny_dnn::net_phase phase);
     void stopOngoingTraining();
     size_t layerSize();
     size_t depth();
@@ -76,25 +73,17 @@ public:
     tiny_dnn::vec_t predict(tiny_dnn::vec_t &first);
     void setBatchSize(int bs);
 
-    int stop_training;
-    tiny_dnn::adagrad       optimizer;
-    QVector<QThread *>      workers_th;
-    QVector<TdWorker *>     workers;
     std::vector<TdLayer *>  nod;
+    TdWorker *worker;
 
 signals:
-    void onBatchEnumerate();
-    void OnEpochEnumerate();
-    void startWorkers();
     void trainFinished();
+    void OnEpochEnumerate();
 
 public slots:
-    void workerFinished();
+    void epochEnumerate();
 
 private:
-    void trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
-                    tiny_dnn::tensor_t *t, int data_size,
-                    tiny_dnn::tensor_t *t_cost, int offset);
     void checkTargetCostMatrix(const std::vector<tiny_dnn::tensor_t> &t,
                                const std::vector<tiny_dnn::tensor_t> &t_cost);
     void checkTargetCostElement(const tiny_dnn::vec_t &t,
@@ -104,14 +93,8 @@ private:
     void label2vec(const tiny_dnn::label_t *t, size_t num,
                                 std::vector<tiny_dnn::vec_t> &vec);
     void setup(bool reset_weight);
-    int runningWorkersNum();
 
-    std::vector<tiny_dnn::tensor_t> t_cost_batch;
-    std::vector<tiny_dnn::tensor_t> t_batch;
     int batch_size;
-    int worker_len;
-    int worker_done;
-
 };
 
 #endif // TD_NETWORK_H
