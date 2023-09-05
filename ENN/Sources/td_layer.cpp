@@ -4,8 +4,8 @@
 TdLayer::TdLayer(std::vector<tiny_dnn::vector_type> in_t,
                  std::vector<tiny_dnn::vector_type> out_t)
 {
-    prev_.resize(in_t.size());
-    next_.resize(out_t.size());
+    in_edges.resize(in_t.size());
+    out_edges.resize(out_t.size());
     initialized = false;
     parallelized = true;
 
@@ -111,7 +111,7 @@ std::vector<tiny_dnn::vec_t *> TdLayer::weights()
     {
         if( is_trainable_weight(in_type[i]) )
         {
-            v.push_back(&(ith_in_node(i)->data_)[0]);
+            v.push_back(&(in_edges[i]->data_)[0]);
         }
     }
     return v;
@@ -124,40 +124,10 @@ std::vector<tiny_dnn::tensor_t *> TdLayer::weightsGrads()
     {
         if( is_trainable_weight(in_type[i]) )
         {
-            v.push_back(&(ith_in_node(i)->grad_));
+            v.push_back(&(in_edges[i]->grad_));
         }
     }
     return v;
-}
-
-std::vector<TdEdge *> TdLayer::inputs()
-{
-    std::vector<TdEdge *> nodes(in_channels);
-    for( size_t i=0 ; i<in_channels ; i++ )
-    {
-        nodes[i] = ith_in_node(i);
-    }
-    return nodes;
-}
-
-std::vector<TdEdge *> TdLayer::outputs()
-{
-    std::vector<TdEdge *> nodes(out_channels);
-    for( size_t i=0 ; i<out_channels ; i++ )
-    {
-        nodes[i] = ith_out_node(i);
-    }
-    return nodes;
-}
-
-std::vector<TdEdge *> TdLayer::outputs() const
-{
-    std::vector<TdEdge *> nodes(out_channels);
-    for( size_t i=0 ; i<out_channels ; i++ )
-    {
-        nodes[i] = const_cast<TdLayer *>(this)->ith_out_node(i);
-    }
-    return nodes;
 }
 
 void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
@@ -169,7 +139,7 @@ void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
         {
             continue;
         }
-        tiny_dnn::tensor_t &dst_grad = ith_out_node(ch)->grad_;
+        tiny_dnn::tensor_t &dst_grad = out_edges[ch]->grad_;
         for( int i=s_index ; i<e_index ; i++ )
         {
             dst_grad[i] = grad[i][ch];
@@ -186,8 +156,8 @@ void TdLayer::setInData(const std::vector<tiny_dnn::tensor_t> &data,
         {
             continue;
         }
-        tiny_dnn::tensor_t &dst_data = ith_in_node(ch)->data_;
-        size_t in_size     = ith_in_node(ch)->shape_.size();
+        tiny_dnn::tensor_t &dst_data = in_edges[ch]->data_;
+        size_t in_size     = in_edges[ch]->shape_.size();
         dst_data.resize(batch_size);
 
         for( int i=offset ; i<(offset+batch_size) ; i++ )
@@ -206,8 +176,8 @@ void TdLayer::setInData(const std::vector<tiny_dnn::tensor_t> &data,
 void TdLayer::setInData(tiny_dnn::vec_t &data)
 {
     // 0 -> ch
-    tiny_dnn::tensor_t &dst_data = ith_in_node(0)->data_;
-    size_t in_size     = ith_in_node(0)->shape_.size();
+    tiny_dnn::tensor_t &dst_data = in_edges[0]->data_;
+    size_t in_size     = in_edges[0]->shape_.size();
     size_t sample_size = 1;
     dst_data.resize(sample_size);
 
@@ -227,7 +197,7 @@ void TdLayer::output(std::vector<const tiny_dnn::tensor_t *> &out) const
     {
         if( out_type[i]==tiny_dnn::vector_type::data )
         {
-            out.push_back(&ith_out_node(i)->data_);
+            out.push_back(&out_edges[i]->data_);
         }
     }
 }
@@ -335,7 +305,7 @@ void TdLayer::forward(int s_index, int e_index)
     // done yet.
     for( size_t i=0 ; i<in_channels ; i++ )
     {
-        fwd_in_data[i] = &ith_in_node(i)->data_;
+        fwd_in_data[i] = &in_edges[i]->data_;
     }
 
     // Internally ith_out_node() will create a connection/edge to the
@@ -344,8 +314,8 @@ void TdLayer::forward(int s_index, int e_index)
     // values.
     for( size_t i=0 ; i<out_channels ; i++ )
     {
-        fwd_out_data[i] = &ith_out_node(i)->data_;
-        ith_out_node(i)->clear_grads(s_index, e_index);
+        fwd_out_data[i] = &out_edges[i]->data_;
+        out_edges[i]->clear_grads(s_index, e_index);
     }
 
     // call the forward computation kernel/routine
@@ -357,13 +327,13 @@ void TdLayer::backward(int s_index, int e_index)
     // organize input/output vectors from storage
     for( size_t i = 0; i < in_channels; i++ )
     {
-        const auto &nd = ith_in_node(i);
+        const auto &nd = in_edges[i];
         bwd_in_data[i] = &nd->data_;
         bwd_in_grad[i] = &(nd->grad_);
     }
     for( size_t i = 0; i < out_channels; i++ )
     {
-        const auto &nd  = ith_out_node(i);
+        const auto &nd  = out_edges[i];
         bwd_out_data[i] = &nd->data_;
         bwd_out_grad[i] = &(nd->grad_);
     }
@@ -400,11 +370,11 @@ void TdLayer::setup(bool reset_weight)
     // memory allocation.
     for( size_t i=0 ; i<out_channels ; i++ )
     {
-        if( !next_[i] )
+        if( !out_edges[i] )
         {
             // connection edge doesn't exist, so we proceed to allocate the
             // necessary memory.
-            next_[i] = new TdEdge(this, out_shape()[i],
+            out_edges[i] = new TdEdge(this, out_shape()[i],
                                   out_type[i]);
         }
     }
@@ -443,7 +413,7 @@ void TdLayer::initWeight()
     // input/output unit.
     for( size_t i=0 ; i<in_channels ; i++ )
     {
-        if( !prev_[i] )
+        if( !in_edges[i] )
         {
             alloc_input(i);
         }
@@ -451,12 +421,12 @@ void TdLayer::initWeight()
         {
         // fill vectors of weight type
         case tiny_dnn::vector_type::weight:
-            weight_init->fill(&(ith_in_node(i)->data_)[0], fan_in_size(i),
+            weight_init->fill(&(in_edges[i]->data_)[0], fan_in_size(i),
                               fan_out_size(i));
             break;
             // fill vector of bias type
         case tiny_dnn::vector_type::bias:
-            bias_init->fill(&(ith_in_node(i)->data_)[0], fan_in_size(i),
+            bias_init->fill(&(in_edges[i]->data_)[0], fan_in_size(i),
                     fan_out_size(i));
             break;
         default: break;
@@ -471,7 +441,7 @@ void TdLayer::clearGrads(int batch_size)
 {
     for( size_t i=0 ; i<in_type.size() ; i++ )
     {
-        ith_in_node(i)->clear_grads(0, batch_size);
+        in_edges[i]->clear_grads(0, batch_size);
     }
 }
 
@@ -481,10 +451,10 @@ void TdLayer::updateWeight(tiny_dnn::optimizer *o, int batch_size)
     {
         if( trainable && is_trainable_weight(in_type[i]) )
         {
-            tiny_dnn::vec_t &target = ith_in_node(i)->data_[0];
-            ith_in_node(i)->merge_grads(&weights_diff);
+            tiny_dnn::vec_t &target = in_edges[i]->data_[0];
+            in_edges[i]->merge_grads(&weights_diff);
             float_t rcp_batch_size =
-                    float_t(1.0) / float_t((&ith_in_node(i)->data_)->size());
+                    float_t(1.0) / float_t((&in_edges[i]->data_)->size());
             for( size_t j=0 ; j<weights_diff.size() ; ++j )
             {
                 weights_diff[j] *= rcp_batch_size;
@@ -505,13 +475,13 @@ void TdLayer::set_sample_count(size_t sample_count)
     {
         if( !is_trainable_weight(in_type[i]) )
         {
-            ith_in_node(i)->data_.resize(sample_count,
-                        ith_in_node(i)->data_[0]);
+            in_edges[i]->data_.resize(sample_count,
+                        in_edges[i]->data_[0]);
         }
-        auto def_val = ith_in_node(i)->grad_[0];
-        if( ith_in_node(i)->grad_.size()!=sample_count )
+        auto def_val = in_edges[i]->grad_[0];
+        if( in_edges[i]->grad_.size()!=sample_count )
         {
-            ith_in_node(i)->grad_.resize(sample_count, def_val);
+            in_edges[i]->grad_.resize(sample_count, def_val);
         }
     }
 
@@ -519,11 +489,11 @@ void TdLayer::set_sample_count(size_t sample_count)
     {
         if( !is_trainable_weight(out_type[i]) )
         {
-            ith_out_node(i)->data_.resize(sample_count,
-                        ith_out_node(i)->data_[0]);
+            out_edges[i]->data_.resize(sample_count,
+                        out_edges[i]->data_[0]);
         }
-        auto def_val = ith_out_node(i)->grad_[0];
-        ith_out_node(i)->grad_.resize(sample_count, def_val);
+        auto def_val = out_edges[i]->grad_[0];
+        out_edges[i]->grad_.resize(sample_count, def_val);
 
     }
 }
@@ -532,35 +502,14 @@ void TdLayer::alloc_input(size_t i)
 {
     // the created incoming edge won't have a previous connection,
     // for this reason first parameter is a nullptr.
-    prev_[i] = new TdEdge(nullptr, in_shape()[i], in_type[i]);
+    in_edges[i] = new TdEdge(nullptr, in_shape()[i], in_type[i]);
 }
 
 void TdLayer::alloc_output(size_t i)
 {
     // the created outcoming will have the current layer as the
     // previous node.
-    next_[i] = new TdEdge(this, out_shape()[i], out_type[i]);
-}
-
-TdEdge *TdLayer::ith_in_node(size_t i)
-{
-    // in case that the  edge doesn't exist, we create it
-    return prev_[i];
-}
-
-TdEdge *TdLayer::ith_out_node(size_t i)
-{
-    // in case that the  edge doesn't exist, we create it
-    if( !next_[i] )
-    {
-        alloc_output(i);
-    }
-    return next_[i];
-}
-
-TdEdge *TdLayer::ith_out_node(size_t i) const
-{
-    return next_[i];
+    out_edges[i] = new TdEdge(this, out_shape()[i], out_type[i]);
 }
 
 void td_connectLayer(TdLayer *head, TdLayer *tail,
@@ -582,14 +531,14 @@ void td_connectLayer(TdLayer *head, TdLayer *tail,
         //    connection_mismatch(*head, *tail);
     }
 
-    if( !head->next_[head_index] )
+    if( !head->out_edges[head_index] )
     {
         qDebug() << "output edge must not be null";
         exit(0);
     }
 
-    tail->prev_[tail_index] = head->next_[head_index];
-    tail->prev_[tail_index]->add_next_node(tail);
+    tail->in_edges[tail_index] = head->out_edges[head_index];
+    tail->in_edges[tail_index]->add_next_node(tail);
 }
 
 void data_mismatch(TdLayer *layer, const tiny_dnn::vec_t &data)
@@ -610,12 +559,12 @@ void TdLayer::for_i(T size, Func f, size_t grainsize)
 std::vector<TdLayer *> TdLayer::prev_nodes() const
 {
     std::vector<TdLayer *> vecs;
-    int len = prev_.size();
+    int len = in_edges.size();
     for( int i=0 ; i<len ; i++ )
     {
-        if( prev_[i] && prev_[i]->prev_ )
+        if( in_edges[i] && in_edges[i]->prev_ )
         {
-            vecs.push_back(prev_[i]->prev_);
+            vecs.push_back(in_edges[i]->prev_);
         }
     }
     return vecs;
@@ -624,12 +573,12 @@ std::vector<TdLayer *> TdLayer::prev_nodes() const
 std::vector<TdLayer *> TdLayer::next_nodes() const
 {
     std::vector<TdLayer *> vecs;
-    int len = next_.size();
+    int len = out_edges.size();
     for( int i=0 ; i<len ; i++ )
     {
-        if( next_[i] )
+        if( out_edges[i] )
         {
-            std::vector<TdLayer *> n = next_[i]->next_;
+            std::vector<TdLayer *> n = out_edges[i]->next_;
             vecs.insert(vecs.end(), n.begin(), n.end());
         }
     }
@@ -638,16 +587,16 @@ std::vector<TdLayer *> TdLayer::next_nodes() const
 
 size_t TdLayer::prev_port(const TdEdge &e) const
 {
-    auto it = std::find_if(prev_.begin(), prev_.end(),
+    auto it = std::find_if(in_edges.begin(), in_edges.end(),
                             [&](TdEdge *ep)
                             { return ep == &e; });
-    return (size_t)std::distance(prev_.begin(), it);
+    return (size_t)std::distance(in_edges.begin(), it);
 }
 
 size_t TdLayer::next_port(const TdEdge &e) const
 {
-    auto it = std::find_if(next_.begin(), next_.end(),
+    auto it = std::find_if(out_edges.begin(), out_edges.end(),
                            [&](TdEdge *ep)
                            { return ep == &e; });
-    return (size_t)std::distance(next_.begin(), it);
+    return (size_t)std::distance(out_edges.begin(), it);
 }

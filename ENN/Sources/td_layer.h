@@ -46,9 +46,6 @@ public:
     size_t outSize() const;
     std::vector<tiny_dnn::vec_t *> weights();
     std::vector<tiny_dnn::tensor_t *> weightsGrads();
-    std::vector<TdEdge *> inputs();
-    std::vector<TdEdge *> outputs();
-    std::vector<TdEdge *> outputs() const;
     void setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
                      int s_index, int e_index);
     void setInData(const std::vector<tiny_dnn::tensor_t> &data, int batch_size, int offset);
@@ -90,12 +87,8 @@ public:
     size_t prev_port(const TdEdge &e) const;
     size_t next_port(const TdEdge &e) const;
 
-    TdEdge* ith_in_node(size_t i);
-    TdEdge* ith_out_node(size_t i);
-    TdEdge* ith_out_node(size_t i) const;
-
-    std::vector<TdEdge *> prev_;
-    std::vector<TdEdge *> next_;
+    std::vector<TdEdge *> in_edges;
+    std::vector<TdEdge *> out_edges;
 
     template <typename T, typename Func>
     inline void for_i(T size, Func f, size_t grainsize = 100);

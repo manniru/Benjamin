@@ -48,12 +48,13 @@ void td_isSizeMatch(std::vector<TdLayer *> *nod)
     int len = nod->size();
     for( int i=0; i<len-1 ; i++ )
     {
-        auto out = (*nod)[i]->outputs();
-        auto in  = (*nod)[i+1]->inputs();
+        TdEdge *out = (*nod)[i]->out_edges[0];
+        TdEdge *in  = (*nod)[i+1]->in_edges[0];
 
-        if( out[0]!=in[0] )
+        if( out!=in )
         {
-            qDebug() << "ERROR TINY: in!=out";
+            qDebug() << "ERROR 44: size mismatch"
+                     << out->shape_ << in->shape_;
             exit(0);
         }
     }
@@ -66,8 +67,6 @@ void td_connectHeadToTail(std::vector<TdLayer *> *nod)
         TdLayer *head = (*nod)[nod->size() - 2];
         TdLayer *tail = (*nod)[nod->size() - 1];
         td_connectLayer(head, tail, 0, 0);
-        auto out = head->outputs();
-        auto in  = tail->inputs();
     }
     td_isSizeMatch(nod);
 }

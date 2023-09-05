@@ -55,7 +55,7 @@ void TdWorker::trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
         int ch_len = (*nod)[i]->out_channels;
         for(int j=0 ; j<ch_len ; j++ )
         {
-            tiny_dnn::tensor_t &dst_grad = (*nod)[i]->ith_out_node(j)->grad_;
+            tiny_dnn::tensor_t &dst_grad = (*nod)[i]->out_edges[j]->grad_;
             dst_grad.resize(data_size);
         }
     }
