@@ -40,16 +40,6 @@ public:
     void initWeightBias();
 
     void stopOngoingTraining();
-    size_t layerSize();
-    size_t depth();
-    size_t outDataSize();
-    size_t inDataSize();
-    void load(const std::string &filename);
-    void save(const std::string &filename) const;
-    template <typename OutputArchive>
-    void toArchive(OutputArchive &ar) const;
-    template <typename InputArchive>
-    void fromArchive(InputArchive &ar);
     void fit(std::vector<tiny_dnn::tensor_t> &inputs,
              std::vector<tiny_dnn::tensor_t> &desired_outputs,
              int epoch, bool reset_weights,

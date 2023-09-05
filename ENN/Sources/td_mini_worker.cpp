@@ -52,7 +52,9 @@ std::vector<tiny_dnn::tensor_t> TdMiniWorker::forward()
     }
 
     std::vector<const tiny_dnn::tensor_t *> out;
-    nod->back()->output(out);
+    TdLayer *back = nod->back();
+    /// FIXME: if out_type[i]==tiny_dnn::vector_type::data
+    out.push_back(&back->out_edges->data_);
 
     return td_normalizeOut(out);
 }

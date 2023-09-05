@@ -28,31 +28,18 @@ class TdEdge;
 class TdLayer
 {
 public:
-    explicit TdLayer(std::vector<tiny_dnn::vector_type> in_type,
-                     std::vector<tiny_dnn::vector_type> out_type);
+    explicit TdLayer(std::vector<tiny_dnn::vector_type> in_type);
     virtual ~TdLayer() = default;
 
     void setParallelize(bool parallelize);
-    friend void connection_mismatch(const TdLayer &from, const TdLayer &to);
     virtual std::string kernel_file() const;
     virtual std::string kernel_header() const;
-    size_t inChannels() const;
-    size_t outChannels() const;
     size_t inDataSize() const;
     size_t outDataSize() const;
-    std::vector<tiny_dnn::shape3d> inDataShape();
-    std::vector<tiny_dnn::shape3d> outDataShape();
-    size_t inSize() const;
-    size_t outSize() const;
-    std::vector<tiny_dnn::vec_t *> weights();
-    std::vector<tiny_dnn::tensor_t *> weightsGrads();
     void setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
                      int s_index, int e_index);
     void setInData(const std::vector<tiny_dnn::tensor_t> &data, int batch_size, int offset);
     void setInData(tiny_dnn::vec_t &data);
-    void output(std::vector<const tiny_dnn::tensor_t *> &out) const;
-    std::vector<tiny_dnn::vector_type> getInTypes() const;
-    std::vector<tiny_dnn::vector_type> getOutTypes() const;
     void setTrainable(bool tr);
 
     virtual std::pair<float_t, float_t> out_value_range() const;
@@ -66,11 +53,11 @@ public:
     virtual size_t fan_out_size(size_t) const;
     virtual void forward_propagation(
             const std::vector<tiny_dnn::tensor_t *> &in_data,
-            std::vector<tiny_dnn::tensor_t *> &out_data, int s_index,
+            tiny_dnn::tensor_t *out_data, int s_index,
             int e_index) = 0;
     virtual void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-                                  const std::vector<tiny_dnn::tensor_t *> &out_data,
-                                  std::vector<tiny_dnn::tensor_t *> &out_grad,
+                                  tiny_dnn::tensor_t *out_data,
+                                  tiny_dnn::tensor_t *out_grad,
                                   std::vector<tiny_dnn::tensor_t *> &in_grad,
                                   int s_index, int e_index) = 0;
     virtual void post_update();
@@ -82,13 +69,8 @@ public:
     void updateWeight(tiny_dnn::optimizer *o, int batch_size);
     virtual void set_sample_count(size_t sample_count);
 
-    std::vector<TdLayer *> prev_nodes() const;  // @todo refactor and remove this method
-    std::vector<TdLayer *> next_nodes() const;  // @todo refactor and remove this method
-    size_t prev_port(const TdEdge &e) const;
-    size_t next_port(const TdEdge &e) const;
-
     std::vector<TdEdge *> in_edges;
-    std::vector<TdEdge *> out_edges;
+    TdEdge *out_edges = 0;
 
     template <typename T, typename Func>
     inline void for_i(T size, Func f, size_t grainsize = 100);
@@ -99,12 +81,8 @@ public:
     bool parallelized;
     /** The number of input vectors/edges */
     size_t in_channels;
-    /** The number of output vectors/edges */
-    size_t out_channels;
     /** Vector containing the type of data for inputs */
     std::vector<tiny_dnn::vector_type> in_type;
-    /** Vector containing the type of data for outputs */
-    std::vector<tiny_dnn::vector_type> out_type;
     /** Used in update_weight method. Kept as a member variable to reduce
      * frequent
      * memory allocation */
@@ -117,19 +95,15 @@ public:
     bool trainable;
 
 private:
-    void alloc_input(size_t i);
-    void alloc_output(size_t i);
-
     std::vector<tiny_dnn::tensor_t *> fwd_in_data;
-    std::vector<tiny_dnn::tensor_t *> fwd_out_data;
     std::vector<tiny_dnn::tensor_t *> bwd_in_data;
     std::vector<tiny_dnn::tensor_t *> bwd_in_grad;
-    std::vector<tiny_dnn::tensor_t *> bwd_out_data;
-    std::vector<tiny_dnn::tensor_t *> bwd_out_grad;
+    tiny_dnn::tensor_t *fwd_out_data;
+    tiny_dnn::tensor_t *bwd_out_data;
+    tiny_dnn::tensor_t *bwd_out_grad;
 };
 
-void td_connectLayer(TdLayer *head, TdLayer *tail,
-                     size_t head_index = 0, size_t tail_index = 0);
+void td_connectLayer(TdLayer *head, TdLayer *tail);
 void data_mismatch(TdLayer *layer, const tiny_dnn::vec_t &data);
 
 class TdEdge

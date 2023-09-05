@@ -52,12 +52,8 @@ void TdWorker::trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
         // resize outs and stuff to have room for every input sample in
         // the batch
         (*nod)[i]->set_sample_count(data_size);
-        int ch_len = (*nod)[i]->out_channels;
-        for(int j=0 ; j<ch_len ; j++ )
-        {
-            tiny_dnn::tensor_t &dst_grad = (*nod)[i]->out_edges[j]->grad_;
-            dst_grad.resize(data_size);
-        }
+        tiny_dnn::tensor_t &dst_grad = (*nod)[i]->out_edges->grad_;
+        dst_grad.resize(data_size);
     }
 
     int thread_num = TD_THREAD_NUM;
@@ -150,7 +146,6 @@ void TdWorker::miniWorkerFinished()
     batch_cnt += batch_size;
     trainBatch();
 }
-
 
 int TdWorker::runningWorkersNum()
 {

@@ -48,7 +48,7 @@ void td_isSizeMatch(std::vector<TdLayer *> *nod)
     int len = nod->size();
     for( int i=0; i<len-1 ; i++ )
     {
-        TdEdge *out = (*nod)[i]->out_edges[0];
+        TdEdge *out = (*nod)[i]->out_edges;
         TdEdge *in  = (*nod)[i+1]->in_edges[0];
 
         if( out!=in )
@@ -66,7 +66,7 @@ void td_connectHeadToTail(std::vector<TdLayer *> *nod)
     {
         TdLayer *head = (*nod)[nod->size() - 2];
         TdLayer *tail = (*nod)[nod->size() - 1];
-        td_connectLayer(head, tail, 0, 0);
+        td_connectLayer(head, tail);
     }
     td_isSizeMatch(nod);
 }

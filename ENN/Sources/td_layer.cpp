@@ -1,25 +1,18 @@
 #include "td_layer.h"
 #include <QString>
 
-TdLayer::TdLayer(std::vector<tiny_dnn::vector_type> in_t,
-                 std::vector<tiny_dnn::vector_type> out_t)
+TdLayer::TdLayer(std::vector<tiny_dnn::vector_type> in_t)
 {
     in_edges.resize(in_t.size());
-    out_edges.resize(out_t.size());
     initialized = false;
     parallelized = true;
 
     in_channels = in_t.size();
-    out_channels = out_t.size();
     fwd_in_data.resize(in_channels);
-    fwd_out_data.resize(out_channels);
     bwd_in_data.resize(in_channels);
     bwd_in_grad.resize(in_channels);
-    bwd_out_data.resize(out_channels);
-    bwd_out_grad.resize(out_channels);
 
     in_type = in_t;
-    out_type = out_t;
     weight_init = new tiny_dnn::weight_init::xavier;
     bias_init   = new tiny_dnn::weight_init::constant;
     trainable   = true;
@@ -40,18 +33,6 @@ std::string TdLayer::kernel_header() const
     return std::string();
 }
 
-///< number of incoming edges in this layer
-size_t TdLayer::inChannels() const
-{
-    return in_channels;
-}
-
-///< number of outgoing edges in this layer
-size_t TdLayer::outChannels() const
-{
-    return out_channels;
-}
-
 size_t TdLayer::inDataSize() const
 {
     return sumif(in_shape(),
@@ -66,84 +47,21 @@ size_t TdLayer::inDataSize() const
 
 size_t TdLayer::outDataSize() const
 {
-    return sumif(out_shape(),
-                 [&](size_t i)
-    {  // NOLINT
-        return out_type[i] == tiny_dnn::vector_type::data;
-    }, [](const tiny_dnn::shape3d &s)
+    size_t sum = 0;
+    for( size_t i=0 ; i<out_shape().size() ; i++ )
     {
-    return s.size();
-});
-}
-
-std::vector<tiny_dnn::shape3d> TdLayer::inDataShape()
-{
-    return filter(in_shape(), [&](size_t i)
-    {  // NOLINT
-        return in_type[i] == tiny_dnn::vector_type::data;
-    });
-}
-
-std::vector<tiny_dnn::shape3d> TdLayer::outDataShape()
-{
-    return filter(out_shape(), [&](size_t i)
-    {  // NOLINT
-        return out_type[i] == tiny_dnn::vector_type::data;
-    });
-}
-
-///! @deprecated use in_data_size() instead
-size_t TdLayer::inSize() const
-{
-    return inDataSize();
-}
-
-///! @deprecated use out_data_size() instead
-size_t TdLayer::outSize() const
-{
-    return outDataSize();
-}
-
-std::vector<tiny_dnn::vec_t *> TdLayer::weights()
-{
-    std::vector<tiny_dnn::vec_t *> v;
-    for( size_t i=0 ; i<in_channels ; i++ )
-    {
-        if( is_trainable_weight(in_type[i]) )
-        {
-            v.push_back(&(in_edges[i]->data_)[0]);
-        }
+        sum += out_shape()[i].size();
     }
-    return v;
-}
-
-std::vector<tiny_dnn::tensor_t *> TdLayer::weightsGrads()
-{
-    std::vector<tiny_dnn::tensor_t *> v;
-    for( size_t i=0 ; i<in_channels ; i++ )
-    {
-        if( is_trainable_weight(in_type[i]) )
-        {
-            v.push_back(&(in_edges[i]->grad_));
-        }
-    }
-    return v;
+    return sum;
 }
 
 void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
                           int s_index, int e_index)
 {
-    for( size_t ch=0 ; ch<out_channels ; ch++ )
+    tiny_dnn::tensor_t &dst_grad = out_edges->grad_;
+    for( int i=s_index ; i<e_index ; i++ )
     {
-        if( out_type[ch]!=tiny_dnn::vector_type::data )
-        {
-            continue;
-        }
-        tiny_dnn::tensor_t &dst_grad = out_edges[ch]->grad_;
-        for( int i=s_index ; i<e_index ; i++ )
-        {
-            dst_grad[i] = grad[i][ch];
-        }
+        dst_grad[i] = grad[i][0];
     }
 }
 
@@ -188,28 +106,6 @@ void TdLayer::setInData(tiny_dnn::vec_t &data)
         exit(1);
     }
     dst_data[0] = data;
-}
-
-void TdLayer::output(std::vector<const tiny_dnn::tensor_t *> &out) const
-{
-    out.clear();
-    for( size_t i=0 ; i<out_channels ; i++ )
-    {
-        if( out_type[i]==tiny_dnn::vector_type::data )
-        {
-            out.push_back(&out_edges[i]->data_);
-        }
-    }
-}
-
-std::vector<tiny_dnn::vector_type> TdLayer::getInTypes() const
-{
-    return in_type;
-}
-
-std::vector<tiny_dnn::vector_type> TdLayer::getOutTypes() const
-{
-    return out_type;
 }
 
 /**
@@ -312,11 +208,8 @@ void TdLayer::forward(int s_index, int e_index)
     // computational graph and will allocate memory in case that it's not
     // done yet. In addition, gradient vector are initialized to default
     // values.
-    for( size_t i=0 ; i<out_channels ; i++ )
-    {
-        fwd_out_data[i] = &out_edges[i]->data_;
-        out_edges[i]->clear_grads(s_index, e_index);
-    }
+    fwd_out_data = &out_edges->data_;
+    out_edges->clear_grads(s_index, e_index);
 
     // call the forward computation kernel/routine
     forward_propagation(fwd_in_data, fwd_out_data, s_index, e_index);
@@ -331,12 +224,8 @@ void TdLayer::backward(int s_index, int e_index)
         bwd_in_data[i] = &nd->data_;
         bwd_in_grad[i] = &(nd->grad_);
     }
-    for( size_t i = 0; i < out_channels; i++ )
-    {
-        const auto &nd  = out_edges[i];
-        bwd_out_data[i] = &nd->data_;
-        bwd_out_grad[i] = &(nd->grad_);
-    }
+    bwd_out_data = &out_edges->data_;
+    bwd_out_grad = &out_edges->grad_;
     back_propagation(bwd_in_data, bwd_out_data, bwd_out_grad,
                      bwd_in_grad, s_index, e_index);
 }
@@ -355,7 +244,7 @@ void TdLayer::setup(bool reset_weight)
       * the computational nomenclature. Same is applied to output shape and
       * numbers of output edges.*/
     if( in_shape().size()!=in_channels ||
-            out_shape().size()!=out_channels )
+            out_shape().size()!=1 ) // 1=out_channels
     {
         qDebug() << "Connection mismatch at setup layer";
         exit(0);
@@ -368,15 +257,12 @@ void TdLayer::setup(bool reset_weight)
     // have multiple input/output connections, we need to check that the
     // connection edge does not already exists if we don't want duplicated
     // memory allocation.
-    for( size_t i=0 ; i<out_channels ; i++ )
+    if( !out_edges )
     {
-        if( !out_edges[i] )
-        {
-            // connection edge doesn't exist, so we proceed to allocate the
-            // necessary memory.
-            out_edges[i] = new TdEdge(this, out_shape()[i],
-                                  out_type[i]);
-        }
+        // connection edge doesn't exist, so we proceed to allocate the
+        // necessary memory.
+        out_edges = new TdEdge(this, out_shape()[0],
+                              tiny_dnn::vector_type::data);
     }
 
     // reset the weights if necessary, or in case that the data is
@@ -415,7 +301,7 @@ void TdLayer::initWeight()
     {
         if( !in_edges[i] )
         {
-            alloc_input(i);
+            in_edges[i] = new TdEdge(nullptr, in_shape()[i], in_type[i]);
         }
         switch( in_type[i] )
         {
@@ -485,62 +371,38 @@ void TdLayer::set_sample_count(size_t sample_count)
         }
     }
 
-    for( size_t i=0 ; i<out_channels ; i++ )
-    {
-        if( !is_trainable_weight(out_type[i]) )
-        {
-            out_edges[i]->data_.resize(sample_count,
-                        out_edges[i]->data_[0]);
-        }
-        auto def_val = out_edges[i]->grad_[0];
-        out_edges[i]->grad_.resize(sample_count, def_val);
-
-    }
+    out_edges->data_.resize(sample_count,
+                out_edges->data_[0]);
+    auto def_val = out_edges->grad_[0];
+    out_edges->grad_.resize(sample_count, def_val);
 }
 
-void TdLayer::alloc_input(size_t i)
+void td_connectLayer(TdLayer *head, TdLayer *tail)
 {
-    // the created incoming edge won't have a previous connection,
-    // for this reason first parameter is a nullptr.
-    in_edges[i] = new TdEdge(nullptr, in_shape()[i], in_type[i]);
-}
-
-void TdLayer::alloc_output(size_t i)
-{
-    // the created outcoming will have the current layer as the
-    // previous node.
-    out_edges[i] = new TdEdge(this, out_shape()[i], out_type[i]);
-}
-
-void td_connectLayer(TdLayer *head, TdLayer *tail,
-                     size_t head_index, size_t tail_index)
-{
-    auto out_shape = head->out_shape()[head_index];
-    auto in_shape  = tail->in_shape()[tail_index];
+    auto out_shape = head->out_shape()[0];
+    auto in_shape  = tail->in_shape()[0];
 
     head->setup(false);
 
     // todo (karandesai) enable shape inferring for all layers
     // currently only possible for activation layers.
-    if (in_shape.size() == 0) {
+    if( in_shape.size()==0 )
+    {
         tail->set_in_shape(out_shape);
         in_shape = out_shape;
     }
 
-    if (out_shape.size() != in_shape.size()) {
-        //    connection_mismatch(*head, *tail);
-    }
-
-    if( !head->out_edges[head_index] )
+    if( !head->out_edges )
     {
         qDebug() << "output edge must not be null";
         exit(0);
     }
 
-    tail->in_edges[tail_index] = head->out_edges[head_index];
-    tail->in_edges[tail_index]->add_next_node(tail);
+    tail->in_edges[0] = head->out_edges;
+    tail->in_edges[0]->add_next_node(tail);
 }
 
+/// FIXME: check if not used, delete
 void data_mismatch(TdLayer *layer, const tiny_dnn::vec_t &data)
 {
     std::string lt = layer->layer_type();
@@ -548,55 +410,4 @@ void data_mismatch(TdLayer *layer, const tiny_dnn::vec_t &data)
              << data.size() << "network dimension:"
              << layer->inDataSize() << "(" << lt.c_str() << ")";//":"
 //             << layer->in_shape(). << ")";
-}
-
-template<typename T, typename Func>
-void TdLayer::for_i(T size, Func f, size_t grainsize)
-{
-    tiny_dnn::for_i(parallelized, size, f, grainsize);
-}
-
-std::vector<TdLayer *> TdLayer::prev_nodes() const
-{
-    std::vector<TdLayer *> vecs;
-    int len = in_edges.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        if( in_edges[i] && in_edges[i]->prev_ )
-        {
-            vecs.push_back(in_edges[i]->prev_);
-        }
-    }
-    return vecs;
-}
-
-std::vector<TdLayer *> TdLayer::next_nodes() const
-{
-    std::vector<TdLayer *> vecs;
-    int len = out_edges.size();
-    for( int i=0 ; i<len ; i++ )
-    {
-        if( out_edges[i] )
-        {
-            std::vector<TdLayer *> n = out_edges[i]->next_;
-            vecs.insert(vecs.end(), n.begin(), n.end());
-        }
-    }
-    return vecs;
-}
-
-size_t TdLayer::prev_port(const TdEdge &e) const
-{
-    auto it = std::find_if(in_edges.begin(), in_edges.end(),
-                            [&](TdEdge *ep)
-                            { return ep == &e; });
-    return (size_t)std::distance(in_edges.begin(), it);
-}
-
-size_t TdLayer::next_port(const TdEdge &e) const
-{
-    auto it = std::find_if(out_edges.begin(), out_edges.end(),
-                           [&](TdEdge *ep)
-                           { return ep == &e; });
-    return (size_t)std::distance(out_edges.begin(), it);
 }

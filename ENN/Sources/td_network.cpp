@@ -42,19 +42,6 @@ void TdNetwork::workerFinished()
     worker_finished = true;
 }
 
-size_t TdNetwork::layerSize()
-{
-    return nod.size();
-}
-
-/**
-* @deprecated use layer_size() instread.
-**/
-size_t TdNetwork::depth()
-{
-    return layerSize();
-}
-
 void TdNetwork::checkTargetCostMatrix(
         const std::vector<tiny_dnn::tensor_t> &t,
         const std::vector<tiny_dnn::tensor_t> &t_cost)
@@ -161,7 +148,7 @@ void TdNetwork::normalizeTensor(
 void TdNetwork::label2vec(const tiny_dnn::label_t *t, size_t num,
                              std::vector<tiny_dnn::vec_t> &vec)
 {
-    size_t outdim = outDataSize();
+    size_t outdim = nod.back()->outDataSize();
     int target_value_min = 0;
     int target_value_max = 1;
 
@@ -244,14 +231,3 @@ void TdNetwork::setup(bool reset_weight)
         nod[i]->setup(reset_weight);
     }
 }
-
-size_t TdNetwork::inDataSize()
-{
-    return nod.front()->inDataSize();
-}
-
-size_t TdNetwork::outDataSize()
-{
-    return nod.back()->outDataSize();
-}
-
