@@ -5,8 +5,7 @@ TdAvePool::TdAvePool(size_t in_width, size_t in_height,
                      size_t pool_size_y, size_t stride_x,
                      size_t stride_y, bool ceil_mode,
                      tiny_dnn::padding pad_type)
-    : TdLayer(tiny_dnn::std_input_order(in_channels > 0),
-        {tiny_dnn::vector_type::data}),
+    : TdLayer(tiny_dnn::std_input_order(in_channels > 0)),
       stride_x_(stride_x),
       stride_y_(stride_y),
       pool_size_x_(pool_size_x),
@@ -96,23 +95,23 @@ void TdAvePool::connect_bias(size_t bias_index, size_t output_index)
 
 void TdAvePool::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        std::vector<tiny_dnn::tensor_t *> &out_data, int s_index,
+        tiny_dnn::tensor_t *out_data, int s_index,
         int e_index)
 {
-    tiny_average_pooling_kernel(parallelized, in_data, out_data, out_,
+    tiny_average_pooling_kernel(in_data, out_data, out_,
                                 TdAvePool::scale_factor_,
                                 TdAvePool::out2wi_, s_index, e_index);
 }
 
 void TdAvePool::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        const std::vector<tiny_dnn::tensor_t *> &out_data,
-        std::vector<tiny_dnn::tensor_t *> &out_grad,
+        tiny_dnn::tensor_t *out_data,
+        tiny_dnn::tensor_t *out_grad,
         std::vector<tiny_dnn::tensor_t *> &in_grad, int s_index,
         int e_index)
 {
     tiny_average_pooling_back_kernel(
-                parallelized, in_data, out_data, out_grad,
+                in_data, out_grad,
                 in_grad, in_,
                 TdAvePool::scale_factor_,
                 TdAvePool::weight2io_,
@@ -181,20 +180,19 @@ void TdAvePool::connect_kernel(size_t pooling_size_x,
     }
 }
 
-void tiny_average_pooling_kernel(bool parallelize,
+void tiny_average_pooling_kernel(
      const std::vector<tiny_dnn::tensor_t *> &in_data,
-     std::vector<tiny_dnn::tensor_t *> &out_data,
+     tiny_dnn::tensor_t *out_data,
      const tiny_dnn::shape3d &out_dim, float_t scale_factor,
      std::vector<TdAvePool::wi_connections> &out2wi, int s_index,
      int e_index)
 {
-//    tiny_dnn::for_i(parallelize, in_data[0]->size(), [&](size_t sample)
     for( int i=s_index ; i<e_index ; i++ )
     {
         const tiny_dnn::vec_t &in = (*in_data[0])[i];
         const tiny_dnn::vec_t &W  = (*in_data[1])[0];
         const tiny_dnn::vec_t &b  = (*in_data[2])[0];
-        tiny_dnn::vec_t &out      = (*out_data[0])[i];
+        tiny_dnn::vec_t &out      = (*out_data)[i];
 
         auto oarea = out_dim.area();
         size_t idx = 0;
@@ -220,21 +218,17 @@ void tiny_average_pooling_kernel(bool parallelize,
     }
 }
 
-void tiny_average_pooling_back_kernel(bool parallelize,
+void tiny_average_pooling_back_kernel(
               const std::vector<tiny_dnn::tensor_t *> &in_data,
-              const std::vector<tiny_dnn::tensor_t *> &out_data,
-              std::vector<tiny_dnn::tensor_t *> &out_grad,
+              tiny_dnn::tensor_t *out_grad,
               std::vector<tiny_dnn::tensor_t *> &in_grad,
               const tiny_dnn::shape3d &in_dim, float_t scale_factor,
-              std::vector<TdAvePool::
-              io_connections> &weight2io,
+              std::vector<TdAvePool::io_connections> &weight2io,
               std::vector<TdAvePool::
               wo_connections> &in2wo,
               std::vector<std::vector<size_t> > &bias2out,
               int s_index, int e_index)
 {
-    CNN_UNREFERENCED_PARAMETER(out_data);
-//    tiny_dnn::for_i(parallelize, in_data[0]->size(), [&](size_t sample)
     for( int sample=s_index ; sample<e_index ; sample++ )
     {
         const tiny_dnn::vec_t &prev_out = (*in_data[0])[sample];
@@ -242,7 +236,7 @@ void tiny_average_pooling_back_kernel(bool parallelize,
         tiny_dnn::vec_t &dW             = (*in_grad[1])[sample];
         tiny_dnn::vec_t &db             = (*in_grad[2])[sample];
         tiny_dnn::vec_t &prev_delta     = (*in_grad[0])[sample];
-        tiny_dnn::vec_t &curr_delta     = (*out_grad[0])[sample];
+        tiny_dnn::vec_t &curr_delta     = (*out_grad)[sample];
 
         auto inarea = in_dim.area();
         size_t idx  = 0;

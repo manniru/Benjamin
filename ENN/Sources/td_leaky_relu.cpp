@@ -1,8 +1,7 @@
 #include "td_leaky_relu.h"
 
 TdLeakyRelu::TdLeakyRelu(const float_t epsilon)
-    : TdLayer({tiny_dnn::vector_type::data},
-                        {tiny_dnn::vector_type::data})
+    : TdLayer({tiny_dnn::vector_type::data})
 {
     epsilon_ = epsilon;
     in_shape_ = tiny_dnn::shape3d(0, 0, 0);
@@ -27,12 +26,11 @@ void TdLeakyRelu::set_in_shape(const tiny_dnn::shape3d &in_shape)
 
 void TdLeakyRelu::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        std::vector<tiny_dnn::tensor_t *> &out_data, int s_index,
+        tiny_dnn::tensor_t *out_data, int s_index,
         int e_index)
 {
     const tiny_dnn::tensor_t &x = *in_data[0];
-    tiny_dnn::tensor_t &y       = *out_data[0];
-//    tiny_dnn::for_i(x.size(), [&](size_t i)
+    tiny_dnn::tensor_t &y       = *out_data;
     for( int i=s_index ; i<e_index ; i++ )
     {
         forward_activation(x[i], y[i]);
@@ -41,16 +39,15 @@ void TdLeakyRelu::forward_propagation(
 
 void TdLeakyRelu::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        const std::vector<tiny_dnn::tensor_t *> &out_data,
-        std::vector<tiny_dnn::tensor_t *> &out_grad,
+        tiny_dnn::tensor_t *out_data,
+        tiny_dnn::tensor_t *out_grad,
         std::vector<tiny_dnn::tensor_t *> &in_grad, int s_index,
         int e_index)
 {
     tiny_dnn::tensor_t &dx       = *in_grad[0];
-    const tiny_dnn::tensor_t &dy = *out_grad[0];
     const tiny_dnn::tensor_t &x  = *in_data[0];
-    const tiny_dnn::tensor_t &y  = *out_data[0];
-//    tiny_dnn::for_i(x.size(), [&](size_t i)
+    tiny_dnn::tensor_t &dy = *out_grad;
+    tiny_dnn::tensor_t &y  = *out_data;
     for( int i=s_index ; i<e_index ; i++ )
     {
         backward_activation(x[i], y[i], dx[i], dy[i]);

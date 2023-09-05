@@ -1,4 +1,4 @@
-#include "td_convolution.h"
+﻿#include "td_convolution.h"
 
 TdConvolution::TdConvolution(size_t in_width, size_t in_height,
                              size_t window_width, size_t window_height,
@@ -6,8 +6,7 @@ TdConvolution::TdConvolution(size_t in_width, size_t in_height,
                              tiny_dnn::padding pad_type, bool has_bias,
                              size_t w_stride, size_t h_stride,
                              size_t w_dilation, size_t h_dilation)
-    : TdLayer(tiny_dnn::std_input_order(has_bias),
-{tiny_dnn::vector_type::data})
+    : TdLayer(tiny_dnn::std_input_order(has_bias))
 {
     conv_set_params(tiny_dnn::shape3d(in_width, in_height, in_channels),
                     window_width, window_height, out_channels,
@@ -249,7 +248,7 @@ void TdConvolution::op_backward(const tensor_t &prev_out,
 
 void TdConvolution::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in,
-        std::vector<tiny_dnn::tensor_t *> &out, int s_index,
+        tiny_dnn::tensor_t *out, int s_index,
         int e_index)
 {
     // apply padding to the input tensor
@@ -270,7 +269,7 @@ void TdConvolution::forward_propagation(
     tiny_dnn::tensor_t &in_data  = *in[0];
     tiny_dnn::tensor_t &W        = *in[1];
     tiny_dnn::tensor_t &bias     = *in[2];
-    tiny_dnn::tensor_t &out_data = *out[0];
+    tiny_dnn::tensor_t &out_data = *out;
 
     // initialize outputs
     fill_tensor(out_data, float_t{0});
@@ -288,8 +287,8 @@ void TdConvolution::forward_propagation(
 
 void TdConvolution::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        const std::vector<tiny_dnn::tensor_t *> &out_data,
-        std::vector<tiny_dnn::tensor_t *> &out_grad,
+        tiny_dnn::tensor_t *out_data,
+        tiny_dnn::tensor_t *out_grad,
         std::vector<tiny_dnn::tensor_t *> &in_grad,
         int s_index, int e_index)
 {
@@ -313,7 +312,7 @@ void TdConvolution::back_propagation(
     tiny_dnn::tensor_t &dW             = *in_grad[1];
     tiny_dnn::tensor_t &db             = *in_grad[2];
     tiny_dnn::tensor_t &prev_delta     = *in_grad[0];
-    tiny_dnn::tensor_t &curr_delta     = *out_grad[0];
+    tiny_dnn::tensor_t &curr_delta     = *out_grad;
 
     // initalize outputs
     fill_tensor(prev_delta, float_t{0});

@@ -31,13 +31,12 @@ public:
     void connect_weight(size_t input_index, size_t output_index,
                         size_t weight_index);
     void connect_bias(size_t bias_index, size_t output_index);
-    void forward_propagation(
-            const std::vector<tiny_dnn::tensor_t *> &in_data,
-            std::vector<tiny_dnn::tensor_t *> &out_data, int s_index,
+    void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
+            tiny_dnn::tensor_t *out_data, int s_index,
             int e_index) override;
     void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-                  const std::vector<tiny_dnn::tensor_t *> &out_data,
-                  std::vector<tiny_dnn::tensor_t *> &out_grad,
+                  tiny_dnn::tensor_t *out_data,
+                  tiny_dnn::tensor_t *out_grad,
                   std::vector<tiny_dnn::tensor_t *> &in_grad,
                   int s_index, int e_index) override;
     std::pair<size_t, size_t> pool_size() const;
@@ -78,19 +77,17 @@ private:
 };
 
 // forward_propagation
-inline void tiny_average_pooling_kernel(bool parallelize,
+inline void tiny_average_pooling_kernel(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        std::vector<tiny_dnn::tensor_t *> &out_data,
+        tiny_dnn::tensor_t *out_data,
         const tiny_dnn::shape3d &out_dim,
         float_t scale_factor,
         std::vector<typename TdAvePool::wi_connections> &out2wi,
         int s_index, int e_index);
 
 // back_propagation
-inline void tiny_average_pooling_back_kernel(bool parallelize,
-        const std::vector<tiny_dnn::tensor_t *> &in_data,
-        const std::vector<tiny_dnn::tensor_t *> &out_data,
-        std::vector<tiny_dnn::tensor_t *> &out_grad,
+inline void tiny_average_pooling_back_kernel(const std::vector<tiny_dnn::tensor_t *> &in_data,
+        tiny_dnn::tensor_t *out_grad,
         std::vector<tiny_dnn::tensor_t *> &in_grad,
         const tiny_dnn::shape3d &in_dim,
         float_t scale_factor,

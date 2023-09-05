@@ -37,11 +37,12 @@ public:
     size_t fan_out_size() const override;
 
     void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-            std::vector<tiny_dnn::tensor_t *> &out_data, int s_index, int e_index) override;
+            tiny_dnn::tensor_t *out_data, int s_index, int e_index) override;
 
-    void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-            const std::vector<tiny_dnn::tensor_t *> &out_data,
-            std::vector<tiny_dnn::tensor_t *> &out_grad,
+    void back_propagation(
+            const std::vector<tiny_dnn::tensor_t *> &in_data,
+            tiny_dnn::tensor_t *out_data,
+            tiny_dnn::tensor_t *out_grad,
             std::vector<tiny_dnn::tensor_t *> &in_grad,
             int s_index, int e_index) override;
 

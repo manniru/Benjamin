@@ -1,8 +1,7 @@
 #include "td_fc.h"
 
 TdFC::TdFC(size_t in_dim, size_t out_dim, bool has_bias)
-    : TdLayer(tiny_dnn::std_input_order(has_bias),
-      {tiny_dnn::vector_type::data})
+    : TdLayer(tiny_dnn::std_input_order(has_bias))
 {
     set_params(in_dim, out_dim, has_bias);
 }
@@ -50,7 +49,6 @@ void TdFC::avx_op_forward(
 {
     size_t nblocks  = params.out_size_ / 8;
     size_t nremains = params.out_size_ & 7;
-    int parallelized = true;
     if(nremains)
     {
         int32_t mask_src[] = {
@@ -254,7 +252,7 @@ void TdFC::op_backward(const tiny_dnn::tensor_t &prev_out,
 
 void TdFC::forward_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in,
-        std::vector<tiny_dnn::tensor_t *> &out, int s_index,
+        tiny_dnn::tensor_t *out, int s_index,
         int e_index)
 {
     // launch fully connected kernel
@@ -264,7 +262,7 @@ void TdFC::forward_propagation(
     tiny_dnn::tensor_t &in_data_0   = *in[0];
     tiny_dnn::tensor_t &W           = *in[1];
     tiny_dnn::tensor_t &bias        = *in[2];
-    tiny_dnn::tensor_t &out_data_0  = *out[0];
+    tiny_dnn::tensor_t &out_data_0  = *out;
 
     // initialize outputs
     tiny_dnn::fill_tensor(out_data_0, float_t{0});
@@ -280,8 +278,8 @@ void TdFC::forward_propagation(
 
 void TdFC::back_propagation(
         const std::vector<tiny_dnn::tensor_t *> &in_data,
-        const std::vector<tiny_dnn::tensor_t *> &out_data,
-        std::vector<tiny_dnn::tensor_t *> &out_grad,
+        tiny_dnn::tensor_t *out_data,
+        tiny_dnn::tensor_t *out_grad,
         std::vector<tiny_dnn::tensor_t *> &in_grad, int s_index,
         int e_index)
 {
@@ -294,7 +292,7 @@ void TdFC::back_propagation(
     tiny_dnn::tensor_t &dW       = *in_grad[1];
     tiny_dnn::tensor_t &db       = *in_grad[2];
     tiny_dnn::tensor_t &prev_delta = *in_grad[0];
-    tiny_dnn::tensor_t &curr_delta = *out_grad[0];
+    tiny_dnn::tensor_t &curr_delta = *out_grad;
 
     // initialize outputs
     fill_tensor(prev_delta, float_t{0});
