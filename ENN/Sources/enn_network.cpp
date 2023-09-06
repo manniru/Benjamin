@@ -173,9 +173,9 @@ void EnnNetwork::epochLog()
         QString t_elapsed = QString::number(nn_t.elapsed());
         t_elapsed += "s";
         float loss = calcLoss();
-        EnnResult acc_test = getAcc(dataset->test_datas,
+        EnnResult acc_test = getAccuracy(dataset->test_datas,
                                   dataset->test_labels);
-        EnnResult acc_train = getAcc(dataset->train_datas,
+        EnnResult acc_train = getAccuracy(dataset->train_datas,
                                   dataset->train_labels);
 
         qDebug() << nn_epoch << t_elapsed
@@ -232,7 +232,7 @@ float EnnNetwork::calcLoss()
     }
     if( loss>ENN_EXPLODE_LOSS || std::isnan(loss) )
     {
-        EnnResult acc_train = getAcc(dataset->train_datas,
+        EnnResult acc_train = getAccuracy(dataset->train_datas,
                                   dataset->train_labels);
         double learned_percent = acc_train.det_t*100;
         learned_percent = learned_percent/acc_train.tot_t;
@@ -251,7 +251,7 @@ float EnnNetwork::calcLoss()
     return loss;
 }
 
-EnnResult EnnNetwork::getAcc(std::vector<vec_t>   &data,
+EnnResult EnnNetwork::getAccuracy(std::vector<vec_t>   &data,
                            std::vector<label_t> &label)
 {
     EnnResult res;
@@ -328,9 +328,9 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
         net->stopOngoingTraining();
         net_state = ENN_NETWORK_NEGATIVE;
 
-        EnnResult acc_test = getAcc(dataset->test_datas,
+        EnnResult acc_test = getAccuracy(dataset->test_datas,
                                   dataset->test_labels);
-        EnnResult acc_train = getAcc(dataset->train_datas,
+        EnnResult acc_train = getAccuracy(dataset->train_datas,
                                   dataset->train_labels);
 
         qDebug() << "train" << acc_train.msg

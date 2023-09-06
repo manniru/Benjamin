@@ -51,17 +51,12 @@ public:
     virtual size_t fan_in_size(size_t) const;
     virtual size_t fan_out_size() const;
     virtual size_t fan_out_size(size_t) const;
-    virtual void forward_propagation(
-            const std::vector<tiny_dnn::tensor_t *> &in_data,
-            tiny_dnn::tensor_t *out_data, int s_index,
-            int e_index) = 0;
+    virtual void forward(int s_index, int e_index) = 0;
     virtual void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
                                   tiny_dnn::tensor_t *out_data,
                                   tiny_dnn::tensor_t *out_grad,
                                   std::vector<tiny_dnn::tensor_t *> &in_grad,
                                   int s_index, int e_index) = 0;
-    virtual void post_update();
-    void forward(int s_index, int e_index);
     void backward(int s_index, int e_index);
     void setup(bool reset_weight);
     void initWeight();
@@ -147,6 +142,7 @@ public:
             vectorize::fill(&g[0], g.size(), float_t{0});
         }
     }
+
     void add_next_node(TdLayer* next)
     {
         next_.push_back(next);

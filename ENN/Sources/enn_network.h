@@ -55,7 +55,7 @@ private:
     void  save();
     float calcLoss();
     void  createNNet();
-    EnnResult getAcc(std::vector<vec_t> &data,
+    EnnResult getAccuracy(std::vector<vec_t> &data,
                    std::vector<label_t> &label);
     void handleWrongs(float diff, QVector<int> &wrong_i,
                       QVector<float> &wrong_loss);

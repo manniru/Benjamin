@@ -17,10 +17,7 @@ public:
     std::vector<tiny_dnn::shape3d> in_shape() const override;
     std::vector<tiny_dnn::shape3d> out_shape() const override;
     void set_in_shape(const tiny_dnn::shape3d &in_shape) override;
-    void forward_propagation(
-            const std::vector<tiny_dnn::tensor_t *> &in_data,
-            tiny_dnn::tensor_t *out_data, int s_index,
-            int e_index) override;
+    void forward(int s_index, int e_index) override;
     void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
             tiny_dnn::tensor_t *out_data,
             tiny_dnn::tensor_t *out_grad,

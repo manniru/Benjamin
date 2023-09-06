@@ -168,53 +168,6 @@ size_t TdLayer::fan_out_size(size_t) const
     return fan_out_size();  // fallback to single weight matrix
 }
 
-// called afrer updating weight
-void TdLayer::post_update()
-{
-
-}
-
-/* @brief The purpose of this method is to forward the data from the
- * computational graph to the layer interface.
- *
- * This is one of the out of two core (forward/backward) methods that
- * retrieves the data allocated in the heap by the computational graph
- * and constructs the containers to handle the computation by batches.
- * Additionally, the sample count a.k.a number of batches is set.
- *
- * Note: in_data and out_data attempt to contain tensors. However, they
- * are not real tensors since tensor_t have three dimensions instead of
- * four. For this reason they are embedded in to std::vector. Also note
- * that when std::vector<tensor_t*> it's constructed we cannot assure
- * that data is contiguous.
- *
- * After Tensor class integration we should be able to avoid to have
- * in_data and out_data in vectors since Tensor class itself can handle
- * batches storage in one single vector with contiguous data.
- *
- */
-void TdLayer::forward(int s_index, int e_index)
-{
-    // Organize input/output vectors from storage (computational graph).
-    // Internally ith_in_node() will create a connection/edge in the
-    // computational graph and will allocate memory in case that it's not
-    // done yet.
-    for( size_t i=0 ; i<in_channels ; i++ )
-    {
-        fwd_in_data[i] = &in_edges[i]->data_;
-    }
-
-    // Internally ith_out_node() will create a connection/edge to the
-    // computational graph and will allocate memory in case that it's not
-    // done yet. In addition, gradient vector are initialized to default
-    // values.
-    fwd_out_data = &out_edges->data_;
-    out_edges->clear_grads(s_index, e_index);
-
-    // call the forward computation kernel/routine
-    forward_propagation(fwd_in_data, fwd_out_data, s_index, e_index);
-}
-
 void TdLayer::backward(int s_index, int e_index)
 {
     // organize input/output vectors from storage
@@ -352,7 +305,6 @@ void TdLayer::updateWeight(tiny_dnn::optimizer *o, int batch_size)
         }
     }
     clearGrads(batch_size);
-    post_update();
 }
 
 void TdLayer::set_sample_count(size_t sample_count)
