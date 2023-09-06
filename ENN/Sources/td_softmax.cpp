@@ -86,17 +86,12 @@ void TdSoftmax::forward(int s_index, int e_index)
     }
 }
 
-void TdSoftmax::back_propagation(
-        const std::vector<tiny_dnn::tensor_t *> &in_data,
-        tiny_dnn::tensor_t *out_data,
-        tiny_dnn::tensor_t *out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad,
-        int s_index, int e_index)
+void TdSoftmax::backward(int s_index, int e_index)
 {
-    const tiny_dnn::tensor_t &x  = *in_data[0];
-    tiny_dnn::tensor_t &y  = *out_data;
-    tiny_dnn::tensor_t &dy = *out_grad;
-    tiny_dnn::tensor_t &dx = *in_grad[0];
+    const tiny_dnn::tensor_t &x  = in_edges[0]->data_;
+    tiny_dnn::tensor_t &y  = out_edges->data_;
+    tiny_dnn::tensor_t &dy = out_edges->grad_;
+    tiny_dnn::tensor_t &dx = in_edges[0]->grad_;
 
     for( int i=s_index ; i<e_index ; i++ )
     {

@@ -65,29 +65,22 @@ void TdLayer::setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
     }
 }
 
-void TdLayer::setInData(const std::vector<tiny_dnn::tensor_t> &data,
+void TdLayer::setInData(tiny_dnn::tensor_t &data,
                         int batch_size, int offset)
 {
-    for( size_t ch=0 ; ch<in_channels ; ch++ )
-    {
-        if( in_type[ch]!=tiny_dnn::vector_type::data )
-        {
-            continue;
-        }
-        tiny_dnn::tensor_t &dst_data = in_edges[ch]->data_;
-        size_t in_size     = in_edges[ch]->shape_.size();
-        dst_data.resize(batch_size);
+    tiny_dnn::tensor_t &dst_data = in_edges[0]->data_;
+    size_t in_size     = in_edges[0]->shape_.size();
+    dst_data.resize(batch_size);
 
-        for( int i=offset ; i<(offset+batch_size) ; i++ )
+    for( int i=offset ; i<(offset+batch_size) ; i++ )
+    {
+        if( data[i].size()!=in_size )
         {
-            if( data[i][ch].size()!=in_size )
-            {
-                qDebug() << "Data Size and Layer Size Not Matched!"
-                         << data[i][ch].size() << in_size;
-                exit(1);
-            }
-            dst_data[i-offset] = data[i][ch];
+            qDebug() << "Data Size and Layer Size Not Matched!"
+                     << data[i].size() << in_size;
+            exit(1);
         }
+        dst_data[i-offset] = data[i];
     }
 }
 
@@ -166,21 +159,6 @@ size_t TdLayer::fan_out_size() const
 size_t TdLayer::fan_out_size(size_t) const
 {
     return fan_out_size();  // fallback to single weight matrix
-}
-
-void TdLayer::backward(int s_index, int e_index)
-{
-    // organize input/output vectors from storage
-    for( size_t i = 0; i < in_channels; i++ )
-    {
-        const auto &nd = in_edges[i];
-        bwd_in_data[i] = &nd->data_;
-        bwd_in_grad[i] = &(nd->grad_);
-    }
-    bwd_out_data = &out_edges->data_;
-    bwd_out_grad = &out_edges->grad_;
-    back_propagation(bwd_in_data, bwd_out_data, bwd_out_grad,
-                     bwd_in_grad, s_index, e_index);
 }
 
 /* @brief Allocates data in the computational graph and reset weights if

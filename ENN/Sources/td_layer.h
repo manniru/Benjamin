@@ -38,7 +38,7 @@ public:
     size_t outDataSize() const;
     void setOutGrads(std::vector<tiny_dnn::tensor_t> &grad,
                      int s_index, int e_index);
-    void setInData(const std::vector<tiny_dnn::tensor_t> &data, int batch_size, int offset);
+    void setInData(tiny_dnn::tensor_t &data, int batch_size, int offset);
     void setInData(tiny_dnn::vec_t &data);
     void setTrainable(bool tr);
 
@@ -52,12 +52,7 @@ public:
     virtual size_t fan_out_size() const;
     virtual size_t fan_out_size(size_t) const;
     virtual void forward(int s_index, int e_index) = 0;
-    virtual void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-                                  tiny_dnn::tensor_t *out_data,
-                                  tiny_dnn::tensor_t *out_grad,
-                                  std::vector<tiny_dnn::tensor_t *> &in_grad,
-                                  int s_index, int e_index) = 0;
-    void backward(int s_index, int e_index);
+    virtual void backward(int s_index, int e_index) = 0;
     void setup(bool reset_weight);
     void initWeight();
     void clearGrads(int batch_size);
@@ -66,9 +61,6 @@ public:
 
     std::vector<TdEdge *> in_edges;
     TdEdge *out_edges = 0;
-
-    template <typename T, typename Func>
-    inline void for_i(T size, Func f, size_t grainsize = 100);
 
     /** Flag indication whether the layer/node is initialized */
     bool initialized;
