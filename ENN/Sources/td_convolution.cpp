@@ -269,23 +269,18 @@ void TdConvolution::forward(int s_index, int e_index)
 #endif
 }
 
-void TdConvolution::back_propagation(
-        const std::vector<tiny_dnn::tensor_t *> &in_data,
-        tiny_dnn::tensor_t *out_data,
-        tiny_dnn::tensor_t *out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad,
-        int s_index, int e_index)
+void TdConvolution::backward(int s_index, int e_index)
 {
     // launch convolutional kernel
     auto params = params_.conv();
 
     // incoming/outcoming data
-    tiny_dnn::tensor_t &prev_out    = *in_data[0];
-    tiny_dnn::tensor_t &W           = *in_data[1];
-    tiny_dnn::tensor_t &dW          = *in_grad[1];
-    tiny_dnn::tensor_t &db          = *in_grad[2];
-    tiny_dnn::tensor_t &prev_delta  = *in_grad[0];
-    tiny_dnn::tensor_t &curr_delta  = *out_grad;
+    tiny_dnn::tensor_t &prev_out    = in_edges[0]->data_;
+    tiny_dnn::tensor_t &W           = in_edges[1]->data_;
+    tiny_dnn::tensor_t &dW          = in_edges[1]->grad_;
+    tiny_dnn::tensor_t &db          = in_edges[2]->grad_;
+    tiny_dnn::tensor_t &prev_delta  = in_edges[0]->grad_;
+    tiny_dnn::tensor_t &curr_delta  = out_edges->grad_;
 
     // initalize outputs
     fill_tensor(prev_delta, float_t{0});
@@ -300,7 +295,7 @@ void TdConvolution::back_propagation(
 
     // unpad deltas
     padding_op_.copy_and_unpad_delta(cws_.prev_delta_padded_,
-                                     *in_grad[0]);
+                                     in_edges[0]->grad_);
 }
 
 void TdConvolution::set_sample_count(size_t sample_count)
@@ -742,7 +737,6 @@ void TdConvolution::avx_op_forward(const tiny_dnn::tensor_t &in_data,
     if( params.weight.height_==5 && params.weight.width_==5 )
     {
         // @todo consider better parallelization
-//        tiny_dnn::for_i( parallelized, in_data.size(), [&](size_t i)
         for( int i=s_index ; i<e_index ; i++ )
         {
             avx_5x5_forward_kernel(params, in_data[i], W, bias,
@@ -1679,8 +1673,6 @@ void TdConvolution::avx_op_backward(const tiny_dnn::tensor_t &prev_out,
 {
     if( params.weight.height_==5 && params.weight.width_==5 )
     {
-//        int parallelized = true;
-//        tiny_dnn::for_i(parallelized, prev_out.size(), [&](size_t sample)
         for( int sample=s_index ; sample<e_index ; sample++ )
         {
             avx_5x5_backward_kernel(params, prev_out[sample], W,

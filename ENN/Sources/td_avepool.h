@@ -32,11 +32,7 @@ public:
                         size_t weight_index);
     void connect_bias(size_t bias_index, size_t output_index);
     void forward(int s_index, int e_index) override;
-    void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-                  tiny_dnn::tensor_t *out_data,
-                  tiny_dnn::tensor_t *out_grad,
-                  std::vector<tiny_dnn::tensor_t *> &in_grad,
-                  int s_index, int e_index) override;
+    void backward(int s_index, int e_index) override;
     std::pair<size_t, size_t> pool_size() const;
 
     typedef std::vector<std::pair<size_t, size_t>> io_connections;
@@ -62,10 +58,7 @@ private:
             int s_index, int e_index);
 
     // back_propagation
-    void tiny_average_pooling_back_kernel(const std::vector<tiny_dnn::tensor_t *> &in_data,
-            tiny_dnn::tensor_t *out_grad,
-            std::vector<tiny_dnn::tensor_t *> &in_grad,
-            const tiny_dnn::shape3d &in_dim,
+    void tiny_average_pooling_back_kernel(const tiny_dnn::shape3d &in_dim,
             float_t scale_factor,
             std::vector<typename TdAvePool::io_connections> &weight2io,
             std::vector<typename TdAvePool::wo_connections> &in2wo,

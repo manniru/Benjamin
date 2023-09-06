@@ -13,8 +13,7 @@ EnnNetwork::EnnNetwork(QString word, int id,
 
     setbuf(stdout,NULL); //to work out printf
 
-    int batch_size = ENN_BATCH_SIZE;
-    net = new TdNetwork(batch_size);
+    net = new TdNetwork(ENN_BATCH_SIZE);
     parser = new EnnParse(net);
     connect(net, SIGNAL(onEpochEnumerate()), this, SLOT(epochLog()));
     need_train = load();
@@ -77,8 +76,7 @@ bool EnnNetwork::load()
         }
         else if( net_state==ENN_NETWORK_LOCKED )
         {
-            int batch_size = ENN_BATCH_SIZE;
-            net = new TdNetwork(batch_size); // reset network
+            net = new TdNetwork(ENN_BATCH_SIZE); // reset network
             parser->net = net;
             createNNet();
             qDebug() << "Reset from scratch";
@@ -144,13 +142,11 @@ void EnnNetwork::train(float l_rate)
     std::vector<vec_t> target_cost;
     target_cost = create_balanced_target_cost(dataset->train_labels);
 
-    std::vector<tensor_t> input_tensor, output_tensor, t_cost_tensor;
-    net->normalizeTensor(dataset->train_datas, input_tensor);
+    std::vector<tensor_t> output_tensor;
     net->normalizeTensor(dataset->train_labels, output_tensor);
-    net->normalizeTensor(target_cost, t_cost_tensor);
 
-    net->fit(input_tensor, output_tensor, n_train_epochs, false,
-                 t_cost_tensor);
+    net->fit(dataset->train_datas, output_tensor, n_train_epochs, false,
+                 target_cost);
 
     if( net_state!=ENN_NETWORK_LOCKED )
     {

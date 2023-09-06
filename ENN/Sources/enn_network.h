@@ -19,7 +19,7 @@
 #define ENN_NETWORK_LOCKED      2 // network loss exploded
 
 #define ENN_EXPLODE_LOSS        500
-#define ENN_BATCH_SIZE          32
+#define ENN_BATCH_SIZE          64
 
 using namespace tiny_dnn;
 

@@ -28,12 +28,7 @@ public:
 
     void forward(int s_index, int e_index) override;
 
-    void back_propagation(
-              const std::vector<tiny_dnn::tensor_t *> &in_data,
-              tiny_dnn::tensor_t *out_data,
-              tiny_dnn::tensor_t *out_grad,
-              std::vector<tiny_dnn::tensor_t *> &in_grad,
-              int s_index, int e_index) override;
+    void backward(int s_index, int e_index) override;
 
     std::string layer_type() const override;
 

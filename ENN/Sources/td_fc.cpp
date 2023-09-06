@@ -57,7 +57,6 @@ void TdFC::avx_op_forward(
         __m256i imask =
                 _mm256_loadu_si256((__m256i const *)
                                    (mask_src + 8 - nremains));
-//        tiny_dnn::for_i(parallelized, in_data.size(), [&](size_t sample)
         for( int sample=s_index ; sample<e_index ; sample++ )
         {
             const auto &in = in_data[sample];
@@ -104,7 +103,6 @@ void TdFC::avx_op_forward(
     }
     else
     {
-//        tiny_dnn::for_i(parallelized, in_data.size(), [&](size_t sample)
         for( int sample=s_index ; sample<e_index ; sample++ )
         {
             const auto &in = in_data[sample];
@@ -156,22 +154,15 @@ void TdFC::avx_op_backward(
                         &curr_delta2[0], &W[c * params.out_size_],
                         params.out_size_);
         }
-        int parallelized = true;
-        tiny_dnn::for_(parallelized, 0u, params.out_size_,
-             [&](const tiny_dnn::blocked_range &r)
+        int len = params.out_size_;
+
+        for( size_t c=0 ; c<params.in_size_ ; c++ )
         {
-            // accumulate weight-step using delta
-            // dW[c * out_size + i] += current_delta[i] * prev_out[c]
-            size_t len = r.end() - r.begin();
-            for( size_t c=0 ; c<params.in_size_ ; c++ )
-            {
-                vectorize::muladd(&curr_delta2[r.begin()], prev_out2[c],
-                        len, &dW2[c*params.out_size_+r.begin()]);
-            }
-            // vec_t& db = *in_grad[2];
-            vectorize::reduce(&curr_delta2[r.begin()], len,
-                    &db2[r.begin()]);
-        });
+            vectorize::muladd(&curr_delta2[0], prev_out2[c],
+                    len, &dW2[c*params.out_size_]);
+        }
+        // vec_t& db = *in_grad[2];
+        vectorize::reduce(&curr_delta2[0], len, &db2[0]);
     }
 }
 
@@ -182,8 +173,6 @@ void TdFC::op_forward(const tiny_dnn::tensor_t &in_data,
                 const tiny_dnn::core::fully_params &params,
                 int s_index, int e_index)
 {
-//    tiny_dnn::for_i( parallelize, in_data.size(),
-//                     [&](size_t sample);
     for( int i=s_index ; i<e_index ; i++ )
     {
         const tiny_dnn::vec_t &in = in_data[i];
@@ -225,28 +214,24 @@ void TdFC::op_backward(const tiny_dnn::tensor_t &prev_out,
                     params.out_size_);
         }
 
-        int parallelize = true;
-        tiny_dnn::for_( parallelize, 0, params.out_size_,
-                       [&](const tiny_dnn::blocked_range &r)
+        int len = params.out_size_;
+        // accumulate weight-step using delta
+        // dW[c * out_size + i] += current_delta[i] * prev_out[c]
+        for( size_t c=0 ; c<params.in_size_ ; c++ )
         {
-            // accumulate weight-step using delta
-            // dW[c * out_size + i] += current_delta[i] * prev_out[c]
-            for( size_t c=0 ; c<params.in_size_ ; c++ )
-            {
-                vectorize::muladd(&curr_delta[sample][r.begin()],
-                        prev_out[sample][c], r.end() - r.begin(),
-                        &dW[sample][c * params.out_size_ + r.begin()]);
-            }
+            vectorize::muladd(&curr_delta[sample][0],
+                    prev_out[sample][c], len,
+                    &dW[sample][c * params.out_size_]);
+        }
 
-            if( params.has_bias_ )
+        if( params.has_bias_ )
+        {
+            // vec_t& db = *in_grad[2];
+            for( int i=0 ; i<len ; i++ )
             {
-                // vec_t& db = *in_grad[2];
-                for( size_t i=r.begin(); i<r.end(); i++ )
-                {
-                    db[sample][i] += curr_delta[sample][i];
-                }
+                db[sample][i] += curr_delta[sample][i];
             }
-        });
+        }
     }
 }
 
@@ -273,23 +258,18 @@ void TdFC::forward(int s_index, int e_index)
 #endif
 }
 
-void TdFC::back_propagation(
-        const std::vector<tiny_dnn::tensor_t *> &in_data,
-        tiny_dnn::tensor_t *out_data,
-        tiny_dnn::tensor_t *out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad, int s_index,
-        int e_index)
+void TdFC::backward(int s_index, int e_index)
 {
     // launch fully connected kernel
     auto params = params_.fully();
 
     // incoming/outcoming data
-    tiny_dnn::tensor_t &prev_out = *in_data[0];
-    tiny_dnn::tensor_t &W        = *in_data[1];
-    tiny_dnn::tensor_t &dW       = *in_grad[1];
-    tiny_dnn::tensor_t &db       = *in_grad[2];
-    tiny_dnn::tensor_t &prev_delta = *in_grad[0];
-    tiny_dnn::tensor_t &curr_delta = *out_grad;
+    tiny_dnn::tensor_t &prev_out = in_edges[0]->data_;
+    tiny_dnn::tensor_t &W        = in_edges[1]->data_;
+    tiny_dnn::tensor_t &dW       = in_edges[1]->grad_;
+    tiny_dnn::tensor_t &db       = in_edges[2]->grad_;
+    tiny_dnn::tensor_t &prev_delta = in_edges[0]->grad_;
+    tiny_dnn::tensor_t &curr_delta = out_edges->grad_;
 
     // initialize outputs
     fill_tensor(prev_delta, float_t{0});
