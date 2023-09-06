@@ -250,19 +250,16 @@ void TdFC::op_backward(const tiny_dnn::tensor_t &prev_out,
     }
 }
 
-void TdFC::forward_propagation(
-        const std::vector<tiny_dnn::tensor_t *> &in,
-        tiny_dnn::tensor_t *out, int s_index,
-        int e_index)
+void TdFC::forward(int s_index, int e_index)
 {
     // launch fully connected kernel
     auto params = params_.fully();
 
     // incomimg/outcoming data
-    tiny_dnn::tensor_t &in_data_0   = *in[0];
-    tiny_dnn::tensor_t &W           = *in[1];
-    tiny_dnn::tensor_t &bias        = *in[2];
-    tiny_dnn::tensor_t &out_data_0  = *out;
+    tiny_dnn::tensor_t &in_data_0   = in_edges[0]->data_;
+    tiny_dnn::tensor_t &W           = in_edges[1]->data_;
+    tiny_dnn::tensor_t &bias        = in_edges[2]->data_;
+    tiny_dnn::tensor_t &out_data_0  = out_edges->data_;
 
     // initialize outputs
     tiny_dnn::fill_tensor(out_data_0, float_t{0});

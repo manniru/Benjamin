@@ -24,13 +24,10 @@ void TdLeakyRelu::set_in_shape(const tiny_dnn::shape3d &in_shape)
     this->in_shape_ = in_shape;
 }
 
-void TdLeakyRelu::forward_propagation(
-        const std::vector<tiny_dnn::tensor_t *> &in_data,
-        tiny_dnn::tensor_t *out_data, int s_index,
-        int e_index)
+void TdLeakyRelu::forward(int s_index, int e_index)
 {
-    const tiny_dnn::tensor_t &x = *in_data[0];
-    tiny_dnn::tensor_t &y       = *out_data;
+    tiny_dnn::tensor_t &x = in_edges[0]->data_;
+    tiny_dnn::tensor_t &y = out_edges->data_;
     for( int i=s_index ; i<e_index ; i++ )
     {
         forward_activation(x[i], y[i]);

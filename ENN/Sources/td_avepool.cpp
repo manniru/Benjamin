@@ -93,13 +93,9 @@ void TdAvePool::connect_bias(size_t bias_index, size_t output_index)
     bias2out_[bias_index].push_back(output_index);
 }
 
-void TdAvePool::forward_propagation(
-        const std::vector<tiny_dnn::tensor_t *> &in_data,
-        tiny_dnn::tensor_t *out_data, int s_index,
-        int e_index)
+void TdAvePool::forward(int s_index, int e_index)
 {
-    tiny_average_pooling_kernel(in_data, out_data, out_,
-                                TdAvePool::scale_factor_,
+    tiny_average_pooling_kernel(out_, TdAvePool::scale_factor_,
                                 TdAvePool::out2wi_, s_index, e_index);
 }
 
@@ -180,19 +176,17 @@ void TdAvePool::connect_kernel(size_t pooling_size_x,
     }
 }
 
-void tiny_average_pooling_kernel(
-     const std::vector<tiny_dnn::tensor_t *> &in_data,
-     tiny_dnn::tensor_t *out_data,
+void TdAvePool::tiny_average_pooling_kernel(
      const tiny_dnn::shape3d &out_dim, float_t scale_factor,
      std::vector<TdAvePool::wi_connections> &out2wi, int s_index,
      int e_index)
 {
     for( int i=s_index ; i<e_index ; i++ )
     {
-        const tiny_dnn::vec_t &in = (*in_data[0])[i];
-        const tiny_dnn::vec_t &W  = (*in_data[1])[0];
-        const tiny_dnn::vec_t &b  = (*in_data[2])[0];
-        tiny_dnn::vec_t &out      = (*out_data)[i];
+        const tiny_dnn::vec_t &in = in_edges[0]->data_[i];
+        const tiny_dnn::vec_t &W  = in_edges[1]->data_[0];
+        const tiny_dnn::vec_t &b  = in_edges[2]->data_[0];
+        tiny_dnn::vec_t &out      = out_edges->data_[i];
 
         auto oarea = out_dim.area();
         size_t idx = 0;
@@ -218,7 +212,7 @@ void tiny_average_pooling_kernel(
     }
 }
 
-void tiny_average_pooling_back_kernel(
+void TdAvePool::tiny_average_pooling_back_kernel(
               const std::vector<tiny_dnn::tensor_t *> &in_data,
               tiny_dnn::tensor_t *out_grad,
               std::vector<tiny_dnn::tensor_t *> &in_grad,

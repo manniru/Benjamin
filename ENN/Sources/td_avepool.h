@@ -31,9 +31,7 @@ public:
     void connect_weight(size_t input_index, size_t output_index,
                         size_t weight_index);
     void connect_bias(size_t bias_index, size_t output_index);
-    void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-            tiny_dnn::tensor_t *out_data, int s_index,
-            int e_index) override;
+    void forward(int s_index, int e_index) override;
     void back_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
                   tiny_dnn::tensor_t *out_data,
                   tiny_dnn::tensor_t *out_grad,
@@ -57,6 +55,22 @@ private:
                         size_t x,
                         size_t y,
                         size_t inc);
+    // forward_propagation
+    void tiny_average_pooling_kernel(const tiny_dnn::shape3d &out_dim,
+            float_t scale_factor,
+            std::vector<typename TdAvePool::wi_connections> &out2wi,
+            int s_index, int e_index);
+
+    // back_propagation
+    void tiny_average_pooling_back_kernel(const std::vector<tiny_dnn::tensor_t *> &in_data,
+            tiny_dnn::tensor_t *out_grad,
+            std::vector<tiny_dnn::tensor_t *> &in_grad,
+            const tiny_dnn::shape3d &in_dim,
+            float_t scale_factor,
+            std::vector<typename TdAvePool::io_connections> &weight2io,
+            std::vector<typename TdAvePool::wo_connections> &in2wo,
+            std::vector<std::vector<size_t>> &bias2out,
+            int s_index, int e_index);
 
     size_t stride_x_;
     size_t stride_y_;
@@ -75,25 +89,5 @@ private:
     std::vector<size_t> out2bias_;
     float_t scale_factor_;
 };
-
-// forward_propagation
-inline void tiny_average_pooling_kernel(
-        const std::vector<tiny_dnn::tensor_t *> &in_data,
-        tiny_dnn::tensor_t *out_data,
-        const tiny_dnn::shape3d &out_dim,
-        float_t scale_factor,
-        std::vector<typename TdAvePool::wi_connections> &out2wi,
-        int s_index, int e_index);
-
-// back_propagation
-inline void tiny_average_pooling_back_kernel(const std::vector<tiny_dnn::tensor_t *> &in_data,
-        tiny_dnn::tensor_t *out_grad,
-        std::vector<tiny_dnn::tensor_t *> &in_grad,
-        const tiny_dnn::shape3d &in_dim,
-        float_t scale_factor,
-        std::vector<typename TdAvePool::io_connections> &weight2io,
-        std::vector<typename TdAvePool::wo_connections> &in2wo,
-        std::vector<std::vector<size_t>> &bias2out,
-        int s_index, int e_index);
 
 #endif // TDAVEPOOL_H

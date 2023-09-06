@@ -36,8 +36,7 @@ public:
 
     size_t fan_out_size() const override;
 
-    void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in_data,
-            tiny_dnn::tensor_t *out_data, int s_index, int e_index) override;
+    void forward(int s_index, int e_index) override;
 
     void back_propagation(
             const std::vector<tiny_dnn::tensor_t *> &in_data,
@@ -58,8 +57,7 @@ public:
     std::string kernel_header() const override;
 
 private:
-    tiny_dnn::tensor_t *in_data_padded(
-            const std::vector<tiny_dnn::tensor_t *> &in);
+    tiny_dnn::tensor_t *in_data_padded();
 
     void conv_set_params(
             const tiny_dnn::shape3d &in,
@@ -167,10 +165,6 @@ private:
 
     /* Padding operation */
     tiny_dnn::core::Conv2dPadding padding_op_;
-
-    std::vector<tiny_dnn::tensor_t *> fwd_in_data_;
-    std::vector<tiny_dnn::tensor_t *> bwd_in_data_;
-    std::vector<tiny_dnn::tensor_t *> bwd_in_grad_;
 
     /* Buffer to store padded data */
     struct conv_layer_worker_specific_storage

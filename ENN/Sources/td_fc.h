@@ -26,8 +26,7 @@ public:
 
     std::vector<tiny_dnn::index3d<size_t>> out_shape() const override;
 
-    void forward_propagation(const std::vector<tiny_dnn::tensor_t *> &in,
-                        tiny_dnn::tensor_t *out, int s_index, int e_index) override;
+    void forward(int s_index, int e_index) override;
 
     void back_propagation(
               const std::vector<tiny_dnn::tensor_t *> &in_data,

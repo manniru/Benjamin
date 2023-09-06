@@ -34,9 +34,6 @@ void TdConvolution::op_forward(const tiny_dnn::tensor_t &in_data,
        const tiny_dnn::core::conv_params &params, int s_index,
        int e_index)
 {
-    int parallelized = true;
-//    tiny_dnn::for_(parallelized, 0u, in_data.size(),
-//                   [&](const tiny_dnn::blocked_range &r)
     {
         size_t out_area    = params.out.area();
         size_t iw          = params.in_padded.width_;
@@ -113,9 +110,6 @@ void TdConvolution::op_backward(const tensor_t &prev_out,
 {
     typedef typename vec_t::value_type float_t;
 
-    int parallelized = true;
-
-//    tiny_dnn::for_i(parallelized, prev_out.size(), [&](size_t sample)
     for( int sample=s_index ; sample<e_index ; sample++ )
     {
         // propagate delta to previous layer
@@ -246,30 +240,20 @@ void TdConvolution::op_backward(const tensor_t &prev_out,
     }
 }
 
-void TdConvolution::forward_propagation(
-        const std::vector<tiny_dnn::tensor_t *> &in,
-        tiny_dnn::tensor_t *out, int s_index,
-        int e_index)
+void TdConvolution::forward(int s_index, int e_index)
 {
     // apply padding to the input tensor
-    padding_op_.copy_and_pad_input(*in[0],
+    padding_op_.copy_and_pad_input(in_edges[0]->data_,
             cws_.prev_out_padded_);
-
-    if( fwd_in_data_.size()!=in.size() )
-    {
-        fwd_in_data_.resize(in.size());
-    }
-    std::copy(in.begin(), in.end(), fwd_in_data_.begin());
-    fwd_in_data_[0] = in_data_padded(in);
 
     // launch convolutional kernel
     auto params = params_.conv();
 
     // incomimg/outcoming data
-    tiny_dnn::tensor_t &in_data  = *in[0];
-    tiny_dnn::tensor_t &W        = *in[1];
-    tiny_dnn::tensor_t &bias     = *in[2];
-    tiny_dnn::tensor_t &out_data = *out;
+    tiny_dnn::tensor_t &in_data  = in_edges[0]->data_;
+    tiny_dnn::tensor_t &W        = in_edges[1]->data_;
+    tiny_dnn::tensor_t &bias     = in_edges[2]->data_;
+    tiny_dnn::tensor_t &out_data = out_edges->data_;
 
     // initialize outputs
     fill_tensor(out_data, float_t{0});
@@ -292,27 +276,16 @@ void TdConvolution::back_propagation(
         std::vector<tiny_dnn::tensor_t *> &in_grad,
         int s_index, int e_index)
 {
-    bwd_in_data_.resize(in_data.size());
-    std::copy(in_data.begin(), in_data.end(), bwd_in_data_.begin());
-    bwd_in_data_[0] = in_data_padded(in_data);
-
-    bwd_in_grad_.resize(in_grad.size());
-    std::copy(in_grad.begin(), in_grad.end(), bwd_in_grad_.begin());
-    if( params_.pad_type==tiny_dnn::padding::same )
-    {
-        bwd_in_grad_[0] = &cws_.prev_delta_padded_;
-    }
-
     // launch convolutional kernel
     auto params = params_.conv();
 
     // incoming/outcoming data
-    tiny_dnn::tensor_t &prev_out = *in_data[0];
-    tiny_dnn::tensor_t &W        = *in_data[1];
-    tiny_dnn::tensor_t &dW             = *in_grad[1];
-    tiny_dnn::tensor_t &db             = *in_grad[2];
-    tiny_dnn::tensor_t &prev_delta     = *in_grad[0];
-    tiny_dnn::tensor_t &curr_delta     = *out_grad;
+    tiny_dnn::tensor_t &prev_out    = *in_data[0];
+    tiny_dnn::tensor_t &W           = *in_data[1];
+    tiny_dnn::tensor_t &dW          = *in_grad[1];
+    tiny_dnn::tensor_t &db          = *in_grad[2];
+    tiny_dnn::tensor_t &prev_delta  = *in_grad[0];
+    tiny_dnn::tensor_t &curr_delta  = *out_grad;
 
     // initalize outputs
     fill_tensor(prev_delta, float_t{0});
@@ -380,12 +353,11 @@ std::string TdConvolution::kernel_header() const
     return ss.str();
 }
 
-tiny_dnn::tensor_t *TdConvolution::in_data_padded(
-        const std::vector<tiny_dnn::tensor_t *> &in)
+tiny_dnn::tensor_t *TdConvolution::in_data_padded()
 {
     if( params_.pad_type==tiny_dnn::padding::valid )
     {
-        return in[0];
+        return &in_edges[0]->data_;
     }
     else
     {
