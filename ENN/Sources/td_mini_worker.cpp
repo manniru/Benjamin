@@ -1,14 +1,14 @@
 #include "td_mini_worker.h"
 
 TdMiniWorker::TdMiniWorker(std::vector<TdLayer *> *nodes,
-                   std::vector<tiny_dnn::tensor_t> *t_bat,
-                   tiny_dnn::tensor_t *t_cobat,
+                   std::vector<tiny_dnn::label_t> *o,
+                   tiny_dnn::tensor_t *t_co,
                    QObject *parent) :
     QObject(parent)
 {
     nod = nodes;
-    t_batch = t_bat;
-    t_cost_batch = t_cobat;
+    outputs = o;
+    t_costs = t_co;
     enabled = 1;
 }
 
@@ -30,8 +30,7 @@ void TdMiniWorker::run()
     o_batch = forward();
     // back propagation
     std::vector<tiny_dnn::tensor_t> delta;
-    delta = tiny_dnn::gradient<tiny_dnn::mse>(o_batch, *t_batch,
-              *t_cost_batch, s_index, e_index);
+    delta = calcGrad<tiny_dnn::mse>(o_batch);
     // backward
     nod->back()->setOutGrads(delta, s_index, e_index);
 
@@ -57,4 +56,58 @@ std::vector<tiny_dnn::tensor_t> TdMiniWorker::forward()
     out.push_back(&back->out_edges->data_);
 
     return td_normalizeOut(out);
+}
+
+template <typename E>
+std::vector<tiny_dnn::tensor_t> TdMiniWorker::calcGrad(
+       std::vector<tiny_dnn::tensor_t> &y)
+{
+    const size_t sample_count  = y.size();
+    std::vector<tiny_dnn::tensor_t> gradients(sample_count);
+
+    for( int sample=s_index ; sample<e_index ; sample++ )
+    {
+        gradients[sample].resize(y[sample].size());
+        gradients[sample][0] = mse_df(y[sample][0],
+                                      (*outputs)[sample]);
+        int t_cost_size = (*t_costs).size();
+        if( sample<t_cost_size )
+        {
+            applyCost(gradients[sample], (*t_costs)[sample]);
+        }
+    }
+
+    return gradients;
+}
+
+void TdMiniWorker::applyCost( tiny_dnn::tensor_t &gradient,
+                               tiny_dnn::vec_t &cost)
+{
+    int channel_count = gradient.size();
+    for( int channel=0 ; channel<channel_count ; channel++ )
+    {
+        // @todo optimize? (use AVX or so)
+        gradient[channel][0] *= cost[channel];
+    }
+}
+
+tiny_dnn::vec_t TdMiniWorker::mse_df(tiny_dnn::vec_t &y,
+                                     float o)
+{
+    tiny_dnn::vec_t d(y.size());
+    float_t factor = float_t(2) / static_cast<float_t>(y.size());
+
+    for(size_t i = 0; i < y.size(); ++i)
+    {
+        if( o==i )
+        {
+            d[i] = factor * (y[i] - 1);
+        }
+        else
+        {
+            d[i] = factor * y[i];
+        }
+    }
+
+    return d;
 }

@@ -43,7 +43,7 @@ void TdNetwork::workerFinished()
 }
 
 void TdNetwork::fit(tiny_dnn::tensor_t &inputs,
-                std::vector<tiny_dnn::tensor_t> &desired_outputs,
+                std::vector<tiny_dnn::label_t> &outputs,
                 int epoch, bool reset_weights,
                 tiny_dnn::tensor_t &t_cost)
 {
@@ -55,7 +55,7 @@ void TdNetwork::fit(tiny_dnn::tensor_t &inputs,
         nod[i]->setParallelize(true);
     }
     worker_finished = false;
-    worker->fit(&inputs, &desired_outputs, epoch, &t_cost);
+    worker->fit(&inputs, &outputs, epoch, &t_cost);
     while( !worker_finished )
     {
         QThread::msleep(10);
@@ -68,34 +68,17 @@ void TdNetwork::setBatchSize(int bs)
     worker->setBatchSize(bs);
 }
 
-void TdNetwork::normalizeTensor(
-        const std::vector<tiny_dnn::label_t> &inputs,
-        std::vector<tiny_dnn::tensor_t> &normalized)
-{
-    std::vector<tiny_dnn::vec_t> vec;
-    normalized.reserve(inputs.size());
-    label2vec(&inputs[0], inputs.size(), vec);
-    int len = vec.size();
-    normalized.reserve(len);
-    for( int i=0 ; i<len ; i++ )
-    {
-        normalized.emplace_back(tiny_dnn::tensor_t{vec[i]});
-    }
-}
-
-void TdNetwork::label2vec(const tiny_dnn::label_t *t, size_t num,
+void TdNetwork::label2vec(const float *t, size_t num,
                              std::vector<tiny_dnn::vec_t> &vec)
 {
     size_t outdim = nod.back()->outDataSize();
-    int target_value_min = 0;
-    int target_value_max = 1;
 
     vec.reserve(num);
     for( size_t i=0 ; i<num ; i++ )
     {
         assert(t[i] < outdim);
-        tiny_dnn::vec_t buf(outdim, target_value_min);
-        buf[t[i]] = target_value_max;
+        tiny_dnn::vec_t buf(outdim, 0);
+        buf[t[i]] = 1;
         vec.push_back(buf);
     }
 }

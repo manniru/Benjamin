@@ -14,13 +14,19 @@ class TdMiniWorker : public QObject
     Q_OBJECT
 public:
     explicit TdMiniWorker(std::vector<TdLayer *> *nodes,
-                      std::vector<tiny_dnn::tensor_t> *t_bat,
-                      tiny_dnn::tensor_t *t_cobat,
+                      std::vector<tiny_dnn::label_t> *o,
+                      tiny_dnn::tensor_t *t_co,
                       QObject *parent = nullptr);
 
     std::vector<tiny_dnn::tensor_t> forward();
     void setRange(int s_id, int e_id);
     int enabled;
+    template <typename E>
+    std::vector<tiny_dnn::tensor_t> calcGrad(
+           std::vector<tiny_dnn::tensor_t> &y);
+    void applyCost(tiny_dnn::tensor_t &calcGrad,
+            tiny_dnn::vec_t &cost);
+    tiny_dnn::vec_t mse_df(tiny_dnn::vec_t &y, float o);
 
 public slots:
     void run();
@@ -30,8 +36,8 @@ signals:
 
 private:
     std::vector<TdLayer *> *nod;
-    std::vector<tiny_dnn::tensor_t> *t_batch;
-    tiny_dnn::tensor_t *t_cost_batch;
+    std::vector<tiny_dnn::label_t> *outputs;
+    tiny_dnn::tensor_t *t_costs;
     int s_index;
     int e_index;
 };

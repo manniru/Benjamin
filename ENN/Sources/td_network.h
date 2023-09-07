@@ -41,11 +41,9 @@ public:
 
     void stopOngoingTraining();
     void fit(tiny_dnn::tensor_t &inputs,
-             std::vector<tiny_dnn::tensor_t> &desired_outputs,
+             std::vector<tiny_dnn::label_t> &outputs,
              int epoch, bool reset_weights,
              tiny_dnn::tensor_t &t_cost);
-    void normalizeTensor(const std::vector<tiny_dnn::label_t> &inputs,
-                          std::vector<tiny_dnn::tensor_t> &normalized);
     TdNetwork* addFC(int in_dim, int out_dim);
     TdNetwork* addLeakyRelu();
     TdNetwork* addConv(int in_width, int in_height, int window_width,
@@ -71,7 +69,7 @@ public slots:
     void workerFinished();
 
 private:
-    void label2vec(const tiny_dnn::label_t *t, size_t num,
+    void label2vec(const float *t, size_t num,
                                 std::vector<tiny_dnn::vec_t> &vec);
     void setup(bool reset_weight);
 
