@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <stdio.h>
 #include <unistd.h>
-#include <tiny_dnn/tiny_dnn.h>
+#include <tiny_dnn/util/util.h>
 #include "config.h"
 
 int     getIntCommand(char *command);

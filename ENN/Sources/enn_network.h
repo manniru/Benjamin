@@ -7,7 +7,7 @@
 #include <QObject>
 #include "td_network.h"
 #include "enn_parse.h"
-#include <tiny_dnn/tiny_dnn.h>
+#include <tiny_dnn/util/util.h>
 #ifdef ENN_IMAGE_DATASET
 #include "enn_dataset_image.h"
 #else
@@ -59,6 +59,7 @@ private:
                    std::vector<label_t> &label);
     void handleWrongs(float diff, QVector<int> &wrong_i,
                       QVector<float> &wrong_loss);
+    float_t mse_f(vec_t &y, label_t &o);
 
     TdNetwork *net;
     EnnParse *parser;

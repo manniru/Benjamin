@@ -7,6 +7,7 @@
 
 #define BT_ENN_SIZE 40
 
+// UI Sample Image Loader
 class EnnSampleLink : public QObject, public QQuickImageProvider
 {
     Q_OBJECT

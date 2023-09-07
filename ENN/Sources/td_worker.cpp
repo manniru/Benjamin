@@ -11,13 +11,13 @@ void TdWorker::setBatchSize(int bs)
     int ws_len = workers.size();
     batch_size = bs;
 
-    t_batch.resize(batch_size);
+    o_batch.resize(batch_size);
 
     int thread_num = TD_THREAD_NUM;
 
     for( int i=ws_len ; i<thread_num ; i++ )
     {
-        TdMiniWorker *new_worker = new TdMiniWorker(nod, &t_batch,
+        TdMiniWorker *new_worker = new TdMiniWorker(nod, &o_batch,
                                             &t_cost_batch);
         QThread *thread = new QThread;
         new_worker->moveToThread(thread);
@@ -34,7 +34,7 @@ void TdWorker::setBatchSize(int bs)
 void TdWorker::trainMiniBatch(int data_size, int offset)
 {
     std::copy(&(*outputs)[batch_cnt],
-              &(*outputs)[batch_cnt] + data_size, &t_batch[0]);
+              &(*outputs)[batch_cnt] + data_size, &o_batch[0]);
     t_cost_batch = tiny_dnn::tensor_t(&(*cost)[batch_cnt],
         &(*cost)[batch_cnt] + data_size);
     nod->front()->setInData(*in_vec, data_size, offset);
@@ -77,7 +77,7 @@ void TdWorker::trainMiniBatch(int data_size, int offset)
 }
 
 void TdWorker::fit(tiny_dnn::tensor_t *inputs,
-        std::vector<tiny_dnn::tensor_t> *desired_outputs,
+        std::vector<tiny_dnn::label_t> *desired_outputs,
         int epoch, tiny_dnn::tensor_t *t_cost)
 {
     stop_training = false;

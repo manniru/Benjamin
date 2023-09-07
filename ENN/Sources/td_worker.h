@@ -15,7 +15,7 @@ public:
                       QObject *parent = nullptr);
 
     void fit(tiny_dnn::tensor_t *inputs,
-                    std::vector<tiny_dnn::tensor_t> *desired_outputs,
+                    std::vector<tiny_dnn::label_t> *desired_outputs,
                     int epoch,
                     tiny_dnn::tensor_t *t_cost);
     void trainMiniBatch(int data_size,
@@ -28,7 +28,7 @@ public:
     QVector<TdMiniWorker *> workers;
     QVector<QThread *>      workers_th;
     tiny_dnn::adagrad       optimizer;
-    std::vector<tiny_dnn::tensor_t> t_batch;
+    std::vector<tiny_dnn::label_t> o_batch;
     tiny_dnn::tensor_t t_cost_batch;
     int stop_training;
 
@@ -50,7 +50,7 @@ private:
     int batch_cnt;
     int total_epoch;
     tiny_dnn::tensor_t *in_vec;
-    std::vector<tiny_dnn::tensor_t> *outputs;
+    std::vector<tiny_dnn::label_t> *outputs;
     tiny_dnn::tensor_t *cost;
 };
 

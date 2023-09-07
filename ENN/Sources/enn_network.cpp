@@ -1,7 +1,6 @@
 #include "enn_network.h"
 #include "tiny_dnn/util/target_cost.h"
 
-timer nn_t;
 int nn_epoch;
 
 EnnNetwork::EnnNetwork(QString word, int id,
@@ -26,13 +25,11 @@ EnnNetwork::~EnnNetwork()
 
 void EnnNetwork::benchmark()
 {
-    tiny_dnn::timer t;  // start the timer
-
     // predict
     net->predict(dataset->test_datas[0]);
 
-    double elapsed_s = t.elapsed();
-    t.stop();
+    double elapsed_s = 0;
+    // FIXME ELAPSED
     qDebug() << dataset->m_name << "Finished! single infere time:"
              << elapsed_s;
 }
@@ -141,12 +138,8 @@ void EnnNetwork::train(float l_rate)
 
     std::vector<vec_t> target_cost;
     target_cost = create_balanced_target_cost(dataset->train_labels);
-
-    std::vector<tensor_t> output_tensor;
-    net->normalizeTensor(dataset->train_labels, output_tensor);
-
-    net->fit(dataset->train_datas, output_tensor, n_train_epochs, false,
-                 target_cost);
+    net->fit(dataset->train_datas, dataset->train_labels, n_train_epochs,
+             false, target_cost);
 
     if( net_state!=ENN_NETWORK_LOCKED )
     {
@@ -166,7 +159,8 @@ void EnnNetwork::epochLog()
     nn_epoch++;
     if( nn_epoch%ENN_EPOCH_LOG==0 )
     {
-        QString t_elapsed = QString::number(nn_t.elapsed());
+        // FIXME
+        QString t_elapsed = QString::number(0);
         t_elapsed += "s";
         float loss = calcLoss();
         EnnResult acc_test = getAccuracy(dataset->test_datas,
@@ -185,7 +179,6 @@ void EnnNetwork::epochLog()
         }
 
         net->worker->optimizer.alpha *= 0.95;
-        nn_t.restart();
     }
 }
 
@@ -195,8 +188,6 @@ float EnnNetwork::calcLoss()
     // calc loss
     float loss = 0;
 
-    std::vector<tensor_t> label_tensor;
-    net->normalizeTensor(dataset->train_labels, label_tensor);
     int len = dataset->train_datas.size();
 
     float          wrong_sum;
@@ -206,7 +197,7 @@ float EnnNetwork::calcLoss()
     for( int i=0 ; i<len ; i++ )
     {
         vec_t predicted = net->predict(dataset->train_datas[i]);
-        float s_loss = mse::f(predicted, label_tensor[i][0]);
+        float s_loss = mse_f(predicted, dataset->train_labels[i]);
 
         if( s_loss>ENN_WRONG_LOSS )
         {
@@ -335,3 +326,21 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
     }
 }
 
+float_t EnnNetwork::mse_f(vec_t &y, label_t &o)
+{
+    float_t d = 0;
+
+    for( size_t i=0 ; i<y.size() ; i++ )
+    {
+        if( o==i )
+        {
+            d += (y[i] - 1) * (y[i] - 1);
+        }
+        else
+        {
+            d += y[i]*y[i];
+        }
+    }
+
+    return d / static_cast<float_t>(y.size());
+}

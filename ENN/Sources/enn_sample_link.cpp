@@ -1,7 +1,7 @@
 #include "enn_sample_link.h"
 #include <QDir>
 #include <QtMath>
-#include "tiny_dnn/tiny_dnn.h"
+#include <tiny_dnn/util/util.h>
 
 EnnSampleLink::EnnSampleLink(QObject *parent) :
     QObject(parent), QQuickImageProvider(QQuickImageProvider::Pixmap)
