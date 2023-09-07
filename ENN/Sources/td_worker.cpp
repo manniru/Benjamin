@@ -31,20 +31,13 @@ void TdWorker::setBatchSize(int bs)
     }
 }
 
-/**
-* train on one minibatch
-* @param size is the number of data points to use in this batch
-*/
-void TdWorker::trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
-                           tiny_dnn::tensor_t *t,
-                           int data_size,
-                           tiny_dnn::tensor_t *t_cost,
-                           int offset)
+void TdWorker::trainMiniBatch(int data_size, int offset)
 {
-    std::copy(&t[0], &t[0] + data_size, &t_batch[0]);
-    t_cost_batch = std::vector<tiny_dnn::tensor_t>(&t_cost[0],
-        &t_cost[0] + data_size);
-    nod->front()->setInData(in, data_size, offset);
+    std::copy(&(*outputs)[batch_cnt],
+              &(*outputs)[batch_cnt] + data_size, &t_batch[0]);
+    t_cost_batch = tiny_dnn::tensor_t(&(*cost)[batch_cnt],
+        &(*cost)[batch_cnt] + data_size);
+    nod->front()->setInData(*in_vec, data_size, offset);
 
     int nod_len = nod->size();
     for( int i=0 ; i<nod_len ; i++ )
@@ -83,9 +76,9 @@ void TdWorker::trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
     emit startMiniWorkers();
 }
 
-void TdWorker::fit(std::vector<tiny_dnn::tensor_t> *inputs,
+void TdWorker::fit(tiny_dnn::tensor_t *inputs,
         std::vector<tiny_dnn::tensor_t> *desired_outputs,
-        int epoch, std::vector<tiny_dnn::tensor_t> *t_cost)
+        int epoch, tiny_dnn::tensor_t *t_cost)
 {
     stop_training = false;
     optimizer.reset();
@@ -118,8 +111,7 @@ void TdWorker::trainBatch()
     {
         int min_size = std::min((size_t)batch_size,
                                 in_vec->size() - batch_cnt);
-        trainMiniBatch(*in_vec, &(*outputs)[batch_cnt],
-                   min_size, &((*cost)[batch_cnt]), batch_cnt);
+        trainMiniBatch(min_size, batch_cnt);
     }
     else
     {

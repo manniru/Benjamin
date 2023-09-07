@@ -14,14 +14,11 @@ public:
     explicit TdWorker(std::vector<TdLayer *> *nodes,
                       QObject *parent = nullptr);
 
-    void fit(std::vector<tiny_dnn::tensor_t> *inputs,
+    void fit(tiny_dnn::tensor_t *inputs,
                     std::vector<tiny_dnn::tensor_t> *desired_outputs,
                     int epoch,
-                    std::vector<tiny_dnn::tensor_t> *t_cost);
-    void trainMiniBatch(std::vector<tiny_dnn::tensor_t> &in,
-                               tiny_dnn::tensor_t *t,
-                               int data_size,
-                               tiny_dnn::tensor_t *t_cost,
+                    tiny_dnn::tensor_t *t_cost);
+    void trainMiniBatch(int data_size,
                                int offset);
     void setBatchSize(int bs);
     int runningWorkersNum();
@@ -32,7 +29,7 @@ public:
     QVector<QThread *>      workers_th;
     tiny_dnn::adagrad       optimizer;
     std::vector<tiny_dnn::tensor_t> t_batch;
-    std::vector<tiny_dnn::tensor_t> t_cost_batch;
+    tiny_dnn::tensor_t t_cost_batch;
     int stop_training;
 
 public slots:
@@ -52,9 +49,9 @@ private:
     int iter_cnt;
     int batch_cnt;
     int total_epoch;
-    std::vector<tiny_dnn::tensor_t> *in_vec;
+    tiny_dnn::tensor_t *in_vec;
     std::vector<tiny_dnn::tensor_t> *outputs;
-    std::vector<tiny_dnn::tensor_t> *cost;
+    tiny_dnn::tensor_t *cost;
 };
 
 #endif // TD_WORKER_H

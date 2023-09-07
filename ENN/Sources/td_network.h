@@ -40,14 +40,10 @@ public:
     void initWeightBias();
 
     void stopOngoingTraining();
-    void fit(std::vector<tiny_dnn::tensor_t> &inputs,
+    void fit(tiny_dnn::tensor_t &inputs,
              std::vector<tiny_dnn::tensor_t> &desired_outputs,
              int epoch, bool reset_weights,
-             std::vector<tiny_dnn::tensor_t> &t_cost);
-    void normalizeTensor(const std::vector<tiny_dnn::tensor_t> &inputs,
-                         std::vector<tiny_dnn::tensor_t> &normalized);
-    void normalizeTensor(const std::vector<tiny_dnn::vec_t> &inputs,
-                         std::vector<tiny_dnn::tensor_t> &normalized);
+             tiny_dnn::tensor_t &t_cost);
     void normalizeTensor(const std::vector<tiny_dnn::label_t> &inputs,
                           std::vector<tiny_dnn::tensor_t> &normalized);
     TdNetwork* addFC(int in_dim, int out_dim);
@@ -75,12 +71,6 @@ public slots:
     void workerFinished();
 
 private:
-    void checkTargetCostMatrix(const std::vector<tiny_dnn::tensor_t> &t,
-                               const std::vector<tiny_dnn::tensor_t> &t_cost);
-    void checkTargetCostElement(const tiny_dnn::vec_t &t,
-                                const tiny_dnn::vec_t &t_cost);
-    void checkTargetCostElement(const tiny_dnn::tensor_t &t,
-                                const tiny_dnn::tensor_t &t_cost);
     void label2vec(const tiny_dnn::label_t *t, size_t num,
                                 std::vector<tiny_dnn::vec_t> &vec);
     void setup(bool reset_weight);

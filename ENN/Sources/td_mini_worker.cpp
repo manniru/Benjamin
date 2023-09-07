@@ -2,7 +2,7 @@
 
 TdMiniWorker::TdMiniWorker(std::vector<TdLayer *> *nodes,
                    std::vector<tiny_dnn::tensor_t> *t_bat,
-                   std::vector<tiny_dnn::tensor_t> *t_cobat,
+                   tiny_dnn::tensor_t *t_cobat,
                    QObject *parent) :
     QObject(parent)
 {

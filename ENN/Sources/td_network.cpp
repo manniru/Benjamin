@@ -42,60 +42,11 @@ void TdNetwork::workerFinished()
     worker_finished = true;
 }
 
-void TdNetwork::checkTargetCostMatrix(
-        const std::vector<tiny_dnn::tensor_t> &t,
-        const std::vector<tiny_dnn::tensor_t> &t_cost)
-{
-    if( !t_cost.empty() )
-    {
-        if( t.size()!=t_cost.size() )
-        {
-            qDebug() << "if target cost is supplied, "
-                        "its length must equal that of target data";
-            exit(0);
-        }
-
-        size_t end = t.size();
-        for( size_t i=0 ; i<end ; i++ )
-        {
-            checkTargetCostElement(t[i], t_cost[i]);
-        }
-    }
-}
-
-// regression
-void TdNetwork::checkTargetCostElement(const tiny_dnn::vec_t &t,
-                        const tiny_dnn::vec_t &t_cost)
-{
-    if( t.size()!=t_cost.size() )
-    {
-        qDebug() << "if target cost is supplied for a regression task, "
-                    "its shape must be identical to the target data";
-        exit(0);
-    }
-}
-
-void TdNetwork::checkTargetCostElement(const tiny_dnn::tensor_t &t,
-                        const tiny_dnn::tensor_t &t_cost)
-{
-    if( t.size()!=t_cost.size() )
-    {
-        qDebug() << "if target cost is supplied for a regression task, "
-                    "its shape must be identical to the target data";
-        exit(0);
-    }
-    for( size_t i=0 ; i<t.size() ; i++ )
-    {
-        checkTargetCostElement(t[i], t_cost[i]);
-    }
-}
-
-void TdNetwork::fit(std::vector<tiny_dnn::tensor_t> &inputs,
+void TdNetwork::fit(tiny_dnn::tensor_t &inputs,
                 std::vector<tiny_dnn::tensor_t> &desired_outputs,
                 int epoch, bool reset_weights,
-                std::vector<tiny_dnn::tensor_t> &t_cost)
+                tiny_dnn::tensor_t &t_cost)
 {
-    checkTargetCostMatrix(desired_outputs, t_cost);
     setup(reset_weights);
 
     int len = nod.size();
@@ -118,31 +69,18 @@ void TdNetwork::setBatchSize(int bs)
 }
 
 void TdNetwork::normalizeTensor(
-        const std::vector<tiny_dnn::tensor_t> &inputs,
-        std::vector<tiny_dnn::tensor_t> &normalized)
-{
-    normalized = inputs;
-}
-
-void TdNetwork::normalizeTensor(
-        const std::vector<tiny_dnn::vec_t> &inputs,
-        std::vector<tiny_dnn::tensor_t> &normalized)
-{
-    normalized.reserve(inputs.size());
-    for( size_t i=0 ; i<inputs.size() ; i++ )
-    {
-        normalized.emplace_back(tiny_dnn::tensor_t{inputs[i]});
-    }
-}
-
-void TdNetwork::normalizeTensor(
         const std::vector<tiny_dnn::label_t> &inputs,
         std::vector<tiny_dnn::tensor_t> &normalized)
 {
     std::vector<tiny_dnn::vec_t> vec;
     normalized.reserve(inputs.size());
     label2vec(&inputs[0], inputs.size(), vec);
-    normalizeTensor(vec, normalized);
+    int len = vec.size();
+    normalized.reserve(len);
+    for( int i=0 ; i<len ; i++ )
+    {
+        normalized.emplace_back(tiny_dnn::tensor_t{vec[i]});
+    }
 }
 
 void TdNetwork::label2vec(const tiny_dnn::label_t *t, size_t num,

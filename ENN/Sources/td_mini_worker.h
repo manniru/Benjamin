@@ -15,7 +15,7 @@ class TdMiniWorker : public QObject
 public:
     explicit TdMiniWorker(std::vector<TdLayer *> *nodes,
                       std::vector<tiny_dnn::tensor_t> *t_bat,
-                      std::vector<tiny_dnn::tensor_t> *t_cobat,
+                      tiny_dnn::tensor_t *t_cobat,
                       QObject *parent = nullptr);
 
     std::vector<tiny_dnn::tensor_t> forward();
@@ -31,7 +31,7 @@ signals:
 private:
     std::vector<TdLayer *> *nod;
     std::vector<tiny_dnn::tensor_t> *t_batch;
-    std::vector<tiny_dnn::tensor_t> *t_cost_batch;
+    tiny_dnn::tensor_t *t_cost_batch;
     int s_index;
     int e_index;
 };
