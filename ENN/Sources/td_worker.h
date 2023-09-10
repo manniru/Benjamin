@@ -15,21 +15,20 @@ public:
                       QObject *parent = nullptr);
 
     void fit(tiny_dnn::tensor_t *inputs,
-                    std::vector<tiny_dnn::label_t> *desired_outputs,
-                    int epoch,
-                    tiny_dnn::tensor_t *t_cost);
+             std::vector<int> *desired_outputs,
+             int epoch);
     void trainMiniBatch(int data_size,
                                int offset);
     void setBatchSize(int bs);
     int runningWorkersNum();
     void trainEpoch();
     void trainBatch();
+    void calcCost();
 
     QVector<TdMiniWorker *> workers;
     QVector<QThread *>      workers_th;
     tiny_dnn::adagrad       optimizer;
-    std::vector<tiny_dnn::label_t> o_batch;
-    tiny_dnn::tensor_t t_cost_batch;
+    std::vector<int> o_batch;
     int stop_training;
 
 public slots:
@@ -50,8 +49,9 @@ private:
     int batch_cnt;
     int total_epoch;
     tiny_dnn::tensor_t *in_vec;
-    std::vector<tiny_dnn::label_t> *outputs;
-    tiny_dnn::tensor_t *cost;
+    std::vector<int> *outputs;
+    std::vector<float> cost;
+    clock_t start_time;
 };
 
 #endif // TD_WORKER_H

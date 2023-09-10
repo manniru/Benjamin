@@ -25,13 +25,12 @@ EnnNetwork::~EnnNetwork()
 
 void EnnNetwork::benchmark()
 {
+    start_time = clock();
     // predict
     net->predict(dataset->test_datas[0]);
-
-    double elapsed_s = 0;
     // FIXME ELAPSED
     qDebug() << dataset->m_name << "Finished! single infere time:"
-             << elapsed_s;
+             << getDiffTime(start_time);
 }
 
 void EnnNetwork::save()
@@ -136,10 +135,9 @@ void EnnNetwork::train(float l_rate)
     net->worker->optimizer.alpha = l_rate; // learning rate = 1E-4
     nn_epoch = 0;
 
-    std::vector<vec_t> target_cost;
-    target_cost = create_balanced_target_cost(dataset->train_labels);
+    start_time = clock();
     net->fit(dataset->train_datas, dataset->train_labels, n_train_epochs,
-             false, target_cost);
+             false);
 
     if( net_state!=ENN_NETWORK_LOCKED )
     {
@@ -160,8 +158,7 @@ void EnnNetwork::epochLog()
     if( nn_epoch%ENN_EPOCH_LOG==0 )
     {
         // FIXME
-        QString t_elapsed = QString::number(0);
-        t_elapsed += "s";
+        QString t_elapsed = getDiffTime(start_time);
         float loss = calcLoss();
         EnnResult acc_test = getAccuracy(dataset->test_datas,
                                   dataset->test_labels);
@@ -179,6 +176,7 @@ void EnnNetwork::epochLog()
         }
 
         net->worker->optimizer.alpha *= 0.95;
+        start_time = clock();
     }
 }
 
@@ -239,7 +237,7 @@ float EnnNetwork::calcLoss()
 }
 
 EnnResult EnnNetwork::getAccuracy(std::vector<vec_t>   &data,
-                           std::vector<label_t> &label)
+                           std::vector<int> &label)
 {
     EnnResult res;
     res.msg = "T[";
@@ -326,7 +324,7 @@ void EnnNetwork::handleWrongs(float diff, QVector<int> &wrong_i,
     }
 }
 
-float_t EnnNetwork::mse_f(vec_t &y, label_t &o)
+float_t EnnNetwork::mse_f(vec_t &y, int &o)
 {
     float_t d = 0;
 

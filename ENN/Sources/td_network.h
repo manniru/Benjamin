@@ -41,9 +41,8 @@ public:
 
     void stopOngoingTraining();
     void fit(tiny_dnn::tensor_t &inputs,
-             std::vector<tiny_dnn::label_t> &outputs,
-             int epoch, bool reset_weights,
-             tiny_dnn::tensor_t &t_cost);
+             std::vector<int> &outputs,
+             int epoch, bool reset_weights);
     TdNetwork* addFC(int in_dim, int out_dim);
     TdNetwork* addLeakyRelu();
     TdNetwork* addConv(int in_width, int in_height, int window_width,

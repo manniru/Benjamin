@@ -56,10 +56,10 @@ private:
     float calcLoss();
     void  createNNet();
     EnnResult getAccuracy(std::vector<vec_t> &data,
-                   std::vector<label_t> &label);
+                   std::vector<int> &label);
     void handleWrongs(float diff, QVector<int> &wrong_i,
                       QVector<float> &wrong_loss);
-    float_t mse_f(vec_t &y, label_t &o);
+    float_t mse_f(vec_t &y, int &o);
 
     TdNetwork *net;
     EnnParse *parser;
@@ -67,6 +67,7 @@ private:
     int n_train_epochs;
     int net_state; // network state
     bool need_train;
+    clock_t start_time;
 };
 
 #endif // ENN_NETWORK_H

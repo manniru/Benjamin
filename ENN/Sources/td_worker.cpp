@@ -18,7 +18,7 @@ void TdWorker::setBatchSize(int bs)
     for( int i=ws_len ; i<thread_num ; i++ )
     {
         TdMiniWorker *new_worker = new TdMiniWorker(nod, &o_batch,
-                                            &t_cost_batch);
+                                            &cost);
         QThread *thread = new QThread;
         new_worker->moveToThread(thread);
         thread->start();
@@ -35,8 +35,6 @@ void TdWorker::trainMiniBatch(int data_size, int offset)
 {
     std::copy(&(*outputs)[batch_cnt],
               &(*outputs)[batch_cnt] + data_size, &o_batch[0]);
-    t_cost_batch = tiny_dnn::tensor_t(&(*cost)[batch_cnt],
-        &(*cost)[batch_cnt] + data_size);
     nod->front()->setInData(*in_vec, data_size, offset);
 
     int nod_len = nod->size();
@@ -73,12 +71,13 @@ void TdWorker::trainMiniBatch(int data_size, int offset)
             workers[i]->enabled = false;
         }
     }
+    start_time = clock();
     emit startMiniWorkers();
 }
 
 void TdWorker::fit(tiny_dnn::tensor_t *inputs,
-        std::vector<tiny_dnn::label_t> *desired_outputs,
-        int epoch, tiny_dnn::tensor_t *t_cost)
+        std::vector<int> *desired_outputs,
+        int epoch)
 {
     stop_training = false;
     optimizer.reset();
@@ -87,7 +86,7 @@ void TdWorker::fit(tiny_dnn::tensor_t *inputs,
     total_epoch = epoch;
     in_vec = inputs;
     outputs = desired_outputs;
-    cost = t_cost;
+    calcCost();
     trainEpoch();
 }
 
@@ -129,12 +128,17 @@ void TdWorker::miniWorkerFinished()
     {
         return;
     }
+    QString fw_grad_back_time = getDiffTime(start_time);
+    start_time = clock();
     int nod_len = nod->size();
     // update weights
     for( int i=0 ; i<nod_len ; i++ )
     {
         (*nod)[i]->updateWeight(&optimizer, worker_len);
     }
+    QString update_w_time = getDiffTime(start_time);
+    qDebug() << "fw_grad_back_time" << fw_grad_back_time
+             << "update_w_time" << update_w_time;
     batch_cnt += batch_size;
     trainBatch();
 }
@@ -151,4 +155,34 @@ int TdWorker::runningWorkersNum()
         }
     }
     return counter;
+}
+
+void TdWorker::calcCost()
+{
+    std::vector<size_t> label_counts;
+    int len = outputs->size();
+    int max_label = 0;
+    for( int i=0 ; i<len ; i++ )
+    {
+        if( (*outputs)[i]>max_label )
+        {
+            max_label = (*outputs)[i];
+        }
+    }
+    label_counts.resize(max_label+1, 0);
+    for( int i=0 ; i<len ; i++ )
+    {
+        label_counts[(*outputs)[i]]++;
+    }
+
+    size_t total_sample_count = outputs->size();
+    int class_count = label_counts.size();
+    cost.resize(class_count);
+
+    for( int i=0 ; i<class_count ; i++ )
+    {
+        float weight = (float)total_sample_count/
+                (class_count*label_counts[i]);
+        cost[i] = weight;
+    }
 }

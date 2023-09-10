@@ -43,9 +43,8 @@ void TdNetwork::workerFinished()
 }
 
 void TdNetwork::fit(tiny_dnn::tensor_t &inputs,
-                std::vector<tiny_dnn::label_t> &outputs,
-                int epoch, bool reset_weights,
-                tiny_dnn::tensor_t &t_cost)
+                std::vector<int> &outputs,
+                int epoch, bool reset_weights)
 {
     setup(reset_weights);
 
@@ -55,7 +54,7 @@ void TdNetwork::fit(tiny_dnn::tensor_t &inputs,
         nod[i]->setParallelize(true);
     }
     worker_finished = false;
-    worker->fit(&inputs, &outputs, epoch, &t_cost);
+    worker->fit(&inputs, &outputs, epoch);
     while( !worker_finished )
     {
         QThread::msleep(10);
