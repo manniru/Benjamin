@@ -4,6 +4,7 @@
 #include <QObject>
 #include "td_layer.h"
 #include "td_nodes.h"
+#include "backend.h"
 #include "tiny_dnn/lossfunctions/loss_function.h"
 
 #define TD_THREAD_NUM 8
@@ -14,18 +15,16 @@ class TdMiniWorker : public QObject
     Q_OBJECT
 public:
     explicit TdMiniWorker(std::vector<TdLayer *> *nodes,
-                      std::vector<tiny_dnn::label_t> *o,
-                      tiny_dnn::tensor_t *t_co,
+                      std::vector<int> *o,
+                      std::vector<float> *t_co,
                       QObject *parent = nullptr);
 
     std::vector<tiny_dnn::tensor_t> forward();
     void setRange(int s_id, int e_id);
     int enabled;
-    template <typename E>
     std::vector<tiny_dnn::tensor_t> calcGrad(
            std::vector<tiny_dnn::tensor_t> &y);
-    void applyCost(tiny_dnn::tensor_t &calcGrad,
-            tiny_dnn::vec_t &cost);
+    void applyCost(tiny_dnn::vec_t &calcGrad);
     tiny_dnn::vec_t mse_df(tiny_dnn::vec_t &y, float o);
 
 public slots:
@@ -36,10 +35,11 @@ signals:
 
 private:
     std::vector<TdLayer *> *nod;
-    std::vector<tiny_dnn::label_t> *outputs;
-    tiny_dnn::tensor_t *t_costs;
+    std::vector<int> *outputs;
+    std::vector<float> *costs;
     int s_index;
     int e_index;
+    clock_t start_time;
 };
 
 #endif // TD_MINI_WORKER_H

@@ -1,14 +1,14 @@
 #include "td_mini_worker.h"
 
 TdMiniWorker::TdMiniWorker(std::vector<TdLayer *> *nodes,
-                   std::vector<tiny_dnn::label_t> *o,
-                   tiny_dnn::tensor_t *t_co,
+                   std::vector<int> *o,
+                   std::vector<float> *t_co,
                    QObject *parent) :
     QObject(parent)
 {
     nod = nodes;
     outputs = o;
-    t_costs = t_co;
+    costs = t_co;
     enabled = 1;
 }
 
@@ -27,17 +27,23 @@ void TdMiniWorker::run()
 
     int nod_len = nod->size();
     std::vector<tiny_dnn::tensor_t> o_batch;
+    start_time = clock();
     o_batch = forward();
+    QString fw_time = getDiffTime(start_time); start_time = clock();
     // back propagation
     std::vector<tiny_dnn::tensor_t> delta;
-    delta = calcGrad<tiny_dnn::mse>(o_batch);
+    delta = calcGrad(o_batch);
     // backward
     nod->back()->setOutGrads(delta, s_index, e_index);
+    QString grad_time = getDiffTime(start_time); start_time = clock();
 
     for( int j=nod_len ; j>0 ; j-- )
     {
         (*nod)[j-1]->backward(s_index, e_index);
     }
+    QString bw_time = getDiffTime(start_time); start_time = clock();
+    qDebug() << s_index << e_index << "fw:" << fw_time
+             << "|grad:" << grad_time << "|bw:" << bw_time;
     emit finished();
 }
 
@@ -58,7 +64,6 @@ std::vector<tiny_dnn::tensor_t> TdMiniWorker::forward()
     return td_normalizeOut(out);
 }
 
-template <typename E>
 std::vector<tiny_dnn::tensor_t> TdMiniWorker::calcGrad(
        std::vector<tiny_dnn::tensor_t> &y)
 {
@@ -70,24 +75,18 @@ std::vector<tiny_dnn::tensor_t> TdMiniWorker::calcGrad(
         gradients[sample].resize(y[sample].size());
         gradients[sample][0] = mse_df(y[sample][0],
                                       (*outputs)[sample]);
-        int t_cost_size = (*t_costs).size();
-        if( sample<t_cost_size )
-        {
-            applyCost(gradients[sample], (*t_costs)[sample]);
-        }
+        applyCost(gradients[sample][0]);
     }
 
     return gradients;
 }
 
-void TdMiniWorker::applyCost( tiny_dnn::tensor_t &gradient,
-                               tiny_dnn::vec_t &cost)
+void TdMiniWorker::applyCost(tiny_dnn::vec_t &gradient)
 {
-    int channel_count = gradient.size();
-    for( int channel=0 ; channel<channel_count ; channel++ )
+    int class_len = gradient.size();
+    for( int i=0 ; i<class_len ; i++ )
     {
-        // @todo optimize? (use AVX or so)
-        gradient[channel][0] *= cost[channel];
+        gradient[i] *= (*costs)[i];
     }
 }
 

@@ -66,7 +66,7 @@ QString getDiffTime(clock_t start)
 {
     QString ret;
     clock_t end = clock();
-    bt_last_clock = end;
+//    bt_last_clock = end;
     double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     ret  = QString::number(qRound(cpu_time_used*1000));
     ret += "ms";

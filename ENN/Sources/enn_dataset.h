@@ -21,10 +21,10 @@ public:
     ~EnnDataset();
 
     std::vector<vec_t>   train_datas;
-    std::vector<label_t> train_labels;
+    std::vector<int> train_labels;
     std::vector<QString> train_path; //for debug
     std::vector<vec_t>   test_datas;
-    std::vector<label_t> test_labels;
+    std::vector<int> test_labels;
     std::vector<vec_t>   false_datas;
 
     QString m_name; //model name
